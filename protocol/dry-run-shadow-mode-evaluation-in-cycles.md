@@ -27,9 +27,9 @@ All of this happens without:
 
 The protocol defines specific rules for dry run responses:
 
-### reservation_id is absent
+### reservation_id and expires_at_ms are absent
 
-A dry run does not create a reservation, so no `reservation_id` is returned. The `expires_at_ms` field is also absent.
+A dry run does not create a reservation, so `reservation_id` and `expires_at_ms` MUST be absent from the response (not present with a null value — the fields must not appear).
 
 ### affected_scopes is always populated
 

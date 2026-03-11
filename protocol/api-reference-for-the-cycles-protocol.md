@@ -6,11 +6,22 @@ All requests require the `X-Cycles-API-Key` header for authentication.
 
 ## Common headers
 
+### Request headers
+
 | Header | Required | Description |
 |---|---|---|
 | `Content-Type` | Yes (POST) | `application/json` |
 | `X-Cycles-API-Key` | Yes | API key for authentication and tenant derivation |
 | `X-Idempotency-Key` | No | Client-provided idempotency key (also accepted in the request body) |
+
+### Response headers
+
+| Header | Description |
+|---|---|
+| `X-Request-Id` | Unique request identifier for debugging and support |
+| `X-Cycles-Tenant` | Effective tenant identifier derived from auth context (optional in v0) |
+| `X-RateLimit-Remaining` | Number of requests remaining in current window (optional in v0) |
+| `X-RateLimit-Reset` | Unix timestamp (seconds) when rate limit resets (optional in v0) |
 
 ## Common types
 
@@ -96,12 +107,12 @@ Reserve budget before executing work.
 | `action` | Action | Yes | Action being budgeted |
 | `estimate` | Amount | Yes | Estimated cost |
 | `ttl_ms` | integer | No | Reservation TTL in ms (default: 60000, range: 1000–86400000) |
-| `grace_period_ms` | integer | No | Grace period after TTL for late commits (default: server-configured) |
+| `grace_period_ms` | integer | No | Grace period after TTL for late commits (default: 5000, range: 0–60000) |
 | `overage_policy` | string | No | `REJECT` (default), `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
 | `dry_run` | boolean | No | If true, evaluate without reserving (default: false) |
 | `metadata` | object | No | Arbitrary key-value metadata |
 
-### Response (201 Created)
+### Response (200 OK)
 
 ```json
 {
@@ -117,26 +128,31 @@ Reserve budget before executing work.
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 95000, "unit": "USD_MICROCENTS" },
-      "allocated": 100000,
-      "spent": 0,
-      "reserved": 5000,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 5000, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     }
   ],
-  "caps": null
+  "caps": null,
+  "reason_code": null,
+  "retry_after_ms": null
 }
 ```
 
 When `decision` is `ALLOW_WITH_CAPS`, the `caps` field contains soft constraints.
 
-When `decision` is `DENY`, the reservation is not created and the response includes an error.
+When `decision` is `DENY` (dry_run only), the reservation is not created. For live reservations, insufficient budget returns a `409` error instead of `decision: DENY`.
+
+When `reason_code` is present (on DENY), it provides a machine-readable reason for the denial. `retry_after_ms` optionally suggests when to retry.
 
 ### Dry run response
 
-When `dry_run: true`, the response has the same structure but no reservation is persisted. The `reservation_id` will be `null`.
+When `dry_run: true`, the response has the same structure but no reservation is persisted. The `reservation_id` and `expires_at_ms` fields are absent. The `affected_scopes` field is always populated, even when the decision is DENY.
 
 ### Example
 
@@ -186,7 +202,7 @@ Record actual usage and release the unused remainder.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `idempotency_key` | string | No | Unique key for idempotent retries |
+| `idempotency_key` | string | Yes | Unique key for idempotent retries |
 | `actual` | Amount | Yes | Actual cost consumed |
 | `metrics` | object | No | Standard metrics (see below) |
 | `metadata` | object | No | Arbitrary audit metadata |
@@ -213,12 +229,13 @@ Record actual usage and release the unused remainder.
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 96800, "unit": "USD_MICROCENTS" },
-      "allocated": 100000,
-      "spent": 3200,
-      "reserved": 0,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 3200, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     }
   ]
@@ -232,6 +249,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/commit \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: your-api-key" \
   -d '{
+    "idempotency_key": "commit-001",
     "actual": {
       "amount": 3200,
       "unit": "USD_MICROCENTS"
@@ -249,11 +267,13 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/commit \
 | Code | Error | When |
 |---|---|---|
 | 400 | `UNIT_MISMATCH` | Commit unit differs from reservation unit |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | TTL + grace period elapsed |
 
 ---
@@ -266,15 +286,28 @@ Cancel a reservation and return all reserved budget to the pool.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
+| `idempotency_key` | string | Yes | Unique key for idempotent retries |
 | `reason` | string | No | Human-readable reason for release |
-| `metadata` | object | No | Arbitrary metadata |
 
 ### Response (200 OK)
 
 ```json
 {
   "status": "RELEASED",
-  "released": { "amount": 5000, "unit": "USD_MICROCENTS" }
+  "released": { "amount": 5000, "unit": "USD_MICROCENTS" },
+  "balances": [
+    {
+      "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
+      "remaining": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "is_over_limit": false
+    }
+  ]
 }
 ```
 
@@ -285,6 +318,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/release \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: your-api-key" \
   -d '{
+    "idempotency_key": "release-001",
     "reason": "Task cancelled by user"
   }'
 ```
@@ -293,9 +327,11 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/release \
 
 | Code | Error | When |
 |---|---|---|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | TTL + grace period elapsed |
 
 ---
@@ -308,13 +344,15 @@ Extend the TTL of an active reservation. Used as a heartbeat for long-running op
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `extend_by_ms` | integer | Yes | Milliseconds to extend (range: 1000–86400000) |
+| `idempotency_key` | string | Yes | Unique key for idempotent retries |
+| `extend_by_ms` | integer | Yes | Milliseconds to extend (range: 1–86400000) |
+| `metadata` | object | No | Optional debugging/audit metadata |
 
 ### Response (200 OK)
 
 ```json
 {
-  "reservation_id": "res-abc-123",
+  "status": "ACTIVE",
   "expires_at_ms": 1710000120000
 }
 ```
@@ -326,6 +364,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/extend \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: your-api-key" \
   -d '{
+    "idempotency_key": "extend-001",
     "extend_by_ms": 60000
   }'
 ```
@@ -334,9 +373,12 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/extend \
 
 | Code | Error | When |
 |---|---|---|
+| 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | Past TTL (no grace period for extend) |
 
 ---
@@ -357,8 +399,8 @@ List reservations with optional filters and pagination.
 | `toolset` | string | Filter by toolset |
 | `status` | string | Filter by status: `ACTIVE`, `COMMITTED`, `RELEASED`, `EXPIRED` |
 | `idempotency_key` | string | Filter by idempotency key |
-| `limit` | integer | Max results (default: 50) |
-| `offset` | integer | Pagination offset (default: 0) |
+| `limit` | integer | Max results (1–200, default: 50) |
+| `cursor` | string | Opaque cursor from previous response |
 
 ### Response (200 OK)
 
@@ -370,15 +412,15 @@ List reservations with optional filters and pagination.
       "status": "ACTIVE",
       "subject": { "tenant": "acme", "workspace": "production" },
       "action": { "kind": "llm.completion", "name": "gpt-4o" },
-      "estimate": { "amount": 5000, "unit": "USD_MICROCENTS" },
       "reserved": { "amount": 5000, "unit": "USD_MICROCENTS" },
       "expires_at_ms": 1710000060000,
-      "created_at_ms": 1710000000000
+      "created_at_ms": 1710000000000,
+      "scope_path": "tenant:acme/workspace:production",
+      "affected_scopes": ["tenant:acme", "tenant:acme/workspace:production"]
     }
   ],
-  "total": 1,
-  "limit": 50,
-  "offset": 0
+  "has_more": false,
+  "next_cursor": null
 }
 ```
 
@@ -388,6 +430,14 @@ List reservations with optional filters and pagination.
 curl -s "http://localhost:7878/v1/reservations?tenant=acme&status=ACTIVE&limit=10" \
   -H "X-Cycles-API-Key: your-api-key"
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | Invalid filter parameters |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
 
 ---
 
@@ -401,23 +451,16 @@ Get details of a specific reservation.
 {
   "reservation_id": "res-abc-123",
   "status": "COMMITTED",
+  "idempotency_key": "req-001",
   "subject": { "tenant": "acme", "workspace": "production" },
   "action": { "kind": "llm.completion", "name": "gpt-4o" },
-  "estimate": { "amount": 5000, "unit": "USD_MICROCENTS" },
-  "actual": { "amount": 3200, "unit": "USD_MICROCENTS" },
   "reserved": { "amount": 5000, "unit": "USD_MICROCENTS" },
-  "expires_at_ms": 1710000060000,
+  "committed": { "amount": 3200, "unit": "USD_MICROCENTS" },
   "created_at_ms": 1710000000000,
-  "committed_at_ms": 1710000045000,
-  "affected_scopes": ["tenant:acme", "tenant:acme/workspace:production"],
+  "expires_at_ms": 1710000060000,
+  "finalized_at_ms": 1710000045000,
   "scope_path": "tenant:acme/workspace:production",
-  "overage_policy": "REJECT",
-  "idempotency_key": "req-001",
-  "metrics": {
-    "tokens_input": 150,
-    "tokens_output": 80,
-    "latency_ms": 320
-  },
+  "affected_scopes": ["tenant:acme", "tenant:acme/workspace:production"],
   "metadata": {}
 }
 ```
@@ -429,6 +472,15 @@ curl -s http://localhost:7878/v1/reservations/res-abc-123 \
   -H "X-Cycles-API-Key: your-api-key"
 ```
 
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Reservation owned by different tenant |
+| 404 | `NOT_FOUND` | Reservation does not exist |
+| 410 | `RESERVATION_EXPIRED` | Reservation has expired |
+
 ---
 
 ## POST /v1/decide
@@ -439,7 +491,7 @@ Evaluate a budget decision without creating a reservation. Useful for preflight 
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `idempotency_key` | string | No | Optional idempotency key |
+| `idempotency_key` | string | Yes | Unique key for idempotent retries |
 | `subject` | Subject | Yes | Budgeting scope |
 | `action` | Action | Yes | Action being evaluated |
 | `estimate` | Amount | Yes | Estimated cost to evaluate |
@@ -454,9 +506,13 @@ Evaluate a budget decision without creating a reservation. Useful for preflight 
     "tenant:acme",
     "tenant:acme/workspace:production"
   ],
-  "caps": null
+  "caps": null,
+  "reason_code": null,
+  "retry_after_ms": null
 }
 ```
+
+The `reason_code` and `retry_after_ms` fields are present when the decision is `DENY`.
 
 ### Example
 
@@ -465,11 +521,23 @@ curl -X POST http://localhost:7878/v1/decide \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: your-api-key" \
   -d '{
+    "idempotency_key": "decide-001",
     "subject": { "tenant": "acme", "workspace": "production" },
     "action": { "kind": "llm.completion", "name": "gpt-4o" },
     "estimate": { "amount": 5000, "unit": "USD_MICROCENTS" }
   }'
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
+
+Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
 
 ---
 
@@ -481,12 +549,17 @@ Query current budget state for one or more scopes.
 
 | Parameter | Type | Description |
 |---|---|---|
-| `tenant` | string | Filter by tenant (required) |
+| `tenant` | string | Filter by tenant |
 | `workspace` | string | Filter by workspace |
 | `app` | string | Filter by app |
 | `workflow` | string | Filter by workflow |
 | `agent` | string | Filter by agent |
 | `toolset` | string | Filter by toolset |
+| `include_children` | boolean | Include child scopes (default: false) |
+| `limit` | integer | Max results (1–200, default: 50) |
+| `cursor` | string | Opaque cursor from previous response |
+
+At least one of `tenant`, `workspace`, `app`, `workflow`, `agent`, or `toolset` must be provided. The `tenant` parameter is validation-only: if provided, it must match the effective tenant derived from the API key.
 
 ### Response (200 OK)
 
@@ -495,25 +568,29 @@ Query current budget state for one or more scopes.
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 96800, "unit": "USD_MICROCENTS" },
-      "allocated": 100000,
-      "spent": 3200,
-      "reserved": 0,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 3200, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     },
     {
-      "scope": "tenant:acme/workspace:production",
+      "scope": "workspace:production",
+      "scope_path": "tenant:acme/workspace:production",
       "remaining": { "amount": 46800, "unit": "USD_MICROCENTS" },
-      "allocated": 50000,
-      "spent": 3200,
-      "reserved": 0,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 50000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 3200, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     }
-  ]
+  ],
+  "has_more": false,
+  "next_cursor": null
 }
 ```
 
@@ -523,6 +600,14 @@ Query current budget state for one or more scopes.
 curl -s "http://localhost:7878/v1/balances?tenant=acme&workspace=production" \
   -H "X-Cycles-API-Key: your-api-key"
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | No subject filter provided |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
 
 ---
 
@@ -547,22 +632,18 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
 
 ```json
 {
+  "status": "APPLIED",
   "event_id": "evt-abc-123",
-  "decision": "ALLOW",
-  "affected_scopes": [
-    "tenant:acme",
-    "tenant:acme/workspace:production"
-  ],
-  "charged": { "amount": 1200, "unit": "USD_MICROCENTS" },
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 95600, "unit": "USD_MICROCENTS" },
-      "allocated": 100000,
-      "spent": 4400,
-      "reserved": 0,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 4400, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     }
   ]
@@ -598,6 +679,8 @@ curl -X POST http://localhost:7878/v1/events \
 |---|---|---|
 | 400 | `INVALID_REQUEST` | Missing or invalid fields |
 | 400 | `UNIT_MISMATCH` | Unit not supported for scope |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT or ALLOW_IF_AVAILABLE) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
@@ -606,7 +689,7 @@ curl -X POST http://localhost:7878/v1/events \
 
 ## Idempotency
 
-All write operations support idempotency via the `idempotency_key` field.
+All write operations require idempotency via the `idempotency_key` field in the request body. The `X-Idempotency-Key` header is also accepted; if both are provided, they must match.
 
 - If you retry a request with the same key and the same payload, you get the original successful response. The operation is not applied again.
 - If you reuse a key with a different payload, you get `409 IDEMPOTENCY_MISMATCH`.

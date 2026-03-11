@@ -63,9 +63,9 @@ The `extend_by_ms` parameter is added to the current `expires_at_ms` (not to the
 new_expires_at_ms = current_expires_at_ms + extend_by_ms
 ```
 
-The allowed range for `extend_by_ms` is 1 millisecond to 24 hours.
+The allowed range for `extend_by_ms` is 1 millisecond to 24 hours (`1` to `86400000` milliseconds).
 
-Extend is idempotent: replaying the same request with the same idempotency key returns the original response.
+Extend requires an `idempotency_key`. Replaying the same request with the same idempotency key returns the original response.
 
 ### What extend does not change
 

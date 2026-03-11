@@ -154,9 +154,21 @@ An unexpected server error occurred.
 | BUDGET_EXCEEDED | 409 | Insufficient budget |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
 | DEBT_OUTSTANDING | 409 | Scope has unresolved debt |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
+
+### Decide errors
+
+| Error | HTTP | Meaning |
+|---|---|---|
+| INVALID_REQUEST | 400 | Malformed request |
+| UNAUTHORIZED | 401 | Invalid API key |
+| FORBIDDEN | 403 | Tenant mismatch |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
+
+Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
 
 ### Commit errors
 
@@ -165,8 +177,11 @@ An unexpected server error occurred.
 | BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
+| RESERVATION_FINALIZED | 409 | Already committed or released |
 | UNIT_MISMATCH | 400 | Unit differs from reservation |
 | NOT_FOUND | 404 | Reservation never existed |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
+| UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Reservation owned by different tenant |
 
 ### Release errors
@@ -174,16 +189,22 @@ An unexpected server error occurred.
 | Error | HTTP | Meaning |
 |---|---|---|
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
+| RESERVATION_FINALIZED | 409 | Already committed or released |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | NOT_FOUND | 404 | Reservation never existed |
+| UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Reservation owned by different tenant |
 
 ### Extend errors
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| INVALID_REQUEST | 400 | Missing or invalid fields |
 | RESERVATION_EXPIRED | 410 | Past TTL (no grace period for extend) |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | NOT_FOUND | 404 | Reservation never existed |
+| UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Reservation owned by different tenant |
 
 ### Event errors
@@ -194,6 +215,9 @@ An unexpected server error occurred.
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | UNIT_MISMATCH | 400 | Unit not supported for scope |
 | INVALID_REQUEST | 400 | Malformed request |
+| UNAUTHORIZED | 401 | Invalid API key |
+| FORBIDDEN | 403 | Tenant mismatch |
+| IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 
 ## Idempotency and error handling
 
@@ -219,9 +243,11 @@ Log the request_id when handling errors.
 
 Cycles provides 12 specific error codes that tell the client exactly what went wrong:
 
-- **400s** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH, UNAUTHORIZED, FORBIDDEN)
+- **400** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH)
+- **401** for authentication failures (UNAUTHORIZED)
+- **403** for authorization failures (FORBIDDEN)
 - **404** for missing reservations (NOT_FOUND)
-- **409s** for budget and state conflicts (BUDGET_EXCEEDED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH)
+- **409** for budget and state conflicts (BUDGET_EXCEEDED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH)
 - **410** for expired reservations (RESERVATION_EXPIRED)
 - **500** for server errors (INTERNAL_ERROR)
 
