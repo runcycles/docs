@@ -76,6 +76,8 @@ An event request includes:
 - **idempotency_key** — ensures the same event is not recorded twice
 - **overage_policy** — what happens if budget is insufficient (REJECT, ALLOW_IF_AVAILABLE, or ALLOW_WITH_OVERDRAFT)
 - **metrics** — optional operational metadata (tokens_input, tokens_output, latency_ms, model_version)
+- **client_time_ms** — optional client-observed timestamp (advisory only, not used for budget enforcement)
+- **metadata** — optional arbitrary key-value metadata for audit or debugging
 
 The server applies the charge atomically across all derived scopes, or rejects the entire event.
 

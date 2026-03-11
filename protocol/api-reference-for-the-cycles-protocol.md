@@ -117,6 +117,7 @@ Reserve budget before executing work.
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 95000, "unit": "USD_MICROCENTS" },
       "allocated": { "amount": 100000, "unit": "USD_MICROCENTS" },
       "spent": { "amount": 0, "unit": "USD_MICROCENTS" },
@@ -255,11 +256,13 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/commit \
 | Code | Error | When |
 |---|---|---|
 | 400 | `UNIT_MISMATCH` | Commit unit differs from reservation unit |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | TTL + grace period elapsed |
 
 ---
@@ -313,9 +316,11 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/release \
 
 | Code | Error | When |
 |---|---|---|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | TTL + grace period elapsed |
 
 ---
@@ -357,9 +362,12 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/extend \
 
 | Code | Error | When |
 |---|---|---|
+| 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 | 410 | `RESERVATION_EXPIRED` | Past TTL (no grace period for extend) |
 
 ---
@@ -412,6 +420,14 @@ curl -s "http://localhost:7878/v1/reservations?tenant=acme&status=ACTIVE&limit=1
   -H "X-Cycles-API-Key: your-api-key"
 ```
 
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | Invalid filter parameters |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
+
 ---
 
 ## GET /v1/reservations/{id}
@@ -444,6 +460,15 @@ Get details of a specific reservation.
 curl -s http://localhost:7878/v1/reservations/res-abc-123 \
   -H "X-Cycles-API-Key: your-api-key"
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Reservation owned by different tenant |
+| 404 | `NOT_FOUND` | Reservation does not exist |
+| 410 | `RESERVATION_EXPIRED` | Reservation has expired |
 
 ---
 
@@ -491,6 +516,17 @@ curl -X POST http://localhost:7878/v1/decide \
     "estimate": { "amount": 5000, "unit": "USD_MICROCENTS" }
   }'
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
+| 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
+
+Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
 
 ---
 
@@ -553,6 +589,14 @@ At least one of `tenant`, `workspace`, `app`, `workflow`, `agent`, or `toolset` 
 curl -s "http://localhost:7878/v1/balances?tenant=acme&workspace=production" \
   -H "X-Cycles-API-Key: your-api-key"
 ```
+
+### Error responses
+
+| Code | Error | When |
+|---|---|---|
+| 400 | `INVALID_REQUEST` | No subject filter provided |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Tenant mismatch |
 
 ---
 

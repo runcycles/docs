@@ -57,7 +57,7 @@ A decide request includes:
 - **subject** — the budget scopes to evaluate (tenant, workspace, app, workflow, agent, toolset, dimensions)
 - **action** — the proposed action (kind, name, optional tags)
 - **estimate** — the amount the action would need
-- **idempotency_key** — for request deduplication
+- **idempotency_key** (required) — for request deduplication
 
 The server evaluates the request against current balances and returns:
 
