@@ -69,7 +69,7 @@ This is different from RESERVATION_EXPIRED — a 404 means the reservation was n
 
 Budget is insufficient for the requested operation.
 
-This appears in three contexts:
+This appears in four contexts:
 
 1. **Reservation:** the scope does not have enough remaining budget for the estimate
 2. **Commit with REJECT policy:** actual exceeds reserved
