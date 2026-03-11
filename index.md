@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: "Cycles"
-  text: "Budget enforcement for autonomous systems"
+  text: "A budget authority for autonomous execution"
   tagline: "Docs, guides, and architecture articles for bounded execution in agentic systems."
   actions:
     - theme: brand
