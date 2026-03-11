@@ -6,11 +6,22 @@ All requests require the `X-Cycles-API-Key` header for authentication.
 
 ## Common headers
 
+### Request headers
+
 | Header | Required | Description |
 |---|---|---|
 | `Content-Type` | Yes (POST) | `application/json` |
 | `X-Cycles-API-Key` | Yes | API key for authentication and tenant derivation |
 | `X-Idempotency-Key` | No | Client-provided idempotency key (also accepted in the request body) |
+
+### Response headers
+
+| Header | Description |
+|---|---|
+| `X-Request-Id` | Unique request identifier for debugging and support |
+| `X-Cycles-Tenant` | Effective tenant identifier derived from auth context (optional in v0) |
+| `X-RateLimit-Remaining` | Number of requests remaining in current window (optional in v0) |
+| `X-RateLimit-Reset` | Unix timestamp (seconds) when rate limit resets (optional in v0) |
 
 ## Common types
 

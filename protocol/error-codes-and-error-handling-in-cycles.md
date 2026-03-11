@@ -199,6 +199,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| INVALID_REQUEST | 400 | Missing or invalid fields |
 | RESERVATION_EXPIRED | 410 | Past TTL (no grace period for extend) |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
