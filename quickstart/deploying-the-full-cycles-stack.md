@@ -149,12 +149,11 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "tenant_id": "acme-corp",
-    "display_name": "Acme Corporation",
-    "status": "ACTIVE"
+    "name": "Acme Corporation"
   }' | jq .
 ```
 
-You should see the tenant returned with status `ACTIVE`.
+You should see the tenant returned with its details.
 
 ## Step 3: Create an API key
 
@@ -166,6 +165,7 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "tenant_id": "acme-corp",
+    "name": "dev-key",
     "description": "Development key for acme-corp",
     "permissions": [
       "reservations:create",
@@ -196,7 +196,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -d '{
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
-    "allocated": 10000000
+    "allocated": { "amount": 10000000, "unit": "USD_MICROCENTS" }
   }' | jq .
 ```
 
@@ -210,7 +210,7 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "CREDIT",
-    "amount": 10000000,
+    "amount": { "amount": 10000000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "initial-fund-001",
     "reason": "Initial budget allocation"
   }' | jq .
@@ -373,7 +373,7 @@ The API key is missing, invalid, or expired. Verify with:
 curl -s -X POST http://localhost:7979/v1/auth/validate \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
-  -d '{"api_key": "cyc_live_..."}' | jq .
+  -d '{"key_secret": "cyc_live_..."}' | jq .
 ```
 
 ### Connection refused on port 7878 or 7979
@@ -390,7 +390,7 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "REPAY_DEBT",
-    "amount": 500000,
+    "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "repay-001"
   }' | jq .
 ```

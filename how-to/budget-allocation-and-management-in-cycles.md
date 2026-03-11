@@ -52,7 +52,7 @@ curl -X POST http://localhost:7979/v1/admin/budgets \
   -d '{
     "scope": "tenant:acme",
     "unit": "USD_MICROCENTS",
-    "allocated": 1000000
+    "allocated": { "amount": 1000000, "unit": "USD_MICROCENTS" }
   }'
 
 # Fund the budget
@@ -61,7 +61,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "CREDIT",
-    "amount": 1000000,
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "fund-acme-001"
   }'
 
@@ -72,7 +72,7 @@ curl -X POST http://localhost:7979/v1/admin/budgets \
   -d '{
     "scope": "tenant:acme/workspace:production",
     "unit": "USD_MICROCENTS",
-    "allocated": 500000
+    "allocated": { "amount": 500000, "unit": "USD_MICROCENTS" }
   }'
 
 curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:production/USD_MICROCENTS/fund" \
@@ -80,7 +80,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:pro
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "CREDIT",
-    "amount": 500000,
+    "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "fund-acme-prod-001"
   }'
 ```
@@ -181,7 +181,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "RESET",
-    "amount": 1000000,
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "reset-march-2026",
     "reason": "Monthly budget reset"
   }'
@@ -199,7 +199,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "REPAY_DEBT",
-    "amount": 500000,
+    "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
     "idempotency_key": "repay-001"
   }'
 ```
@@ -222,12 +222,13 @@ This returns the current state for all scopes matching the filter:
   "balances": [
     {
       "scope": "tenant:acme",
+      "scope_path": "tenant:acme",
       "remaining": { "amount": 750000, "unit": "USD_MICROCENTS" },
-      "allocated": 1000000,
-      "spent": 200000,
-      "reserved": 50000,
-      "debt": 0,
-      "overdraft_limit": 0,
+      "allocated": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+      "spent": { "amount": 200000, "unit": "USD_MICROCENTS" },
+      "reserved": { "amount": 50000, "unit": "USD_MICROCENTS" },
+      "debt": { "amount": 0, "unit": "USD_MICROCENTS" },
+      "overdraft_limit": { "amount": 0, "unit": "USD_MICROCENTS" },
       "is_over_limit": false
     }
   ]

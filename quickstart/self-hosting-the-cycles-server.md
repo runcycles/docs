@@ -23,7 +23,7 @@ services:
       - "6379:6379"
 
   cycles-server:
-    build: ./cycles-protocol-service
+    build: .
     ports:
       - "7878:7878"
     environment:
@@ -33,20 +33,20 @@ services:
       - redis
 ```
 
-You will also need a `Dockerfile` in the `cycles-protocol-service` directory. A minimal example:
+You will also need a `Dockerfile` in the repository root. A minimal example:
 
 ```dockerfile
 FROM eclipse-temurin:21-jre-alpine
-COPY cycles-protocol-service-api/target/cycles-protocol-service-api-*.jar app.jar
+WORKDIR /app
+COPY cycles-protocol-service/cycles-protocol-service-api/target/cycles-protocol-service-api-*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 Build and run:
 
 ```bash
-cd cycles-server/cycles-protocol-service
-mvn clean package -DskipTests
-cd ..
+cd cycles-server
+cd cycles-protocol-service && mvn clean package -DskipTests && cd ..
 docker compose up -d
 ```
 
