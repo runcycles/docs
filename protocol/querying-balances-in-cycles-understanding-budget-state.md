@@ -89,6 +89,12 @@ At least one subject filter must be provided:
 - `agent`
 - `toolset`
 
+Additional parameters:
+
+- `include_children` — if true, include child scopes in the response (default: false; may be ignored by v0 implementations)
+- `limit` — maximum results per page (1–200, default: 50)
+- `cursor` — opaque cursor from a previous response for pagination
+
 Queries are always scoped to the effective tenant. The server rejects requests that attempt to query another tenant's balances with `403 FORBIDDEN`.
 
 ### Response
