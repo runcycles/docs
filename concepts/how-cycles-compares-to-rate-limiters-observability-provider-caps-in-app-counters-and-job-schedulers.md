@@ -184,7 +184,7 @@ Budget is reserved before execution rather than inferred after usage occurs.
 | | Provider budget cap | Cycles |
 |---|---|---|
 | Scope | Organization or API key | Tenant, workflow, run, action |
-| Enforcement | Binary (all-or-nothing) | Three-way (allow / downgrade / deny) |
+| Enforcement | Binary (all-or-nothing) | Three-way (ALLOW / ALLOW_WITH_CAPS / DENY) |
 | Timing | Post-usage counter (often delayed) | Pre-execution reservation |
 | Multi-tenant aware | No | Yes |
 | Degradation support | No | Yes |

@@ -695,7 +695,7 @@ All write operations require idempotency via the `idempotency_key` field in the 
 - If you reuse a key with a different payload, you get `409 IDEMPOTENCY_MISMATCH`.
 - If the original request failed, retrying with the same key sends a fresh request.
 
-Idempotency is scoped per (tenant, endpoint, idempotency_key).
+Idempotency is scoped per (effective tenant, endpoint, idempotency_key).
 
 ## Next steps
 

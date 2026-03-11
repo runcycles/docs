@@ -25,8 +25,9 @@ For example, given a Subject with:
 The server derives these scopes (in canonical order):
 
 1. `tenant:acme`
-2. `tenant:acme/workspace:default/app:support-bot`
-3. `tenant:acme/workspace:default/app:support-bot/workflow:refund-assistant`
+2. `tenant:acme/workspace:default`
+3. `tenant:acme/workspace:default/app:support-bot`
+4. `tenant:acme/workspace:default/app:support-bot/workflow:refund-assistant`
 
 Each of these scopes is a separate budget boundary. A reservation must satisfy all of them.
 
@@ -172,7 +173,7 @@ When a workflow or agent scope runs low, that pressure is visible at higher leve
 
 The scopes you populate on each Subject determine which budget boundaries are checked.
 
-If you only provide tenant and workflow, only those scopes are derived. Agent and toolset scopes are not checked.
+If you only provide tenant and workflow, the server derives scopes for tenant, workspace (default), app (default), and workflow. Agent and toolset scopes are not checked.
 
 This means scope design is part of policy design. More scopes mean finer-grained control but more configuration.
 

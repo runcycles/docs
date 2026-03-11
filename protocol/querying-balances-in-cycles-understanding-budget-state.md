@@ -207,10 +207,10 @@ Consider this balance:
 
 This tells us:
 
-- The workflow was allocated $3.00 (`30,000,000 / 10^8`)
-- It has spent $1.50 so far
-- $0.30 is currently reserved by active work
-- $1.20 remains available for new reservations
+- The workflow was allocated $0.30 (`30,000,000 / 10^8`)
+- It has spent $0.15 so far
+- $0.03 is currently reserved by active work
+- $0.12 remains available for new reservations
 
 Verify the invariant: `30,000,000 - 15,000,000 - 3,000,000 - 0 = 12,000,000` — correct.
 
@@ -227,7 +227,7 @@ When a scope has debt, remaining can be negative:
 }
 ```
 
-This scope is in overdraft but not over-limit. It has $0.50 in debt within a $1.00 overdraft limit. New reservations are blocked (due to outstanding debt) until debt is repaid.
+This scope is in overdraft but not over-limit. It has $0.05 in debt within a $0.10 overdraft limit. New reservations are blocked (due to outstanding debt) until debt is repaid.
 
 ## Summary
 
