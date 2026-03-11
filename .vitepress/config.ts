@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   base: '/docs/',
-  title: 'Cycles Docs',
+  title: 'Cycles Protocol & Runtime Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   themeConfig: {
     nav: [
