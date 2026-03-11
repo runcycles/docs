@@ -10,18 +10,19 @@ This page describes the components, how they interact, and where each piece runs
 ┌─────────────────────────────────────┐
 │         Your Application            │
 │                                     │
-│  ┌──────────────┐  ┌────────────┐   │
-│  │  @Cycles     │  │  CyclesClient│  │
-│  │  annotation  │  │  (direct)   │  │
-│  └──────┬───────┘  └─────┬──────┘   │
+│  ┌──────────────┐  ┌──────────────┐ │
+│  │  @Cycles     │  │ CyclesClient │ │
+│  │  annotation  │  │   (direct)   │ │
+│  └──────┬───────┘  └─────┬────────┘ │
 │         │                │          │
 │         ▼                ▼          │
 │  ┌──────────────────────────────┐   │
-│  │   Spring Boot Starter        │   │
-│  │   (cycles-client-java-spring)│   │
+│  │ Java Spring, Other bindings  │   │
+│  │     (Cycles Wire Protocol)   │   │
 │  └──────────────┬───────────────┘   │
 └─────────────────┼───────────────────┘
                   │ HTTP (JSON)
+                  | Cycles Wire Protocol
                   │ X-Cycles-API-Key
                   ▼
 ┌─────────────────────────────────────┐
