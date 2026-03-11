@@ -114,6 +114,8 @@ These are different situations:
 
 **Outstanding debt block** (`DEBT_OUTSTANDING`): debt exists (even if below overdraft limit). New reservations are blocked because the scope has unresolved debt.
 
+Note: when `is_over_limit` is true, the server returns `OVERDRAFT_LIMIT_EXCEEDED` instead of `DEBT_OUTSTANDING`, even if debt > 0. The over-limit error takes precedence.
+
 ## When to use overdraft
 
 Overdraft is most useful when:
