@@ -315,22 +315,35 @@ It is the right tool for managing execution timing and retry mechanics.
 
 But pair it with a budget authority so retries and fan-out do not become unbounded cost.
 
-## Summary comparison
+## Capability matrix
 
-| Approach | What it controls | What it misses |
-|---|---|---|
-| **Rate limiter** | Request velocity | Total cost, execution context, retries |
-| **Observability** | Post-hoc visibility | Pre-execution decisions, real-time enforcement |
-| **Provider budget cap** | Organization-level spend | Per-tenant, per-run limits, degradation, timing |
-| **In-app counter** | Simple usage tracking | Concurrency, retries, hierarchical scopes, lifecycle |
-| **Job scheduler** | Execution timing and retries | Cost awareness, budget governance, cross-scope limits |
-| **Cycles** | Bounded autonomous execution | — (designed for this purpose) |
+The table below maps specific capabilities against each approach.
 
-Each alternative solves a real problem.
+✅ = supported&ensp; ◐ = partial or manual effort&ensp; ✗ = not supported
 
-None of them solve the problem of **pre-execution, budget-aware governance for autonomous systems**.
+| Capability | Rate limiter | Observability | Provider cap | In-app counter | Job scheduler | Cycles |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Pre-execution budget check | ✗ | ✗ | ✗ | ◐ | ✗ | ✅ |
+| Reserve → commit lifecycle | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
+| Per-tenant limits | ◐ | ✗ | ✗ | ◐ | ✗ | ✅ |
+| Per-run / per-workflow limits | ✗ | ✗ | ✗ | ◐ | ✗ | ✅ |
+| Hierarchical scopes | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
+| Cost-aware decisions | ✗ | ◐ | ◐ | ◐ | ✗ | ✅ |
+| Retry / idempotency safety | ✗ | ✗ | ✗ | ✗ | ◐ | ✅ |
+| Graceful degradation (three-way) | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
+| Concurrency-safe accounting | ✗ | ✗ | ◐ | ✗ | ◐ | ✅ |
+| Real-time enforcement | ✅ | ✗ | ◐ | ◐ | ✗ | ✅ |
+| Post-hoc analysis and traces | ✗ | ✅ | ◐ | ✗ | ◐ | ◐ |
+| Traffic shaping / abuse prevention | ✅ | ✗ | ✗ | ✗ | ◐ | ✗ |
+| Execution scheduling and retries | ✗ | ✗ | ✗ | ✗ | ✅ | ✗ |
 
-That is what Cycles is for.
+A few things worth noting:
+
+- No single tool covers every row. That is expected.
+- The ◐ ratings are honest. Some of these capabilities can be approximated with enough custom work. But "possible with effort" is different from "supported by design."
+- Cycles does not try to replace traffic shaping, observability, or scheduling. Those are separate concerns with mature tooling. Cycles focuses on the budget governance column because that is the gap most teams hit as autonomous systems scale.
+
+Each of these tools earns its place in a production stack. The question is whether the stack has a gap where budget authority should be.
 
 ## They work together
 
