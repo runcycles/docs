@@ -15,6 +15,8 @@ export default defineConfig({
         text: 'Quickstart',
         items: [
           { text: 'Start Here', link: '/' },
+          { text: 'Architecture Overview', link: '/architecture-overview-how-cycles-fits-together' },
+          { text: 'Self-Hosting the Server', link: '/self-hosting-the-cycles-server' },
           { text: 'Spring Boot Starter', link: '/getting-started-with-the-cycles-spring-boot-starter' },
           { text: 'Hard Budget Limits with Spring AI', link: '/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
           { text: 'Choose a First Rollout', link: '/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
@@ -34,16 +36,23 @@ export default defineConfig({
         items: [
           { text: 'Hard Budget Limits with Spring AI', link: '/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
           { text: 'Spring Boot Starter', link: '/getting-started-with-the-cycles-spring-boot-starter' },
+          { text: 'Programmatic Client Usage', link: '/using-the-cycles-client-programmatically' },
+          { text: 'Budget Allocation and Management', link: '/budget-allocation-and-management-in-cycles' },
+          { text: 'API Key Management', link: '/api-key-management-in-cycles' },
+          { text: 'Custom Field Resolvers', link: '/custom-field-resolvers-in-cycles' },
           { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
           { text: 'Choose a First Rollout', link: '/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
           { text: 'Estimate Exposure Before Execution', link: '/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
           { text: 'Degradation Paths', link: '/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
           { text: 'Shadow Mode Rollout', link: '/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
+          { text: 'Error Handling Patterns', link: '/error-handling-patterns-in-cycles-client-code' },
+          { text: 'Testing with Cycles', link: '/testing-with-cycles' },
         ]
       },
       {
         text: 'Protocol Reference',
         items: [
+          { text: 'API Reference', link: '/api-reference-for-the-cycles-protocol' },
           { text: 'Reserve / Commit Lifecycle', link: '/how-reserve-commit-works-in-cycles' },
           { text: 'Authentication and Tenancy', link: '/authentication-tenancy-and-api-keys-in-cycles' },
           { text: 'Scope Derivation', link: '/how-scope-derivation-works-in-cycles' },
@@ -59,6 +68,14 @@ export default defineConfig({
           { text: 'Reservation Recovery and Listing', link: '/reservation-recovery-and-listing-in-cycles' },
           { text: 'Metrics and Metadata', link: '/standard-metrics-and-metadata-in-cycles' },
           { text: 'Error Codes and Error Handling', link: '/error-codes-and-error-handling-in-cycles' },
+        ]
+      },
+      {
+        text: 'Configuration Reference',
+        items: [
+          { text: 'Client Configuration', link: '/client-configuration-reference-for-cycles-spring-boot-starter' },
+          { text: 'Server Configuration', link: '/server-configuration-reference-for-cycles' },
+          { text: 'SpEL Expression Reference', link: '/spel-expression-reference-for-cycles' },
         ]
       },
       {
