@@ -69,7 +69,7 @@ This is important because the model requested and the model used are not always 
 }
 ```
 
-An open map for arbitrary additional metrics. Keys and values are strings.
+An open map for arbitrary additional metrics. Values can be any JSON type (strings, numbers, booleans, objects).
 
 Use custom metrics for anything not covered by the standard fields — cache behavior, retry counts, routing decisions, feature flags, or domain-specific measurements.
 
