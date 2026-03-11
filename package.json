@@ -1,6 +1,7 @@
 {
   "name": "cycles-docs",
   "version": "1.0.0",
+  "type": "module",
   "devDependencies": {
     "vitepress": "^1.6.3"
   },
