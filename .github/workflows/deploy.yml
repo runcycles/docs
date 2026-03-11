@@ -19,8 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install -g vitepress
-      - run: vitepress build
+      - run: npm ci   
+      - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .vitepress/dist
