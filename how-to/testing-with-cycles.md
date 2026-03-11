@@ -42,7 +42,7 @@ class DocumentProcessorTest {
             "expires_at_ms", System.currentTimeMillis() + 60000
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.success(201, reserveBody));
+            .thenReturn(CyclesResponse.success(200, reserveBody));
 
         // Mock commit response
         Map<String, Object> commitBody = Map.of(
@@ -60,11 +60,10 @@ class DocumentProcessorTest {
 
     @Test
     void testBudgetDenied() {
-        Map<String, Object> denyBody = Map.of(
-            "decision", "DENY"
-        );
+        // Per spec, insufficient budget on createReservation returns 409 BUDGET_EXCEEDED
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.success(200, denyBody));
+            .thenReturn(CyclesResponse.error(409, "BUDGET_EXCEEDED",
+                "Insufficient remaining balance"));
 
         String result = processor.processDocument("doc-1", "content");
 
@@ -79,7 +78,7 @@ class DocumentProcessorTest {
             "decision", "ALLOW"
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.success(201, reserveBody));
+            .thenReturn(CyclesResponse.success(200, reserveBody));
 
         // Simulate a processing error
         doThrow(new RuntimeException("LLM error"))
@@ -120,7 +119,7 @@ class CyclesIntegrationTest {
             "reserved", Map.of("amount", 5000, "unit", "USD_MICROCENTS")
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.success(201, reserveBody));
+            .thenReturn(CyclesResponse.success(200, reserveBody));
 
         // Mock a successful commit
         Map<String, Object> commitBody = Map.of(

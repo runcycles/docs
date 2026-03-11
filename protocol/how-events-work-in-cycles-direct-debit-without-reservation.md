@@ -75,7 +75,7 @@ An event request includes:
 - **actual** — the amount consumed (unit and amount)
 - **idempotency_key** — ensures the same event is not recorded twice
 - **overage_policy** — what happens if budget is insufficient (REJECT, ALLOW_IF_AVAILABLE, or ALLOW_WITH_OVERDRAFT)
-- **metrics** — optional operational metadata (tokens_input, tokens_output, latency_ms, model_version)
+- **metrics** — optional operational metadata (tokens_input, tokens_output, latency_ms, model_version, custom)
 - **client_time_ms** — optional client-observed timestamp (advisory only, not used for budget enforcement)
 - **metadata** — optional arbitrary key-value metadata for audit or debugging
 
@@ -99,9 +99,9 @@ This is the safest default. It prevents any accounting that would put the scope 
 
 ### ALLOW_IF_AVAILABLE
 
-If sufficient budget remains across all affected scopes, the event is applied. If not, it is rejected.
+If sufficient budget remains across all affected scopes, the full actual amount is applied atomically. If any scope has insufficient remaining, the entire event is rejected with `409 BUDGET_EXCEEDED`.
 
-This is useful when the system should charge what it can but not create debt.
+This is useful when the system should apply the charge only if fully covered, but not create debt.
 
 ### ALLOW_WITH_OVERDRAFT
 

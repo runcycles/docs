@@ -34,7 +34,7 @@ USD_MICROCENTS uses integer arithmetic with enough precision to represent per-ca
 
 ### Range
 
-The amount field is a 64-bit signed integer.
+The amount field is a 64-bit integer (int64 format) with a minimum of 0. Negative amounts are not valid in standard Amount fields. The SignedAmount variant (used for Balance.remaining) allows negative values to represent overdraft state.
 
 Maximum: `9.22 × 10¹⁸ USD_MICROCENTS ≈ $92.2 billion`
 

@@ -200,7 +200,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }' | jq .
 ```
 
-This allocates $1.00 (10,000,000 microcents) to the tenant scope.
+This allocates $0.10 (10,000,000 microcents) to the tenant scope.
 
 Fund it:
 

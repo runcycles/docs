@@ -72,10 +72,8 @@ Map<String, Object> body = response.getBody();
 String reservationId = (String) body.get("reservation_id");
 String decision = (String) body.get("decision");
 
-if ("DENY".equals(decision)) {
-    // Budget insufficient — degrade or defer
-    return fallbackResponse();
-}
+// For non-dry-run reservations, insufficient budget returns 409 (not decision=DENY).
+// decision=DENY in a 2xx response only occurs when dry_run=true.
 
 // Proceed with work...
 ```
@@ -90,6 +88,7 @@ metrics.setLatencyMs(320);
 metrics.setModelVersion("gpt-4o-2024-08-06");
 
 CommitRequest commitRequest = CommitRequest.builder()
+    .idempotencyKey("commit-" + UUID.randomUUID())
     .actual(new Amount(Unit.USD_MICROCENTS, 3200L))
     .metrics(metrics)
     .metadata(Map.of("request_id", "req-abc-123"))
@@ -105,6 +104,7 @@ If work is cancelled or fails before producing any usage:
 
 ```java
 ReleaseRequest releaseRequest = ReleaseRequest.builder()
+    .idempotencyKey("release-" + UUID.randomUUID())
     .reason("Task cancelled by user")
     .build();
 
@@ -150,11 +150,8 @@ public class DocumentProcessor {
         }
 
         String reservationId = (String) reserveResponse.getBody().get("reservation_id");
-        String decision = (String) reserveResponse.getBody().get("decision");
-
-        if ("DENY".equals(decision)) {
-            return "Budget exhausted. Please try again later.";
-        }
+        // For non-dry-run reservations, a 2xx response means decision is ALLOW or ALLOW_WITH_CAPS.
+        // Insufficient budget returns 409 (handled above by !is2xx check).
 
         // 2. Execute
         try {
@@ -167,6 +164,7 @@ public class DocumentProcessor {
             commitMetrics.setTokensOutput(actualTokens);
 
             CommitRequest commit = CommitRequest.builder()
+                .idempotencyKey("commit-" + idempotencyKey)
                 .actual(new Amount(Unit.USD_MICROCENTS, (long) actualTokens * 10))
                 .metrics(commitMetrics)
                 .build();
@@ -178,6 +176,7 @@ public class DocumentProcessor {
             // 4. Release on failure
             cyclesClient.releaseReservation(reservationId,
                 ReleaseRequest.builder()
+                    .idempotencyKey("release-" + idempotencyKey)
                     .reason("Processing failed: " + e.getMessage())
                     .build());
             throw e;
@@ -192,6 +191,7 @@ Check budget availability without creating a reservation:
 
 ```java
 DecisionRequest decisionRequest = DecisionRequest.builder()
+    .idempotencyKey("decide-" + UUID.randomUUID())
     .subject(Subject.builder()
         .tenant("acme")
         .workspace("production")
