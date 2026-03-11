@@ -1,0 +1,187 @@
+# Commit Overage Policies in Cycles: REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT
+
+When actual usage differs from the reserved estimate, the system needs a policy for what to do.
+
+If actual is less than reserved, the unused remainder is released automatically. That is straightforward.
+
+But if actual is more than reserved, the system has a decision to make.
+
+That is what commit overage policies control.
+
+## The three policies
+
+Cycles defines three overage policies, set at reservation time (or on events):
+
+- **REJECT** — refuse the commit if actual exceeds reserved
+- **ALLOW_IF_AVAILABLE** — allow if remaining budget can cover the difference
+- **ALLOW_WITH_OVERDRAFT** — allow and create debt if necessary
+
+Each policy makes a different tradeoff between ledger accuracy and budget strictness.
+
+## REJECT (default)
+
+REJECT is the simplest and strictest policy.
+
+If `actual > reserved`, the commit is rejected with `409 BUDGET_EXCEEDED`.
+
+### When REJECT is right
+
+- the system can predict costs well enough to reserve sufficient room
+- hard budget enforcement is more important than ledger completeness
+- a 10–20% buffer on estimates is acceptable
+- rejected commits will be retried with a new reservation
+
+### The risk with REJECT
+
+If the action already happened — the model call returned, the tool executed — rejecting the commit creates an unaccounted gap.
+
+The work occurred but is not recorded in the budget ledger. Budget appears more available than it really is.
+
+This is why the spec recommends adding a 10–20% buffer to estimates when using REJECT.
+
+### Practical guidance
+
+- Use REJECT when estimates are reliable
+- Add estimation buffers to avoid frequent rejections
+- Monitor how often commits are rejected — high rejection rates signal estimation problems
+
+## ALLOW_IF_AVAILABLE
+
+ALLOW_IF_AVAILABLE checks whether remaining budget across all affected scopes can cover the delta between actual and reserved.
+
+If yes: the commit succeeds and the delta is charged atomically.
+
+If no: the commit is rejected with `409 BUDGET_EXCEEDED`.
+
+### When ALLOW_IF_AVAILABLE is right
+
+- the system wants to allow modest overages when budget permits
+- strict estimation is difficult
+- the system should never create debt
+- budget accuracy matters but some flexibility is acceptable
+
+### How it works
+
+Suppose a reservation held 100 units and actual usage was 130 units.
+
+The delta is 30 units.
+
+The server checks whether all affected scopes have at least 30 units of remaining budget (beyond what is already reserved).
+
+If yes: commit succeeds, 130 is charged, the reservation's remaining 0 is released (since actual > reserved, nothing is left to release, but the delta is covered by remaining budget).
+
+If no: commit is rejected.
+
+### The key property
+
+ALLOW_IF_AVAILABLE never creates debt. The budget either supports the overage or it does not.
+
+This makes it a good middle ground between strict rejection and overdraft.
+
+## ALLOW_WITH_OVERDRAFT
+
+ALLOW_WITH_OVERDRAFT allows the commit to succeed even when remaining budget cannot cover the delta.
+
+Instead, the overage is recorded as debt against the scope.
+
+### When ALLOW_WITH_OVERDRAFT is right
+
+- the action has already happened and the ledger must reflect it
+- concurrent execution makes strict pre-commit enforcement impractical
+- accurate accounting is more important than strict budget boundaries
+- the team has processes to reconcile debt afterward
+
+### How it works
+
+Suppose a reservation held 100 units and actual usage was 150 units.
+
+Remaining budget on the scope is only 20 units.
+
+With ALLOW_WITH_OVERDRAFT:
+
+1. The server checks: `(current_debt + delta) <= overdraft_limit`
+2. If yes: the commit succeeds, the delta becomes debt, remaining goes negative
+3. If no: the commit is rejected with `409 OVERDRAFT_LIMIT_EXCEEDED`
+
+### The overdraft limit
+
+The `overdraft_limit` is set per scope (outside the v0 protocol — typically via admin/operator configuration).
+
+It defines the maximum debt a scope can carry.
+
+If no overdraft_limit is set (or it is zero), ALLOW_WITH_OVERDRAFT behaves like ALLOW_IF_AVAILABLE.
+
+## How to choose
+
+A simple decision framework:
+
+### Use REJECT when:
+- estimates are reliable
+- you prefer hard stops over partial accounting
+- you can add estimation buffers
+- you have retry logic for rejected commits
+
+### Use ALLOW_IF_AVAILABLE when:
+- estimates sometimes miss
+- you want flexibility without debt
+- remaining budget is the natural boundary
+- you do not want to set up overdraft monitoring
+
+### Use ALLOW_WITH_OVERDRAFT when:
+- the work has already happened and must be accounted for
+- concurrent execution makes exact pre-commitment impractical
+- ledger accuracy is a hard requirement
+- you have operator processes for debt reconciliation
+
+## Overage policies on events
+
+Events (`POST /v1/events`) also support all three overage policies with the same semantics.
+
+Since events do not have a preceding reservation, the "overage" is simply whether the event amount exceeds available budget for the scope.
+
+- REJECT: event is rejected if budget is insufficient
+- ALLOW_IF_AVAILABLE: event is applied if budget can cover it
+- ALLOW_WITH_OVERDRAFT: event is applied with debt if necessary
+
+## Overage policies and concurrency
+
+REJECT and ALLOW_IF_AVAILABLE are atomic per commit.
+
+ALLOW_WITH_OVERDRAFT is also atomic per individual commit, but the overdraft limit check is not atomic across concurrent commits. Multiple concurrent commits may each individually pass the check but collectively push debt past the limit.
+
+This is by design. All commits represent work that already happened. The scope enters over-limit state and blocks future reservations until debt is repaid.
+
+## A practical rollout
+
+A safe rollout path for overage policies:
+
+### Phase 1: Start with REJECT
+
+Use REJECT with 15–20% estimation buffers. Monitor commit rejection rates.
+
+### Phase 2: Move to ALLOW_IF_AVAILABLE for high-variance actions
+
+For actions where estimation is difficult, switch to ALLOW_IF_AVAILABLE. This reduces rejected commits while maintaining budget boundaries.
+
+### Phase 3: Use ALLOW_WITH_OVERDRAFT for must-record actions
+
+For actions where the work has already happened (external API calls, side-effecting operations), use ALLOW_WITH_OVERDRAFT. Set up overdraft monitoring and debt reconciliation processes.
+
+## Summary
+
+The three commit overage policies give teams control over the tradeoff between budget strictness and ledger accuracy:
+
+- **REJECT** — strictest, may create unaccounted gaps
+- **ALLOW_IF_AVAILABLE** — flexible, no debt, atomic
+- **ALLOW_WITH_OVERDRAFT** — most accurate, creates debt, requires reconciliation
+
+Most systems benefit from using different policies for different action classes: REJECT for well-estimated actions, ALLOW_IF_AVAILABLE for variable ones, and ALLOW_WITH_OVERDRAFT for must-record side effects.
+
+## Next steps
+
+To explore the Cycles stack:
+
+- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
+- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
+- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
+- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
