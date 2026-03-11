@@ -1,0 +1,354 @@
+# How to Add Hard Budget Limits to Spring AI with Cycles
+
+Most AI applications start with observability.
+
+You log model usage.  
+You watch provider dashboards.  
+You add alerts for abnormal spend.  
+You maybe enforce a few request-level limits.
+
+That is useful.
+
+But once your system starts running autonomous workflows, tool-calling loops, retries, or multi-step agent behavior, observability alone stops being enough.
+
+At that point, you need a control layer that can decide **before execution** whether work is allowed to proceed.
+
+That is where Cycles fits.
+
+## The problem
+
+In a simple application, one request often maps to one model call.
+
+In a real Spring AI system, one user action can become:
+
+- multiple LLM calls
+- retrieval steps
+- tool invocations
+- retries on transient failure
+- multi-step planning
+- background follow-up work
+
+A provider dashboard can show this after the fact.
+
+A rate limiter can slow it down.
+
+Neither one guarantees that the workflow stays inside a hard budget boundary.
+
+## What Cycles adds
+
+Cycles adds a deterministic budget-control pattern around autonomous work:
+
+1. **Reserve exposure before execution**
+2. **Execute the model or tool call**
+3. **Commit actual usage or release the remainder**
+
+This turns budget enforcement into part of the runtime path, instead of a reporting function that happens later.
+
+In a Spring AI application, that usually means guarding:
+
+- model invocations
+- tool-calling steps
+- agent loop iterations
+- workflow branches
+- high-cost external actions
+
+## The mental model
+
+Think of Cycles as a **budget authority for autonomous execution**.
+
+Spring AI handles prompting, model interaction, retrieval, and orchestration.
+
+Cycles handles:
+
+- whether an action is allowed to proceed
+- how much budget is reserved for it
+- how actual usage is reconciled
+- how limits apply across scopes such as tenant, application, workflow, or run
+
+The goal is not to replace Spring AI.
+
+The goal is to add hard budget control to it.
+
+## Where to integrate in a Spring AI application
+
+There are several natural integration points.
+
+### 1. Before a model call
+
+Before invoking a chat model or completion model, reserve budget for the expected exposure.
+
+This is the cleanest and most common place to start.
+
+### 2. Before a tool invocation
+
+If tools can create meaningful cost or side effects, reserve budget before the tool runs.
+
+This matters for:
+
+- external APIs
+- search services
+- database writes
+- email dispatch
+- ticket creation
+- payment actions
+
+### 3. Around an agent loop iteration
+
+If your application runs iterative planning or autonomous loops, reserve budget per step or per iteration.
+
+That gives you a bounded envelope around recursive behavior.
+
+### 4. Around an entire workflow or run
+
+You can also reserve and track at a higher scope:
+
+- per request
+- per workflow
+- per run
+- per tenant
+- per environment
+
+In practice, many systems use more than one level.
+
+For example:
+
+- tenant daily budget
+- workflow execution budget
+- model-call budget per step
+
+## A simple integration flow
+
+At a high level, the application flow looks like this:
+
+### Step 1: Identify the scope
+
+Determine which budget scopes apply.
+
+Examples:
+
+- tenant: `tenant/acme`
+- application: `app/support-bot`
+- workflow: `workflow/refund-assistant`
+- run: `run/12345`
+
+### Step 2: Estimate required exposure
+
+Before calling the model or tool, estimate how much budget the step may need.
+
+This does not need to be perfect.  
+It just needs to be sufficient to reserve bounded room to act.
+
+### Step 3: Reserve budget
+
+Call Cycles to reserve budget for the step.
+
+If reservation succeeds, continue.
+
+If reservation fails, decide how to degrade:
+
+- stop the action
+- return a fallback response
+- switch to a smaller model
+- skip expensive tools
+- move to a lower-cost workflow path
+
+### Step 4: Execute the step
+
+Run the Spring AI call, tool invocation, or workflow action.
+
+### Step 5: Commit actual usage
+
+Once actual usage is known, commit the real amount consumed.
+
+### Step 6: Release unused remainder
+
+If the reserved estimate was larger than the actual usage, release the unused portion back to the budget pool.
+
+## Example pattern
+
+A simplified application flow might look like this:
+
+1. user asks a question
+2. app selects tenant and workflow scope
+3. app reserves 100 units before invoking the chat model
+4. Spring AI executes the model call
+5. actual usage comes back as 68 units
+6. app commits 68
+7. remaining 32 is released
+
+If the next step wants to invoke an external tool, it goes through the same pattern again.
+
+This is how hard budget boundaries become part of runtime execution.
+
+## Why this works better than post-hoc limits
+
+Many teams already have some form of usage tracking.
+
+That is not the same as pre-execution budget control.
+
+Post-hoc tracking tells you:
+
+> what happened after the work completed
+
+Cycles tells you:
+
+> whether the work is allowed to begin, how much room it has, and what it actually consumed afterward
+
+That distinction becomes critical in long-running or multi-step systems.
+
+Without it, you are often reacting after the expensive part has already happened.
+
+## A common first use case
+
+One of the best first integrations is:
+
+**guard every Spring AI model call with a Cycles reservation**
+
+Why start there?
+
+Because it gives you immediate value with minimal architecture change.
+
+You can begin by enforcing:
+
+- per-tenant budget
+- per-workflow budget
+- optional per-run budget
+
+Then expand to:
+
+- tool invocations
+- retrieval steps
+- external side-effecting actions
+
+This staged rollout works well because you do not need to boil the ocean on day one.
+
+## Shadow mode first
+
+Hard enforcement is powerful, but many teams should begin in shadow mode.
+
+That means:
+
+- estimate and reserve as if policy were active
+- observe what would have been allowed or denied
+- compare expected vs actual usage
+- tune budgets and thresholds
+- move to enforcement once the model is calibrated
+
+This is especially useful for existing Spring AI applications, where you want to understand normal usage patterns before introducing hard stops.
+
+## Handling failure correctly
+
+A real integration must handle more than the happy path.
+
+That includes:
+
+- retries
+- worker crashes
+- partial completion
+- timeouts
+- duplicate requests
+
+This is why reserve, commit, and release are separate lifecycle events.
+
+The application should not assume execution is always synchronous or clean.
+
+A production integration should be designed so that:
+
+- retries are idempotent
+- duplicate actions do not double-spend
+- incomplete work can be reconciled
+- unused reservations do not leak forever
+
+That is where Cycles adds real operational value beyond simple counters or provider dashboards.
+
+## What to budget first
+
+If you are integrating Cycles into Spring AI for the first time, start with the highest-value, easiest-to-measure boundaries.
+
+A good initial rollout is:
+
+- model calls
+- tool invocations with external cost
+- tenant-level daily or monthly budgets
+- per-workflow execution envelopes
+
+Do not start by trying to model every possible action in your system.
+
+Start with the actions most likely to create budget surprises.
+
+## Good first policies
+
+Examples of useful first policies include:
+
+- hard cap per tenant
+- hard cap per workflow run
+- shadow evaluation for new workflows
+- downgrade path when reservation fails
+- tool restrictions when budget is low
+- per-environment limits for staging vs production
+
+These are practical controls that map well to real incidents.
+
+## Why this matters for Spring AI teams
+
+Spring AI makes it easier to build AI applications on the JVM.
+
+As those applications become more autonomous, they need a way to bound total exposure, not just log it.
+
+That is the role Cycles plays.
+
+It brings:
+
+- pre-execution budget checks
+- retry-safe accounting
+- multi-scope budget enforcement
+- support for shadow mode and progressive rollout
+- a clean reserve → commit / release lifecycle
+
+In other words, it gives Spring AI applications a way to move from “watching usage” to **governing execution**.
+
+## Practical rollout plan
+
+A simple rollout path looks like this:
+
+### Phase 1: Observe
+Instrument model calls and estimate reservations in shadow mode.
+
+### Phase 2: Guard core model usage
+Add reservation and commit around the most expensive model calls.
+
+### Phase 3: Expand to tools
+Guard tool invocations and side-effecting actions.
+
+### Phase 4: Add hierarchical budgets
+Apply policies at tenant, application, workflow, and run scopes.
+
+### Phase 5: Enforce degradation paths
+When reservations fail, downgrade or reroute instead of simply crashing.
+
+That sequence keeps adoption manageable.
+
+## Summary
+
+If you are building with Spring AI, budget control should not live only in dashboards, billing pages, or after-the-fact alerts.
+
+It should be part of the execution path.
+
+Cycles makes that possible by introducing a deterministic runtime pattern:
+
+- reserve before execution
+- commit actual usage afterward
+- release unused remainder
+- enforce policy across scopes
+- stay safe under retries and concurrency
+
+That is how Spring AI systems move from useful prototypes to governed production runtimes.
+
+## Next steps
+
+To explore the Cycles stack:
+
+- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
+- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
+- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
+- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
