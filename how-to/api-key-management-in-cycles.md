@@ -34,11 +34,14 @@ API keys are managed through the [Cycles Admin](https://github.com/runcycles/cyc
 
 ```bash
 # Create a new API key for a tenant
-curl -X POST http://localhost:7879/api/v1/api-keys \
+curl -X POST http://localhost:7979/v1/admin/api-keys \
   -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
   -d '{
-    "tenant": "acme",
-    "description": "Production chatbot key"
+    "tenant_id": "acme",
+    "name": "production-chatbot",
+    "description": "Production chatbot key",
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read"]
   }'
 ```
 
@@ -46,11 +49,13 @@ Response:
 
 ```json
 {
-  "api_key": "cyc_k1_abc123...",
-  "tenant": "acme",
-  "status": "ACTIVE",
+  "key_id": "key_abc123...",
+  "key_secret": "cyc_live_abc123...",
+  "key_prefix": "cyc_live_abc12",
+  "tenant_id": "acme",
+  "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read"],
   "created_at": "2026-03-01T00:00:00Z",
-  "description": "Production chatbot key"
+  "expires_at": "2026-05-30T00:00:00Z"
 }
 ```
 
@@ -78,7 +83,7 @@ Pass the key in the `X-Cycles-API-Key` header:
 ```bash
 curl -X POST http://localhost:7878/v1/reservations \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: cyc_k1_abc123..." \
+  -H "X-Cycles-API-Key: cyc_live_abc123..." \
   -d '{ ... }'
 ```
 
@@ -87,7 +92,8 @@ curl -X POST http://localhost:7878/v1/reservations \
 Revoke a key to immediately block all requests using it:
 
 ```bash
-curl -X POST http://localhost:7879/api/v1/api-keys/cyc_k1_abc123.../revoke
+curl -X DELETE http://localhost:7979/v1/admin/api-keys/key_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
 ```
 
 Revocation is immediate. Any in-flight requests using the revoked key will fail on their next call to the Cycles server. Active reservations created with the revoked key remain valid until they expire or are committed/released.
@@ -134,7 +140,7 @@ cycles:
 
 # Bad
 cycles:
-  api-key: cyc_k1_abc123...
+  api-key: cyc_live_abc123...
 ```
 
 ### Minimal key scope

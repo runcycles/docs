@@ -170,8 +170,76 @@ Quick reference for setting all properties via environment variables:
 | `SERVER_PORT` | `server.port` |
 | `CYCLES_EXPIRY_INTERVAL_MS` | `cycles.expiry.interval-ms` |
 
+---
+
+## Admin Server Configuration
+
+The Cycles Admin Server (`cycles-admin-service`) is a separate service that manages tenants, API keys, budgets, and policies. It runs on port 7979 by default and shares the same Redis instance as the Cycles Server.
+
+### Admin server properties
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `server.port` | `7979` | `SERVER_PORT` | HTTP port the admin server listens on |
+| `admin.api-key` | (empty) | `ADMIN_API_KEY` | Master admin key for `X-Admin-API-Key` header |
+| `redis.host` | (required) | `REDIS_HOST` | Redis server hostname |
+| `redis.port` | (required) | `REDIS_PORT` | Redis server port |
+| `redis.password` | (required) | `REDIS_PASSWORD` | Redis password (set empty string if none) |
+
+### Admin authentication
+
+The admin server uses two authentication schemes:
+
+| Header | Variable | Purpose |
+|---|---|---|
+| `X-Admin-API-Key` | `ADMIN_API_KEY` | System-level operations (tenant CRUD, API key management, audit logs) |
+| `X-Cycles-API-Key` | — | Tenant-scoped operations (budget ledgers, policies, reservations) |
+
+### Admin server full configuration example
+
+```properties
+# Server
+server.port=7979
+spring.application.name=cycles-admin-service
+
+# Redis (same instance as cycles-server)
+redis.host=${REDIS_HOST}
+redis.port=${REDIS_PORT}
+redis.password=${REDIS_PASSWORD}
+
+# Admin key
+admin.api-key=${ADMIN_API_KEY:}
+
+# JSON
+spring.jackson.serialization.write-dates-as-timestamps=false
+spring.jackson.deserialization.fail-on-unknown-properties=false
+spring.jackson.default-property-inclusion=non_null
+
+# Logging
+logging.level.root=INFO
+logging.level.io.runcycles.admin=DEBUG
+
+# Swagger
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+
+# Actuator
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=when-authorized
+```
+
+### Security note
+
+The admin server exposes powerful management operations. In production:
+
+- Run the admin server on an internal network not accessible to application traffic
+- Use a strong, randomly generated `ADMIN_API_KEY`
+- Consider disabling Swagger UI (`springdoc.swagger-ui.enabled=false`)
+
 ## Next steps
 
+- [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — end-to-end deployment guide
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deployment guide
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — system design
 - [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — client-side properties
