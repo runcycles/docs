@@ -42,14 +42,14 @@ class DocumentProcessorTest {
             "expires_at_ms", System.currentTimeMillis() + 60000
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.ok(reserveBody));
+            .thenReturn(CyclesResponse.success(201, reserveBody));
 
         // Mock commit response
         Map<String, Object> commitBody = Map.of(
             "status", "COMMITTED"
         );
         when(cyclesClient.commitReservation(eq("res-123"), any()))
-            .thenReturn(CyclesResponse.ok(commitBody));
+            .thenReturn(CyclesResponse.success(200, commitBody));
 
         String result = processor.processDocument("doc-1", "content");
 
@@ -64,7 +64,7 @@ class DocumentProcessorTest {
             "decision", "DENY"
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.ok(denyBody));
+            .thenReturn(CyclesResponse.success(200, denyBody));
 
         String result = processor.processDocument("doc-1", "content");
 
@@ -79,7 +79,7 @@ class DocumentProcessorTest {
             "decision", "ALLOW"
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.ok(reserveBody));
+            .thenReturn(CyclesResponse.success(201, reserveBody));
 
         // Simulate a processing error
         doThrow(new RuntimeException("LLM error"))
@@ -120,7 +120,7 @@ class CyclesIntegrationTest {
             "reserved", Map.of("amount", 5000, "unit", "USD_MICROCENTS")
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.ok(201, reserveBody));
+            .thenReturn(CyclesResponse.success(201, reserveBody));
 
         // Mock a successful commit
         Map<String, Object> commitBody = Map.of(
@@ -128,7 +128,7 @@ class CyclesIntegrationTest {
             "charged", Map.of("amount", 3200, "unit", "USD_MICROCENTS")
         );
         when(cyclesClient.commitReservation(any(), any()))
-            .thenReturn(CyclesResponse.ok(commitBody));
+            .thenReturn(CyclesResponse.success(200, commitBody));
 
         // Call the annotated method — the aspect handles the lifecycle
         String result = llmService.summarize("test input");
@@ -147,7 +147,7 @@ class CyclesIntegrationTest {
             "message", "Insufficient budget"
         );
         when(cyclesClient.createReservation(any()))
-            .thenReturn(CyclesResponse.error(409, denyBody));
+            .thenReturn(CyclesResponse.httpError(409, "Insufficient budget", denyBody));
 
         assertThrows(CyclesProtocolException.class,
             () -> llmService.summarize("test input"));
@@ -186,8 +186,8 @@ class FullIntegrationTest {
         ReservationCreateRequest request = ReservationCreateRequest.builder()
             .idempotencyKey("integration-test-001")
             .subject(Subject.builder().tenant("test-tenant").build())
-            .action(Action.builder().kind("test").name("integration").build())
-            .estimate(new Amount(100, Unit.USD_MICROCENTS))
+            .action(new Action("test", "integration", null))
+            .estimate(new Amount(Unit.USD_MICROCENTS, 100L))
             .build();
 
         CyclesResponse<Map<String, Object>> response =

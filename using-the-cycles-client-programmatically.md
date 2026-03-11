@@ -55,11 +55,8 @@ ReservationCreateRequest request = ReservationCreateRequest.builder()
         .workspace("production")
         .app("chatbot")
         .build())
-    .action(Action.builder()
-        .kind("llm.completion")
-        .name("gpt-4o")
-        .build())
-    .estimate(new Amount(5000, Unit.USD_MICROCENTS))
+    .action(new Action("llm.completion", "gpt-4o", null))
+    .estimate(new Amount(Unit.USD_MICROCENTS, 5000L))
     .ttlMs(60000L)
     .overagePolicy(CommitOveragePolicy.REJECT)
     .build();
@@ -86,14 +83,15 @@ if ("DENY".equals(decision)) {
 ## Committing actual usage
 
 ```java
+CyclesMetrics metrics = new CyclesMetrics();
+metrics.setTokensInput(150);
+metrics.setTokensOutput(80);
+metrics.setLatencyMs(320);
+metrics.setModelVersion("gpt-4o-2024-08-06");
+
 CommitRequest commitRequest = CommitRequest.builder()
-    .actual(new Amount(3200, Unit.USD_MICROCENTS))
-    .metrics(CyclesMetrics.builder()
-        .tokensInput(150)
-        .tokensOutput(80)
-        .latencyMs(320)
-        .modelVersion("gpt-4o-2024-08-06")
-        .build())
+    .actual(new Amount(Unit.USD_MICROCENTS, 3200L))
+    .metrics(metrics)
     .metadata(Map.of("request_id", "req-abc-123"))
     .build();
 
@@ -137,11 +135,8 @@ public class DocumentProcessor {
                 .workspace("production")
                 .app("doc-processor")
                 .build())
-            .action(Action.builder()
-                .kind("llm.completion")
-                .name("gpt-4o")
-                .build())
-            .estimate(new Amount(estimatedTokens * 10, Unit.USD_MICROCENTS))
+            .action(new Action("llm.completion", "gpt-4o", null))
+            .estimate(new Amount(Unit.USD_MICROCENTS, (long) estimatedTokens * 10))
             .ttlMs(120000L)
             .overagePolicy(CommitOveragePolicy.ALLOW_IF_AVAILABLE)
             .build();
@@ -167,12 +162,13 @@ public class DocumentProcessor {
 
             // 3. Commit
             int actualTokens = countTokens(result);
+            CyclesMetrics commitMetrics = new CyclesMetrics();
+            commitMetrics.setTokensInput(estimatedTokens);
+            commitMetrics.setTokensOutput(actualTokens);
+
             CommitRequest commit = CommitRequest.builder()
-                .actual(new Amount(actualTokens * 10, Unit.USD_MICROCENTS))
-                .metrics(CyclesMetrics.builder()
-                    .tokensInput(estimatedTokens)
-                    .tokensOutput(actualTokens)
-                    .build())
+                .actual(new Amount(Unit.USD_MICROCENTS, (long) actualTokens * 10))
+                .metrics(commitMetrics)
                 .build();
 
             cyclesClient.commitReservation(reservationId, commit);
@@ -200,11 +196,8 @@ DecisionRequest decisionRequest = DecisionRequest.builder()
         .tenant("acme")
         .workspace("production")
         .build())
-    .action(Action.builder()
-        .kind("llm.completion")
-        .name("gpt-4o")
-        .build())
-    .estimate(new Amount(50000, Unit.USD_MICROCENTS))
+    .action(new Action("llm.completion", "gpt-4o", null))
+    .estimate(new Amount(Unit.USD_MICROCENTS, 50000L))
     .build();
 
 CyclesResponse<Map<String, Object>> decisionResponse = cyclesClient.decide(decisionRequest);
@@ -261,11 +254,8 @@ EventCreateRequest event = EventCreateRequest.builder()
         .tenant("acme")
         .workspace("production")
         .build())
-    .action(Action.builder()
-        .kind("search.api")
-        .name("google-search")
-        .build())
-    .actual(new Amount(1200, Unit.USD_MICROCENTS))
+    .action(new Action("search.api", "google-search", null))
+    .actual(new Amount(Unit.USD_MICROCENTS, 1200L))
     .build();
 
 cyclesClient.createEvent(event);

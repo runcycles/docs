@@ -153,12 +153,12 @@ The starter auto-configures the following beans, all with `@ConditionalOnMissing
 |---|---|---|
 | `cyclesWebClient` | `WebClient` | HTTP client with configured timeouts |
 | `cyclesClient` | `CyclesClient` | Protocol client (`DefaultCyclesClient`) |
-| `cyclesExpressionEvaluator` | `CyclesExpressionEvaluator` | SpEL evaluator |
+| `evaluator` | `CyclesExpressionEvaluator` | SpEL evaluator |
 | `cyclesRequestBuilderService` | `CyclesRequestBuilderService` | Builds protocol request bodies |
 | `cyclesValueResolutionService` | `CyclesValueResolutionService` | Resolves Subject field values |
-| `commitRetryEngine` | `CommitRetryEngine` | Handles commit retries (`InMemoryCommitRetryEngine`) |
+| `retryEngine` | `CommitRetryEngine` | Handles commit retries (`InMemoryCommitRetryEngine`) |
 | `cyclesLifecycleService` | `CyclesLifecycleService` | Orchestrates the full lifecycle |
-| `cyclesAspect` | `CyclesAspect` | AOP aspect for `@Cycles` annotation |
+| `aspect` | `CyclesAspect` | AOP aspect for `@Cycles` annotation |
 
 ### Overriding a bean
 

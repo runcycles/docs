@@ -113,10 +113,15 @@ management.endpoints.web.exposure.include=health,info,metrics,prometheus
 
 The server's security is configured in `SecurityConfig.java`. The following paths are public (no API key required):
 
-- `/swagger-ui/**` — Swagger UI
 - `/api-docs/**` — OpenAPI spec
-- `/actuator/health/**` — Health checks
+- `/swagger-ui/**` — Swagger UI
+- `/swagger-ui.html` — Swagger UI entry point
+- `/swagger-resources/**` — Swagger resource endpoints
 - `/v3/api-docs/**` — OpenAPI v3 spec
+- `/webjars/**` — WebJar resources
+- `/favicon.ico` — Favicon
+- `/.well-known/**` — Well-known endpoints
+- `/actuator/health` — Health check (exact path only, not sub-paths)
 
 All other paths require a valid `X-Cycles-API-Key` header.
 

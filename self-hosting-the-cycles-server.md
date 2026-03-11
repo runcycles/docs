@@ -10,7 +10,7 @@ The Cycles server is a Spring Boot application that enforces budget reservations
 
 ## Quick start with Docker Compose
 
-The fastest way to run the Cycles server locally:
+Create a `docker-compose.yml` to run the Cycles server with Redis:
 
 ```yaml
 # docker-compose.yml
@@ -31,7 +31,20 @@ services:
       - redis
 ```
 
+You will also need a `Dockerfile` in the `cycles-protocol-service` directory. A minimal example:
+
+```dockerfile
+FROM eclipse-temurin:21-jre-alpine
+COPY cycles-protocol-service-api/target/cycles-protocol-service-api-*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+Build and run:
+
 ```bash
+cd cycles-server/cycles-protocol-service
+mvn clean package -DskipTests
+cd ..
 docker compose up -d
 ```
 
