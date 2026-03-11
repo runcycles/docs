@@ -7,47 +7,49 @@ This page describes the components, how they interact, and where each piece runs
 ## System overview
 
 ```
-┌─────────────────────────────────────┐
-│         Your Application            │
-│                                     │
-│  ┌──────────────┐  ┌──────────────┐ │
-│  │  @Cycles     │  │ CyclesClient │ │
-│  │  annotation  │  │   (direct)   │ │
-│  └──────┬───────┘  └─────┬────────┘ │
-│         │                │          │
-│         ▼                ▼          │
-│  ┌──────────────────────────────┐   │
-│  │ Java Spring, Other bindings  │   │
-│  │     (Cycles Wire Protocol)   │   │
-│  └──────────────┬───────────────┘   │
-└─────────────────┼───────────────────┘
+┌──────────────────────────────────────┐
+│         Your Application             │
+│                                      │
+│  ┌──────────────┐  ┌──────────────┐  │
+│  │  @Cycles     │  │ CyclesClient │  │
+│  │  annotation  │  │   (direct)   │  │
+│  └──────┬───────┘  └─────┬────────┘  │
+│         │                │           │
+│         ▼                ▼           │
+│  ┌──────────────────────────────┐    │
+│  │ Java Spring, Other bindings  │    │
+│  │     (Cycles Wire Protocol)   │    │
+│  └──────────────┬───────────────┘    │
+└─────────────────┼────────────────────┘
                   │ HTTP (JSON)
-                  | Cycles Wire Protocol
                   │ X-Cycles-API-Key
                   ▼
-┌─────────────────────────────────────┐
-│         Cycles Server               │
-│    (cycles-protocol-service)        │
-│                                     │
-│  ┌────────────┐  ┌──────────────┐   │
-│  │ Controllers│  │ Auth Filter  │   │
-│  │ (REST API) │  │ (API Key)    │   │
-│  └─────┬──────┘  └──────────────┘   │
-│        │                            │
-│        ▼                            │
-│  ┌──────────────────────────────┐   │
-│  │ RedisReservationRepository   │   │
-│  │ (Lua scripts for atomicity)  │   │
-│  └──────────────┬───────────────┘   │
-└─────────────────┼───────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│            Redis 7+                 │
-│  (budget state, reservations,       │
-│   balances, scope counters)         │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────┐  ┌─────────────────────────────────────┐
+│      Cycles Server (port 7878)      │  │   Cycles Admin Server (port 7979)  │
+│     (runtime budget enforcement)    │  │   (tenant, key, budget management) │
+│                                     │  │                                     │
+│  ┌────────────┐  ┌──────────────┐   │  │  ┌──────────────────────────────┐   │
+│  │ Controllers│  │ Auth Filter  │   │  │  │ Tenant CRUD, API Key Mgmt,  │   │
+│  │ (REST API) │  │ (API Key)    │   │  │  │ Budget Ledgers, Policies,   │   │
+│  └─────┬──────┘  └──────────────┘   │  │  │ Audit Logs, Auth Validation │   │
+│        │                            │  │  └──────────────┬───────────────┘   │
+│        ▼                            │  │                 │                   │
+│  ┌──────────────────────────────┐   │  └─────────────────┼───────────────────┘
+│  │ RedisReservationRepository   │   │                    │
+│  │ (Lua scripts for atomicity)  │   │                    │
+│  └──────────────┬───────────────┘   │                    │
+└─────────────────┼───────────────────┘                    │
+                  │                                        │
+                  └──────────────┬──────────────────────────┘
+                                ▼
+              ┌─────────────────────────────────────┐
+              │            Redis 7+                 │
+              │  (budget state, reservations,       │
+              │   tenants, API keys, audit logs)    │
+              └─────────────────────────────────────┘
 ```
+
+Your application talks to the **Cycles Server** (port 7878) at runtime. The **Cycles Admin Server** (port 7979) is the management plane where you create tenants, generate API keys, and configure budget ledgers. Both servers share the same Redis instance.
 
 ## Components
 
@@ -100,6 +102,44 @@ Six Lua scripts handle the core operations:
 | `extend.lua` | Extend reservation TTL |
 | `event.lua` | Record direct debit without reservation |
 | `expire.lua` | Mark expired reservations and release their budget |
+
+### Cycles Admin Server
+
+The management plane for Cycles. It runs as a separate Spring Boot 3.5 service on port 7979 and shares the same Redis instance as the Cycles Server.
+
+**What it does:**
+
+- Manages tenants (create, list, update, suspend, close)
+- Creates and revokes API keys with granular permissions
+- Creates budget ledgers and handles funding operations (credit, debit, reset, repay debt)
+- Defines policies (caps, rate limits, TTL overrides) matched by scope patterns
+- Validates API keys (used by the Cycles Server for authentication)
+- Maintains an audit log of all administrative operations
+
+**Modules:**
+
+| Module | Purpose |
+|---|---|
+| `cycles-admin-service-api` | REST controllers, auth interceptor, Spring Boot app |
+| `cycles-admin-service-data` | Redis repositories, key service |
+| `cycles-admin-service-model` | Shared domain models and DTOs |
+
+**Authentication:** The admin server uses two auth schemes:
+
+| Header | Purpose |
+|---|---|
+| `X-Admin-API-Key` | System administration (tenant/key management, audit) |
+| `X-Cycles-API-Key` | Tenant-scoped operations (budgets, policies, reservations) |
+
+**Why a separate server:**
+
+Separating the management plane from the runtime enforcement plane lets you:
+
+- Run the admin server in a restricted network (internal only) while the Cycles Server is accessible to applications
+- Scale the enforcement server independently from the admin server
+- Apply different access controls to management vs runtime operations
+
+See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-admin) for the full API reference.
 
 ### Cycles Spring Boot Starter
 
@@ -216,25 +256,28 @@ A typical deployment:
      └──────┬──────┘             │
             │                    │
             ▼                    ▼
-     ┌──────────────────────────────┐
-     │       Cycles Server          │
-     │    (one or more instances)   │
-     └──────────────┬───────────────┘
-                    │
-                    ▼
-     ┌──────────────────────────────┐
-     │         Redis 7+             │
-     │   (single instance or        │
-     │    Redis Cluster)            │
-     └──────────────────────────────┘
+     ┌──────────────────────────────┐      ┌──────────────────────────┐
+     │       Cycles Server          │      │   Cycles Admin Server    │
+     │    (one or more instances)   │      │   (internal network)     │
+     │         port 7878            │      │      port 7979           │
+     └──────────────┬───────────────┘      └────────────┬─────────────┘
+                    │                                   │
+                    └─────────────┬──────────────────────┘
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │         Redis 7+             │
+                  │   (single instance or        │
+                  │    Redis Cluster)            │
+                  └──────────────────────────────┘
 ```
 
-Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless.
+Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines.
 
 Non-Spring clients (Python, Node.js, Go) can use the protocol directly via HTTP — the Spring Boot Starter is a convenience layer, not a requirement.
 
 ## Next steps
 
-- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance
+- [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
+- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
 - [API Reference](/protocol/api-reference-for-the-cycles-protocol) — endpoint details with curl examples
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app

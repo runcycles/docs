@@ -15,6 +15,7 @@ export default defineConfig({
         text: 'Quickstart',
         items: [
           { text: 'Start Here', link: '/' },
+          { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
           { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
           { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
           { text: 'Spring Boot Starter', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },

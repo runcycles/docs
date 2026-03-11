@@ -38,31 +38,54 @@ All three must pass for the reservation to succeed.
 
 ## Setting budgets
 
-Budget allocation is managed through the [Cycles Admin](https://github.com/runcycles/cycles-server-admin) interface or directly via the Redis data store.
+Budget allocation is managed through the [Cycles Admin Server](https://github.com/runcycles/cycles-server-admin) API (port 7979 by default). The admin server and the runtime Cycles server share the same Redis instance.
 
-### Using Cycles Admin
+### Using the Cycles Admin API
 
-Cycles Admin provides a web UI and API for managing budget allocations:
+Create budget ledgers and fund them via the admin API. Budget operations require a tenant-scoped API key (`X-Cycles-API-Key`):
 
 ```bash
-# Set tenant budget
-curl -X POST http://localhost:7879/api/v1/budgets \
+# Create a tenant budget ledger
+curl -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme",
-    "allocated": 1000000,
-    "unit": "USD_MICROCENTS"
+    "unit": "USD_MICROCENTS",
+    "allocated": 1000000
   }'
 
-# Set workspace budget within that tenant
-curl -X POST http://localhost:7879/api/v1/budgets \
+# Fund the budget
+curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "CREDIT",
+    "amount": 1000000,
+    "idempotency_key": "fund-acme-001"
+  }'
+
+# Create a workspace budget within that tenant
+curl -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme/workspace:production",
-    "allocated": 500000,
-    "unit": "USD_MICROCENTS"
+    "unit": "USD_MICROCENTS",
+    "allocated": 500000
+  }'
+
+curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:production/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "CREDIT",
+    "amount": 500000,
+    "idempotency_key": "fund-acme-prod-001"
   }'
 ```
+
+> **Note:** Tenants and API keys must be created first using the admin key (`X-Admin-API-Key`). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
 
 ### Budget hierarchy
 
@@ -150,18 +173,36 @@ Decrease the `allocated` value. If the new value is less than `spent + reserved`
 
 ### Resetting budgets
 
-To reset a scope for a new billing period:
+To reset a scope for a new billing period, use the `RESET` funding operation:
 
-1. Set `spent` back to 0
-2. Set `reserved` back to 0 (release any active reservations first)
-3. Set `allocated` to the new period's budget
+```bash
+curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "RESET",
+    "amount": 1000000,
+    "idempotency_key": "reset-march-2026",
+    "reason": "Monthly budget reset"
+  }'
+```
+
+`RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Release any active reservations first to avoid unexpected budget pressure.
 
 ### Funding after overdraft
 
-If a scope has accumulated debt through `ALLOW_WITH_OVERDRAFT` commits:
+If a scope has accumulated debt through `ALLOW_WITH_OVERDRAFT` commits, repay it:
 
-1. Increase `allocated` to cover the debt
-2. Or explicitly reset `debt` to 0 after external reconciliation
+```bash
+curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "REPAY_DEBT",
+    "amount": 500000,
+    "idempotency_key": "repay-001"
+  }'
+```
 
 While `debt > 0`, new reservations against that scope are blocked with `DEBT_OUTSTANDING`.
 

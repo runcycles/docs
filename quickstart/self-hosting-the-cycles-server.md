@@ -2,6 +2,8 @@
 
 The Cycles server is a Spring Boot application that enforces budget reservations backed by Redis. This guide covers how to run it locally, with Docker, and in production.
 
+> **Looking for the full deployment walkthrough?** See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for an end-to-end guide that covers the admin server, tenant setup, API key creation, budget allocation, and verification — everything you need from zero to a working deployment.
+
 ## Prerequisites
 
 - **Java 21+** (for running from source)
@@ -216,22 +218,24 @@ For higher throughput:
 
 ## Verifying your deployment
 
-After starting the server, verify the full lifecycle works:
+After starting the server, verify the full lifecycle works. You need an API key and a budget already configured via the [Cycles Admin Server](/quickstart/deploying-the-full-cycles-stack):
 
 ```bash
-# Create a reservation
+# Create a reservation (requires a valid API key and budget for the tenant scope)
 curl -s -X POST http://localhost:7878/v1/reservations \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: your-api-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "idempotency_key": "test-001",
-    "subject": { "tenant": "acme" },
+    "subject": { "tenant": "acme-corp" },
     "action": { "kind": "test", "name": "verify" },
     "estimate": { "amount": 100, "unit": "USD_MICROCENTS" }
   }'
 ```
 
-If the server is configured correctly, you will receive a JSON response with a `reservation_id` and `decision`.
+If the server is configured correctly, you will receive a JSON response with a `reservation_id` and `"decision": "ALLOW"`.
+
+If you get `BUDGET_EXCEEDED`, you need to create a budget via the admin server first. If you get `UNAUTHORIZED`, verify your API key was created correctly. See the [full stack deployment guide](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
 
 ## Next steps
 
