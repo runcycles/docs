@@ -304,6 +304,6 @@ response.getErrorMessage(); // error message (if error)
 
 ## Next steps
 
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — annotation-based approach
-- [API Reference](/api-reference-for-the-cycles-protocol) — full endpoint documentation
-- [Error Handling Patterns](/error-handling-patterns-in-cycles-client-code) — handling exceptions in client code
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation-based approach
+- [API Reference](/protocol/api-reference-for-the-cycles-protocol) — full endpoint documentation
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling exceptions in client code

@@ -262,6 +262,6 @@ Check for typos in method names, property paths, or operator usage. SpEL follows
 
 ## Next steps
 
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — annotation usage
-- [Client Configuration Reference](/client-configuration-reference-for-cycles-spring-boot-starter) — all configuration properties
-- [Error Handling Patterns](/error-handling-patterns-in-cycles-client-code) — handling evaluation failures
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation usage
+- [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — all configuration properties
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling evaluation failures

@@ -235,6 +235,6 @@ void testNullWhenNoContext() {
 
 ## Next steps
 
-- [Client Configuration Reference](/client-configuration-reference-for-cycles-spring-boot-starter) — all config properties and resolution order
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — annotation usage
-- [Testing with Cycles](/testing-with-cycles) — testing resolvers and annotations
+- [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — all config properties and resolution order
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation usage
+- [Testing with Cycles](/how-to/testing-with-cycles) — testing resolvers and annotations

@@ -235,6 +235,6 @@ If the server is configured correctly, you will receive a JSON response with a `
 
 ## Next steps
 
-- [API Reference](/api-reference-for-the-cycles-protocol) — full endpoint documentation with examples
-- [Server Configuration Reference](/server-configuration-reference-for-cycles) — all configuration properties
-- [Architecture Overview](/architecture-overview-how-cycles-fits-together) — how the components fit together
+- [API Reference](/protocol/api-reference-for-the-cycles-protocol) — full endpoint documentation with examples
+- [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all configuration properties
+- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the components fit together

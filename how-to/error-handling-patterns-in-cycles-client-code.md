@@ -225,6 +225,6 @@ if (response.is2xx()) {
 
 ## Next steps
 
-- [Error Codes and Error Handling](/error-codes-and-error-handling-in-cycles) — protocol error code reference
-- [Degradation Paths](/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — strategies for handling budget constraints
-- [Using the Client Programmatically](/using-the-cycles-client-programmatically) — direct client usage patterns
+- [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference
+- [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — strategies for handling budget constraints
+- [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — direct client usage patterns

@@ -616,6 +616,6 @@ Idempotency is scoped per (tenant, endpoint, idempotency_key).
 
 ## Next steps
 
-- [Error Codes and Error Handling](/error-codes-and-error-handling-in-cycles) — detailed error code reference
-- [Self-Hosting the Cycles Server](/self-hosting-the-cycles-server) — deploy your own instance
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — client integration
+- [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — detailed error code reference
+- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — client integration

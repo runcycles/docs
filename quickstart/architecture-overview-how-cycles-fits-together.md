@@ -234,6 +234,6 @@ Non-Spring clients (Python, Node.js, Go) can use the protocol directly via HTTP 
 
 ## Next steps
 
-- [Self-Hosting the Cycles Server](/self-hosting-the-cycles-server) — deploy your own instance
-- [API Reference](/api-reference-for-the-cycles-protocol) — endpoint details with curl examples
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app
+- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance
+- [API Reference](/protocol/api-reference-for-the-cycles-protocol) — endpoint details with curl examples
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app

@@ -172,6 +172,6 @@ Quick reference for setting all properties via environment variables:
 
 ## Next steps
 
-- [Self-Hosting the Cycles Server](/self-hosting-the-cycles-server) — deployment guide
-- [Architecture Overview](/architecture-overview-how-cycles-fits-together) — system design
-- [Client Configuration Reference](/client-configuration-reference-for-cycles-spring-boot-starter) — client-side properties
+- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deployment guide
+- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — system design
+- [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — client-side properties
