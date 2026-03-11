@@ -2,15 +2,13 @@
 
 Teams building autonomous systems usually already have some controls in place.
 
-Rate limiters.
-Observability platforms.
-Provider budget caps.
-In-app usage counters.
-Job schedulers with retry logic.
+- Rate limiters.
+- Observability platforms.
+- Provider budget caps.
+- In-app usage counters.
+- Job schedulers with retry logic.
 
-These are all reasonable tools.
-
-They each solve real problems.
+These are all reasonable tools. They each solve real problems.
 
 But none of them solve the problem Cycles is designed for: **governing bounded execution before autonomous work proceeds**.
 
@@ -181,7 +179,7 @@ It operates at the level your system actually needs:
 - per-run
 - per-action
 
-Budget is reserved before execution, not decremented after the fact.
+Budget is reserved before execution rather than inferred after usage occurs.
 
 | | Provider budget cap | Cycles |
 |---|---|---|
@@ -254,7 +252,7 @@ It handles concurrency, retries, hierarchical scopes, and lifecycle semantics as
 
 But they tend to accumulate correctness bugs and edge cases as the system scales.
 
-Cycles is what you graduate to when counters stop being reliable enough.
+Cycles is what teams adopt when ad hoc counters stop being reliable under real concurrency, retries, and fan-out.
 
 ## Job schedulers and retry logic vs Cycles
 
