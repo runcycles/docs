@@ -22,7 +22,7 @@ export default defineConfig({
         items: [
           { text: 'How Reserve Commit Works', link: '/how-reserve-commit-works-in-cycles' },
           { text: 'Scope Derivation', link: '/how-scope-derivation-works-in-cycles' },
-          { text: 'Units', link: '/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points' },
+          { text: 'Understanding Units', link: '/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points' },
           { text: 'Caps & Three-Way Decisions', link: '/caps-and-the-three-way-decision-model-in-cycles' },
           { text: 'Commit Overage Policies', link: '/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft' },
           { text: 'TTL, Grace Period & Extend', link: '/reservation-ttl-grace-period-and-extend-in-cycles' },
