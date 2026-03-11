@@ -76,15 +76,13 @@ The work runs.
 
 At this point, the system knows it is operating within a bounded allowance.
 
-### 4. Commit actual usage
+### 4. Commit actual usage or release
 
 Once the real usage is known, the runtime commits the actual amount consumed.
 
-If the actual amount is lower than the reserved amount, the unused portion is returned.
+If the actual amount is lower than the reserved amount, the unused portion is released automatically as part of the commit. No separate release call is needed.
 
-### 5. Release any unused remainder
-
-If work is canceled, fails early, or does not consume the full reserved amount, the remainder is released.
+If work is canceled or fails before any usage occurs, the runtime releases the reservation explicitly, returning the full reserved amount to the budget pool.
 
 ## A simple example
 
@@ -95,8 +93,7 @@ The lifecycle looks like this:
 1. Reserve 100
 2. Execute the task
 3. Actual usage ends up being 63
-4. Commit 63
-5. Release 37
+4. Commit 63 (the remaining 37 is released automatically)
 
 Without this model, many systems do one of two bad things:
 
@@ -135,12 +132,12 @@ That causes two problems:
 - budgets appear tighter than they really are
 - future work is denied unnecessarily
 
-Release ensures the runtime returns any unused reservation back to the available pool.
+When actual usage is committed, the protocol automatically releases the unused remainder. But when work is canceled or fails before committing, the runtime must explicitly release the reservation.
 
-This is especially important for:
+Explicit release is especially important for:
 
 - canceled jobs
-- partially completed workflows
+- partially completed workflows where no usage should be recorded
 - guarded speculative execution
 - early exits
 - timeout handling
@@ -226,12 +223,11 @@ In Cycles, reservation is not limited to one flat counter.
 An action may need to satisfy multiple scopes at once, such as:
 
 - tenant
-- environment
-- application
+- workspace
+- app
 - workflow
 - agent
-- tool
-- run
+- toolset
 
 That means a reservation may need to be valid not only locally, but also against ancestor scopes.
 
@@ -281,8 +277,8 @@ This lets runtimes manage incomplete work more safely and reconcile state intent
 A simple way to think about it is:
 
 - **Reserve** = hold bounded room to act
-- **Commit** = record what was actually consumed
-- **Release** = return what was not used
+- **Commit** = record what was actually consumed (auto-releases unused remainder)
+- **Release** = cancel the reservation and return what was held
 
 That is the core accounting discipline.
 

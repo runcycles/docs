@@ -191,8 +191,8 @@ Its control model is richer than request forwarding.
 It needs to support:
 
 - reserve before execution
-- commit actual usage afterward
-- release unused remainder
+- commit actual usage afterward (auto-releasing unused remainder)
+- release explicitly on cancellation
 - hierarchical scope enforcement
 - retry-safe and idempotent behavior
 
@@ -266,8 +266,8 @@ But autonomous systems also need a way to manage execution as it happens:
 
 - reserve estimated exposure
 - execute work
-- commit actual usage
-- release unused remainder
+- commit actual usage (auto-releases unused remainder)
+- release explicitly on cancellation
 - handle retries safely
 - reconcile partial completion
 

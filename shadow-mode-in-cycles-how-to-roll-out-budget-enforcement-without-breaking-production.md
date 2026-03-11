@@ -35,7 +35,7 @@ Shadow mode is the bridge between those two states.
 
 ## What shadow mode is
 
-In shadow mode, Cycles evaluates the same reservation and budget logic it would use in enforcement mode, but instead of blocking execution, it records what **would have happened**.
+In the Cycles protocol, shadow mode is enabled by setting `dry_run: true` on a reservation request. The server evaluates the same reservation and budget logic it would use in enforcement mode, but instead of blocking execution, it records what **would have happened**. No budget is actually held.
 
 That means your system can answer questions like:
 

@@ -26,12 +26,11 @@ The best choice depends on the failure mode you are trying to prevent first.
 A common mistake is to begin with a fully generalized policy hierarchy:
 
 - tenant
-- environment
-- application
+- workspace
+- app
 - workflow
 - agent
-- tool
-- run
+- toolset
 - action type
 - model class
 - side-effect category
@@ -197,8 +196,8 @@ A model-call guardrail means:
 
 - reserve before a model invocation
 - execute the call
-- commit actual usage afterward
-- release unused remainder
+- commit actual usage afterward (unused remainder is released automatically)
+- or release explicitly if the call is canceled
 
 This is often the easiest place to introduce Cycles because model calls are already clear cost events.
 
