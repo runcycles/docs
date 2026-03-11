@@ -19,7 +19,7 @@ export default defineConfig({
           { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
           { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
           { text: 'Spring Boot Starter', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
-          { text: 'Hard Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
+          { text: 'Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
           { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
         ]
       },
