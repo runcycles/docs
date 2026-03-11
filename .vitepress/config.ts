@@ -2,6 +2,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/docs/',
   title: 'Cycles Docs',
   description: 'Posts, docs, and articles about Cycles',
   themeConfig: {
