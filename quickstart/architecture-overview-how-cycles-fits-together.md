@@ -17,11 +17,12 @@ This page describes the components, how they interact, and where each piece runs
 │         │                │          │
 │         ▼                ▼          │
 │  ┌──────────────────────────────┐   │
-│  │   Spring Boot Starter        │   │
-│  │   (cycles-client-java-spring)│   │
+│  │ Java Spring, Other bindings  │   │
+│  │     (Cycles Wire Protocol)   │   │
 │  └──────────────┬───────────────┘   │
 └─────────────────┼───────────────────┘
                   │ HTTP (JSON)
+                  | Cycles Wire Protocol
                   │ X-Cycles-API-Key
                   ▼
 ┌─────────────────────────────────────┐
