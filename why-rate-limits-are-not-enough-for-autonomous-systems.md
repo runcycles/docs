@@ -121,8 +121,8 @@ At a high level:
 - an action declares expected usage
 - budget is reserved against one or more scopes
 - work executes only if reservation succeeds
-- actual usage is committed afterward
-- unused reservation is released
+- actual usage is committed afterward (unused remainder is released automatically)
+- or the reservation is released explicitly if work is canceled
 
 This changes the control surface from:
 
@@ -165,12 +165,11 @@ Reserve/commit handles both.
 A single action may need to satisfy limits at multiple levels:
 
 - tenant
-- environment
-- application
+- workspace
+- app
 - workflow
 - agent
-- tool
-- run
+- toolset
 
 This is hard to model cleanly with flat quotas alone.
 
@@ -249,8 +248,8 @@ Autonomous systems also need controls for total exposure.
 That means introducing a system that can:
 
 - reserve budget before work starts
-- commit actual usage afterward
-- release unused reservation
+- commit actual usage afterward (auto-releasing unused remainder)
+- release explicitly on cancellation
 - apply limits across scopes
 - remain safe under retries and concurrency
 

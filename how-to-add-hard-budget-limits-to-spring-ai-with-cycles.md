@@ -63,7 +63,7 @@ Cycles handles:
 - whether an action is allowed to proceed
 - how much budget is reserved for it
 - how actual usage is reconciled
-- how limits apply across scopes such as tenant, application, workflow, or run
+- how limits apply across scopes such as tenant, workspace, app, workflow, or agent
 
 The goal is not to replace Spring AI.
 
@@ -102,11 +102,11 @@ That gives you a bounded envelope around recursive behavior.
 
 You can also reserve and track at a higher scope:
 
-- per request
-- per workflow
-- per run
 - per tenant
-- per environment
+- per workspace
+- per app
+- per workflow
+- per agent
 
 In practice, many systems use more than one level.
 
@@ -126,10 +126,9 @@ Determine which budget scopes apply.
 
 Examples:
 
-- tenant: `tenant/acme`
-- application: `app/support-bot`
-- workflow: `workflow/refund-assistant`
-- run: `run/12345`
+- tenant: `acme`
+- app: `support-bot`
+- workflow: `refund-assistant`
 
 ### Step 2: Estimate required exposure
 
@@ -158,11 +157,11 @@ Run the Spring AI call, tool invocation, or workflow action.
 
 ### Step 5: Commit actual usage
 
-Once actual usage is known, commit the real amount consumed.
+Once actual usage is known, commit the real amount consumed. If the actual amount is less than the reserved estimate, the unused remainder is released automatically.
 
-### Step 6: Release unused remainder
+### Step 6: Release if canceled
 
-If the reserved estimate was larger than the actual usage, release the unused portion back to the budget pool.
+If the work is canceled or fails before producing any usage, release the reservation explicitly to return the reserved amount to the budget pool.
 
 ## Example pattern
 
@@ -173,8 +172,7 @@ A simplified application flow might look like this:
 3. app reserves 100 units before invoking the chat model
 4. Spring AI executes the model call
 5. actual usage comes back as 68 units
-6. app commits 68
-7. remaining 32 is released
+6. app commits 68 (remaining 32 is released automatically)
 
 If the next step wants to invoke an external tool, it goes through the same pattern again.
 
@@ -285,7 +283,7 @@ Examples of useful first policies include:
 - shadow evaluation for new workflows
 - downgrade path when reservation fails
 - tool restrictions when budget is low
-- per-environment limits for staging vs production
+- per-workspace limits for staging vs production
 
 These are practical controls that map well to real incidents.
 
@@ -337,8 +335,8 @@ It should be part of the execution path.
 Cycles makes that possible by introducing a deterministic runtime pattern:
 
 - reserve before execution
-- commit actual usage afterward
-- release unused remainder
+- commit actual usage afterward (unused remainder is released automatically)
+- release explicitly if work is canceled
 - enforce policy across scopes
 - stay safe under retries and concurrency
 

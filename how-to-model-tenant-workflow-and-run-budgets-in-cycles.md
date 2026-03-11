@@ -13,10 +13,11 @@ A useful Cycles deployment usually does not rely on one global budget alone.
 Instead, it combines multiple scopes such as:
 
 - tenant
-- application
+- workspace
+- app
 - workflow
 - agent
-- run
+- toolset
 
 This article focuses on three of the most important ones:
 
@@ -179,6 +180,8 @@ It is where teams begin translating product intent into execution boundaries.
 ## Run budgets
 
 Run budgets are the most local and execution-specific scope.
+
+In the Cycles protocol, "run" is not a built-in subject field like tenant or workflow. Instead, run-level budgets are modeled by passing a unique run identifier through the `dimensions` field on each subject (for example, `dimensions: { "run": "run-12345" }`). This gives each execution its own scope in the budget hierarchy.
 
 A run budget answers:
 
