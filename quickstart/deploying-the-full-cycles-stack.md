@@ -178,11 +178,11 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   }' | jq .
 ```
 
-**Important:** The response includes the full API key (e.g., `gov_...`). Save it — the full secret is only returned once.
+**Important:** The response includes the full API key (e.g., `cyc_live_...`). Save it — the full secret is only returned once.
 
 ```bash
 # Save the key for use in later steps
-export CYCLES_API_KEY="gov_..."   # paste the key from the response
+export CYCLES_API_KEY="cyc_live_..."   # paste the key from the response
 ```
 
 ## Step 4: Create a budget
@@ -315,7 +315,7 @@ Any HTTP client can use Cycles. The protocol is language-agnostic:
 import requests
 
 CYCLES_URL = "http://localhost:7878"
-API_KEY = "gov_..."
+API_KEY = "cyc_live_..."
 
 # Reserve
 resp = requests.post(f"{CYCLES_URL}/v1/reservations", json={
@@ -373,7 +373,7 @@ The API key is missing, invalid, or expired. Verify with:
 curl -s -X POST http://localhost:7979/v1/auth/validate \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
-  -d '{"api_key": "gov_..."}' | jq .
+  -d '{"api_key": "cyc_live_..."}' | jq .
 ```
 
 ### Connection refused on port 7878 or 7979
