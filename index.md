@@ -16,11 +16,11 @@ hero:
       link: "https://github.com/runcycles/cycles-protocol"
 features:
   - title: "Concepts"
-    details: "Understand why rate limits fail for agents and what Cycles actually solves."
+    details: "Understand why rate limits fail for agents, what Cycles actually solves, and how teams evolve from dashboards to budget authority."
+  - title: "Protocol Reference"
+    details: "Reserve-commit lifecycle, authentication, scope derivation, units, caps, overage policies, TTL, decide, dry run, events, debt, balances, metrics, and error handling."
   - title: "How-To Guides"
-    details: "Spring AI integration, tenant budgets, shadow mode rollout, reserve-commit patterns, and degradation strategies."
+    details: "Spring AI integration, tenant budgets, shadow mode rollout, reservation strategies, and degradation paths."
   - title: "Incident Patterns"
     details: "Real failure modes — runaway agents, tool loops, retries, and budget overruns."
-  - title: "Start Here"
-    details: "Begin with the protocol, then explore the server, admin service, and Spring client."
 ---
