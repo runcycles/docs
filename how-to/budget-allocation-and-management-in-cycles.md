@@ -212,6 +212,6 @@ Budget allocation in Cycles:
 
 ## Next steps
 
-- [Querying Balances](/querying-balances-in-cycles-understanding-budget-state) — detailed balance query guide
-- [Debt and Overdraft](/debt-overdraft-and-the-over-limit-model-in-cycles) — how overdraft affects allocation
-- [How Scope Derivation Works](/how-scope-derivation-works-in-cycles) — how scopes are derived from Subjects
+- [Querying Balances](/protocol/querying-balances-in-cycles-understanding-budget-state) — detailed balance query guide
+- [Debt and Overdraft](/protocol/debt-overdraft-and-the-over-limit-model-in-cycles) — how overdraft affects allocation
+- [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles) — how scopes are derived from Subjects

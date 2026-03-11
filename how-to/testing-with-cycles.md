@@ -300,6 +300,6 @@ void testRetryAfterHandling() {
 
 ## Next steps
 
-- [Error Handling Patterns](/error-handling-patterns-in-cycles-client-code) — handling Cycles exceptions
-- [Using the Client Programmatically](/using-the-cycles-client-programmatically) — direct client usage
-- [SpEL Expression Reference](/spel-expression-reference-for-cycles) — expression syntax
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling Cycles exceptions
+- [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — direct client usage
+- [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax

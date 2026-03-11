@@ -154,6 +154,6 @@ Track which keys are making requests. If a key is compromised, revoke it immedia
 
 ## Next steps
 
-- [Authentication and Tenancy](/authentication-tenancy-and-api-keys-in-cycles) — deeper dive into the auth model
-- [Self-Hosting the Cycles Server](/self-hosting-the-cycles-server) — deploy your own instance
-- [Architecture Overview](/architecture-overview-how-cycles-fits-together) — how authentication fits into the system
+- [Authentication and Tenancy](/protocol/authentication-tenancy-and-api-keys-in-cycles) — deeper dive into the auth model
+- [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance
+- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how authentication fits into the system

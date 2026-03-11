@@ -218,7 +218,7 @@ Every property can be set via environment variables using Spring Boot's relaxed 
 
 ## Next steps
 
-- [Getting Started with the Spring Boot Starter](/getting-started-with-the-cycles-spring-boot-starter) — quick start guide
-- [SpEL Expression Reference](/spel-expression-reference-for-cycles) — expression syntax
-- [Custom Field Resolvers](/custom-field-resolvers-in-cycles) — dynamic Subject field resolution
-- [Server Configuration Reference](/server-configuration-reference-for-cycles) — server-side properties
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — quick start guide
+- [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax
+- [Custom Field Resolvers](/how-to/custom-field-resolvers-in-cycles) — dynamic Subject field resolution
+- [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — server-side properties
