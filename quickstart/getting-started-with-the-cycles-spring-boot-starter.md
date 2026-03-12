@@ -17,37 +17,48 @@ All of this happens transparently through Spring AOP.
 
 ## Try the demo app first
 
-The fastest way to see the starter in action is to run the included demo application. It requires a running Cycles stack (see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack)).
+The fastest way to see the starter in action is to run the included demo application.
+
+### Prerequisites
+
+You need a running Cycles stack with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first. The demo app expects the same `acme-corp` tenant used in that guide.
+
+### Run the demo
 
 ```bash
 git clone https://github.com/runcycles/cycles-spring-boot-starter.git
 cd cycles-spring-boot-starter/cycles-demo-client-java-spring
 ```
 
-Edit the file `cycles-demo-client-java-spring/application.yml` and set your API key (the one from the deployment guide):
-
-```yaml
-cycles:
-  api-key: cyc_live_...    # paste your key here
-  base-url: http://localhost:7878
-```
-
-Run the demo:
+Set your API key (the one you created in the deployment guide):
 
 ```bash
+export CYCLES_API_KEY=cyc_live_...
 mvn spring-boot:run
 ```
 
-The demo app starts on port 7955. Hit `GET http://localhost:7955/api/demo/index` for a full listing of all available endpoints.
+Or edit `application.yml` directly and paste the key in `cycles.api-key`.
+
+The demo app starts on port 7955. Try the simplest example first:
+
+```bash
+curl -X POST http://localhost:7955/api/demo/annotation/minimal?input=hello
+```
+
+Hit `GET http://localhost:7955/api/demo/index` for a full listing of all endpoints with copy-paste curl commands.
 
 ### What the demo covers
 
 The demo app includes working examples for every major feature area:
 
+**Start here (`/api/demo/annotation/minimal`)**
+- `@Cycles("1000")` — the simplest possible usage, fixed estimate with all defaults
+
 **Annotation-based (`/api/llm/*`)**
 - `@Cycles` with SpEL estimate/actual, `CyclesContextHolder` for reading reservation context, `CyclesMetrics` for reporting token counts and latency, and `commitMetadata` for audit data
 
 **Annotation variations (`/api/demo/annotation/*`)**
+- `ALLOW_WITH_CAPS` — reading and respecting server-imposed constraints — `POST /api/demo/annotation/caps`
 - `unit=TOKENS` with `actionTags` — `POST /api/demo/annotation/tokens`
 - `unit=CREDITS` with `workflow`, `agent`, and custom `dimensions` — `POST /api/demo/annotation/credits`
 - `overagePolicy=ALLOW_WITH_OVERDRAFT` — `POST /api/demo/annotation/overdraft`
@@ -67,12 +78,84 @@ The demo app includes working examples for every major feature area:
 **Error handling**
 - Global `@RestControllerAdvice` for `CyclesProtocolException` with structured JSON error responses
 
+> **Note:** The deployment guide creates a `USD_MICROCENTS` budget. The `unit=TOKENS` and `unit=CREDITS` demo endpoints require separate budget ledgers for those units. If you only created the default budget, those endpoints will return `BUDGET_EXCEEDED`. Start with the `USD_MICROCENTS` endpoints (minimal, caps, overdraft, custom-ttl, dry-run) and create additional budgets via the admin API if you want to explore other units.
+
+### Suggested walkthrough
+
+Follow this order to build understanding progressively. Each step introduces one new concept.
+
+**1. Reserve and commit with a fixed estimate**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/annotation/minimal?input=hello
+```
+
+This is `@Cycles("1000")` — the simplest annotation. The response shows the reservation lifecycle result.
+
+**2. Check your balance**
+
+```bash
+curl http://localhost:7955/api/demo/client/balances
+```
+
+You should see `spent` increased by 1000 microcents from step 1.
+
+**3. Try a dry run (no budget consumed)**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/annotation/dry-run?amount=500
+```
+
+The server evaluates the reservation but doesn't persist it. Check balances again — they haven't changed.
+
+**4. See how overdraft works**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/annotation/overdraft?amount=1000
+```
+
+With `overagePolicy=ALLOW_WITH_OVERDRAFT`, the reservation succeeds even if it exceeds the budget.
+
+**5. Use the programmatic client**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/client/reserve-commit?estimate=5000
+```
+
+This does the same reserve → commit lifecycle as `@Cycles`, but using `CyclesClient` directly. Compare with step 1 to see the annotation vs programmatic approach.
+
+**6. Cancel a reservation**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/client/reserve-release?estimate=3000
+```
+
+The reservation is created then released — budget is returned to the pool. Check balances to confirm it was refunded.
+
+**7. Preflight check without reserving**
+
+```bash
+curl -X POST http://localhost:7955/api/demo/client/decide?estimate=10000
+```
+
+The `decide` endpoint tells you whether a reservation *would* be allowed, without creating one.
+
+**8. Record a standalone event**
+
+```bash
+curl -X POST 'http://localhost:7955/api/demo/events/record?amount=1500&description=API+call'
+```
+
+Direct debit — no reservation needed. Useful for post-hoc accounting.
+
+After this walkthrough, explore the remaining endpoints (`caps`, `custom-ttl`, `llm/generate`) and read the source files below to see how each feature is implemented.
+
 ### Demo app source files
 
 | File | What it demonstrates |
 |---|---|
 | `service/LlmService.java` | `@Cycles` annotation, `CyclesContextHolder`, `CyclesMetrics`, `commitMetadata` |
-| `service/AnnotationShowcaseService.java` | Annotation attribute variations (units, TTL, overdraft, dry-run, dimensions) |
+| `service/AnnotationShowcaseService.java` | Annotation variations: minimal, caps-aware, units, TTL, overdraft, dry-run, dimensions |
 | `service/ProgrammaticClientService.java` | Direct `CyclesClient` usage for the full reservation lifecycle |
 | `service/EventService.java` | Standalone events via `CyclesClient.createEvent()` |
 | `error/CyclesExceptionHandler.java` | Global error handling for `CyclesProtocolException` |

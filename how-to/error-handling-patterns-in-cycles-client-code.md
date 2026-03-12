@@ -177,9 +177,12 @@ When using `CyclesClient` directly, errors come as response status codes rather 
 CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(request);
 
 if (response.is2xx()) {
+    // For non-dry-run reservations, a 2xx response means ALLOW or ALLOW_WITH_CAPS.
+    // Insufficient budget returns 409 (handled below by the else branch).
+    // decision=DENY in a 2xx response only occurs when dry_run=true.
     String decision = (String) response.getBody().get("decision");
     if ("DENY".equals(decision)) {
-        // Budget insufficient
+        // Only reachable for dry_run reservations — budget would be insufficient
         return handleDeny(response.getBody());
     }
     // Proceed with work
@@ -189,6 +192,9 @@ if (response.is2xx()) {
     return retryOrFallback();
 } else {
     // Client error (4xx) — do not retry
+    // 409 = budget exceeded, debt outstanding, overdraft limit exceeded
+    // 400 = invalid request, unit mismatch
+    // 410 = reservation expired
     log.error("Cycles client error: status={}, error={}",
         response.getStatus(), response.getErrorMessage());
     throw new RuntimeException("Cycles request failed: " + response.getErrorMessage());
