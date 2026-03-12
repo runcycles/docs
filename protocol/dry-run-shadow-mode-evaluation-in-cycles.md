@@ -122,7 +122,7 @@ public String summarize(String text) {
 }
 ```
 
-When `dryRun = true`, the starter evaluates the reservation without holding budget. The method always runs, regardless of the decision. Decisions are logged for monitoring.
+When `dryRun = true`, the starter evaluates the reservation without holding budget. The method does not execute. The decision is logged for monitoring, allowing teams to observe what would have happened under enforcement without affecting runtime behavior.
 
 ## Idempotency on dry run
 
