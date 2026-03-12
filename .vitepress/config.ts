@@ -56,14 +56,11 @@ export default defineConfig({
         {
           text: 'How-To Guides',
           items: [
-            { text: 'Hard Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
-            { text: 'Spring Boot Starter', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
             { text: 'Programmatic Client Usage', link: '/how-to/using-the-cycles-client-programmatically' },
             { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
             { text: 'API Key Management', link: '/how-to/api-key-management-in-cycles' },
             { text: 'Custom Field Resolvers', link: '/how-to/custom-field-resolvers-in-cycles' },
             { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
-            { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
             { text: 'Estimate Exposure Before Execution', link: '/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
             { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
             { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
