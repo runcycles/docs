@@ -2,7 +2,7 @@
 
 This is the complete reference for all configuration properties available in the Cycles Spring Boot Starter.
 
-All properties are under the `cycles` prefix in your project's `src/main/resources/application.yml` (or `src/main/resources/application.properties`).
+All properties are under the `cycles` prefix in your project's `application.yml` (or `application.properties`).
 
 ## Required properties
 
@@ -103,7 +103,7 @@ cycles:
 
 ## Full configuration example
 
-Add the following to your project's `src/main/resources/application.yml`:
+Add the following to your project's `application.yml`:
 
 ```yaml
 cycles:
@@ -132,7 +132,7 @@ cycles:
 
 ## Equivalent application.properties
 
-Alternatively, add to your project's `src/main/resources/application.properties`:
+Alternatively, add to your project's `application.properties`:
 
 ```properties
 cycles.base-url=${CYCLES_BASE_URL:http://localhost:7878}
@@ -189,20 +189,20 @@ The auto-configuration will skip creating its default `CyclesClient` when it det
 Create profile-specific files in `src/main/resources/`:
 
 ```yaml
-# src/main/resources/application.yml (shared)
+# application.yml (shared)
 cycles:
   tenant: acme
   retry:
     enabled: true
 
 ---
-# src/main/resources/application-dev.yml
+# application-dev.yml
 cycles:
   base-url: http://localhost:7878
   api-key: dev-key
 
 ---
-# src/main/resources/application-prod.yml
+# application-prod.yml
 cycles:
   base-url: https://cycles.internal.example.com
   api-key: ${CYCLES_API_KEY}

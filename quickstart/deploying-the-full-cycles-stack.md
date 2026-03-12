@@ -437,7 +437,7 @@ Add the dependency:
 </dependency>
 ```
 
-Configure your project's `src/main/resources/application.yml`:
+Configure your project's `application.yml`:
 
 ```yaml
 cycles:
