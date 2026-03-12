@@ -38,16 +38,26 @@ Run the demo:
 mvn spring-boot:run
 ```
 
-The demo app starts on port 7955. Hit `GET http://localhost:7955/api/demo/index` for a full listing of all available endpoints.
+The demo app starts on port 7955. Try the simplest example first:
+
+```bash
+curl -X POST http://localhost:7955/api/demo/annotation/minimal?input=hello
+```
+
+Hit `GET http://localhost:7955/api/demo/index` for a full listing of all endpoints with copy-paste curl commands.
 
 ### What the demo covers
 
 The demo app includes working examples for every major feature area:
 
+**Start here (`/api/demo/annotation/minimal`)**
+- `@Cycles("1000")` — the simplest possible usage, fixed estimate with all defaults
+
 **Annotation-based (`/api/llm/*`)**
 - `@Cycles` with SpEL estimate/actual, `CyclesContextHolder` for reading reservation context, `CyclesMetrics` for reporting token counts and latency, and `commitMetadata` for audit data
 
 **Annotation variations (`/api/demo/annotation/*`)**
+- `ALLOW_WITH_CAPS` — reading and respecting server-imposed constraints — `POST /api/demo/annotation/caps`
 - `unit=TOKENS` with `actionTags` — `POST /api/demo/annotation/tokens`
 - `unit=CREDITS` with `workflow`, `agent`, and custom `dimensions` — `POST /api/demo/annotation/credits`
 - `overagePolicy=ALLOW_WITH_OVERDRAFT` — `POST /api/demo/annotation/overdraft`
@@ -72,7 +82,7 @@ The demo app includes working examples for every major feature area:
 | File | What it demonstrates |
 |---|---|
 | `service/LlmService.java` | `@Cycles` annotation, `CyclesContextHolder`, `CyclesMetrics`, `commitMetadata` |
-| `service/AnnotationShowcaseService.java` | Annotation attribute variations (units, TTL, overdraft, dry-run, dimensions) |
+| `service/AnnotationShowcaseService.java` | Annotation variations: minimal, caps-aware, units, TTL, overdraft, dry-run, dimensions |
 | `service/ProgrammaticClientService.java` | Direct `CyclesClient` usage for the full reservation lifecycle |
 | `service/EventService.java` | Standalone events via `CyclesClient.createEvent()` |
 | `error/CyclesExceptionHandler.java` | Global error handling for `CyclesProtocolException` |
