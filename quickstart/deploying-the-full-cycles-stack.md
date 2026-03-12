@@ -84,6 +84,7 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
     depends_on:
       redis:
         condition: service_healthy
@@ -138,7 +139,7 @@ curl -s http://localhost:7979/actuator/health   # Admin Server
 
 Both should return `{"status":"UP"}`.
 
-### Option B: Running from source
+### Option C: Running from source
 
 Start Redis:
 
