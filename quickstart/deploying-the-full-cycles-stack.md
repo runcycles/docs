@@ -14,7 +14,7 @@ $ curl -s -X POST http://localhost:7878/v1/reservations/rsv_.../commit ...
 { "status": "COMMITTED" }
 
 $ curl -s http://localhost:7878/v1/balances?tenant=acme-corp ...
-{ "remaining": 9650000, "spent": 350000, ... }
+{ "remaining": ..., "spent": 350000, ... }
 ```
 
 <details>
@@ -83,16 +83,11 @@ API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   }' | jq -r '.key_secret')
 echo "API Key: $API_KEY"
 
-# 5. Create and fund a budget ($1.00 = 100,000,000 microcents)
+# 5. Create a budget ($1.00 = 100,000,000 microcents)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $API_KEY" \
   -d '{"scope": "tenant:acme-corp", "unit": "USD_MICROCENTS", "allocated": {"amount": 100000000, "unit": "USD_MICROCENTS"}}' | jq .
-
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
-  -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
-  -d '{"operation": "CREDIT", "amount": {"amount": 100000000, "unit": "USD_MICROCENTS"}, "idempotency_key": "init-fund-001"}' | jq .
 
 # 6. Test: reserve → commit → check balance
 RESERVATION_ID=$(curl -s -X POST http://localhost:7878/v1/reservations \
@@ -344,9 +339,7 @@ export CYCLES_API_KEY="cyc_live_..."   # paste the key from the response
 
 ## Step 4: Create a budget
 
-Create a budget ledger for the tenant. Without a budget, all reservations will be denied with `BUDGET_EXCEEDED`.
-
-Budget setup is two steps: **create** the ledger (sets the accounting structure and ceiling), then **fund** it (adds spendable balance). In production these are typically separate operations — creation happens once, funding happens on a schedule or via top-ups.
+Create a budget ledger for the tenant. Without a budget, all reservations will be denied with `BUDGET_EXCEEDED`:
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
@@ -359,9 +352,9 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }' | jq .
 ```
 
-This allocates $0.10 (10,000,000 microcents) to the tenant scope.
+This creates a budget ledger with $0.10 (10,000,000 microcents) available to spend. The `allocated` amount is immediately available as spendable balance.
 
-Fund it:
+To add more funds later (e.g., on a schedule or when a customer upgrades), use the fund endpoint:
 
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
@@ -370,10 +363,12 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
   -d '{
     "operation": "CREDIT",
     "amount": { "amount": 10000000, "unit": "USD_MICROCENTS" },
-    "idempotency_key": "initial-fund-001",
-    "reason": "Initial budget allocation"
+    "idempotency_key": "topup-001",
+    "reason": "Budget top-up"
   }' | jq .
 ```
+
+> **Note:** The CREDIT operation adds to the existing balance. If you created the budget with 10M and then credit 10M, the total available becomes 20M.
 
 ## Step 5: Verify the full lifecycle
 
