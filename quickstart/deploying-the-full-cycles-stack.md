@@ -37,13 +37,15 @@ Your application only talks to the **Cycles Server** (port 7878). You use the **
 
 ## Prerequisites
 
-- **Docker** and **Docker Compose** (for the quick path), or
-- **Java 21+** and **Maven 3.9+** (for building from source)
+- **Docker** and **Docker Compose** (for the quick path — no Java needed), or
+- **Java 21+** and **Maven 3.9+** (for running from source without Docker)
 - **Redis 7+** (if not using Docker)
 
 ## Step 1: Start the infrastructure
 
-### Option A: Docker Compose (recommended)
+### Option A: Docker Compose from GHCR images (recommended for end users)
+
+The easiest way to deploy is using pre-built images from GitHub Container Registry. No Java or Maven required — Docker pulls the images automatically.
 
 Create a `docker-compose.yml`:
 
@@ -63,22 +65,20 @@ services:
       retries: 5
 
   cycles-admin:
-    build:
-      context: ./cycles-server-admin
+    image: ghcr.io/runcycles/cycles-server-admin:latest
     ports:
       - "7979:7979"
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ""
-      ADMIN_API_KEY: admin-bootstrap-key
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-admin-bootstrap-key}
     depends_on:
       redis:
         condition: service_healthy
 
   cycles-server:
-    build:
-      context: ./cycles-server
+    image: ghcr.io/runcycles/cycles-server:latest
     ports:
       - "7878:7878"
     environment:
@@ -93,16 +93,13 @@ volumes:
   redis-data:
 ```
 
-Build and start:
+Start the stack:
 
 ```bash
-# Build the server JARs first
-cd cycles-server/cycles-protocol-service && mvn clean package -DskipTests && cd ../..
-cd cycles-server-admin/cycles-admin-service && mvn clean package -DskipTests && cd ../..
-
-# Start the stack
 docker compose up -d
 ```
+
+> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23`) for reproducible deployments.
 
 Verify all services are healthy:
 
@@ -113,7 +110,36 @@ curl -s http://localhost:7979/actuator/health   # Admin Server
 
 Both should return `{"status":"UP"}`.
 
-### Option B: Running from source
+### Option B: Docker Compose from source (for development)
+
+Both repositories include multi-stage Dockerfiles that build the JARs inside Docker — no local Java or Maven installation required. Each repository includes a `docker-compose.full-stack.yml` that brings up Redis, the Cycles Server, and the Admin Server together.
+
+Clone both repositories side by side:
+
+```bash
+git clone https://github.com/runcycles/cycles-server.git
+git clone https://github.com/runcycles/cycles-server-admin.git
+```
+
+Start the full stack from either repo:
+
+```bash
+cd cycles-server-admin
+docker compose -f docker-compose.full-stack.yml up -d
+```
+
+The multi-stage Docker build compiles the JARs automatically — no manual `mvn package` step needed.
+
+Verify all services are healthy:
+
+```bash
+curl -s http://localhost:7878/actuator/health   # Cycles Server
+curl -s http://localhost:7979/actuator/health   # Admin Server
+```
+
+Both should return `{"status":"UP"}`.
+
+### Option C: Running from source
 
 Start Redis:
 

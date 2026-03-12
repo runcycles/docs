@@ -6,49 +6,47 @@ The Cycles server is a Spring Boot application that enforces budget reservations
 
 ## Prerequisites
 
-- **Java 21+** (for running from source)
+- **Docker** and **Docker Compose** (for the quick path — no Java needed), or
+- **Java 21+** and **Maven 3.9+** (for building from source)
 - **Redis 7+** (required for Lua script compatibility)
-- **Maven 3.9+** (for building from source)
 
 ## Quick start with Docker Compose
 
-Create a `docker-compose.yml` to run the Cycles server with Redis:
+### Using pre-built GHCR images (recommended)
 
-```yaml
-# docker-compose.yml
-services:
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-  cycles-server:
-    build: .
-    ports:
-      - "7878:7878"
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      - redis
-```
-
-You will also need a `Dockerfile` in the repository root. A minimal example:
-
-```dockerfile
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
-COPY cycles-protocol-service/cycles-protocol-service-api/target/cycles-protocol-service-api-*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-Build and run:
+The fastest way to get the Cycles server running. No Java or Maven required:
 
 ```bash
 cd cycles-server
-cd cycles-protocol-service && mvn clean package -DskipTests && cd ..
+docker compose -f docker-compose.prod.yml up -d
+```
+
+This pulls `ghcr.io/runcycles/cycles-server:latest` and starts it with Redis.
+
+> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23`) in `docker-compose.prod.yml` for reproducible deployments.
+
+### Building from source with Docker
+
+The repository includes a multi-stage Dockerfile that builds the JAR inside Docker — no local Java or Maven needed:
+
+```bash
+cd cycles-server
 docker compose up -d
 ```
+
+This uses `docker-compose.yml` which builds from source via the multi-stage Dockerfile.
+
+### Full stack (with Admin Server)
+
+To run both the Cycles Server and Admin Server together:
+
+```bash
+cd cycles-server
+docker compose -f docker-compose.full-stack.yml up -d       # build from source
+docker compose -f docker-compose.full-stack.prod.yml up -d   # use GHCR images
+```
+
+The full-stack compose files expect `cycles-server-admin` to be cloned alongside as a sibling directory.
 
 The server is available at `http://localhost:7878`.
 
