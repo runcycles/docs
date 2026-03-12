@@ -1,7 +1,7 @@
 ---
 aside: false
 outline: false
-title: OpenAPI Reference
+title: API Reference
 ---
 
 <OASpec />

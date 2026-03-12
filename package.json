@@ -6,10 +6,12 @@
     "vitepress": "^1.6.3"
   },
   "scripts": {
-    "build": "vitepress build",
-    "dev": "vitepress dev"
+    "convert-spec": "node scripts/convert-spec.js",
+    "build": "npm run convert-spec && vitepress build",
+    "dev": "npm run convert-spec && vitepress dev"
   },
   "dependencies": {
-    "vitepress-openapi": "^0.1.17"
+    "vitepress-openapi": "^0.1.17",
+    "yaml": "^2.8.2"
   }
 }
