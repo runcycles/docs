@@ -2,6 +2,128 @@
 
 This guide walks you from zero to a working Cycles deployment. By the end, you will have budget enforcement running and verified with a real reserve-commit cycle.
 
+## What you'll have at the end
+
+A working Cycles stack where you can reserve budget, commit actual spend, and verify balances:
+
+```
+$ curl -s -X POST http://localhost:7878/v1/reservations ...
+{ "decision": "ALLOW", "reservation_id": "rsv_..." }
+
+$ curl -s -X POST http://localhost:7878/v1/reservations/rsv_.../commit ...
+{ "status": "COMMITTED" }
+
+$ curl -s http://localhost:7878/v1/balances?tenant=acme-corp ...
+{ "remaining": 9650000, "spent": 350000, ... }
+```
+
+<details>
+<summary><strong>TL;DR — Full quickstart in 60 seconds</strong></summary>
+
+If you have Docker running and just want to try Cycles immediately, copy-paste this entire block:
+
+```bash
+# 1. Create docker-compose.yml and start the stack
+cat > docker-compose.yml <<'COMPOSE'
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  cycles-admin:
+    image: ghcr.io/runcycles/cycles-server-admin:latest
+    ports: ["7979:7979"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      ADMIN_API_KEY: admin-bootstrap-key
+    depends_on:
+      redis: { condition: service_healthy }
+  cycles-server:
+    image: ghcr.io/runcycles/cycles-server:latest
+    ports: ["7878:7878"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+    depends_on:
+      redis: { condition: service_healthy }
+volumes:
+  redis-data:
+COMPOSE
+
+docker compose up -d
+
+# 2. Wait for services to be ready
+echo "Waiting for services..."
+until curl -sf http://localhost:7878/actuator/health > /dev/null 2>&1; do sleep 1; done
+until curl -sf http://localhost:7979/actuator/health > /dev/null 2>&1; do sleep 1; done
+echo "Services are up."
+
+# 3. Create tenant
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -d '{"tenant_id": "acme-corp", "name": "Acme Corporation"}' | jq .
+
+# 4. Create API key and capture it
+API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "quickstart-key",
+    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read"]
+  }' | jq -r '.key_secret')
+echo "API Key: $API_KEY"
+
+# 5. Create and fund a budget ($1.00 = 100,000,000 microcents)
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{"scope": "tenant:acme-corp", "unit": "USD_MICROCENTS", "allocated": {"amount": 100000000, "unit": "USD_MICROCENTS"}}' | jq .
+
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{"operation": "CREDIT", "amount": {"amount": 100000000, "unit": "USD_MICROCENTS"}, "idempotency_key": "init-fund-001"}' | jq .
+
+# 6. Test: reserve → commit → check balance
+RESERVATION_ID=$(curl -s -X POST http://localhost:7878/v1/reservations \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{
+    "idempotency_key": "qs-reserve-001",
+    "subject": {"tenant": "acme-corp"},
+    "action": {"kind": "llm.completion", "name": "openai:gpt-4o"},
+    "estimate": {"amount": 500000, "unit": "USD_MICROCENTS"},
+    "ttl_ms": 30000
+  }' | jq -r '.reservation_id')
+echo "Reserved: $RESERVATION_ID"
+
+curl -s -X POST "http://localhost:7878/v1/reservations/$RESERVATION_ID/commit" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{"idempotency_key": "qs-commit-001", "actual": {"amount": 350000, "unit": "USD_MICROCENTS"}}' | jq .
+
+curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
+  -H "X-Cycles-API-Key: $API_KEY" | jq .
+
+echo ""
+echo "Done! Your Cycles stack is running."
+echo "  Runtime server: http://localhost:7878/swagger-ui.html"
+echo "  Admin server:   http://localhost:7979/swagger-ui.html"
+echo "  API key:        $API_KEY"
+```
+
+</details>
+
 ## What you are deploying
 
 A complete Cycles deployment has three components that share a single Redis instance:
@@ -40,6 +162,15 @@ Your application only talks to the **Cycles Server** (port 7878). You use the **
 - **Docker** and **Docker Compose** (for the quick path — no Java needed), or
 - **Java 21+** and **Maven 3.9+** (for running from source without Docker)
 - **Redis 7+** (if not using Docker)
+
+Verify Docker is ready:
+
+```bash
+docker --version          # Docker 20+ required
+docker compose version    # Docker Compose v2+ required
+```
+
+If `docker compose` fails, you may need to install the Docker Compose plugin or use the standalone `docker-compose` binary.
 
 ## Step 1: Start the infrastructure
 
@@ -213,7 +344,9 @@ export CYCLES_API_KEY="cyc_live_..."   # paste the key from the response
 
 ## Step 4: Create a budget
 
-Create a budget ledger for the tenant. Without a budget, all reservations will be denied with `BUDGET_EXCEEDED`:
+Create a budget ledger for the tenant. Without a budget, all reservations will be denied with `BUDGET_EXCEEDED`.
+
+Budget setup is two steps: **create** the ledger (sets the accounting structure and ceiling), then **fund** it (adds spendable balance). In production these are typically separate operations — creation happens once, funding happens on a schedule or via top-ups.
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
@@ -305,7 +438,7 @@ Add the dependency:
 <dependency>
     <groupId>io.runcycles</groupId>
     <artifactId>cycles-client-java-spring</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 
@@ -420,6 +553,14 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
     "idempotency_key": "repay-001"
   }' | jq .
 ```
+
+### Docker daemon not running
+
+If `docker compose up` fails with "Cannot connect to the Docker daemon", ensure Docker Desktop is running (macOS/Windows) or that the Docker service is started (`sudo systemctl start docker` on Linux).
+
+### Port conflicts
+
+If you see "port is already allocated", another service is using port 6379, 7878, or 7979. Stop the conflicting service or change the port mapping in your `docker-compose.yml` (e.g., `"7879:7878"`).
 
 ### Redis connection errors
 
