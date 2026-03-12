@@ -6,7 +6,7 @@ This guide walks you from zero to a working Cycles deployment. By the end, you w
 
 A working Cycles stack where you can reserve budget, commit actual spend, and verify balances:
 
-```
+```bash
 $ curl -s -X POST http://localhost:7878/v1/reservations ...
 { "decision": "ALLOW", "reservation_id": "rsv_..." }
 
