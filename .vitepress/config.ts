@@ -11,6 +11,7 @@ export default defineConfig({
   base: '/docs/',
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
+  srcExclude: ['cycles-protocol/**'],
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
