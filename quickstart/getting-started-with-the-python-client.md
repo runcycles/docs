@@ -100,7 +100,7 @@ def chat(prompt: str) -> str:
 | `ttl_ms` | `60000` | Reservation TTL in milliseconds. |
 | `grace_period_ms` | `None` | Grace period after TTL expiry. |
 | `overage_policy` | `"REJECT"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
-| `dry_run` | `False` | If `True`, evaluate without persisting. |
+| `dry_run` | `False` | If `True`, evaluate without persisting. Function does not execute. |
 | `tenant` | `None` | Subject tenant override. |
 | `workspace` | `None` | Subject workspace override. |
 | `app` | `None` | Subject app override. |
@@ -109,6 +109,7 @@ def chat(prompt: str) -> str:
 | `toolset` | `None` | Subject toolset override. |
 | `dimensions` | `None` | Custom dimensions dict. |
 | `client` | `None` | Explicit client. Falls back to module default. |
+| `use_estimate_if_actual_not_provided` | `True` | If `True` and `actual` is `None`, use estimate as actual at commit. |
 
 ## Accessing reservation context at runtime
 
@@ -354,7 +355,7 @@ For each `@cycles`-decorated function call:
 
 ## Next steps
 
-- [Using the Cycles Client Programmatically](/how-to/using-the-cycles-client-programmatically) — Java programmatic client reference
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling exceptions in client code
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python-specific exception hierarchy and patterns
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
 - [API Reference](/protocol/api-reference-for-the-cycles-protocol) — full endpoint documentation
+- [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — programmatic client reference (Java examples)
