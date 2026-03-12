@@ -152,7 +152,7 @@ Build and start the admin server:
 ```bash
 cd cycles-server-admin/cycles-admin-service
 mvn clean package -DskipTests
-REDIS_HOST=localhost REDIS_PORT=6379 ADMIN_API_KEY=admin-bootstrap-key \
+REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD= ADMIN_API_KEY=admin-bootstrap-key \
   java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.23.jar
 ```
 
