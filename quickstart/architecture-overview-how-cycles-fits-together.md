@@ -223,7 +223,7 @@ Each scope tracks:
 | `allocated` | Total budget assigned to this scope |
 | `spent` | Committed actual usage |
 | `reserved` | Currently held by active reservations |
-| `remaining` | `allocated - spent - reserved` |
+| `remaining` | `allocated - spent - reserved - debt` |
 | `debt` | Negative balance from overdraft commits |
 | `overdraft_limit` | Maximum allowed debt |
 | `is_over_limit` | Whether `debt > overdraft_limit` |

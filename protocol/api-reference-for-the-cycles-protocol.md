@@ -350,10 +350,17 @@ Extend the TTL of an active reservation. Used as a heartbeat for long-running op
 
 ### Response (200 OK)
 
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `status` | string | Yes | Always `"ACTIVE"` after a successful extension |
+| `expires_at_ms` | integer (int64) | Yes | New server-authoritative expiry timestamp (ms) |
+| `balances` | array of Balance | No | Optional updated balances snapshot after extension |
+
 ```json
 {
   "status": "ACTIVE",
-  "expires_at_ms": 1710000120000
+  "expires_at_ms": 1710000120000,
+  "balances": []
 }
 ```
 
