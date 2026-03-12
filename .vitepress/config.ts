@@ -19,6 +19,7 @@ export default defineConfig({
           { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
           { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
           { text: 'Spring Boot Starter', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
+          { text: 'Python Client', link: '/quickstart/getting-started-with-the-python-client' },
           { text: 'Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
           { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
         ]
@@ -48,6 +49,7 @@ export default defineConfig({
           { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
           { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
           { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
+          { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
           { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
         ]
       },
