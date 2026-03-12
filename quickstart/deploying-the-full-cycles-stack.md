@@ -79,7 +79,7 @@ API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "acme-corp",
     "name": "quickstart-key",
-    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read"]
+    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read","decide","events:create"]
   }' | jq -r '.key_secret')
 echo "API Key: $API_KEY"
 
@@ -325,7 +325,9 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
       "reservations:release",
       "reservations:extend",
       "reservations:list",
-      "balances:read"
+      "balances:read",
+      "decide",
+      "events:create"
     ]
   }' | jq .
 ```
