@@ -223,6 +223,15 @@ if (response.is2xx()) {
 6. **Handle RESERVATION_EXPIRED** by recording usage as an event if the work already completed
 7. **Use `@ExceptionHandler`** in REST controllers for consistent API error responses
 
+## Working example in the demo app
+
+The demo application includes a complete working `@RestControllerAdvice` implementation:
+
+- **`CyclesExceptionHandler.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/error/CyclesExceptionHandler.java`) — Global exception handler that catches `CyclesProtocolException`, categorizes errors using all convenience methods (`isBudgetExceeded()`, `isReservationExpired()`, etc.), and returns structured JSON responses with appropriate HTTP status codes.
+- **`LlmController.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/controller/LlmController.java`) — Shows inline `CyclesProtocolException` handling within a specific controller endpoint.
+
+Run the demo with `mvn spring-boot:run` and trigger a budget-exceeded scenario to see the error handling in action.
+
 ## Next steps
 
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference

@@ -24,7 +24,7 @@ git clone https://github.com/runcycles/cycles-spring-boot-starter.git
 cd cycles-spring-boot-starter/cycles-demo-client-java-spring
 ```
 
-Edit `src/main/resources/application.yml` and set your API key (the one from the deployment guide):
+Edit the file `cycles-demo-client-java-spring/src/main/resources/application.yml` and set your API key (the one from the deployment guide):
 
 ```yaml
 cycles:
@@ -38,11 +38,53 @@ Run the demo:
 mvn spring-boot:run
 ```
 
-The demo app starts on port 7955 with `@Cycles`-annotated services that demonstrate the full reserve/commit lifecycle.
+The demo app starts on port 7955. Hit `GET http://localhost:7955/api/demo/index` for a full listing of all available endpoints.
+
+### What the demo covers
+
+The demo app includes working examples for every major feature area:
+
+**Annotation-based (`/api/llm/*`)**
+- `@Cycles` with SpEL estimate/actual, `CyclesContextHolder` for reading reservation context, `CyclesMetrics` for reporting token counts and latency, and `commitMetadata` for audit data
+
+**Annotation variations (`/api/demo/annotation/*`)**
+- `unit=TOKENS` with `actionTags` — `POST /api/demo/annotation/tokens`
+- `unit=CREDITS` with `workflow`, `agent`, and custom `dimensions` — `POST /api/demo/annotation/credits`
+- `overagePolicy=ALLOW_WITH_OVERDRAFT` — `POST /api/demo/annotation/overdraft`
+- Custom `ttlMs` and `gracePeriodMs` — `POST /api/demo/annotation/custom-ttl`
+- `dryRun=true` (shadow-mode evaluation) — `POST /api/demo/annotation/dry-run`
+
+**Programmatic CyclesClient (`/api/demo/client/*`)**
+- Full reserve → commit lifecycle — `POST /api/demo/client/reserve-commit`
+- Reserve → release (cancellation) — `POST /api/demo/client/reserve-release`
+- Preflight decision check — `POST /api/demo/client/decide`
+- Balance queries — `GET /api/demo/client/balances`
+- Reservation listing — `GET /api/demo/client/reservations`
+
+**Standalone events (`/api/demo/events/*`)**
+- Direct debit without reservation — `POST /api/demo/events/record`
+
+**Error handling**
+- Global `@RestControllerAdvice` for `CyclesProtocolException` with structured JSON error responses
+
+### Demo app source files
+
+| File | What it demonstrates |
+|---|---|
+| `service/LlmService.java` | `@Cycles` annotation, `CyclesContextHolder`, `CyclesMetrics`, `commitMetadata` |
+| `service/AnnotationShowcaseService.java` | Annotation attribute variations (units, TTL, overdraft, dry-run, dimensions) |
+| `service/ProgrammaticClientService.java` | Direct `CyclesClient` usage for the full reservation lifecycle |
+| `service/EventService.java` | Standalone events via `CyclesClient.createEvent()` |
+| `error/CyclesExceptionHandler.java` | Global error handling for `CyclesProtocolException` |
+| `resolvers/CyclesTenantResolver.java` | Dynamic tenant resolution via `CyclesFieldResolver` |
+| `controller/DemoController.java` | REST endpoints wiring all services at `/api/demo/*` |
+| `controller/LlmController.java` | LLM endpoints with budget error handling |
+
+All demo source files are under `cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/`.
 
 ## Configuration
 
-Add the starter dependency and configure the connection in `application.yml`:
+Add the starter dependency and configure the connection in your project's `src/main/resources/application.yml`:
 
 ```yaml
 cycles:

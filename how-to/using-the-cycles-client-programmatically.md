@@ -302,6 +302,15 @@ response.getErrorMessage(); // error message (if error)
 | Recording events without reservations | Programmatic `CyclesClient` |
 | Fine-grained error handling per step | Programmatic `CyclesClient` |
 
+## Working example in the demo app
+
+The demo application includes a complete working implementation of programmatic client usage:
+
+- **`ProgrammaticClientService.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/service/ProgrammaticClientService.java`) — Demonstrates the full reserve → commit lifecycle, reserve → release (cancellation), preflight `decide()`, balance queries, and reservation listing using typed DTOs.
+- **`EventService.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/service/EventService.java`) — Demonstrates `createEvent()` for direct debit accounting without a reservation.
+
+Run the demo with `mvn spring-boot:run` and use the `/api/demo/client/*` and `/api/demo/events/*` endpoints to see these in action.
+
 ## Next steps
 
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation-based approach
