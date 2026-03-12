@@ -279,5 +279,5 @@ Non-Spring clients (Python, Node.js, Go) can use the protocol directly via HTTP 
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
-- [API Reference](/protocol/api-reference-for-the-cycles-protocol) — endpoint details with curl examples
+- [API Reference](/api/) — interactive endpoint documentation
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app
