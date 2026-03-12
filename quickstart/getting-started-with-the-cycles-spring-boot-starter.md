@@ -17,26 +17,27 @@ All of this happens transparently through Spring AOP.
 
 ## Try the demo app first
 
-The fastest way to see the starter in action is to run the included demo application. It requires a running Cycles stack (see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack)).
+The fastest way to see the starter in action is to run the included demo application.
+
+### Prerequisites
+
+You need a running Cycles stack with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first. The demo app expects the same `acme-corp` tenant used in that guide.
+
+### Run the demo
 
 ```bash
 git clone https://github.com/runcycles/cycles-spring-boot-starter.git
 cd cycles-spring-boot-starter/cycles-demo-client-java-spring
 ```
 
-Edit `application.yml` and set your API key (the one from the deployment guide):
-
-```yaml
-cycles:
-  api-key: cyc_live_...    # paste your key here
-  base-url: http://localhost:7878
-```
-
-Run the demo:
+Set your API key (the one you created in the deployment guide):
 
 ```bash
+export CYCLES_API_KEY=cyc_live_...
 mvn spring-boot:run
 ```
+
+Or edit `application.yml` directly and paste the key in `cycles.api-key`.
 
 The demo app starts on port 7955. Try the simplest example first:
 
