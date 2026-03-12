@@ -8,5 +8,8 @@
   "scripts": {
     "build": "vitepress build",
     "dev": "vitepress dev"
+  },
+  "dependencies": {
+    "vitepress-openapi": "^0.1.17"
   }
 }

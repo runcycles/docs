@@ -57,6 +57,7 @@ export default defineConfig({
         text: 'Protocol Reference',
         items: [
           { text: 'API Reference', link: '/protocol/api-reference-for-the-cycles-protocol' },
+          { text: 'OpenAPI Reference', link: '/protocol/openapi' },
           { text: 'Reserve / Commit Lifecycle', link: '/protocol/how-reserve-commit-works-in-cycles' },
           { text: 'Authentication and Tenancy', link: '/protocol/authentication-tenancy-and-api-keys-in-cycles' },
           { text: 'Scope Derivation', link: '/protocol/how-scope-derivation-works-in-cycles' },
