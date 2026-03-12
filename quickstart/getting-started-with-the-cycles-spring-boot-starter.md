@@ -15,6 +15,31 @@ The starter wraps any annotated method in a reserve → execute → commit lifec
 
 All of this happens transparently through Spring AOP.
 
+## Try the demo app first
+
+The fastest way to see the starter in action is to run the included demo application. It requires a running Cycles stack (see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack)).
+
+```bash
+git clone https://github.com/runcycles/cycles-spring-boot-starter.git
+cd cycles-spring-boot-starter/cycles-demo-client-java-spring
+```
+
+Edit `src/main/resources/application.yml` and set your API key (the one from the deployment guide):
+
+```yaml
+cycles:
+  api-key: cyc_live_...    # paste your key here
+  base-url: http://localhost:7878
+```
+
+Run the demo:
+
+```bash
+mvn spring-boot:run
+```
+
+The demo app starts on port 7955 with `@Cycles`-annotated services that demonstrate the full reserve/commit lifecycle.
+
 ## Configuration
 
 Add the starter dependency and configure the connection in `application.yml`:

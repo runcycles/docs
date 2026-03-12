@@ -7,6 +7,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Quickstart', link: '/quickstart/deploying-the-full-cycles-stack' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
@@ -14,7 +15,6 @@ export default defineConfig({
       {
         text: 'Quickstart',
         items: [
-          { text: 'Start Here', link: '/' },
           { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
           { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
           { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },

@@ -7,7 +7,7 @@ hero:
   actions:
     - theme: brand
       text: "Get Started"
-      link: "/concepts/why-rate-limits-are-not-enough-for-autonomous-systems"
+      link: "/quickstart/deploying-the-full-cycles-stack"
     - theme: alt
       text: "View on GitHub"
       link: "https://github.com/runcycles"
