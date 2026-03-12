@@ -24,7 +24,7 @@ git clone https://github.com/runcycles/cycles-spring-boot-starter.git
 cd cycles-spring-boot-starter/cycles-demo-client-java-spring
 ```
 
-Edit the file `cycles-demo-client-java-spring/application.yml` and set your API key (the one from the deployment guide):
+Edit the file `cycles-demo-client-java-spring/src/main/resources/application.yml` and set your API key (the one from the deployment guide):
 
 ```yaml
 cycles:
