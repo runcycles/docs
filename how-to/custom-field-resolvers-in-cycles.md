@@ -233,6 +233,14 @@ void testNullWhenNoContext() {
 - Return `null` to omit a field
 - Useful for multi-tenant SaaS, request-scoped context, and database lookups
 
+## Working example in the demo app
+
+The demo application includes a complete working field resolver:
+
+- **`CyclesTenantResolver.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/resolvers/CyclesTenantResolver.java`) — Registered as `@Component("tenant")`, implements `CyclesFieldResolver`, and resolves the tenant dynamically via a repository service lookup. This is exactly the "database lookup" pattern described above.
+
+The resolver is used automatically by all `@Cycles`-annotated methods in the demo when no tenant is specified in the annotation or `application.yml` configuration.
+
 ## Next steps
 
 - [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — all config properties and resolution order

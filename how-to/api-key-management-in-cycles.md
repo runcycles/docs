@@ -65,7 +65,7 @@ Store the API key securely. It is shown only once at creation time.
 
 ### In the Spring Boot Starter
 
-Configure the key in `application.yml`:
+Configure the key in your project's `application.yml`:
 
 ```yaml
 cycles:
