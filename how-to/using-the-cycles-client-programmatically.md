@@ -1,10 +1,33 @@
 # Using the Cycles Client Programmatically
 
-The `@Cycles` annotation handles most use cases automatically. But sometimes you need direct control — building requests manually, managing the lifecycle yourself, or calling endpoints that the annotation does not cover.
+The decorator / annotation handles most use cases automatically. But sometimes you need direct control — building requests manually, managing the lifecycle yourself, or calling endpoints that the decorator does not cover.
 
-The `CyclesClient` interface provides programmatic access to every Cycles protocol endpoint.
+Both the Python `CyclesClient` and the Java `CyclesClient` interface provide programmatic access to every Cycles protocol endpoint.
 
 ## Getting the client
+
+### Python
+
+```python
+from runcycles import CyclesClient, CyclesConfig
+
+config = CyclesConfig(
+    base_url="http://localhost:7878",
+    api_key="cyc_live_...",
+    tenant="acme-corp",
+)
+
+client = CyclesClient(config)
+```
+
+Or from environment variables:
+
+```python
+config = CyclesConfig.from_env()  # reads CYCLES_BASE_URL, CYCLES_API_KEY, etc.
+client = CyclesClient(config)
+```
+
+### Java (Spring Boot Starter)
 
 If you are using the Spring Boot Starter, `CyclesClient` is auto-configured and available for injection:
 
@@ -20,32 +43,39 @@ public class BudgetService {
 }
 ```
 
-## The CyclesClient interface
+## Creating a reservation
 
-```java
-public interface CyclesClient {
-    // Core lifecycle
-    CyclesResponse<Map<String, Object>> createReservation(Object body);
-    CyclesResponse<Map<String, Object>> commitReservation(String reservationId, Object body);
-    CyclesResponse<Map<String, Object>> releaseReservation(String reservationId, Object body);
-    CyclesResponse<Map<String, Object>> extendReservation(String reservationId, Object body);
+### Python
 
-    // Preflight decision
-    CyclesResponse<Map<String, Object>> decide(Object body);
+```python
+from runcycles import (
+    CyclesClient, ReservationCreateRequest,
+    Subject, Action, Amount, Unit, CommitOveragePolicy,
+)
 
-    // Query
-    CyclesResponse<Map<String, Object>> listReservations(Map<String, String> queryParams);
-    CyclesResponse<Map<String, Object>> getReservation(String reservationId);
-    CyclesResponse<Map<String, Object>> getBalances(Map<String, String> queryParams);
+with CyclesClient(config) as client:
+    response = client.create_reservation(ReservationCreateRequest(
+        idempotency_key="req-abc-123",
+        subject=Subject(tenant="acme", workspace="production", app="chatbot"),
+        action=Action(kind="llm.completion", name="gpt-4o"),
+        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=5000),
+        ttl_ms=60_000,
+        overage_policy=CommitOveragePolicy.REJECT,
+    ))
 
-    // Direct debit
-    CyclesResponse<Map<String, Object>> createEvent(Object body);
-}
+    if not response.is_success:
+        raise RuntimeError(f"Reservation failed: {response.error_message}")
+
+    reservation_id = response.get_body_attribute("reservation_id")
+    decision = response.get_body_attribute("decision")
+
+    # For non-dry-run reservations, insufficient budget returns 409 (not decision=DENY).
+    # decision=DENY in a 2xx response only occurs when dry_run=true.
+
+    # Proceed with work...
 ```
 
-Each method also has a typed overload that accepts a request DTO and calls `.toMap()` internally.
-
-## Creating a reservation
+### Java
 
 ```java
 ReservationCreateRequest request = ReservationCreateRequest.builder()
@@ -64,7 +94,6 @@ ReservationCreateRequest request = ReservationCreateRequest.builder()
 CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(request);
 
 if (!response.is2xx()) {
-    // Handle error
     throw new RuntimeException("Reservation failed: " + response.getErrorMessage());
 }
 
@@ -79,6 +108,26 @@ String decision = (String) body.get("decision");
 ```
 
 ## Committing actual usage
+
+### Python
+
+```python
+from runcycles import CommitRequest, CyclesMetrics
+
+client.commit_reservation(reservation_id, CommitRequest(
+    idempotency_key="commit-abc-123",
+    actual=Amount(unit=Unit.USD_MICROCENTS, amount=3200),
+    metrics=CyclesMetrics(
+        tokens_input=150,
+        tokens_output=80,
+        latency_ms=320,
+        model_version="gpt-4o-2024-08-06",
+    ),
+    metadata={"request_id": "req-abc-123"},
+))
+```
+
+### Java
 
 ```java
 CyclesMetrics metrics = new CyclesMetrics();
@@ -102,6 +151,19 @@ CyclesResponse<Map<String, Object>> commitResponse =
 
 If work is cancelled or fails before producing any usage:
 
+### Python
+
+```python
+from runcycles import ReleaseRequest
+
+client.release_reservation(reservation_id, ReleaseRequest(
+    idempotency_key="release-abc-123",
+    reason="Task cancelled by user",
+))
+```
+
+### Java
+
 ```java
 ReleaseRequest releaseRequest = ReleaseRequest.builder()
     .idempotencyKey("release-" + UUID.randomUUID())
@@ -112,6 +174,63 @@ cyclesClient.releaseReservation(reservationId, releaseRequest);
 ```
 
 ## Full lifecycle example
+
+### Python
+
+```python
+from runcycles import (
+    CyclesClient, CyclesConfig, ReservationCreateRequest, CommitRequest,
+    ReleaseRequest, Subject, Action, Amount, Unit, CyclesMetrics,
+)
+
+config = CyclesConfig(base_url="http://localhost:7878", api_key="cyc_live_...", tenant="acme")
+
+def process_document(doc_id: str, content: str) -> str:
+    idempotency_key = f"doc-{doc_id}"
+    estimated_tokens = len(content) // 4
+
+    with CyclesClient(config) as client:
+        # 1. Reserve
+        response = client.create_reservation(ReservationCreateRequest(
+            idempotency_key=idempotency_key,
+            subject=Subject(tenant="acme", workspace="production", app="doc-processor"),
+            action=Action(kind="llm.completion", name="gpt-4o"),
+            estimate=Amount(unit=Unit.USD_MICROCENTS, amount=estimated_tokens * 10),
+            ttl_ms=120_000,
+            overage_policy="ALLOW_IF_AVAILABLE",
+        ))
+
+        if not response.is_success:
+            raise RuntimeError(f"Reservation failed: {response.error_message}")
+
+        reservation_id = response.get_body_attribute("reservation_id")
+
+        # 2. Execute
+        try:
+            result = call_llm(content)
+
+            # 3. Commit
+            actual_tokens = count_tokens(result)
+            client.commit_reservation(reservation_id, CommitRequest(
+                idempotency_key=f"commit-{idempotency_key}",
+                actual=Amount(unit=Unit.USD_MICROCENTS, amount=actual_tokens * 10),
+                metrics=CyclesMetrics(
+                    tokens_input=estimated_tokens,
+                    tokens_output=actual_tokens,
+                ),
+            ))
+            return result
+
+        except Exception:
+            # 4. Release on failure
+            client.release_reservation(reservation_id, ReleaseRequest(
+                idempotency_key=f"release-{idempotency_key}",
+                reason="Processing failed",
+            ))
+            raise
+```
+
+### Java
 
 ```java
 @Service
@@ -187,7 +306,26 @@ public class DocumentProcessor {
 
 ## Preflight decision check
 
-Check budget availability without creating a reservation:
+Check budget availability without creating a reservation.
+
+### Python
+
+```python
+from runcycles import DecisionRequest
+
+response = client.decide(DecisionRequest(
+    idempotency_key="decide-001",
+    subject=Subject(tenant="acme", workspace="production"),
+    action=Action(kind="llm.completion", name="gpt-4o"),
+    estimate=Amount(unit=Unit.USD_MICROCENTS, amount=50_000),
+))
+
+decision = response.get_body_attribute("decision")  # "ALLOW" or "DENY"
+if decision == "DENY":
+    print("Budget low — show warning in UI")
+```
+
+### Java
 
 ```java
 DecisionRequest decisionRequest = DecisionRequest.builder()
@@ -209,6 +347,17 @@ if ("DENY".equals(decision)) {
 ```
 
 ## Querying balances
+
+### Python
+
+```python
+response = client.get_balances(tenant="acme", workspace="production")
+if response.is_success:
+    for balance in response.body.get("balances", []):
+        print(f"Scope: {balance['scope']}, remaining: {balance['remaining']}")
+```
+
+### Java
 
 ```java
 Map<String, String> params = Map.of(
@@ -232,6 +381,17 @@ for (Map<String, Object> balance : balances) {
 
 ## Listing reservations
 
+### Python
+
+```python
+response = client.list_reservations(tenant="acme", status="ACTIVE", limit="20")
+if response.is_success:
+    for reservation in response.body.get("reservations", []):
+        print(f"ID: {reservation['reservation_id']}, status: {reservation['status']}")
+```
+
+### Java
+
 ```java
 Map<String, String> params = Map.of(
     "tenant", "acme",
@@ -245,7 +405,22 @@ CyclesResponse<Map<String, Object>> listResponse =
 
 ## Recording events (direct debit)
 
-For post-hoc accounting without a reservation:
+For post-hoc accounting without a reservation.
+
+### Python
+
+```python
+from runcycles import EventCreateRequest
+
+response = client.create_event(EventCreateRequest(
+    idempotency_key="evt-001",
+    subject=Subject(tenant="acme", workspace="production"),
+    action=Action(kind="search.api", name="google-search"),
+    actual=Amount(unit=Unit.USD_MICROCENTS, amount=1200),
+))
+```
+
+### Java
 
 ```java
 EventCreateRequest event = EventCreateRequest.builder()
@@ -261,22 +436,26 @@ EventCreateRequest event = EventCreateRequest.builder()
 cyclesClient.createEvent(event);
 ```
 
-## Using raw maps instead of DTOs
+## CyclesResponse
 
-If you prefer working with maps directly:
+### Python
 
-```java
-Map<String, Object> body = Map.of(
-    "idempotency_key", UUID.randomUUID().toString(),
-    "subject", Map.of("tenant", "acme", "workspace", "production"),
-    "action", Map.of("kind", "llm.completion", "name", "gpt-4o"),
-    "estimate", Map.of("amount", 5000, "unit", "USD_MICROCENTS")
-);
+All client methods return `CyclesResponse`:
 
-CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(body);
+```python
+response = client.create_reservation(request)
+
+response.is_success          # True if HTTP 2xx
+response.is_server_error     # True if HTTP 5xx
+response.is_transport_error  # True if connection failed
+response.status              # HTTP status code
+response.body                # Parsed JSON body as dict
+response.error_message       # Error message (if error)
+response.request_id          # X-Request-Id header
+response.rate_limit_remaining  # X-RateLimit-Remaining (int or None)
 ```
 
-## CyclesResponse
+### Java
 
 All client methods return `CyclesResponse<Map<String, Object>>`:
 
@@ -291,28 +470,36 @@ response.getBody();         // parsed JSON body as Map
 response.getErrorMessage(); // error message (if error)
 ```
 
-## When to use programmatic vs annotation
+## Async support (Python)
+
+The Python client provides `AsyncCyclesClient` for asyncio-based applications:
+
+```python
+from runcycles import AsyncCyclesClient
+
+async with AsyncCyclesClient(config) as client:
+    response = await client.create_reservation(request)
+    if response.is_success:
+        reservation_id = response.get_body_attribute("reservation_id")
+        # ... do async work ...
+        await client.commit_reservation(reservation_id, commit_request)
+```
+
+## When to use programmatic vs decorator/annotation
 
 | Use case | Approach |
 |---|---|
-| Wrapping a single method call in a budget lifecycle | `@Cycles` annotation |
+| Wrapping a single method call in a budget lifecycle | `@cycles` decorator / `@Cycles` annotation |
 | Managing multiple reservations in a workflow | Programmatic `CyclesClient` |
 | Querying balances or listing reservations | Programmatic `CyclesClient` |
 | Preflight decisions for UI routing | Programmatic `CyclesClient` |
 | Recording events without reservations | Programmatic `CyclesClient` |
 | Fine-grained error handling per step | Programmatic `CyclesClient` |
 
-## Working example in the demo app
-
-The demo application includes a complete working implementation of programmatic client usage:
-
-- **`ProgrammaticClientService.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/service/ProgrammaticClientService.java`) — Demonstrates the full reserve → commit lifecycle, reserve → release (cancellation), preflight `decide()`, balance queries, and reservation listing using typed DTOs.
-- **`EventService.java`** (`cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/service/EventService.java`) — Demonstrates `createEvent()` for direct debit accounting without a reservation.
-
-Run the demo with `mvn spring-boot:run` and use the `/api/demo/client/*` and `/api/demo/events/*` endpoints to see these in action.
-
 ## Next steps
 
-- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation-based approach
+- [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — Python decorator and client setup
+- [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — Java annotation-based approach
 - [API Reference](/api/) — interactive endpoint documentation
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling exceptions in client code
+- [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception hierarchy and patterns
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — Java error handling patterns

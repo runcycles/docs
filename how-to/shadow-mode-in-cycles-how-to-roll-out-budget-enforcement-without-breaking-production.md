@@ -371,4 +371,5 @@ To explore the Cycles stack:
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
+- Integrate with Python using the [Python Client](https://github.com/runcycles/cycles-client-python)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
