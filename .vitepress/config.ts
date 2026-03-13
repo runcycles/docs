@@ -12,7 +12,11 @@ export default defineConfig({
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   srcExclude: ['cycles-protocol/**'],
+  head: [
+    ['link', { rel: 'icon', href: '/docs/runcycles-favicon.png' }],
+  ],
   themeConfig: {
+    logo: '/runcycles-logo-64.png',
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Quickstart', link: '/quickstart/deploying-the-full-cycles-stack' },
