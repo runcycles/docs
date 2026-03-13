@@ -94,7 +94,8 @@ export default defineConfig({
         {
           text: 'Configuration Reference',
           items: [
-            { text: 'Client Configuration', link: '/configuration/client-configuration-reference-for-cycles-spring-boot-starter' },
+            { text: 'Python Client Configuration', link: '/configuration/python-client-configuration-reference' },
+            { text: 'Spring Client Configuration', link: '/configuration/client-configuration-reference-for-cycles-spring-boot-starter' },
             { text: 'Server Configuration', link: '/configuration/server-configuration-reference-for-cycles' },
             { text: 'SpEL Expression Reference', link: '/configuration/spel-expression-reference-for-cycles' },
           ]

@@ -188,7 +188,7 @@ with CyclesClient(config) as client:
     if response.is_success:
         reservation_id = response.get_body_attribute("reservation_id")
         # Proceed with work
-    elif response.status_code >= 500:
+    elif response.is_server_error:
         # Server error — retry with backoff
         logger.warning("Cycles server error: %s", response.error_message)
     elif response.is_transport_error:

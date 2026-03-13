@@ -1,8 +1,165 @@
 # Testing with Cycles
 
-This guide covers how to test code that uses the `@Cycles` annotation and the `CyclesClient` interface.
+This guide covers how to test code that uses the `@cycles` decorator (Python) or the `@Cycles` annotation (Java) and the `CyclesClient` interface.
 
-## Unit testing @Cycles-annotated methods
+## Python
+
+### Unit testing @cycles-decorated functions
+
+The `@cycles` decorator requires a client to function. In a unit test, you can test business logic by calling the underlying function directly without the decorator, or by mocking the client.
+
+For plain function logic (without budget enforcement), test the function directly:
+
+```python
+def test_business_logic():
+    result = call_llm("some text")
+    assert result == "expected output"
+```
+
+### Mocking CyclesClient with pytest
+
+When testing code that uses `CyclesClient` programmatically, mock the client responses:
+
+```python
+from unittest.mock import MagicMock, ANY
+from runcycles import CyclesClient, CyclesResponse
+import pytest
+
+def test_successful_processing():
+    client = MagicMock(spec=CyclesClient)
+
+    # Mock reservation response
+    client.create_reservation.return_value = CyclesResponse.success(200, {
+        "reservation_id": "res-123",
+        "decision": "ALLOW",
+        "expires_at_ms": 1709312345678,
+    })
+
+    # Mock commit response
+    client.commit_reservation.return_value = CyclesResponse.success(200, {
+        "status": "COMMITTED",
+    })
+
+    result = process_document(client, "doc-1", "content")
+
+    assert result is not None
+    client.create_reservation.assert_called_once()
+    client.commit_reservation.assert_called_once()
+
+
+def test_budget_denied():
+    client = MagicMock(spec=CyclesClient)
+
+    # Insufficient budget returns 409
+    client.create_reservation.return_value = CyclesResponse.http_error(
+        409, "Insufficient remaining balance",
+        body={"error": "BUDGET_EXCEEDED", "message": "Insufficient remaining balance"},
+    )
+
+    result = process_document(client, "doc-1", "content")
+
+    assert result == "Budget exhausted. Please try again later."
+    client.commit_reservation.assert_not_called()
+
+
+def test_release_on_failure():
+    client = MagicMock(spec=CyclesClient)
+
+    client.create_reservation.return_value = CyclesResponse.success(200, {
+        "reservation_id": "res-123",
+        "decision": "ALLOW",
+    })
+
+    with pytest.raises(RuntimeError):
+        process_document_that_fails(client, "doc-1", "content")
+
+    # Verify budget was released
+    client.release_reservation.assert_called_once()
+```
+
+### Testing with pytest-httpx
+
+For integration-style tests, use `pytest-httpx` to mock HTTP responses:
+
+```python
+from runcycles import CyclesClient, CyclesConfig, ReservationCreateRequest
+
+def test_full_lifecycle(httpx_mock):
+    httpx_mock.add_response(
+        method="POST",
+        url="http://localhost:7878/v1/reservations",
+        json={
+            "reservation_id": "res-test-001",
+            "decision": "ALLOW",
+            "expires_at_ms": 1709312345678,
+            "affected_scopes": ["tenant:test"],
+        },
+        status_code=200,
+    )
+
+    httpx_mock.add_response(
+        method="POST",
+        url="http://localhost:7878/v1/reservations/res-test-001/commit",
+        json={"status": "COMMITTED"},
+        status_code=200,
+    )
+
+    config = CyclesConfig(base_url="http://localhost:7878", api_key="test-key")
+    with CyclesClient(config) as client:
+        response = client.create_reservation(request)
+        assert response.is_success
+        assert response.get_body_attribute("reservation_id") == "res-test-001"
+```
+
+### Testing error handling
+
+```python
+from runcycles import BudgetExceededError, CyclesProtocolError
+
+def test_budget_exceeded_handling():
+    ex = BudgetExceededError(
+        "Budget exceeded",
+        status=409,
+        error_code="BUDGET_EXCEEDED",
+    )
+    assert ex.is_budget_exceeded()
+    assert not ex.is_reservation_expired()
+    assert ex.status == 409
+
+def test_retry_after_handling():
+    ex = CyclesProtocolError(
+        "Try again later",
+        status=409,
+        error_code="BUDGET_EXCEEDED",
+        retry_after_ms=5000,
+    )
+    assert ex.retry_after_ms == 5000
+```
+
+### Testing async code
+
+```python
+import pytest
+from runcycles import AsyncCyclesClient, CyclesConfig
+
+@pytest.mark.asyncio
+async def test_async_reservation(httpx_mock):
+    httpx_mock.add_response(
+        method="POST",
+        url="http://localhost:7878/v1/reservations",
+        json={"reservation_id": "res-async-001", "decision": "ALLOW"},
+        status_code=200,
+    )
+
+    config = CyclesConfig(base_url="http://localhost:7878", api_key="test-key")
+    async with AsyncCyclesClient(config) as client:
+        response = await client.create_reservation(request)
+        assert response.is_success
+```
+
+## Java (Spring)
+
+### Unit testing @Cycles-annotated methods
 
 The `@Cycles` annotation is driven by Spring AOP. In a plain unit test (without Spring context), the annotation has no effect — the method runs normally without any reservation lifecycle.
 
@@ -19,7 +176,7 @@ void testBusinessLogic() {
 
 No mocking of Cycles is needed for pure unit tests.
 
-## Mocking CyclesClient
+### Mocking CyclesClient
 
 When testing code that uses `CyclesClient` programmatically, mock the client:
 
@@ -35,7 +192,6 @@ class DocumentProcessorTest {
 
     @Test
     void testSuccessfulProcessing() {
-        // Mock reservation response
         Map<String, Object> reserveBody = Map.of(
             "reservation_id", "res-123",
             "decision", "ALLOW",
@@ -44,10 +200,7 @@ class DocumentProcessorTest {
         when(cyclesClient.createReservation(any()))
             .thenReturn(CyclesResponse.success(200, reserveBody));
 
-        // Mock commit response
-        Map<String, Object> commitBody = Map.of(
-            "status", "COMMITTED"
-        );
+        Map<String, Object> commitBody = Map.of("status", "COMMITTED");
         when(cyclesClient.commitReservation(eq("res-123"), any()))
             .thenReturn(CyclesResponse.success(200, commitBody));
 
@@ -60,7 +213,6 @@ class DocumentProcessorTest {
 
     @Test
     void testBudgetDenied() {
-        // Per spec, insufficient budget on createReservation returns 409 BUDGET_EXCEEDED
         when(cyclesClient.createReservation(any()))
             .thenReturn(CyclesResponse.error(409, "BUDGET_EXCEEDED",
                 "Insufficient remaining balance"));
@@ -80,22 +232,20 @@ class DocumentProcessorTest {
         when(cyclesClient.createReservation(any()))
             .thenReturn(CyclesResponse.success(200, reserveBody));
 
-        // Simulate a processing error
         doThrow(new RuntimeException("LLM error"))
             .when(mockLlm).call(any());
 
         assertThrows(RuntimeException.class,
             () -> processor.processDocument("doc-1", "content"));
 
-        // Verify budget was released
         verify(cyclesClient).releaseReservation(eq("res-123"), any());
     }
 }
 ```
 
-## Integration testing with the @Cycles annotation
+### Integration testing with the @Cycles annotation
 
-To test the full `@Cycles` lifecycle in a Spring context, you need to mock the `CyclesClient` bean so no real Cycles server is required:
+To test the full `@Cycles` lifecycle in a Spring context, mock the `CyclesClient` bean:
 
 ```java
 @SpringBootTest
@@ -109,7 +259,6 @@ class CyclesIntegrationTest {
 
     @Test
     void testAnnotatedMethodWithAllow() {
-        // Mock a successful reservation
         Map<String, Object> reserveBody = Map.of(
             "reservation_id", "res-test-001",
             "decision", "ALLOW",
@@ -121,7 +270,6 @@ class CyclesIntegrationTest {
         when(cyclesClient.createReservation(any()))
             .thenReturn(CyclesResponse.success(200, reserveBody));
 
-        // Mock a successful commit
         Map<String, Object> commitBody = Map.of(
             "status", "COMMITTED",
             "charged", Map.of("amount", 3200, "unit", "USD_MICROCENTS")
@@ -129,7 +277,6 @@ class CyclesIntegrationTest {
         when(cyclesClient.commitReservation(any(), any()))
             .thenReturn(CyclesResponse.success(200, commitBody));
 
-        // Call the annotated method — the aspect handles the lifecycle
         String result = llmService.summarize("test input");
 
         assertNotNull(result);
@@ -139,7 +286,6 @@ class CyclesIntegrationTest {
 
     @Test
     void testAnnotatedMethodWithDeny() {
-        // Mock a deny response
         Map<String, Object> denyBody = Map.of(
             "decision", "DENY",
             "error", "BUDGET_EXCEEDED",
@@ -154,7 +300,7 @@ class CyclesIntegrationTest {
 }
 ```
 
-## Integration testing with a real Cycles server
+### Integration testing with a real Cycles server
 
 For end-to-end tests, use Testcontainers to spin up Redis and the Cycles server:
 
@@ -179,9 +325,6 @@ class FullIntegrationTest {
 
     @Test
     void testFullLifecycle() {
-        // This test requires a running Cycles server
-        // connected to the Testcontainers Redis instance
-
         ReservationCreateRequest request = ReservationCreateRequest.builder()
             .idempotencyKey("integration-test-001")
             .subject(Subject.builder().tenant("test-tenant").build())
@@ -197,7 +340,7 @@ class FullIntegrationTest {
 }
 ```
 
-## Testing CyclesFieldResolver implementations
+### Testing CyclesFieldResolver implementations
 
 Test custom field resolvers directly:
 
@@ -212,20 +355,9 @@ void testTenantResolver() {
 
     assertEquals("resolved-tenant", resolver.resolve());
 }
-
-@Test
-void testTenantResolverWhenEmpty() {
-    RepositoryAccessService repoService = mock(RepositoryAccessService.class);
-    when(repoService.findTenant()).thenReturn(Optional.empty());
-
-    CyclesTenantResolver resolver = new CyclesTenantResolver();
-    ReflectionTestUtils.setField(resolver, "repositoryAccessService", repoService);
-
-    assertNull(resolver.resolve());
-}
 ```
 
-## Testing SpEL expressions
+### Testing SpEL expressions
 
 Test that your SpEL expressions evaluate correctly:
 
@@ -240,65 +372,20 @@ void testEstimateExpression() {
     long result = evaluator.evaluate("#p0 * 10", method, args, null, null);
     assertEquals(5000, result);
 }
-
-@Test
-void testActualExpression() {
-    CyclesExpressionEvaluator evaluator = new CyclesExpressionEvaluator();
-
-    Method method = LlmService.class.getMethod("summarize", String.class);
-    Object[] args = { "input text" };
-    String result = "output with 20 chars";
-
-    long actual = evaluator.evaluate("#result.length() * 5", method, args, result, null);
-    assertEquals(100, actual);
-}
-```
-
-## Testing error handling
-
-Test that your code handles Cycles errors correctly:
-
-```java
-@Test
-void testBudgetExceededHandling() {
-    CyclesProtocolException ex = new CyclesProtocolException(
-        "Budget exceeded",
-        ErrorCode.BUDGET_EXCEEDED,
-        "BUDGET_EXCEEDED",
-        409,
-        null
-    );
-
-    assertTrue(ex.isBudgetExceeded());
-    assertFalse(ex.isReservationExpired());
-    assertEquals(409, ex.getHttpStatus());
-}
-
-@Test
-void testRetryAfterHandling() {
-    CyclesProtocolException ex = new CyclesProtocolException(
-        "Try again later",
-        ErrorCode.BUDGET_EXCEEDED,
-        "BUDGET_EXCEEDED",
-        409,
-        5000
-    );
-
-    assertEquals(5000, ex.getRetryAfterMs());
-}
 ```
 
 ## Tips
 
-- **Unit tests**: test business logic without Spring context — `@Cycles` has no effect
-- **Mock CyclesClient**: use `@MockBean` in Spring tests to avoid needing a real server
+- **Unit tests**: test business logic without the decorator/annotation — it has no effect when bypassed
+- **Mock CyclesClient**: use Python `MagicMock` or Java `@MockBean` to avoid needing a real server
 - **Test both ALLOW and DENY paths**: ensure your code handles budget denial gracefully
-- **Test error paths**: verify release is called when methods throw
-- **Test SpEL expressions independently**: catch evaluation errors early
-- **Use Testcontainers for E2E**: spin up Redis for realistic integration tests
+- **Test error paths**: verify release is called when functions/methods throw
+- **Use HTTP mocking for integration tests**: `pytest-httpx` for Python, Testcontainers for Java
+- **Python-specific**: use `pytest-httpx` for sync and `respx` for async HTTP mocking
 
 ## Next steps
 
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling Cycles exceptions
+- [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception handling patterns
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
 - [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — direct client usage
-- [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax
+- [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax (Java)

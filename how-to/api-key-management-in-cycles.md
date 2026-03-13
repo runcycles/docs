@@ -63,6 +63,33 @@ Store the API key securely. It is shown only once at creation time.
 
 ## Using API keys
 
+### In the Python client
+
+Configure the key via `CyclesConfig`:
+
+```python
+import os
+from runcycles import CyclesConfig
+
+config = CyclesConfig(
+    base_url="https://cycles.example.com",
+    api_key=os.environ["CYCLES_API_KEY"],
+    tenant="acme",
+)
+```
+
+Or from environment variables:
+
+```bash
+export CYCLES_BASE_URL=https://cycles.example.com
+export CYCLES_API_KEY=cyc_live_abc123...
+export CYCLES_TENANT=acme
+```
+
+```python
+config = CyclesConfig.from_env()
+```
+
 ### In the Spring Boot Starter
 
 Configure the key in your project's `application.yml`:

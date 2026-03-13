@@ -358,4 +358,4 @@ For each `@cycles`-decorated function call:
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python-specific exception hierarchy and patterns
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
 - [API Reference](/api/) — interactive endpoint documentation
-- [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — programmatic client reference (Java examples)
+- [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — programmatic client reference
