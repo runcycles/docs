@@ -113,7 +113,29 @@ When `cooldown_ms` is returned, the client should wait that long before making t
 
 This reduces execution velocity without stopping the workflow.
 
-## Caps in the Spring Boot client
+## Caps in client code
+
+### Python
+
+Inside a `@cycles`-decorated function, access caps through `get_cycles_context()`:
+
+```python
+from runcycles import cycles, get_cycles_context
+
+@cycles(estimate=1000)
+def process(prompt: str) -> str:
+    ctx = get_cycles_context()
+    if ctx.has_caps():
+        if ctx.caps.max_tokens:
+            # limit generation length
+            pass
+        if not ctx.caps.is_tool_allowed("web.search"):
+            # skip web search tool
+            pass
+    return call_llm(prompt)
+```
+
+### Java (Spring Boot)
 
 The Spring Boot client makes caps available through the `CyclesReservationContext`:
 

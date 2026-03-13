@@ -111,7 +111,23 @@ Switch specific action classes from dry run to live enforcement. Keep others in 
 
 Once confidence is high, switch all action classes to live enforcement.
 
-## Dry run in the Spring Boot client
+## Dry run in client code
+
+### Python
+
+The `@cycles` decorator supports dry run:
+
+```python
+from runcycles import cycles
+
+@cycles(estimate=1000, dry_run=True)
+def summarize(text: str) -> str:
+    return call_llm(text)
+```
+
+When `dry_run=True`, the client evaluates the reservation without holding budget. The decorated function does not execute — a `DryRunResult` is returned instead. This allows teams to observe what would have happened under enforcement without affecting runtime behavior.
+
+### Java (Spring Boot)
 
 The `@Cycles` annotation supports dry run:
 

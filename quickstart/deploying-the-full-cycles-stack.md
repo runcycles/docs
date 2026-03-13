@@ -463,6 +463,36 @@ public class LlmService {
 }
 ```
 
+### Python (using the runcycles client)
+
+Install the client:
+
+```bash
+pip install runcycles
+```
+
+Use the `@cycles` decorator for automatic reserve/execute/commit:
+
+```python
+from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+
+config = CyclesConfig(
+    base_url="http://localhost:7878",
+    api_key="cyc_live_...",
+    tenant="acme-corp",
+)
+client = CyclesClient(config)
+set_default_client(client)
+
+@cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
+def generate(prompt: str) -> str:
+    return call_openai(prompt)
+
+result = generate("Hello")
+```
+
+Or use `CyclesConfig.from_env()` to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) for full details.
+
 ### Any language (raw HTTP)
 
 Any HTTP client can use Cycles. The protocol is language-agnostic:
