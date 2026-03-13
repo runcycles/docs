@@ -115,13 +115,13 @@ Total lockout after crash: ~10 seconds.
 
 Compare this to a single 10-minute TTL, where a crash at T=1 would lock budget for 9 minutes plus grace period.
 
-## The Spring Boot client handles this automatically
+## Both clients handle this automatically
 
-The `@Cycles` annotation in the Spring Boot client automatically schedules heartbeat extensions:
+The `@cycles` decorator (Python) and `@Cycles` annotation (Java) automatically schedule heartbeat extensions:
 
-- The heartbeat interval is `ttlMs / 2` (minimum 1 second)
-- Extensions are scheduled on a background thread
-- The heartbeat stops when the method returns (commit or release)
+- The heartbeat interval is `ttl_ms / 2` (minimum 1 second)
+- Extensions are scheduled on a background thread (Python) or thread pool (Java)
+- The heartbeat stops when the function/method returns (commit or release)
 
 This means most users do not need to implement extend logic manually.
 

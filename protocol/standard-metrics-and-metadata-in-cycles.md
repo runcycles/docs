@@ -131,7 +131,37 @@ This means a full reservation lifecycle can carry metadata from creation through
 2. Extend with `metadata: { "heartbeat_seq": "3" }`
 3. Commit with `metadata: { "request_id": "..." }` and `metrics: { ... }`
 
-## Metrics in the Spring Boot client
+## Metrics in client code
+
+### Python
+
+Inside a `@cycles`-decorated function, attach metrics and metadata through `get_cycles_context()`:
+
+```python
+from runcycles import cycles, get_cycles_context, CyclesMetrics
+
+@cycles(estimate=1000)
+def chat(prompt: str) -> str:
+    response = call_llm(prompt)
+
+    ctx = get_cycles_context()
+    ctx.metrics = CyclesMetrics(
+        tokens_input=response.usage.prompt_tokens,
+        tokens_output=response.usage.completion_tokens,
+        latency_ms=elapsed,
+        model_version=response.model,
+    )
+    ctx.commit_metadata = {
+        "request_id": request_id,
+        "trace_id": trace_id,
+    }
+
+    return response.text
+```
+
+The decorator automatically includes these metrics and metadata in the commit request when the function returns.
+
+### Java (Spring Boot)
 
 The Spring Boot client exposes metrics through `CyclesContextHolder`:
 

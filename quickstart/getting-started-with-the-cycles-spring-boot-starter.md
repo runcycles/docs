@@ -4,6 +4,8 @@ The Cycles Spring Boot Starter provides a declarative way to add budget enforcem
 
 Instead of manually calling the Cycles API for every reservation, commit, and release, the starter provides an `@Cycles` annotation that handles the full lifecycle automatically.
 
+> **Using Python?** See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) instead.
+
 ## What the starter does
 
 The starter wraps any annotated method in a reserve → execute → commit lifecycle:
