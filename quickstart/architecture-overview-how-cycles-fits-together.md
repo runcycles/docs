@@ -248,14 +248,14 @@ The server authenticates every request via the `X-Cycles-API-Key` header. Each A
 A typical deployment:
 
 ```
-┌──────────┐  ┌──────────┐  ┌──────────┐
-│ Agent A  │  │ Agent B  │  │ Agent C  │
-│ (Spring) │  │ (Spring) │  │ (Python) │
-└────┬─────┘  └────┬─────┘  └────┬─────┘
-     │             │             │
-     └──────┬──────┘             │
-            │                    │
-            ▼                    ▼
+┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+│ Agent A  │  │ Agent B  │  │ Agent C  │  │ Agent D  │
+│ (Spring) │  │ (Python) │  │ (Node.js)│  │  (HTTP)  │
+└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
+     │             │             │             │
+     └──────┬──────┴─────────────┴─────────────┘
+            │
+            ▼
      ┌──────────────────────────────┐      ┌──────────────────────────┐
      │       Cycles Server          │      │   Cycles Admin Server    │
      │    (one or more instances)   │      │   (internal network)     │
@@ -273,11 +273,13 @@ A typical deployment:
 
 Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines.
 
-Non-Spring clients (Python, Node.js, Go) can use the protocol directly via HTTP — the Spring Boot Starter is a convenience layer, not a requirement.
+Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directly via HTTP — the client libraries are convenience layers, not a requirement.
 
 ## Next steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
 - [API Reference](/api/) — interactive endpoint documentation
+- [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — integrate with your Python app
+- [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — integrate with your TypeScript/Node.js app
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app
