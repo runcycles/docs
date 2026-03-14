@@ -19,7 +19,7 @@ export default defineConfig({
     logo: '/runcycles-logo-64.png',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Quickstart', link: '/quickstart/deploying-the-full-cycles-stack' },
+      { text: 'Quickstart', link: '/quickstart/getting-started-with-the-python-client' },
       { text: 'API Reference', link: '/api/' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
@@ -38,13 +38,14 @@ export default defineConfig({
         {
           text: 'Quickstart',
           items: [
-            { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
-            { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
-            { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
-            { text: 'Spring Boot Starter', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
-            { text: 'Python Client', link: '/quickstart/getting-started-with-the-python-client' },
+            { text: 'Add to a Python App', link: '/quickstart/getting-started-with-the-python-client' },
+            { text: 'Add to a TypeScript App', link: '/quickstart/getting-started-with-the-typescript-client' },
+            { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
             { text: 'Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
             { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
+            { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
+            { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
+            { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
           ]
         },
         {
@@ -99,6 +100,7 @@ export default defineConfig({
           text: 'Configuration Reference',
           items: [
             { text: 'Python Client Configuration', link: '/configuration/python-client-configuration-reference' },
+            { text: 'TypeScript Client Configuration', link: '/configuration/typescript-client-configuration-reference' },
             { text: 'Spring Client Configuration', link: '/configuration/client-configuration-reference-for-cycles-spring-boot-starter' },
             { text: 'Server Configuration', link: '/configuration/server-configuration-reference-for-cycles' },
             { text: 'SpEL Expression Reference', link: '/configuration/spel-expression-reference-for-cycles' },

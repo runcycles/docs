@@ -493,6 +493,39 @@ result = generate("Hello")
 
 Or use `CyclesConfig.from_env()` to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) for full details.
 
+### TypeScript / Node.js (using the runcycles client)
+
+Install the client:
+
+```bash
+npm install runcycles
+```
+
+Use the `withCycles` higher-order function for automatic reserve/execute/commit:
+
+```typescript
+import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
+
+const config = new CyclesConfig({
+  baseUrl: "http://localhost:7878",
+  apiKey: "cyc_live_...",
+  tenant: "acme-corp",
+});
+const client = new CyclesClient(config);
+setDefaultClient(client);
+
+const generate = withCycles(
+  { estimate: 5000, actionKind: "llm.completion", actionName: "openai:gpt-4o" },
+  async (prompt: string) => {
+    return await callOpenAI(prompt);
+  },
+);
+
+const result = await generate("Hello");
+```
+
+Or use `CyclesConfig.fromEnv()` to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [TypeScript Client quickstart](/quickstart/getting-started-with-the-typescript-client) for full details.
+
 ### Any language (raw HTTP)
 
 Any HTTP client can use Cycles. The protocol is language-agnostic:
