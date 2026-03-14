@@ -112,7 +112,7 @@ Queries are always scoped to the effective tenant. The server rejects requests t
     },
     {
       "scope": "app:support-bot",
-      "scope_path": "tenant:acme/workspace:default/app:support-bot",
+      "scope_path": "tenant:acme/app:support-bot",
       "remaining": { "unit": "USD_MICROCENTS", "amount": 22000000 },
       "reserved": { "unit": "USD_MICROCENTS", "amount": 3000000 },
       "spent": { "unit": "USD_MICROCENTS", "amount": 5000000 },
@@ -172,7 +172,7 @@ Historical balance queries (collected over time) reveal consumption patterns:
 Each balance has two identifiers:
 
 - **scope** — the individual scope identifier (e.g., `tenant:acme`, `app:support-bot`)
-- **scope_path** — the full hierarchical path (e.g., `tenant:acme/workspace:default/app:support-bot`)
+- **scope_path** — the full hierarchical path (e.g., `tenant:acme/app:support-bot`)
 
 The scope_path places the balance in the hierarchy. The scope identifies the individual level.
 
@@ -197,7 +197,7 @@ Consider this balance:
 ```json
 {
   "scope": "workflow:refund-assistant",
-  "scope_path": "tenant:acme/workspace:default/app:support-bot/workflow:refund-assistant",
+  "scope_path": "tenant:acme/app:support-bot/workflow:refund-assistant",
   "remaining": { "unit": "USD_MICROCENTS", "amount": 12000000 },
   "reserved": { "unit": "USD_MICROCENTS", "amount": 3000000 },
   "spent": { "unit": "USD_MICROCENTS", "amount": 15000000 },

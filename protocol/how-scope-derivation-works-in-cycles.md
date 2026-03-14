@@ -25,11 +25,10 @@ For example, given a Subject with:
 The server derives these scopes (in canonical order):
 
 1. `tenant:acme`
-2. `tenant:acme/workspace:default`
-3. `tenant:acme/workspace:default/app:support-bot`
-4. `tenant:acme/workspace:default/app:support-bot/workflow:refund-assistant`
+2. `tenant:acme/app:support-bot`
+3. `tenant:acme/app:support-bot/workflow:refund-assistant`
 
-Each of these scopes is a separate budget boundary. A reservation must satisfy all of them.
+Only explicitly provided levels are included — `workspace` is not present in the subject, so it is skipped. Each of these scopes is a separate budget boundary. A reservation is enforced at every derived scope that has a budget defined — at least one scope must have a budget.
 
 ## The canonical hierarchy
 
@@ -41,9 +40,9 @@ tenant → workspace → app → workflow → agent → toolset
 
 This ordering is normative. The server always processes fields in this order, and `affected_scopes` in responses are always returned in this canonical order.
 
-## Gap-filling with defaults
+## Gap-skipping
 
-Not every Subject includes all six fields. When a field is missing from the hierarchy, the server fills the gap with `"default"`.
+Not every Subject includes all six fields. When a field is missing from the hierarchy, the server skips it — only explicitly provided levels appear in the scope path.
 
 For example, given:
 
@@ -53,18 +52,17 @@ For example, given:
 The derived scope path is:
 
 ```
-tenant:acme/workspace:default/app:default/workflow:default/agent:summarizer-v2
+tenant:acme/agent:summarizer-v2
 ```
 
 And the derived scopes are:
 
 1. `tenant:acme`
-2. `tenant:acme/workspace:default`
-3. `tenant:acme/workspace:default/app:default`
-4. `tenant:acme/workspace:default/app:default/workflow:default`
-5. `tenant:acme/workspace:default/app:default/workflow:default/agent:summarizer-v2`
+2. `tenant:acme/agent:summarizer-v2`
 
-Gap-filling ensures that every scope path is unambiguous and consistent, regardless of which fields the client provides.
+Intermediate levels (`workspace`, `app`, `workflow`) are not present in the subject and are not filled with "default". This means operators only need to create budgets at levels they actually use, rather than at every intermediate level in the hierarchy.
+
+Scopes without budgets are skipped during enforcement — at least one derived scope must have a budget defined.
 
 ## Why hierarchical scopes matter
 
@@ -124,7 +122,7 @@ This tells the client exactly which budget boundaries were affected, which is us
 
 The `scope_path` field in responses is the full canonical path for the reservation.
 
-For example: `tenant:acme/workspace:default/app:support-bot/workflow:refund-assistant`
+For example: `tenant:acme/app:support-bot/workflow:refund-assistant`
 
 This uniquely identifies the leaf scope in the hierarchy.
 
@@ -173,7 +171,7 @@ When a workflow or agent scope runs low, that pressure is visible at higher leve
 
 The scopes you populate on each Subject determine which budget boundaries are checked.
 
-If you only provide tenant and workflow, the server derives scopes for tenant, workspace (default), app (default), and workflow. Agent and toolset scopes are not checked.
+If you only provide tenant and workflow, the server derives scopes for tenant and workflow — intermediate levels are skipped. Agent and toolset scopes are not checked.
 
 This means scope design is part of policy design. More scopes mean finer-grained control but more configuration.
 
@@ -182,7 +180,7 @@ This means scope design is part of policy design. More scopes mean finer-grained
 Scope derivation transforms Subject fields into a hierarchical set of budget boundaries:
 
 - The canonical order is: tenant → workspace → app → workflow → agent → toolset
-- Missing fields are gap-filled with `"default"`
+- Missing fields are skipped (not filled with "default")
 - Reservations are atomic across all derived scopes
 - Balances, affected_scopes, and scope_path all follow the same hierarchy
 - Custom dimensions extend the model for additional taxonomies
