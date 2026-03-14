@@ -7,7 +7,7 @@ hero:
   actions:
     - theme: brand
       text: "Get Started"
-      link: "/quickstart/deploying-the-full-cycles-stack"
+      link: "/quickstart/getting-started-with-the-python-client"
     - theme: alt
       text: "View on GitHub"
       link: "https://github.com/runcycles"
@@ -20,7 +20,7 @@ features:
   - title: "Protocol Reference"
     details: "Reserve-commit lifecycle, authentication, scope derivation, units, caps, overage policies, TTL, decide, dry run, events, debt, balances, metrics, and error handling."
   - title: "How-To Guides"
-    details: "Python and Spring AI integration, tenant budgets, shadow mode rollout, reservation strategies, and degradation paths."
+    details: "Python, TypeScript, and Spring AI integration, tenant budgets, shadow mode rollout, reservation strategies, and degradation paths."
   - title: "Incident Patterns"
     details: "Real failure modes — runaway agents, tool loops, retries, and budget overruns."
 ---

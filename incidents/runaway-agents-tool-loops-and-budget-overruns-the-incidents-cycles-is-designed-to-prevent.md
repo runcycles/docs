@@ -337,6 +337,29 @@ to:
 
 That is a different operating model.
 
+## See it in action: the runaway agent demo
+
+The [cycles-runaway-demo](https://github.com/runcycles/cycles-runaway-demo) repository demonstrates exactly this failure mode with a runnable example.
+
+The scenario: a customer support bot drafts a response, evaluates its quality, and refines it in a loop until the quality score exceeds 8.0. The bug is that the quality evaluator never returns above 6.9. Without a budget boundary, the agent loops indefinitely.
+
+The demo runs the same agent twice:
+
+1. **Without Cycles** — the agent runs for 30 seconds, making ~600 calls and spending ~$6.00 before being auto-terminated. In production, there would be no auto-termination.
+2. **With Cycles (budget: $1.00)** — the agent hits the budget ceiling after ~100 calls. The Cycles server returns `409 BUDGET_EXCEEDED`, the `@cycles` decorator raises `BudgetExceededError`, and the agent stops cleanly.
+
+The entire integration diff between the unguarded and guarded versions is three `@cycles` decorators and one `except BudgetExceededError` block.
+
+To run it locally:
+
+```bash
+git clone https://github.com/runcycles/cycles-runaway-demo
+cd cycles-runaway-demo
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r agent/requirements.txt
+./demo.sh
+```
+
 ## Why this matters now
 
 As AI systems become more autonomous, incidents are shifting.
@@ -388,8 +411,10 @@ to:
 
 To explore the Cycles stack:
 
+- Try the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — see the failure mode and the fix in action
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
-- Integrate with Python using the [Python Client](https://github.com/runcycles/cycles-client-python)
+- Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
+- Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
