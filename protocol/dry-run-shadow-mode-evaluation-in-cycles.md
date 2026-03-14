@@ -165,7 +165,7 @@ The response comes back:
 ```json
 {
   "decision": "ALLOW_WITH_CAPS",
-  "affected_scopes": ["tenant:acme", "tenant:acme/workspace:default/app:support-bot"],
+  "affected_scopes": ["tenant:acme", "tenant:acme/app:support-bot"],
   "caps": {
     "max_tokens": 2048
   }
