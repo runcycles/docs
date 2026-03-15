@@ -63,8 +63,15 @@ class CyclesBudgetHandler(BaseCallbackHandler):
         if not res.is_success:
             error = res.get_error_response()
             if error and error.error_code == "BUDGET_EXCEEDED":
-                raise BudgetExceededError(status=res.status, error_response=error)
-            raise CyclesProtocolError(status=res.status, error_response=error)
+                raise BudgetExceededError(
+                    error.message, status=res.status,
+                    error_code=error.error, request_id=error.request_id,
+                )
+            msg = error.message if error else (res.error_message or "Reservation failed")
+            raise CyclesProtocolError(
+                msg, status=res.status,
+                error_code=error.error if error else None,
+            )
 
         self._reservations[str(run_id)] = res.get_body_attribute("reservation_id")
 

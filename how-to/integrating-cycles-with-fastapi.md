@@ -120,10 +120,11 @@ def get_tenant(x_tenant_id: str = Header(default="acme")) -> str:
     action_kind="llm.completion",
     action_name="gpt-4o",
     unit="USD_MICROCENTS",
-    tenant=lambda prompt, **kw: kw.get("tenant", "acme"),
 )
 async def guarded_llm_call(prompt: str, tenant: str = "acme") -> dict:
-    # Your LLM call here
+    # The tenant is passed as a function argument, and the decorator's
+    # subject defaults (from set_default_client) apply automatically.
+    # For per-tenant isolation, use the programmatic client instead.
     ...
 
 @app.get("/chat")
