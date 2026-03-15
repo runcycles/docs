@@ -1,10 +1,16 @@
 import { defineConfig } from 'vitepress'
 import { useSidebar } from 'vitepress-openapi'
 import spec from '../public/openapi.json' with { type: 'json' }
+import adminSpec from '../public/admin-openapi.json' with { type: 'json' }
 
 const openApiSidebar = useSidebar({
   spec,
   linkPrefix: '/api/operations/',
+})
+
+const adminApiSidebar = useSidebar({
+  spec: adminSpec,
+  linkPrefix: '/admin-api/operations/',
 })
 
 export default defineConfig({
@@ -20,17 +26,32 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Quickstart', link: '/quickstart/getting-started-with-the-python-client' },
-      { text: 'API Reference', link: '/api/' },
+      {
+        text: 'API Reference',
+        items: [
+          { text: 'Cycles Protocol API', link: '/api/' },
+          { text: 'Admin API', link: '/admin-api/' },
+        ],
+      },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
     sidebar: {
       '/api/': [
         {
-          text: 'API Reference',
+          text: 'Cycles Protocol API',
           items: [
             { text: 'Overview', link: '/api/' },
             ...openApiSidebar.generateSidebarGroups(),
+          ],
+        },
+      ],
+      '/admin-api/': [
+        {
+          text: 'Admin API',
+          items: [
+            { text: 'Overview', link: '/admin-api/' },
+            ...adminApiSidebar.generateSidebarGroups(),
           ],
         },
       ],
