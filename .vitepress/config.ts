@@ -98,6 +98,7 @@ export default defineConfig({
             { text: 'Integrating with Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
             { text: 'Integrating with LangChain', link: '/how-to/integrating-cycles-with-langchain' },
             { text: 'Integrating with FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
+            { text: 'Integrating with OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
             { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
           ]
         },
