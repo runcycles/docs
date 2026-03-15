@@ -1,0 +1,233 @@
+# Choosing the Right Integration Pattern
+
+Each Cycles SDK offers multiple integration patterns. This guide helps you pick the right one for your use case.
+
+## Decision tree
+
+```
+Is the call streaming?
+├── Yes → Use reserveForStream (TS) or programmatic client (Python)
+└── No
+    ├── Is budget logic per-request in a web framework?
+    │   ├── Yes → Use middleware (Express, FastAPI)
+    │   └── No
+    │       ├── Is it a simple function call?
+    │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
+    │       │   └── No → Use programmatic client
+    │       └── Do you need fine-grained control over commit timing?
+    │           ├── Yes → Use programmatic client
+    │           └── No → Use decorator
+```
+
+## Pattern comparison
+
+| Pattern | Languages | Best for | Streaming | Auto-heartbeat | Auto-commit |
+|---|---|---|---|---|---|
+| **Decorator / HOF** | Python `@cycles`, TS `withCycles`, Java `@Cycles` | Simple function calls | No | Yes | Yes |
+| **Streaming adapter** | TS `reserveForStream` | Streaming responses | Yes | Yes | Manual |
+| **Middleware** | Express, FastAPI | Per-request budget in web apps | Both | Depends | Manual |
+| **Programmatic client** | All languages | Full control, complex flows | Both | Manual | Manual |
+
+## Pattern 1: Decorator / Higher-Order Function
+
+The simplest pattern. Wrap a function and let the SDK handle the full reserve-execute-commit lifecycle.
+
+### Python (`@cycles`)
+
+```python
+@cycles(estimate=2000000, action_kind="llm.completion", action_name="gpt-4o")
+def ask(prompt: str) -> str:
+    return openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+    ).choices[0].message.content
+```
+
+### TypeScript (`withCycles`)
+
+```typescript
+const ask = withCycles(
+  { estimate: 2000000, actionKind: "llm.completion", actionName: "gpt-4o" },
+  async (prompt: string) => {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+    });
+    return res.choices[0].message.content;
+  },
+);
+```
+
+### Java (`@Cycles`)
+
+```java
+@Cycles(estimate = "2000000", actionKind = "llm.completion", actionName = "gpt-4o")
+public String ask(String prompt) {
+    return callOpenAI(prompt);
+}
+```
+
+**Use when:**
+- The function makes one LLM/API call and returns a result
+- You don't need to stream the response
+- You want minimal code changes
+
+**Don't use when:**
+- The function streams output (use `reserveForStream` instead)
+- You need to control when the commit happens (use programmatic client)
+- You need to pass actual token counts to the commit (the decorator commits automatically)
+
+## Pattern 2: Streaming adapter
+
+For streaming responses where the function returns before the stream finishes.
+
+### TypeScript (`reserveForStream`)
+
+```typescript
+const handle = await reserveForStream({
+  client: cyclesClient,
+  estimate: 5000000,
+  actionKind: "llm.completion",
+  actionName: "gpt-4o",
+});
+
+try {
+  const stream = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [{ role: "user", content: prompt }],
+    stream: true,
+  });
+
+  let inputTokens = 0, outputTokens = 0;
+  for await (const chunk of stream) {
+    // ... consume stream, track tokens ...
+  }
+
+  await handle.commit(actualCost, { tokensInput: inputTokens, tokensOutput: outputTokens });
+} catch (err) {
+  await handle.release("stream_error");
+  throw err;
+}
+```
+
+**Use when:**
+- The LLM response is streamed to the client
+- You need to track token counts from stream events
+- You want automatic heartbeat during streaming
+
+**Don't use when:**
+- The response is not streamed (use `withCycles` instead — simpler)
+
+## Pattern 3: Middleware
+
+For web applications where every request needs budget governance.
+
+### Express
+
+```typescript
+app.post("/api/chat", cyclesGuard({ client, actionKind: "llm.completion", ... }), handler);
+```
+
+### FastAPI
+
+```python
+@app.post("/api/chat")
+@cycles(estimate=2000000, action_kind="llm.completion", action_name="gpt-4o")
+async def chat(request: ChatRequest):
+    ...
+```
+
+**Use when:**
+- Budget enforcement should apply to every request on a route
+- You want to return HTTP 402 when budget is exhausted
+- Budget should be scoped per-request (e.g., per-tenant)
+
+**Don't use when:**
+- Budget logic varies significantly between requests on the same route
+- You're not in a web framework context
+
+## Pattern 4: Programmatic client
+
+Full control over the reserve-commit lifecycle. Use this when no higher-level pattern fits.
+
+### Python
+
+```python
+client = CyclesClient(config)
+
+reservation = client.create_reservation(
+    idempotency_key="req-001",
+    subject={"tenant": "acme-corp"},
+    action={"kind": "llm.completion", "name": "gpt-4o"},
+    estimate={"amount": 2000000, "unit": "USD_MICROCENTS"},
+    ttl_ms=30000,
+)
+
+if reservation.decision == "DENY":
+    handle_denial()
+else:
+    result = call_llm()
+    client.commit_reservation(
+        reservation.reservation_id,
+        idempotency_key="commit-001",
+        actual={"amount": actual_cost, "unit": "USD_MICROCENTS"},
+    )
+```
+
+### TypeScript
+
+```typescript
+const reservation = await client.createReservation({
+  idempotencyKey: "req-001",
+  subject: { tenant: "acme-corp" },
+  action: { kind: "llm.completion", name: "gpt-4o" },
+  estimate: { amount: 2000000, unit: "USD_MICROCENTS" },
+  ttlMs: 30000,
+});
+
+if (reservation.body.decision === "DENY") {
+  handleDenial();
+} else {
+  const result = await callLLM();
+  await client.commitReservation(reservation.body.reservationId, {
+    idempotencyKey: "commit-001",
+    actual: { amount: actualCost, unit: "USD_MICROCENTS" },
+  });
+}
+```
+
+**Use when:**
+- You need to inspect the reservation decision before proceeding
+- You need to commit with exact actual token counts
+- You're building a custom integration layer
+- You need to manage TTL extensions manually
+- The operation spans multiple steps with different commit points
+
+**Don't use when:**
+- A decorator or streaming adapter would work — they handle heartbeat, retry, and cleanup automatically
+
+## Combining patterns
+
+In practice, most applications use multiple patterns:
+
+```python
+# Simple calls — decorator
+@cycles(estimate=500000, action_kind="llm.completion", action_name="gpt-4o-mini")
+def classify(text: str) -> str:
+    ...
+
+# Complex flows — programmatic
+async def agent_loop(task: str):
+    client = CyclesClient(config)
+    while not done:
+        reservation = client.create_reservation(...)
+        result = call_tool(...)
+        client.commit_reservation(...)
+```
+
+## Next steps
+
+- [Getting Started with Python](/quickstart/getting-started-with-the-python-client)
+- [Getting Started with TypeScript](/quickstart/getting-started-with-the-typescript-client)
+- [Getting Started with Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
+- [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles)
