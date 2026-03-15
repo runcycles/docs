@@ -2,7 +2,7 @@
 
 The decorator / annotation handles most use cases automatically. But sometimes you need direct control — building requests manually, managing the lifecycle yourself, or calling endpoints that the decorator does not cover.
 
-Both the Python `CyclesClient` and the Java `CyclesClient` interface provide programmatic access to every Cycles protocol endpoint.
+The Python `CyclesClient`, the Java `CyclesClient` interface, and the TypeScript `CyclesClient` class all provide programmatic access to every Cycles protocol endpoint.
 
 ## Getting the client
 
@@ -41,6 +41,27 @@ public class BudgetService {
         this.cyclesClient = cyclesClient;
     }
 }
+```
+
+### TypeScript
+
+```typescript
+import { CyclesClient, CyclesConfig } from "runcycles";
+
+const config = new CyclesConfig({
+  baseUrl: "http://localhost:7878",
+  apiKey: "cyc_live_...",
+  tenant: "acme-corp",
+});
+
+const client = new CyclesClient(config);
+```
+
+Or from environment variables:
+
+```typescript
+const config = CyclesConfig.fromEnv(); // reads CYCLES_BASE_URL, CYCLES_API_KEY, etc.
+const client = new CyclesClient(config);
 ```
 
 ## Creating a reservation
@@ -107,6 +128,33 @@ String decision = (String) body.get("decision");
 // Proceed with work...
 ```
 
+### TypeScript
+
+```typescript
+import { CyclesClient, CyclesConfig, Unit } from "runcycles";
+
+const response = await client.createReservation({
+  idempotency_key: "req-abc-123",
+  subject: { tenant: "acme", workspace: "production", app: "chatbot" },
+  action: { kind: "llm.completion", name: "gpt-4o" },
+  estimate: { unit: Unit.USD_MICROCENTS, amount: 5000 },
+  ttl_ms: 60_000,
+  overage_policy: "REJECT",
+});
+
+if (!response.isSuccess) {
+  throw new Error(`Reservation failed: ${response.errorMessage}`);
+}
+
+const reservationId = response.getBodyAttribute("reservation_id") as string;
+const decision = response.getBodyAttribute("decision") as string;
+
+// For non-dry-run reservations, insufficient budget returns 409 (not decision=DENY).
+// decision=DENY in a 2xx response only occurs when dry_run=true.
+
+// Proceed with work...
+```
+
 ## Committing actual usage
 
 ### Python
@@ -147,6 +195,22 @@ CyclesResponse<Map<String, Object>> commitResponse =
     cyclesClient.commitReservation(reservationId, commitRequest);
 ```
 
+### TypeScript
+
+```typescript
+await client.commitReservation(reservationId, {
+  idempotency_key: "commit-abc-123",
+  actual: { unit: Unit.USD_MICROCENTS, amount: 3200 },
+  metrics: {
+    tokens_input: 150,
+    tokens_output: 80,
+    latency_ms: 320,
+    model_version: "gpt-4o-2024-08-06",
+  },
+  metadata: { request_id: "req-abc-123" },
+});
+```
+
 ## Releasing a reservation
 
 If work is cancelled or fails before producing any usage:
@@ -171,6 +235,15 @@ ReleaseRequest releaseRequest = ReleaseRequest.builder()
     .build();
 
 cyclesClient.releaseReservation(reservationId, releaseRequest);
+```
+
+### TypeScript
+
+```typescript
+await client.releaseReservation(reservationId, {
+  idempotency_key: "release-abc-123",
+  reason: "Task cancelled by user",
+});
 ```
 
 ## Full lifecycle example
@@ -304,6 +377,64 @@ public class DocumentProcessor {
 }
 ```
 
+### TypeScript
+
+```typescript
+import { CyclesClient, CyclesConfig, Unit } from "runcycles";
+
+const config = new CyclesConfig({
+  baseUrl: "http://localhost:7878",
+  apiKey: "cyc_live_...",
+  tenant: "acme",
+});
+
+async function processDocument(docId: string, content: string): Promise<string> {
+  const idempotencyKey = `doc-${docId}`;
+  const estimatedTokens = Math.ceil(content.length / 4);
+  const client = new CyclesClient(config);
+
+  // 1. Reserve
+  const response = await client.createReservation({
+    idempotency_key: idempotencyKey,
+    subject: { tenant: "acme", workspace: "production", app: "doc-processor" },
+    action: { kind: "llm.completion", name: "gpt-4o" },
+    estimate: { unit: Unit.USD_MICROCENTS, amount: estimatedTokens * 10 },
+    ttl_ms: 120_000,
+    overage_policy: "ALLOW_IF_AVAILABLE",
+  });
+
+  if (!response.isSuccess) {
+    throw new Error(`Reservation failed: ${response.errorMessage}`);
+  }
+
+  const reservationId = response.getBodyAttribute("reservation_id") as string;
+
+  // 2. Execute
+  try {
+    const result = await callLlm(content);
+
+    // 3. Commit
+    const actualTokens = countTokens(result);
+    await client.commitReservation(reservationId, {
+      idempotency_key: `commit-${idempotencyKey}`,
+      actual: { unit: Unit.USD_MICROCENTS, amount: actualTokens * 10 },
+      metrics: {
+        tokens_input: estimatedTokens,
+        tokens_output: actualTokens,
+      },
+    });
+    return result;
+  } catch (err) {
+    // 4. Release on failure
+    await client.releaseReservation(reservationId, {
+      idempotency_key: `release-${idempotencyKey}`,
+      reason: "Processing failed",
+    });
+    throw err;
+  }
+}
+```
+
 ## Preflight decision check
 
 Check budget availability without creating a reservation.
@@ -346,6 +477,22 @@ if ("DENY".equals(decision)) {
 }
 ```
 
+### TypeScript
+
+```typescript
+const decisionResponse = await client.decide({
+  idempotency_key: "decide-001",
+  subject: { tenant: "acme", workspace: "production" },
+  action: { kind: "llm.completion", name: "gpt-4o" },
+  estimate: { unit: Unit.USD_MICROCENTS, amount: 50_000 },
+});
+
+const decision = decisionResponse.getBodyAttribute("decision") as string;
+if (decision === "DENY") {
+  console.log("Budget low — show warning in UI");
+}
+```
+
 ## Querying balances
 
 ### Python
@@ -379,6 +526,18 @@ for (Map<String, Object> balance : balances) {
 }
 ```
 
+### TypeScript
+
+```typescript
+const balanceResponse = await client.getBalances({ tenant: "acme", workspace: "production" });
+if (balanceResponse.isSuccess) {
+  const balances = balanceResponse.getBodyAttribute("balances") as Array<Record<string, unknown>>;
+  for (const balance of balances ?? []) {
+    console.log(`Scope: ${balance.scope}, remaining: ${JSON.stringify(balance.remaining)}`);
+  }
+}
+```
+
 ## Listing reservations
 
 ### Python
@@ -401,6 +560,22 @@ Map<String, String> params = Map.of(
 
 CyclesResponse<Map<String, Object>> listResponse =
     cyclesClient.listReservations(params);
+```
+
+### TypeScript
+
+```typescript
+const listResponse = await client.listReservations({
+  tenant: "acme",
+  status: "ACTIVE",
+  limit: "20",
+});
+if (listResponse.isSuccess) {
+  const reservations = listResponse.getBodyAttribute("reservations") as Array<Record<string, unknown>>;
+  for (const r of reservations ?? []) {
+    console.log(`ID: ${r.reservation_id}, status: ${r.status}`);
+  }
+}
 ```
 
 ## Recording events (direct debit)
@@ -434,6 +609,17 @@ EventCreateRequest event = EventCreateRequest.builder()
     .build();
 
 cyclesClient.createEvent(event);
+```
+
+### TypeScript
+
+```typescript
+await client.createEvent({
+  idempotency_key: "evt-001",
+  subject: { tenant: "acme", workspace: "production" },
+  action: { kind: "search.api", name: "google-search" },
+  actual: { unit: Unit.USD_MICROCENTS, amount: 1200 },
+});
 ```
 
 ## CyclesResponse
@@ -470,6 +656,24 @@ response.getBody();         // parsed JSON body as Map
 response.getErrorMessage(); // error message (if error)
 ```
 
+### TypeScript
+
+All client methods return `CyclesResponse`:
+
+```typescript
+const response = await client.createReservation(request);
+
+response.isSuccess;          // true if HTTP 2xx
+response.isServerError;      // true if HTTP 5xx
+response.isTransportError;   // true if connection failed
+response.status;             // HTTP status code
+response.body;               // Parsed JSON body (wire format)
+response.errorMessage;       // Error message (if error)
+response.requestId;          // X-Request-Id header
+response.rateLimitRemaining; // X-RateLimit-Remaining (number or undefined)
+response.cyclesTenant;       // X-Cycles-Tenant header
+```
+
 ## Async support (Python)
 
 The Python client provides `AsyncCyclesClient` for asyncio-based applications:
@@ -489,7 +693,7 @@ async with AsyncCyclesClient(config) as client:
 
 | Use case | Approach |
 |---|---|
-| Wrapping a single method call in a budget lifecycle | `@cycles` decorator / `@Cycles` annotation |
+| Wrapping a single method call in a budget lifecycle | `@cycles` decorator / `@Cycles` annotation / `withCycles` HOF |
 | Managing multiple reservations in a workflow | Programmatic `CyclesClient` |
 | Querying balances or listing reservations | Programmatic `CyclesClient` |
 | Preflight decisions for UI routing | Programmatic `CyclesClient` |
@@ -498,8 +702,10 @@ async with AsyncCyclesClient(config) as client:
 
 ## Next steps
 
+- [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — TypeScript HOF and streaming adapter setup
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — Python decorator and client setup
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — Java annotation-based approach
 - [API Reference](/api/) — interactive endpoint documentation
+- [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — TypeScript exception hierarchy and patterns
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception hierarchy and patterns
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — Java error handling patterns
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns

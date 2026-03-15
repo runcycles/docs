@@ -4,9 +4,11 @@ This guide covers practical patterns for handling Cycles errors in your applicat
 
 For Python-specific patterns (exception hierarchy, FastAPI integration), see [Error Handling in Python](/how-to/error-handling-patterns-in-python).
 
+For TypeScript-specific patterns (exception hierarchy, Express/Next.js integration), see [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript).
+
 ## Protocol error structure
 
-Both the Python and Java clients expose structured error information when the server returns a protocol-level error.
+The Python, Java, and TypeScript clients all expose structured error information when the server returns a protocol-level error.
 
 ### Python — CyclesProtocolError
 
@@ -52,6 +54,30 @@ public class CyclesProtocolException extends RuntimeException {
 }
 ```
 
+### TypeScript — CyclesProtocolError
+
+```typescript
+import { CyclesProtocolError } from "runcycles";
+
+// Available properties:
+e.status;          // HTTP status code (e.g. 409)
+e.errorCode;       // Machine-readable error code (e.g. "BUDGET_EXCEEDED")
+e.reasonCode;      // Reason code string
+e.retryAfterMs;    // Suggested retry delay in ms (or undefined)
+e.requestId;       // Server request ID
+e.details;         // Additional error details object
+
+// Convenience checks:
+e.isBudgetExceeded();
+e.isOverdraftLimitExceeded();
+e.isDebtOutstanding();
+e.isReservationExpired();
+e.isReservationFinalized();
+e.isIdempotencyMismatch();
+e.isUnitMismatch();
+e.isRetryable();
+```
+
 ## Handling DENY decisions
 
 When a reservation is denied, the decorated function / annotated method does not execute. An exception is thrown instead.
@@ -94,6 +120,30 @@ try {
 }
 ```
 
+### TypeScript
+
+```typescript
+import { withCycles, BudgetExceededError, CyclesProtocolError } from "runcycles";
+
+const summarize = withCycles(
+  { estimate: 1000, actionKind: "llm.completion", actionName: "gpt-4o", client },
+  async (text: string) => callLlm(text),
+);
+
+try {
+  result = await summarize(text);
+} catch (err) {
+  if (err instanceof BudgetExceededError) {
+    result = "Service temporarily unavailable due to budget limits.";
+  } else if (err instanceof CyclesProtocolError && err.retryAfterMs) {
+    scheduleRetry(text, err.retryAfterMs);
+    result = `Request queued. Retrying in ${err.retryAfterMs}ms.`;
+  } else {
+    throw err;
+  }
+}
+```
+
 ## Degradation patterns
 
 ### Python
@@ -117,6 +167,22 @@ try {
         return basicService.analyze(data);  // Uses GPT-4o-mini, lower cost
     }
     throw e;
+}
+```
+
+### TypeScript
+
+```typescript
+import { BudgetExceededError } from "runcycles";
+
+try {
+  result = await premiumService.analyze(data);   // GPT-4o, high cost
+} catch (err) {
+  if (err instanceof BudgetExceededError) {
+    result = await basicService.analyze(data);   // GPT-4o-mini, lower cost
+  } else {
+    throw err;
+  }
 }
 ```
 
@@ -154,6 +220,24 @@ try {
 }
 ```
 
+**TypeScript:**
+
+```typescript
+import { DebtOutstandingError } from "runcycles";
+
+try {
+  result = await process(inputData);
+} catch (err) {
+  if (err instanceof DebtOutstandingError) {
+    console.warn("Scope has outstanding debt. Notifying operator.");
+    alertOperator("Budget debt detected. Funding required.");
+    result = "Service paused pending budget review.";
+  } else {
+    throw err;
+  }
+}
+```
+
 ### OverdraftLimitExceededError / OVERDRAFT_LIMIT_EXCEEDED
 
 The scope's debt has exceeded its overdraft limit.
@@ -181,6 +265,23 @@ try {
         return "Budget limit reached. Please contact support.";
     }
     throw e;
+}
+```
+
+**TypeScript:**
+
+```typescript
+import { OverdraftLimitExceededError } from "runcycles";
+
+try {
+  result = await process(inputData);
+} catch (err) {
+  if (err instanceof OverdraftLimitExceededError) {
+    console.error("Overdraft limit exceeded. Scope is blocked.");
+    result = "Budget limit reached. Please contact support.";
+  } else {
+    throw err;
+  }
 }
 ```
 
@@ -216,6 +317,26 @@ try {
         return result;
     }
     throw e;
+}
+```
+
+**TypeScript:**
+
+```typescript
+import { ReservationExpiredError } from "runcycles";
+
+try {
+  result = await longRunningProcess(data);
+} catch (err) {
+  if (err instanceof ReservationExpiredError) {
+    console.warn(
+      "Reservation expired during processing. " +
+      "Consider increasing ttlMs or checking network connectivity.",
+    );
+    await recordAsEvent(data);
+  } else {
+    throw err;
+  }
 }
 ```
 
@@ -272,6 +393,42 @@ try {
         log.error("Protocol error: code={}, status={}", e.getReasonCode(), e.getHttpStatus());
         throw e;
     }
+}
+```
+
+### TypeScript
+
+```typescript
+import {
+  BudgetExceededError,
+  DebtOutstandingError,
+  OverdraftLimitExceededError,
+  ReservationExpiredError,
+  CyclesProtocolError,
+  CyclesTransportError,
+} from "runcycles";
+
+try {
+  result = await guardedFunc();
+} catch (err) {
+  if (err instanceof BudgetExceededError) {
+    result = await fallback();
+  } else if (err instanceof DebtOutstandingError) {
+    alertOperator("Debt outstanding");
+    result = "Service paused";
+  } else if (err instanceof OverdraftLimitExceededError) {
+    result = "Budget limit reached";
+  } else if (err instanceof ReservationExpiredError) {
+    await recordAsEvent(data);
+  } else if (err instanceof CyclesTransportError) {
+    console.error(`Transport error: ${err.message} (cause=${err.cause})`);
+    throw err;
+  } else if (err instanceof CyclesProtocolError) {
+    console.error(`Protocol error: ${err.message} (code=${err.errorCode}, status=${err.status})`);
+    throw err;
+  } else {
+    throw err;
+  }
 }
 ```
 
@@ -346,6 +503,55 @@ public class CyclesExceptionHandler {
 }
 ```
 
+### TypeScript (Express)
+
+```typescript
+import type { Request, Response, NextFunction } from "express";
+import { CyclesProtocolError } from "runcycles";
+
+function cyclesErrorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  if (!(err instanceof CyclesProtocolError)) {
+    return next(err);
+  }
+
+  if (err.isBudgetExceeded()) {
+    const retryAfter = err.retryAfterMs ? Math.ceil(err.retryAfterMs / 1000) : 60;
+    return res.status(429)
+      .set("Retry-After", String(retryAfter))
+      .json({ error: "budget_exceeded", message: "Budget limit reached." });
+  }
+
+  if (err.isDebtOutstanding() || err.isOverdraftLimitExceeded()) {
+    return res.status(503)
+      .json({ error: "service_unavailable", message: "Service paused due to budget constraints." });
+  }
+
+  return res.status(500)
+    .json({ error: "internal_error", message: "An unexpected error occurred." });
+}
+```
+
+### TypeScript (Next.js API Route)
+
+```typescript
+import { BudgetExceededError } from "runcycles";
+
+export async function POST(req: Request) {
+  try {
+    const result = await handleChat(req);
+    return new Response(result);
+  } catch (err) {
+    if (err instanceof BudgetExceededError) {
+      return new Response(
+        JSON.stringify({ error: "budget_exceeded", message: "Budget limit reached." }),
+        { status: 402, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    throw err;
+  }
+}
+```
+
 ## Programmatic client error handling
 
 When using the client directly, errors come as response status codes rather than exceptions.
@@ -402,6 +608,26 @@ if (response.is2xx()) {
 }
 ```
 
+### TypeScript
+
+```typescript
+const response = await client.createReservation(request);
+
+if (response.isSuccess) {
+  const reservationId = response.getBodyAttribute("reservation_id") as string;
+  // Proceed with work
+} else if (response.isServerError || response.isTransportError) {
+  // Server error or network failure — retry with backoff
+  console.warn(`Cycles server error: ${response.errorMessage}`);
+} else {
+  // Client error (4xx) — do not retry
+  // 409 = budget exceeded, debt outstanding, overdraft limit exceeded
+  // 400 = invalid request, unit mismatch
+  // 410 = reservation expired
+  console.error(`Cycles client error: status=${response.status}, error=${response.errorMessage}`);
+}
+```
+
 ## Transient vs non-transient errors
 
 | Error | Retryable? | Action |
@@ -420,7 +646,7 @@ if (response.is2xx()) {
 | `INTERNAL_ERROR` (500) | Yes | Retry with exponential backoff. |
 | Transport error | Yes | Retry with exponential backoff. |
 
-In Python, use `e.is_retryable()` to check programmatically — it returns `True` for `INTERNAL_ERROR`, `UNKNOWN`, and any 5xx status.
+In Python and TypeScript, use `e.is_retryable()` / `e.isRetryable()` to check programmatically — it returns `true` for `INTERNAL_ERROR`, `UNKNOWN`, and any 5xx status.
 
 ## Error handling checklist
 
@@ -435,6 +661,7 @@ In Python, use `e.is_retryable()` to check programmatically — it returns `True
 
 ## Next steps
 
+- [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — TypeScript exception hierarchy, Express/Next.js patterns
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception hierarchy, transport errors, and FastAPI patterns
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — strategies for handling budget constraints
