@@ -22,6 +22,9 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/docs/runcycles-favicon.png' }],
   ],
   themeConfig: {
+    search: {
+      provider: 'local'
+    },
     logo: '/runcycles-logo-64.png',
     nav: [
       { text: 'Home', link: '/' },
