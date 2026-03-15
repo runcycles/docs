@@ -12,6 +12,20 @@ Rate limiters control velocity — requests per second. They do not control tota
 
 By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
 
+## See it in action
+
+The [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) shows this failure mode — and Cycles preventing it — in under 60 seconds. No LLM API key required.
+
+```bash
+git clone https://github.com/runcycles/cycles-runaway-demo
+cd cycles-runaway-demo
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r agent/requirements.txt
+./demo.sh
+```
+
+Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 seconds. With Cycles it stops cleanly at $1.00.
+
 ## How Cycles solves it
 
 Cycles sits between your application and costly external services (LLMs, APIs, tools). Every action follows a **Reserve-Commit lifecycle**:
