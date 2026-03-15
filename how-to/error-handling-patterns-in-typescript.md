@@ -196,7 +196,7 @@ export async function POST(req: Request) {
 When the budget system returns `ALLOW_WITH_CAPS`, the decision includes caps that constrain execution. Use these to fall back to cheaper models or limit output:
 
 ```typescript
-import { withCycles, getCyclesContext } from "runcycles";
+import { withCycles, getCyclesContext, isToolAllowed } from "runcycles";
 
 const callLlm = withCycles(
   { estimate: (prompt: string) => estimateCost(prompt), client, actionKind: "llm.completion", actionName: "gpt-4o" },
