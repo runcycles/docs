@@ -4,9 +4,13 @@ Cycles is a **budget authority for autonomous execution**. It enforces hard spen
 
 ## The problem
 
-Autonomous systems fail differently than traditional software. A single runaway agent loop can burn through thousands of dollars in LLM calls while staying well within rate limits. Rate limiters control *velocity* (requests per second). They cannot control *total exposure* — the cumulative cost a system creates over its lifetime.
+Autonomous systems fail differently than traditional software. A runaway agent does not just burn dollars — **it creates unbounded exposure**.
 
-By the time an alert fires, the money is already spent.
+That exposure can be financial: thousands of dollars in LLM calls accumulated before anyone notices. But it can just as easily be operational: records deleted, files overwritten, emails sent, orders placed, deployments triggered. In these cases, the damage is not measured primarily in cost, but in **consequence**.
+
+Rate limiters control velocity — requests per second. They do not control total exposure: the cumulative cost, risk, or irreversible side effects a system is allowed to create before execution is halted. Nor do they constrain what each individual action is permitted to do.
+
+By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
 
 ## How Cycles solves it
 
