@@ -496,6 +496,8 @@ For each `withCycles`-guarded function call:
 ## Next steps
 
 - [TypeScript Client Configuration Reference](/configuration/typescript-client-configuration-reference) — all config options and environment variables
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
-- [API Reference](/api/) — interactive endpoint documentation
+- [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — exception hierarchy, Express/Next.js patterns
+- [Testing with Cycles](/how-to/testing-with-cycles) — unit and integration testing patterns
 - [Using the Client Programmatically](/how-to/using-the-cycles-client-programmatically) — programmatic client reference
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns across all languages
+- [API Reference](/api/) — interactive endpoint documentation

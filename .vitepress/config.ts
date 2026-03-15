@@ -91,6 +91,7 @@ export default defineConfig({
             { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
             { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
             { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
+            { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
             { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
             { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
             { text: 'Integrating with OpenAI', link: '/how-to/integrating-cycles-with-openai' },
