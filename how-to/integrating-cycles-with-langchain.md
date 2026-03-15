@@ -62,7 +62,7 @@ class CyclesBudgetHandler(BaseCallbackHandler):
 
         if not res.is_success:
             error = res.get_error_response()
-            if error and error.error_code == "BUDGET_EXCEEDED":
+            if error and error.error == "BUDGET_EXCEEDED":
                 raise BudgetExceededError(
                     error.message, status=res.status,
                     error_code=error.error, request_id=error.request_id,
