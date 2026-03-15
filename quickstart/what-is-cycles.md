@@ -108,7 +108,7 @@ All three must have sufficient budget for the reservation to succeed.
 └──────────────┬───────────────┘
                │ HTTP (port 7878)
                ▼
-┌──────────────────────┐   ┌──────────────────────┐
+┌──────────────────────┐   ┌───────────────────────┐
 │   Cycles Server      │   │  Cycles Admin Server  │
 │ (runtime enforcement)│   │ (tenants/budgets/keys)│
 │  Port 7878           │   │  Port 7979            │
@@ -137,3 +137,5 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 - [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) — add Cycles to a TypeScript app
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — add Cycles to a Spring app
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how components interact
+- [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — how Cycles compares to other alternatives
+
