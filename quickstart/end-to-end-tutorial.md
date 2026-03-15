@@ -2,6 +2,8 @@
 
 This tutorial takes you from nothing to a working budget-guarded OpenAI call in about 10 minutes. You will deploy the Cycles stack, create a tenant, fund a budget, and make your first budget-enforced LLM call.
 
+> **Want to see Cycles in action before building?** Run the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — no LLM key required, shows the problem and the fix in 60 seconds.
+
 ## Prerequisites
 
 - **Docker** and **Docker Compose v2+**
