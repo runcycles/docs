@@ -124,19 +124,19 @@ echo "  API key:        $API_KEY"
 A complete Cycles deployment has three components that share a single Redis instance:
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                       Your Application                               │
-│    @Cycles annotation  /  CyclesClient  /  raw HTTP                 │
-└──────────────┬───────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                       Your Application                        │
+│    @Cycles annotation  /  CyclesClient  /  raw HTTP           │
+└──────────────┬────────────────────────────────────────────────┘
                │ HTTP (port 7878)
                ▼
 ┌──────────────────────────┐     ┌──────────────────────────┐
 │     Cycles Server        │     │   Cycles Admin Server    │
-│  (runtime enforcement)   │     │  (tenant/budget/key mgmt)│
-│  Port 7878               │     │  Port 7979               │
+│  (runtime enforcement)   │     │ (tenant/budget/key mgmt) │
+│  Port 7878               │     │ Port 7979                │
 └──────────┬───────────────┘     └──────────┬───────────────┘
            │                                │
-           └───────────┬───────────────────┘
+           └───────────┬────────────────────┘
                        ▼
               ┌─────────────────┐
               │    Redis 7+     │
@@ -225,7 +225,7 @@ Start the stack:
 docker compose up -d
 ```
 
-> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23`) for reproducible deployments.
+> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) for reproducible deployments.
 
 Verify all services are healthy:
 
@@ -279,7 +279,7 @@ Build and start the admin server:
 cd cycles-server-admin/cycles-admin-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD= ADMIN_API_KEY=admin-bootstrap-key \
-  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.23.jar
+  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.23.3.jar
 ```
 
 In a second terminal, build and start the cycles server:
@@ -288,7 +288,7 @@ In a second terminal, build and start the cycles server:
 cd cycles-server/cycles-protocol-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 \
-  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.23.jar
+  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.23.3.jar
 ```
 
 ## Step 2: Create a tenant
