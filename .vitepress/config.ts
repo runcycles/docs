@@ -28,7 +28,7 @@ export default defineConfig({
     logo: '/runcycles-logo-64.png',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Quickstart', link: '/quickstart/getting-started-with-the-python-client' },
+      { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       {
         text: 'API Reference',
         items: [
@@ -62,6 +62,8 @@ export default defineConfig({
         {
           text: 'Quickstart',
           items: [
+            { text: 'What is Cycles?', link: '/quickstart/what-is-cycles' },
+            { text: 'End-to-End Tutorial', link: '/quickstart/end-to-end-tutorial' },
             { text: 'Add to a Python App', link: '/quickstart/getting-started-with-the-python-client' },
             { text: 'Add to a TypeScript App', link: '/quickstart/getting-started-with-the-typescript-client' },
             { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
@@ -85,6 +87,10 @@ export default defineConfig({
         {
           text: 'How-To Guides',
           items: [
+            { text: 'Adding Cycles to an Existing App', link: '/how-to/adding-cycles-to-an-existing-application' },
+            { text: 'Choosing the Right Pattern', link: '/how-to/choosing-the-right-integration-pattern' },
+            { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
+            { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
             { text: 'Programmatic Client Usage', link: '/how-to/using-the-cycles-client-programmatically' },
             { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
             { text: 'API Key Management', link: '/how-to/api-key-management-in-cycles' },
@@ -96,13 +102,23 @@ export default defineConfig({
             { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
             { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
             { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
-            { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
-            { text: 'Integrating with OpenAI', link: '/how-to/integrating-cycles-with-openai' },
-            { text: 'Integrating with Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
-            { text: 'Integrating with LangChain', link: '/how-to/integrating-cycles-with-langchain' },
-            { text: 'Integrating with FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
-            { text: 'Integrating with OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
             { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
+            { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
+            { text: 'Troubleshooting and FAQ', link: '/how-to/troubleshooting-and-faq' },
+          ]
+        },
+        {
+          text: 'Integrations',
+          items: [
+            { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
+            { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
+            { text: 'LangChain', link: '/how-to/integrating-cycles-with-langchain' },
+            { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
+            { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
+            { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
+            { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
+            { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
+            { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
           ]
         },
         {
@@ -141,6 +157,18 @@ export default defineConfig({
           text: 'Incident Patterns',
           items: [
             { text: 'Runaway Agents and Tool Loops', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
+            { text: 'Retry Storms', link: '/incidents/retry-storms-and-idempotency-failures' },
+            { text: 'Concurrent Agent Overspend', link: '/incidents/concurrent-agent-overspend' },
+            { text: 'Scope Misconfiguration', link: '/incidents/scope-misconfiguration-and-budget-leaks' },
+          ]
+        },
+        {
+          text: 'Operations',
+          items: [
+            { text: 'Production Operations', link: '/how-to/production-operations-guide' },
+            { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
+            { text: 'Security Hardening', link: '/how-to/security-hardening' },
+            { text: 'Changelog', link: '/changelog' },
           ]
         }
       ],
