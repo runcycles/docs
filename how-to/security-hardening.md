@@ -10,12 +10,12 @@ The Admin Server (port 7979) manages tenants, API keys, and budgets. It should *
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                Public Network                    │
+│                Public Network                   │
 │  Your App → Load Balancer → Cycles Server:7878  │
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
-│              Internal / VPN Only                 │
+│              Internal / VPN Only                │
 │  Admin UI → Admin Server:7979                   │
 │             Redis:6379                          │
 └─────────────────────────────────────────────────┘

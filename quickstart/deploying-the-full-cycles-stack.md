@@ -124,19 +124,19 @@ echo "  API key:        $API_KEY"
 A complete Cycles deployment has three components that share a single Redis instance:
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                       Your Application                               │
-│    @Cycles annotation  /  CyclesClient  /  raw HTTP                 │
-└──────────────┬───────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                       Your Application                        │
+│    @Cycles annotation  /  CyclesClient  /  raw HTTP           │
+└──────────────┬────────────────────────────────────────────────┘
                │ HTTP (port 7878)
                ▼
 ┌──────────────────────────┐     ┌──────────────────────────┐
 │     Cycles Server        │     │   Cycles Admin Server    │
-│  (runtime enforcement)   │     │  (tenant/budget/key mgmt)│
-│  Port 7878               │     │  Port 7979               │
+│  (runtime enforcement)   │     │ (tenant/budget/key mgmt) │
+│  Port 7878               │     │ Port 7979                │
 └──────────┬───────────────┘     └──────────┬───────────────┘
            │                                │
-           └───────────┬───────────────────┘
+           └───────────┬────────────────────┘
                        ▼
               ┌─────────────────┐
               │    Redis 7+     │
