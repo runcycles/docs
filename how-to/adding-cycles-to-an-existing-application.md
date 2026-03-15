@@ -11,26 +11,32 @@ This guide covers how to incrementally add budget governance to an application t
 4. Enforce         →  Switch from shadow mode to live enforcement
 ```
 
-## Stage 1: Deploy Cycles in shadow mode
+## Stage 1: Deploy Cycles and observe with the decide endpoint
 
-Start by deploying the Cycles stack and connecting your app in **dry-run mode**. This lets you see what budget decisions would be made without actually blocking any calls.
+Start by deploying the Cycles stack and using the **decide endpoint** as a side-channel to observe what budget decisions would be made without blocking any calls.
+
+> **Important:** The `dry_run` flag on the `@cycles` decorator / `withCycles` HOF skips executing the wrapped function entirely (it returns a `DryRunResult` instead). For shadow observation where your existing code still runs, use the `decide` endpoint separately.
 
 ### Python
 
 ```python
-from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+from runcycles import CyclesClient, CyclesConfig
 
 client = CyclesClient(CyclesConfig.from_env())
-set_default_client(client)
 
-# dry_run=True means the decorator logs decisions but never blocks
-@cycles(
-    estimate=2000000,
-    action_kind="llm.completion",
-    action_name="openai:gpt-4o",
-    dry_run=True,
-)
 def existing_chat_function(prompt: str) -> str:
+    # Observe: check what Cycles would decide, but don't block
+    try:
+        decision = client.decide({
+            "idempotency_key": str(uuid.uuid4()),
+            "subject": {"tenant": client._config.tenant},
+            "action": {"kind": "llm.completion", "name": "openai:gpt-4o"},
+            "estimate": {"amount": 2000000, "unit": "USD_MICROCENTS"},
+        })
+        logger.info("Cycles decision: %s", decision.body.get("decision"))
+    except Exception:
+        pass  # Don't let observation failures affect production
+
     # Your existing code — completely unchanged
     return call_openai(prompt)
 ```
@@ -38,29 +44,32 @@ def existing_chat_function(prompt: str) -> str:
 ### TypeScript
 
 ```typescript
-import { withCycles, CyclesClient, CyclesConfig, setDefaultClient } from "runcycles";
+import { CyclesClient, CyclesConfig } from "runcycles";
 
 const client = new CyclesClient(CyclesConfig.fromEnv());
-setDefaultClient(client);
 
-// dryRun: true means decisions are logged but never block execution
-const existingChatFunction = withCycles(
-  {
-    estimate: 2000000,
-    actionKind: "llm.completion",
-    actionName: "openai:gpt-4o",
-    dryRun: true,
-  },
-  async (prompt: string) => {
-    // Your existing code — completely unchanged
-    return await callOpenAI(prompt);
-  },
-);
+async function existingChatFunction(prompt: string) {
+  // Observe: check what Cycles would decide, but don't block
+  try {
+    const decision = await client.decide({
+      idempotencyKey: crypto.randomUUID(),
+      subject: { tenant: client.config.tenant! },
+      action: { kind: "llm.completion", name: "openai:gpt-4o" },
+      estimate: { amount: 2000000, unit: "USD_MICROCENTS" },
+    });
+    console.log("Cycles decision:", decision.body.decision);
+  } catch {
+    // Don't let observation failures affect production
+  }
+
+  // Your existing code — completely unchanged
+  return await callOpenAI(prompt);
+}
 ```
 
-In shadow mode, every call still succeeds. But Cycles records what the decision *would have been* — ALLOW, ALLOW_WITH_CAPS, or DENY. This gives you data to tune budgets before enforcing.
+This approach lets you observe decisions in production logs while your existing code continues to run unmodified. Use the data to tune budgets before moving to enforcement.
 
-See [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) for the full guide.
+See [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) for the full guide on dry-run evaluation at the protocol level.
 
 ## Stage 2: Wrap your first call
 

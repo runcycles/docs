@@ -168,16 +168,30 @@ const config = new CyclesConfig({ baseUrl: "http://localhost:7878", timeout: 100
 
 ### Python: decorator not working with async functions
 
-**Symptom:** The `@cycles` decorator raises an error when wrapping an `async def` function.
+**Symptom:** The `@cycles` decorator doesn't seem to work with `async def` functions.
 
-**Fix:** Use the async-compatible decorator:
+**Fix:** The `@cycles` decorator automatically detects sync vs async functions — no separate decorator is needed. Just use `@cycles` on both:
 
 ```python
-from runcycles import async_cycles
+from runcycles import cycles
 
-@async_cycles(estimate=5000, action_kind="llm.completion", action_name="gpt-4o")
-async def ask(prompt: str) -> str:
+# Works with sync functions
+@cycles(estimate=5000, action_kind="llm.completion", action_name="gpt-4o")
+def ask_sync(prompt: str) -> str:
     ...
+
+# Also works with async functions — auto-detected
+@cycles(estimate=5000, action_kind="llm.completion", action_name="gpt-4o")
+async def ask_async(prompt: str) -> str:
+    ...
+```
+
+If you need a fully async programmatic client (not the decorator), use `AsyncCyclesClient`:
+
+```python
+from runcycles import AsyncCyclesClient, CyclesConfig
+
+client = AsyncCyclesClient(CyclesConfig.from_env())
 ```
 
 ### TypeScript: streaming response not committing
