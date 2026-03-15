@@ -23,7 +23,7 @@ docker compose -f docker-compose.prod.yml up -d
 
 This pulls `ghcr.io/runcycles/cycles-server:latest` and starts it with Redis.
 
-> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23`) in `docker-compose.prod.yml` for reproducible deployments.
+> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) in `docker-compose.prod.yml` for reproducible deployments.
 
 ### Building from source with Docker
 
