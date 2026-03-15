@@ -93,6 +93,11 @@ export default defineConfig({
             { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
             { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
             { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
+            { text: 'Integrating with OpenAI', link: '/how-to/integrating-cycles-with-openai' },
+            { text: 'Integrating with Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
+            { text: 'Integrating with LangChain', link: '/how-to/integrating-cycles-with-langchain' },
+            { text: 'Integrating with FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
+            { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
           ]
         },
         {
