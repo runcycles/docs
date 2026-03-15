@@ -30,7 +30,7 @@ export default defineConfig({
         text: 'API Reference',
         items: [
           { text: 'Cycles Protocol API', link: '/api/' },
-          { text: 'Admin API', link: '/admin-api/' },
+          { text: 'RunCyles Admin API', link: '/admin-api/' },
         ],
       },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
@@ -48,7 +48,7 @@ export default defineConfig({
       ],
       '/admin-api/': [
         {
-          text: 'Admin API',
+          text: 'RunCyles Admin API',
           items: [
             { text: 'Overview', link: '/admin-api/' },
             ...adminApiSidebar.generateSidebarGroups(),
