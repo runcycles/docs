@@ -11,10 +11,11 @@ npm install @runcycles/openclaw-budget-guard
 ```bash
 export CYCLES_BASE_URL="http://localhost:7878"
 export CYCLES_API_KEY="your-api-key"
-export CYCLES_TENANT="acme"
 ```
 
-You also need OpenClaw >= 0.1.0 with plugin support.
+You also need:
+- **OpenClaw** >= 0.1.0 with plugin support
+- **Node.js** >= 20.0.0
 
 ## Install and enable
 
@@ -183,7 +184,7 @@ You should see log lines like:
 [cycles-budget-guard] before_prompt_build: injecting hint (142 chars)
 [cycles-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=500000
 [cycles-budget-guard] after_tool_call: committed 500000 for tool=web_search
-[cycles-budget-guard] Agent session budget summary: { remaining: 9500000, spent: 500000, reservations: 1 }
+[cycles-budget-guard] Agent session budget summary: { remaining: 9500000, spent: 500000, totalReservationsMade: 1 }
 ```
 
 ## Full configuration reference
@@ -202,8 +203,16 @@ You should see log lines like:
 | `toolBaseCosts` | object | `{}` | Tool name → estimated cost |
 | `injectPromptBudgetHint` | boolean | `true` | Add budget hint to system prompt |
 | `maxPromptHintChars` | number | `200` | Max hint length |
+| `defaultModelActionKind` | string | `llm.completion` | Action kind sent to Cycles for model calls |
+| `defaultToolActionKindPrefix` | string | `tool.` | Prefix prepended to tool names for the action kind |
 | `failClosed` | boolean | `true` | Block on exhausted budget |
 | `logLevel` | string | `info` | `debug` / `info` / `warn` / `error` |
+
+## Current limitations (phase 1)
+
+- **No per-token LLM enforcement** — the plugin does not intercept or meter actual LLM API calls. Model-level cost tracking requires a gateway or proxy layer (planned for phase 2).
+- **No streaming cost tracking** — tool costs are flat estimates via `toolBaseCosts`, not measured from actual usage.
+- **No multi-currency support** — a single `currency` unit is used for all reservations.
 
 ## Comparison with manual integration
 
