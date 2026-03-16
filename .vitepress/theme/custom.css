@@ -17,20 +17,20 @@
 }
 
 /* Enlarge hero image beyond VitePress defaults (192→280, 256→340, 320→420) */
-.VPHero :deep(.image-src) {
+.VPHero .image-src {
   max-width: 280px !important;
   max-height: 280px !important;
 }
 
 @media (min-width: 640px) {
-  .VPHero :deep(.image-src) {
+  .VPHero .image-src {
     max-width: 340px !important;
     max-height: 340px !important;
   }
 }
 
 @media (min-width: 960px) {
-  .VPHero :deep(.image-src) {
+  .VPHero .image-src {
     max-width: 420px !important;
     max-height: 420px !important;
   }
