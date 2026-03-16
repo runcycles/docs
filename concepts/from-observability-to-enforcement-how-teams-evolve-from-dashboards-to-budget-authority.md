@@ -1,3 +1,8 @@
+---
+title: "From Observability to Enforcement: How Teams Evolve from Dashboards to Budget Authority"
+description: "Explore how teams progress from dashboards and alerts to runtime budget enforcement as autonomous systems mature."
+---
+
 # From Observability to Enforcement: How Teams Evolve from Dashboards to Budget Authority
 
 Most teams do not begin with enforcement.

@@ -1,3 +1,8 @@
+---
+title: "What Cycles Is Not: Billing, Rate Limiting, Orchestration, and Other Category Confusion"
+description: "Understand what Cycles is not — it is not billing, rate limiting, orchestration, or observability, but a budget authority for autonomous execution."
+---
+
 # What Cycles Is Not: Billing, Rate Limiting, Orchestration, and Other Category Confusion
 
 When people first encounter Cycles, they often try to map it onto an existing category.

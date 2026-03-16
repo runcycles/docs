@@ -1,3 +1,8 @@
+---
+title: "Why Rate Limits Are Not Enough for Autonomous Systems"
+description: "Learn why rate limits alone cannot govern autonomous systems and how budget authority provides the missing control layer."
+---
+
 # Why Rate Limits Are Not Enough for Autonomous Systems
 
 Autonomous systems do not fail like traditional software.
