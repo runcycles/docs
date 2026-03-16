@@ -15,11 +15,11 @@ const adminApiSidebar = useSidebar({
 
 export default defineConfig({
   base: '/',
-  title: 'Cycles Docs',
+  title: 'Cycles',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   cleanUrls: true,
   lang: 'en',
-  titleTemplate: ':title - Cycles Docs',
+  titleTemplate: ':title - Cycles',
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
