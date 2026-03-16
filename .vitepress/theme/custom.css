@@ -24,14 +24,14 @@
 
 @media (min-width: 640px) {
   .VPHero .image-container .VPImage.image-src {
-    max-width: 380px !important;
-    max-height: 380px !important;
+    max-width: 420px !important;
+    max-height: 420px !important;
   }
 }
 
 @media (min-width: 960px) {
   .VPHero .image-container .VPImage.image-src {
-    max-width: 460px !important;
-    max-height: 460px !important;
+    max-width: 560px !important;
+    max-height: 560px !important;
   }
 }
