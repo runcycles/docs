@@ -1,0 +1,34 @@
+/* Hero image — make the SVG large enough to read */
+.VPHero .image-container {
+  max-width: 500px !important;
+  max-height: 500px !important;
+  width: 500px;
+  height: 500px;
+}
+
+.VPHero .image-src {
+  max-width: 500px !important;
+  max-height: 500px !important;
+  width: 500px;
+  height: 500px;
+}
+
+@media (max-width: 959px) {
+  .VPHero .image-container,
+  .VPHero .image-src {
+    max-width: 320px !important;
+    max-height: 320px !important;
+    width: 320px;
+    height: 320px;
+  }
+}
+
+@media (max-width: 575px) {
+  .VPHero .image-container,
+  .VPHero .image-src {
+    max-width: 280px !important;
+    max-height: 280px !important;
+    width: 280px;
+    height: 280px;
+  }
+}
