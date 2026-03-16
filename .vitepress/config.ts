@@ -17,6 +17,7 @@ export default defineConfig({
   base: '/',
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
+  cleanUrls: true,
   srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
@@ -29,6 +30,11 @@ export default defineConfig({
   ],
   sitemap: {
     hostname: 'https://runcycles.io'
+  },
+  markdown: {
+    image: {
+      lazyLoading: true
+    }
   },
   lastUpdated: true,
   themeConfig: {
@@ -68,7 +74,7 @@ export default defineConfig({
         text: 'API Reference',
         items: [
           { text: 'Cycles Protocol API', link: '/api/' },
-          { text: 'RunCyles Admin API', link: '/admin-api/' },
+          { text: 'RunCycles Admin API', link: '/admin-api/' },
         ],
       },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
@@ -86,7 +92,7 @@ export default defineConfig({
       ],
       '/admin-api/': [
         {
-          text: 'RunCyles Admin API',
+          text: 'RunCycles Admin API',
           items: [
             { text: 'Overview', link: '/admin-api/' },
             ...adminApiSidebar.generateSidebarGroups(),
