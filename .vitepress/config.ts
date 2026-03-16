@@ -23,7 +23,6 @@ export default defineConfig({
   titleTemplate: ':title — Budget authority for autonomous agents',
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
-    ['script', {}, `;(() => { const e = localStorage.getItem('vitepress-theme-appearance'); if (e !== 'light') document.documentElement.classList.add('dark') })()`],
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
     ['meta', { name: 'description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { property: 'og:type', content: 'website' }],
