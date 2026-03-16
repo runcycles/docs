@@ -30,8 +30,12 @@
 }
 
 @media (min-width: 960px) {
+  .VPHero .image-container {
+    transform: translate(32px, -32px) !important;
+  }
+
   .VPHero .image-container .VPImage.image-src {
-    max-width: 560px !important;
-    max-height: 560px !important;
+    max-width: 500px !important;
+    max-height: 500px !important;
   }
 }
