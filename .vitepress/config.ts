@@ -29,6 +29,8 @@ export default defineConfig({
     ['meta', { property: 'og:title', content: 'Cycles — Budget authority for autonomous agents' }],
     ['meta', { property: 'og:description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-og.png' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { property: 'og:image:alt', content: 'Cycles logo' }],
     ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
     ['meta', { name: 'theme-color', content: '#0B0F1A' }],
