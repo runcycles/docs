@@ -17,6 +17,8 @@ With non-streaming calls, the `@cycles` decorator handles the full lifecycle aut
 
 ## The pattern
 
+### Python
+
 Use the programmatic `CyclesClient` (not the decorator) for streaming:
 
 ```python
@@ -92,6 +94,82 @@ def stream_with_budget(prompt: str, max_tokens: int = 1024) -> str:
 
     return "".join(chunks)
 ```
+
+### TypeScript
+
+The TypeScript client provides `reserveForStream`, which handles reservation creation and automatic heartbeat (TTL extension) in one call:
+
+```typescript
+import OpenAI from "openai";
+import {
+  CyclesClient,
+  CyclesConfig,
+  reserveForStream,
+  BudgetExceededError,
+} from "runcycles";
+
+const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
+const openai = new OpenAI();
+
+async function streamWithBudget(
+  prompt: string,
+  maxTokens = 1024,
+): Promise<string> {
+  // 1. Reserve budget (starts automatic heartbeat)
+  const handle = await reserveForStream({
+    client: cyclesClient,
+    estimate: maxTokens * 1000, // worst-case output cost
+    unit: "USD_MICROCENTS",
+    actionKind: "llm.completion",
+    actionName: "gpt-4o",
+  });
+
+  try {
+    // Respect budget caps
+    let effectiveMaxTokens = maxTokens;
+    if (handle.caps?.maxTokens) {
+      effectiveMaxTokens = Math.min(maxTokens, handle.caps.maxTokens);
+    }
+
+    // 2. Stream the response
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: effectiveMaxTokens,
+      stream: true,
+      stream_options: { include_usage: true },
+    });
+
+    const chunks: string[] = [];
+    let inputTokens = 0;
+    let outputTokens = 0;
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) chunks.push(content);
+      if (chunk.usage) {
+        inputTokens = chunk.usage.prompt_tokens ?? 0;
+        outputTokens = chunk.usage.completion_tokens ?? 0;
+      }
+    }
+
+    // 3. Commit actual cost (stops heartbeat automatically)
+    const actualCost = Math.ceil(inputTokens * 250 + outputTokens * 1000);
+    await handle.commit(actualCost, {
+      tokensInput: inputTokens,
+      tokensOutput: outputTokens,
+    });
+
+    return chunks.join("");
+  } catch (err) {
+    // Release budget on failure (stops heartbeat automatically)
+    await handle.release("stream_error");
+    throw err;
+  }
+}
+```
+
+`reserveForStream` handles TTL extension automatically via a background heartbeat, so you don't need to call `extend` manually. The heartbeat stops when you call `commit` or `release`.
 
 ## TTL considerations
 

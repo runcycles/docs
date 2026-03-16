@@ -44,6 +44,31 @@ Route B spends against `tenant:acme-corp` but never touches `tenant:acme-corp/wo
 - **Misleading balances.** The workspace balance report shows less spending than actually occurred. Operators think production is within limits, but the tenant-level budget tells a different story.
 - **No enforcement gap.** Cycles enforces exactly what it's told. If the subject doesn't include a scope level, that level is not checked.
 
+## Severity and impact
+
+Scope misconfiguration is uniquely dangerous because it is **silent**. Unlike a budget exceeded error or a denied reservation, a misconfigured scope produces no errors. Calls succeed, money is spent, and the budget reports look normal — until you realize the per-workspace limits you carefully configured are being bypassed entirely.
+
+**Budget bypass scenario:**
+
+```
+Budget setup:
+  tenant:acme-corp                    → $100/month
+  tenant:acme-corp/workspace:prod     → $50/month
+
+Route A (correct scope):   50 calls × $0.50 = $25 → charged to both tenant and workspace
+Route B (missing workspace): 200 calls × $0.50 = $100 → charged to tenant only
+
+Result:
+  tenant:acme-corp        → $125 spent (OVER BUDGET)
+  workspace:prod           → $25 spent  (looks fine!)
+```
+
+The workspace dashboard shows $25 spent — well within the $50 limit. But the tenant is $25 over budget because Route B bypassed workspace-level enforcement entirely. An operator looking at workspace reports sees no problem.
+
+**Cascading misconfiguration.** When one team gets scope construction wrong, other teams sharing the same tenant scope bear the cost. Team A's misconfigured calls drain the tenant budget, causing Team B's correctly-scoped calls to be denied with `BUDGET_EXCEEDED` at the tenant level even though their workspace budget has room.
+
+**Audit failure.** Scope mismatches break cost attribution. If finance needs to know how much the "prod" workspace spent, the answer is incomplete because Route B's spend is invisible at that scope level. This makes chargebacks and cost allocation unreliable.
+
 ## Common misconfiguration patterns
 
 ### 1. Inconsistent subject fields across routes
@@ -86,6 +111,53 @@ Cycles scopes follow a fixed hierarchy: `tenant → workspace → app → workfl
 
 **Fix:** Use constants or enums for scope values, not string literals.
 
+### 5. Dynamic scope values from user input
+
+When scope values are derived from user input (API parameters, form fields, URL paths), unsanitized values create unpredictable scope paths:
+
+```python
+# DANGEROUS: user-controlled scope value
+@cycles(estimate=2000000, action_kind="llm.completion",
+        action_name="gpt-4o",
+        workspace=request.headers.get("X-Workspace"))
+def handle_request(prompt):
+    ...
+```
+
+If a user sends `X-Workspace: prod/agent:attacker`, the scope path becomes `tenant:acme-corp/workspace:prod/agent:attacker` — a scope that likely has no budget configured, which could cause unexpected `BUDGET_EXCEEDED` errors, or worse, if a permissive fallback budget exists at a parent level, the call may bypass intended limits.
+
+**Fix:** Validate and sanitize scope values against an allowlist:
+
+```python
+VALID_WORKSPACES = {"prod", "staging", "dev"}
+
+def safe_workspace(raw_value: str) -> str:
+    sanitized = raw_value.strip().lower()
+    if sanitized not in VALID_WORKSPACES:
+        raise ValueError(f"Invalid workspace: {raw_value}")
+    return sanitized
+
+@cycles(estimate=2000000, action_kind="llm.completion",
+        action_name="gpt-4o",
+        workspace=safe_workspace(request.headers.get("X-Workspace", "default")))
+def handle_request(prompt):
+    ...
+```
+
+In TypeScript:
+
+```typescript
+const VALID_WORKSPACES = new Set(["prod", "staging", "dev"]);
+
+function safeWorkspace(raw: string | undefined): string {
+  const sanitized = (raw ?? "default").trim().toLowerCase();
+  if (!VALID_WORKSPACES.has(sanitized)) {
+    throw new Error(`Invalid workspace: ${raw}`);
+  }
+  return sanitized;
+}
+```
+
 ## Detection
 
 ### Check for scope inconsistency
@@ -107,6 +179,163 @@ If reservations are hitting scopes that don't appear in your budget list, you ha
 ### Use dry-run mode to audit
 
 Run in [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) to see all the scopes your application actually uses before creating budgets.
+
+### TypeScript detection example
+
+You can programmatically detect scope gaps by comparing budget scopes against reservation scopes:
+
+```typescript
+import { listBalances, listReservations } from "runcycles";
+
+async function detectScopeGaps(tenant: string): Promise<string[]> {
+  const balances = await listBalances({ tenant });
+  const reservations = await listReservations({ tenant, status: "ACTIVE" });
+
+  const budgetScopes = new Set(balances.map((b) => b.scope));
+  const reservationScopes = new Set(reservations.map((r) => r.scope));
+
+  const gaps: string[] = [];
+  for (const scope of reservationScopes) {
+    if (!budgetScopes.has(scope)) {
+      gaps.push(scope);
+    }
+  }
+  return gaps;
+}
+
+// Usage
+const gaps = await detectScopeGaps("acme-corp");
+if (gaps.length > 0) {
+  console.warn("Reservations hitting scopes without budgets:", gaps);
+}
+```
+
+## Monitoring
+
+### Alerting for scope mismatches
+
+```yaml
+# Alert when reservations hit scopes that have no configured budget
+- alert: CyclesScopeWithoutBudget
+  expr: |
+    cycles_reservations_created_total{scope=~".+"}
+    unless on(scope) cycles_scope_allocated_total
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Reservations hitting scope {{ $labels.scope }} which has no budget"
+
+# Alert when a scope's spend diverges significantly from its child scopes
+# (indicates traffic bypassing child scope)
+- alert: CyclesScopeSpendMismatch
+  expr: |
+    cycles_scope_spent_total{level="tenant"}
+    - sum(cycles_scope_spent_total{level="workspace"}) by (tenant)
+    > 1000000
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Tenant spend exceeds sum of workspace spend — possible scope bypass"
+
+# Alert when a workspace scope shows zero spend while tenant scope is active
+- alert: CyclesInactiveChildScope
+  expr: |
+    cycles_scope_spent_total{level="workspace"} == 0
+    and on(tenant) cycles_scope_spent_total{level="tenant"} > 0
+  for: 30m
+  labels:
+    severity: info
+  annotations:
+    summary: "Workspace {{ $labels.workspace }} has zero spend — check for scope misconfiguration"
+```
+
+### Key metrics to track
+
+- **Budget coverage ratio:** scopes with budgets vs distinct scopes in reservations. Should be 1.0.
+- **Parent-child spend delta:** difference between parent spend and sum of child spend. Non-zero means traffic is bypassing child scopes.
+- **Distinct scope count over time:** sudden increases suggest dynamic scope values from user input (pattern #5).
+
+For detailed monitoring setup, see [Monitoring and Alerting](/how-to/monitoring-and-alerting).
+
+## Testing scope configuration
+
+### Python: verify all routes include required scope fields
+
+```python
+import pytest
+from unittest.mock import patch
+from runcycles import get_last_reservation
+
+REQUIRED_SCOPE_FIELDS = {"tenant", "workspace"}
+
+def test_route_a_includes_all_scopes():
+    """Verify that route_a passes all required scope fields."""
+    with patch("myapp.call_llm", return_value="mocked"):
+        route_a("test prompt")
+
+    reservation = get_last_reservation()
+    subject_keys = set(reservation.subject.keys())
+    missing = REQUIRED_SCOPE_FIELDS - subject_keys
+    assert not missing, f"Route A missing scope fields: {missing}"
+
+def test_route_b_includes_all_scopes():
+    """Verify that route_b passes all required scope fields."""
+    with patch("myapp.call_llm", return_value="mocked"):
+        route_b("test prompt")
+
+    reservation = get_last_reservation()
+    subject_keys = set(reservation.subject.keys())
+    missing = REQUIRED_SCOPE_FIELDS - subject_keys
+    assert not missing, f"Route B missing scope fields: {missing}"
+```
+
+### TypeScript: centralized scope builder with tests
+
+```typescript
+import { withCycles } from "runcycles";
+
+// Centralized scope builder — all routes use this
+interface ScopeConfig {
+  tenant: string;
+  workspace: string;
+  app?: string;
+}
+
+function buildScope(): ScopeConfig {
+  const tenant = process.env.CYCLES_TENANT;
+  const workspace = process.env.CYCLES_WORKSPACE;
+  if (!tenant) throw new Error("CYCLES_TENANT is required");
+  if (!workspace) throw new Error("CYCLES_WORKSPACE is required");
+  return { tenant, workspace };
+}
+
+// Test that buildScope rejects missing fields
+describe("buildScope", () => {
+  it("throws if CYCLES_TENANT is missing", () => {
+    delete process.env.CYCLES_TENANT;
+    process.env.CYCLES_WORKSPACE = "prod";
+    expect(() => buildScope()).toThrow("CYCLES_TENANT is required");
+  });
+
+  it("throws if CYCLES_WORKSPACE is missing", () => {
+    process.env.CYCLES_TENANT = "acme-corp";
+    delete process.env.CYCLES_WORKSPACE;
+    expect(() => buildScope()).toThrow("CYCLES_WORKSPACE is required");
+  });
+
+  it("returns all required fields", () => {
+    process.env.CYCLES_TENANT = "acme-corp";
+    process.env.CYCLES_WORKSPACE = "prod";
+    const scope = buildScope();
+    expect(scope).toHaveProperty("tenant", "acme-corp");
+    expect(scope).toHaveProperty("workspace", "prod");
+  });
+});
+```
+
+For more testing patterns, see [Testing with Cycles](/how-to/testing-with-cycles).
 
 ## Prevention
 

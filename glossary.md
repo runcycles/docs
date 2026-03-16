@@ -1,0 +1,136 @@
+---
+title: "Glossary"
+description: "Definitions of key terms and concepts used throughout the Cycles documentation."
+---
+
+# Glossary
+
+Definitions of key terms and concepts used throughout the Cycles documentation.
+
+## Core Concepts
+
+### Budget Authority
+
+The role Cycles plays in an autonomous system: authorizing or denying execution based on whether sufficient budget is available. Unlike billing or observability, budget authority is enforced **before** work begins. See [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) for how this differs from adjacent categories.
+
+### Reservation
+
+A temporary hold placed on a budget before work begins. Reservations lock an estimated amount so that concurrent operations cannot overspend the same budget. Every reservation must eventually be [committed](#commit) or [released](#release). See [How Reserve-Commit Works](/protocol/how-reserve-commit-works-in-cycles).
+
+### Commit
+
+Finalizing a reservation with the actual cost once work completes successfully. The committed amount replaces the original estimate, and any difference is returned to the available budget. See [How Reserve-Commit Works](/protocol/how-reserve-commit-works-in-cycles).
+
+### Release
+
+Freeing a reservation's held budget when the associated work fails, is cancelled, or is no longer needed. The full reserved amount is returned to the available budget. See [How Reserve-Commit Works](/protocol/how-reserve-commit-works-in-cycles).
+
+### Estimate
+
+The predicted cost used when creating a reservation. Estimates determine how much budget is held and should be calibrated to cover the worst-case execution cost. See [How to Estimate Exposure Before Execution](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles).
+
+### Actual
+
+The real cost committed after execution completes. The actual amount may be less than, equal to, or greater than the original estimate, with the difference handled by the configured [overage policy](#overage-policy).
+
+### Decide
+
+A preflight budget check that evaluates whether a reservation **would** be allowed, without actually creating one. Useful for UI gating, request routing, or early rejection of requests that would exceed budget. See [How Decide Works](/protocol/how-decide-works-in-cycles-preflight-budget-checks-without-reservation).
+
+## Budget & Scope
+
+### Scope
+
+A hierarchical path that identifies a specific budget. Scopes are built from [subject](#subject) fields and take the form `tenant:acme/workspace:prod/agent:summarizer`. Budgets are enforced at every level of the scope hierarchy. See [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles).
+
+### Subject
+
+The set of entity fields — `tenant`, `workspace`, `app`, `workflow`, `agent`, and `toolset` — that identify **who** is spending. Subjects are sent with every protocol request and used to derive the scope path.
+
+### Scope Derivation
+
+The process by which Cycles builds hierarchical scope paths from the subject fields on a request. Each field maps to a level in the scope tree, enabling budget enforcement at any granularity from tenant-wide down to a single toolset. See [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles).
+
+### Cap / Budget Cap
+
+A constraint applied to execution when budget is running low but not yet exhausted. For example, a cap might reduce `max_tokens` on an LLM call so the request can still proceed at lower cost. Caps are returned as part of an `ALLOW_WITH_CAPS` decision. See [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles).
+
+### Three-Way Decision
+
+The three possible responses to a reservation or decide request: **ALLOW** (proceed normally), **ALLOW_WITH_CAPS** (proceed with reduced limits), or **DENY** (reject the request). This model enables graceful degradation instead of hard pass/fail. See [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles).
+
+### Overage Policy
+
+Configures what happens when the actual cost committed exceeds the original estimate. Three policies are available: **REJECT** (deny the commit), **ALLOW_IF_AVAILABLE** (permit if remaining budget covers the difference), and **ALLOW_WITH_OVERDRAFT** (permit even if it creates debt). See [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft).
+
+## Units
+
+### USD_MICROCENTS
+
+One hundred-millionth of a dollar (10^-8 USD). This is the default monetary unit in Cycles, chosen for integer-precision arithmetic at sub-cent granularity. See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+
+### TOKENS
+
+A raw token count unit, typically used to track LLM input and output tokens directly rather than converting to monetary cost. See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+
+### CREDITS
+
+An abstract credit unit that lets teams define their own internal currency. Useful when monetary cost is not the right abstraction for a given budget. See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+
+### RISK_POINTS
+
+An abstract risk-scoring unit for budgeting non-monetary concerns such as safety risk, compliance exposure, or action severity. See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+
+## Lifecycle
+
+### TTL (Time To Live)
+
+The duration an active reservation remains valid before it auto-expires. If a reservation is neither committed nor released within its TTL (plus any [grace period](#grace-period)), the held budget is automatically reclaimed. See [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles).
+
+### Grace Period
+
+An additional window of time after a reservation's TTL expires before the held budget is fully reclaimed. The grace period provides a safety buffer for in-flight operations that slightly exceed their TTL. See [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles).
+
+### Extend
+
+Prolonging an active reservation's TTL before it expires. This is used when work is taking longer than originally anticipated and the reservation should remain active. See [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles).
+
+### Heartbeat
+
+An automatic TTL extension sent periodically by SDK clients to keep a reservation alive during long-running work. Heartbeats remove the need for callers to manually track and extend reservation lifetimes.
+
+## Operations
+
+### Shadow Mode / Dry Run
+
+Evaluating budget policies and computing the decision result **without** persisting the reservation or affecting budget balances. Shadow mode is used during rollout to validate enforcement logic before turning it on in production. See [Dry-Run / Shadow Mode Evaluation](/protocol/dry-run-shadow-mode-evaluation-in-cycles) and [Shadow Mode How-To](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production).
+
+### Idempotency Key
+
+A unique client-supplied key that ensures a protocol operation is processed exactly once, even if the request is retried due to network failures or timeouts. Each endpoint type has its own idempotency scope. See [Idempotency, Retries, and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes).
+
+### Debt / Overdraft
+
+A negative budget balance that occurs when the actual cost committed exceeds the available budget. Debt is only permitted when the [overage policy](#overage-policy) is set to `ALLOW_WITH_OVERDRAFT`. See [Debt, Overdraft, and the Over-Limit Model](/protocol/debt-overdraft-and-the-over-limit-model-in-cycles).
+
+### Event / Direct Debit
+
+Recording spend against a budget **without** a prior reservation. Events are used for costs that are known after the fact or that bypass the reserve-commit lifecycle entirely. See [How Events Work](/protocol/how-events-work-in-cycles-direct-debit-without-reservation).
+
+### Balance
+
+The current state of a budget, including fields such as `allocated`, `spent`, `reserved`, `remaining`, and `debt`. Balances are computed across the full scope hierarchy and reflect all committed, reserved, and event-based spend. See [Querying Balances](/protocol/querying-balances-in-cycles-understanding-budget-state).
+
+## Infrastructure
+
+### Cycles Server
+
+The HTTP service that implements the [Cycles Protocol](#cycles-protocol) and processes all budget authority requests — reserve, commit, release, decide, extend, events, and balances. See the [API Reference](/protocol/api-reference-for-the-cycles-protocol).
+
+### Admin Server
+
+The management API used to configure tenants, API keys, budgets, and policies. The Admin Server is separate from the Cycles Server and is not part of the protocol's hot path. See [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles).
+
+### Cycles Protocol
+
+The open specification defining the budget authority API. The protocol covers the complete reservation lifecycle, balance queries, event recording, and decision evaluation. See the [API Reference](/protocol/api-reference-for-the-cycles-protocol).

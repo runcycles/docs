@@ -24,6 +24,8 @@ export default defineConfig({
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/runcycles-logo-192.png' }],
+    ['link', { rel: 'manifest', href: '/manifest.json' }],
     ['meta', { name: 'description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Cycles' }],
@@ -146,6 +148,7 @@ export default defineConfig({
             { text: 'Idempotency, Retries and Concurrency', link: '/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes' },
             { text: 'From Observability to Enforcement', link: '/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority' },
             { text: 'How Cycles Compares', link: '/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers' },
+            { text: 'Glossary', link: '/glossary' },
           ]
         },
         {
@@ -174,11 +177,13 @@ export default defineConfig({
         },
         {
           text: 'Integrations',
-          collapsed: true,
+          collapsed: false,
           items: [
+            { text: 'Overview', link: '/how-to/integrations-overview' },
             { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
             { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
-            { text: 'LangChain', link: '/how-to/integrating-cycles-with-langchain' },
+            { text: 'LangChain (Python)', link: '/how-to/integrating-cycles-with-langchain' },
+            { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
             { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
             { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
             { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
@@ -256,5 +261,14 @@ export default defineConfig({
       pageData.title = pageData.params.pageTitle
     }
 
+    const canonicalUrl = `https://runcycles.io/${pageData.relativePath}`
+      .replace(/index\.md$/, '')
+      .replace(/\.md$/, '')
+
+    pageData.frontmatter.head ??= []
+    pageData.frontmatter.head.push([
+      'link',
+      { rel: 'canonical', href: canonicalUrl },
+    ])
   },
 })
