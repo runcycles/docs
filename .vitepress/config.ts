@@ -22,11 +22,11 @@ export default defineConfig({
   titleTemplate: ':title - Cycles Docs',
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
-    ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
+    ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Cycles Docs' }],
     ['meta', { property: 'og:description', content: 'Documentation for Cycles, a budget authority for autonomous execution.' }],
-    ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-logo-1k.png' }],
+    ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-logo-1024.png' }],
     ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],
   ],
