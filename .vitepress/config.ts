@@ -20,11 +20,29 @@ export default defineConfig({
   srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'Cycles Docs' }],
+    ['meta', { property: 'og:description', content: 'Documentation for Cycles, a budget authority for autonomous execution.' }],
+    ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-logo-1k.png' }],
+    ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
   ],
+  sitemap: {
+    hostname: 'https://runcycles.io'
+  },
   lastUpdated: true,
   themeConfig: {
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: {
+        detailedView: true,
+        miniSearch: {
+          searchOptions: {
+            fuzzy: 0.2,
+            prefix: true,
+          }
+        }
+      }
     },
     logo: '/runcycles-logo-64.png',
     externalLinkIcon: true,
@@ -195,6 +213,10 @@ export default defineConfig({
           ]
         }
       ],
+    },
+    footer: {
+      message: 'Released under the Apache 2.0 License.',
+      copyright: 'Copyright 2024-present RunCycles'
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/runcycles/docs' }
