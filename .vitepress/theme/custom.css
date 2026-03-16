@@ -1,3 +1,9 @@
+/* Fix H1 DOM concatenation — VitePress renders name and text as adjacent
+   spans with no whitespace, causing search engines to read "CyclesA budget…" */
+.VPHero .name::after {
+  content: " ";
+}
+
 /* Brand color — match teal accent across site */
 :root {
   --vp-c-brand-1: #00C9A7;

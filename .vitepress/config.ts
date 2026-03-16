@@ -54,7 +54,8 @@ export default defineConfig({
     })],
   ],
   sitemap: {
-    hostname: 'https://runcycles.io'
+    hostname: 'https://runcycles.io',
+    transformItems: (items) => items.filter((item) => item.url !== '404'),
   },
   markdown: {
     image: {
