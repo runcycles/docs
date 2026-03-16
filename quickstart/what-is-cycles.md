@@ -5,7 +5,7 @@ description: "Cycles is a budget authority for autonomous execution that enforce
 
 # What is Cycles?
 
-Cycles is a **budget authority for autonomous execution**. It enforces hard spend limits on AI agents and autonomous workflows *before* expensive actions happen — not after.
+Cycles is a **budget authority for autonomous execution**. It enforces hard limits on agent spend and actions — **before they happen, not after**.
 
 ## The problem
 
@@ -33,7 +33,8 @@ Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 sec
 
 ## How Cycles solves it
 
-Cycles sits between your application and costly external services (LLMs, APIs, tools). Every action follows a **Reserve-Commit lifecycle**:
+Cycles enforces a budget decision before agent actions execute — LLM calls, tool invocations, API requests. Every action follows a **Reserve-Commit lifecycle**:
+> Cycles enforces where you instrument it. Uninstrumented code paths are unaffected.
 
 ```
 1. Reserve    →  Lock estimated cost before the action runs
