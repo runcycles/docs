@@ -11,6 +11,9 @@
   max-height: 500px !important;
   width: 500px;
   height: auto !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .VPHero .image-src {
