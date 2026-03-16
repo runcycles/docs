@@ -1,3 +1,8 @@
+---
+title: "How to Model Tenant, Workflow, and Run Budgets in Cycles"
+description: "Design budget policies using tenant, workflow, and run scopes to bound autonomous execution across multiple levels in Cycles."
+---
+
 # How to Model Tenant, Workflow, and Run Budgets in Cycles
 
 Once a team understands reserve → commit, the next question is usually:

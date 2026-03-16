@@ -1,3 +1,8 @@
+---
+title: "Using the Cycles Client Programmatically"
+description: "Use the Cycles programmatic client in Python, Java, and TypeScript for direct control over reservations, commits, and protocol endpoints."
+---
+
 # Using the Cycles Client Programmatically
 
 The decorator / annotation handles most use cases automatically. But sometimes you need direct control — building requests manually, managing the lifecycle yourself, or calling endpoints that the decorator does not cover.

@@ -1,3 +1,8 @@
+---
+title: "Shadow Mode in Cycles: How to Roll Out Budget Enforcement Without Breaking Production"
+description: "Use shadow mode to evaluate Cycles budget policies against real traffic without blocking execution, then safely transition to enforcement."
+---
+
 # Shadow Mode in Cycles: How to Roll Out Budget Enforcement Without Breaking Production
 
 Most teams do not struggle with the idea of budget enforcement.

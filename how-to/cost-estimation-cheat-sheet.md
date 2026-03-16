@@ -1,3 +1,8 @@
+---
+title: "Cost Estimation Cheat Sheet"
+description: "Quick reference for estimating LLM call costs in Cycles, including USD_MICROCENTS conversions and provider pricing tables."
+---
+
 # Cost Estimation Cheat Sheet
 
 This guide answers the most common question when adopting Cycles: **how much should I reserve for a given LLM call?**

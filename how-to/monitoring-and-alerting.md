@@ -1,3 +1,8 @@
+---
+title: "Monitoring and Alerting"
+description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment."
+---
+
 # Monitoring and Alerting
 
 This guide covers key metrics to monitor, alerting thresholds, and observability patterns for a production Cycles deployment.
