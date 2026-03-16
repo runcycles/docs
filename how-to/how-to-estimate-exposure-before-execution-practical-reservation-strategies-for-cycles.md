@@ -32,7 +32,9 @@ It is a **bounded allowance**.
 
 The system is asking:
 
-> How much room should this action be allowed to consume before it proceeds?
+::: info
+How much room should this action be allowed to consume before it proceeds?
+:::
 
 That means a useful estimate should be:
 
@@ -367,7 +369,9 @@ Another common mistake is to think only in terms of average spend.
 
 A better question is:
 
-> What kind of action is this, and how uncertain is its execution path?
+::: info
+What kind of action is this, and how uncertain is its execution path?
+:::
 
 For example:
 

@@ -10,9 +10,8 @@ For TypeScript-specific patterns (exception hierarchy, Express/Next.js integrati
 
 The Python, Java, and TypeScript clients all expose structured error information when the server returns a protocol-level error.
 
-### Python — CyclesProtocolError
-
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesProtocolError
 
 # Available attributes:
@@ -33,10 +32,7 @@ e.is_idempotency_mismatch()
 e.is_unit_mismatch()
 e.is_retryable()
 ```
-
-### Java — CyclesProtocolException
-
-```java
+```java [Java]
 public class CyclesProtocolException extends RuntimeException {
     ErrorCode getErrorCode();     // Machine-readable error code
     String getReasonCode();       // String error code
@@ -53,10 +49,7 @@ public class CyclesProtocolException extends RuntimeException {
     boolean isUnitMismatch();
 }
 ```
-
-### TypeScript — CyclesProtocolError
-
-```typescript
+```typescript [TypeScript]
 import { CyclesProtocolError } from "runcycles";
 
 // Available properties:
@@ -77,14 +70,14 @@ e.isIdempotencyMismatch();
 e.isUnitMismatch();
 e.isRetryable();
 ```
+:::
 
 ## Handling DENY decisions
 
 When a reservation is denied, the decorated function / annotated method does not execute. An exception is thrown instead.
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import cycles, BudgetExceededError, CyclesProtocolError
 
 @cycles(estimate=1000)
@@ -102,10 +95,7 @@ except CyclesProtocolError as e:
     else:
         raise
 ```
-
-### Java
-
-```java
+```java [Java]
 try {
     return llmService.summarize(text);
 } catch (CyclesProtocolException e) {
@@ -119,10 +109,7 @@ try {
     throw e;
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { withCycles, BudgetExceededError, CyclesProtocolError } from "runcycles";
 
 const summarize = withCycles(
@@ -143,12 +130,12 @@ try {
   }
 }
 ```
+:::
 
 ## Degradation patterns
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import BudgetExceededError
 
 try:
@@ -156,10 +143,7 @@ try:
 except BudgetExceededError:
     result = basic_service.analyze(data)     # GPT-4o-mini, lower cost
 ```
-
-### Java
-
-```java
+```java [Java]
 try {
     return premiumService.analyze(data);  // Uses GPT-4o, high cost
 } catch (CyclesProtocolException e) {
@@ -169,10 +153,7 @@ try {
     throw e;
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { BudgetExceededError } from "runcycles";
 
 try {
@@ -185,6 +166,7 @@ try {
   }
 }
 ```
+:::
 
 ## Handling debt and overdraft errors
 
@@ -192,9 +174,8 @@ try {
 
 A scope has unpaid debt. New reservations are blocked until the debt is resolved.
 
-**Python:**
-
-```python
+::: code-group
+```python [Python]
 from runcycles import DebtOutstandingError
 
 try:
@@ -204,10 +185,7 @@ except DebtOutstandingError:
     alert_operator("Budget debt detected. Funding required.")
     result = "Service paused pending budget review."
 ```
-
-**Java:**
-
-```java
+```java [Java]
 try {
     return service.process(input);
 } catch (CyclesProtocolException e) {
@@ -219,10 +197,7 @@ try {
     throw e;
 }
 ```
-
-**TypeScript:**
-
-```typescript
+```typescript [TypeScript]
 import { DebtOutstandingError } from "runcycles";
 
 try {
@@ -237,14 +212,14 @@ try {
   }
 }
 ```
+:::
 
 ### OverdraftLimitExceededError / OVERDRAFT_LIMIT_EXCEEDED
 
 The scope's debt has exceeded its overdraft limit.
 
-**Python:**
-
-```python
+::: code-group
+```python [Python]
 from runcycles import OverdraftLimitExceededError
 
 try:
@@ -253,10 +228,7 @@ except OverdraftLimitExceededError:
     logger.error("Overdraft limit exceeded. Scope is blocked.")
     result = "Budget limit reached. Please contact support."
 ```
-
-**Java:**
-
-```java
+```java [Java]
 try {
     return service.process(input);
 } catch (CyclesProtocolException e) {
@@ -267,10 +239,7 @@ try {
     throw e;
 }
 ```
-
-**TypeScript:**
-
-```typescript
+```typescript [TypeScript]
 import { OverdraftLimitExceededError } from "runcycles";
 
 try {
@@ -284,14 +253,14 @@ try {
   }
 }
 ```
+:::
 
 ## Handling expired reservations
 
 If a function takes longer than the reservation TTL plus grace period, the commit will fail with `RESERVATION_EXPIRED`. Both clients handle heartbeat extensions automatically, but network issues can prevent extensions.
 
-**Python:**
-
-```python
+::: code-group
+```python [Python]
 from runcycles import ReservationExpiredError
 
 try:
@@ -303,10 +272,7 @@ except ReservationExpiredError:
     )
     record_as_event(data)
 ```
-
-**Java:**
-
-```java
+```java [Java]
 try {
     return longRunningService.process(data);
 } catch (CyclesProtocolException e) {
@@ -319,10 +285,7 @@ try {
     throw e;
 }
 ```
-
-**TypeScript:**
-
-```typescript
+```typescript [TypeScript]
 import { ReservationExpiredError } from "runcycles";
 
 try {
@@ -339,12 +302,12 @@ try {
   }
 }
 ```
+:::
 
 ## Catching all Cycles errors
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import (
     BudgetExceededError,
     DebtOutstandingError,
@@ -372,10 +335,7 @@ except CyclesTransportError as e:
     logger.error("Transport error: %s (cause=%s)", e, e.cause)
     raise
 ```
-
-### Java
-
-```java
+```java [Java]
 try {
     return annotatedMethod();
 } catch (CyclesProtocolException e) {
@@ -395,10 +355,7 @@ try {
     }
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import {
   BudgetExceededError,
   DebtOutstandingError,
@@ -431,12 +388,12 @@ try {
   }
 }
 ```
+:::
 
 ## Web framework error handlers
 
-### Python (FastAPI)
-
-```python
+::: code-group
+```python [FastAPI]
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from runcycles import CyclesProtocolError
@@ -464,10 +421,7 @@ async def cycles_error_handler(request: Request, exc: CyclesProtocolError):
         content={"error": "internal_error", "message": "An unexpected error occurred."},
     )
 ```
-
-### Java (Spring @ExceptionHandler)
-
-```java
+```java [Spring]
 @RestControllerAdvice
 public class CyclesExceptionHandler {
 
@@ -502,10 +456,7 @@ public class CyclesExceptionHandler {
     }
 }
 ```
-
-### TypeScript (Express)
-
-```typescript
+```typescript [Express]
 import type { Request, Response, NextFunction } from "express";
 import { CyclesProtocolError } from "runcycles";
 
@@ -530,10 +481,7 @@ function cyclesErrorHandler(err: Error, req: Request, res: Response, next: NextF
     .json({ error: "internal_error", message: "An unexpected error occurred." });
 }
 ```
-
-### TypeScript (Next.js API Route)
-
-```typescript
+```typescript [Next.js]
 import { BudgetExceededError } from "runcycles";
 
 export async function POST(req: Request) {
@@ -551,14 +499,14 @@ export async function POST(req: Request) {
   }
 }
 ```
+:::
 
 ## Programmatic client error handling
 
 When using the client directly, errors come as response status codes rather than exceptions.
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesClient
 
 with CyclesClient(config) as client:
@@ -583,10 +531,7 @@ with CyclesClient(config) as client:
             response.status, response.error_message,
         )
 ```
-
-### Java
-
-```java
+```java [Java]
 CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(request);
 
 if (response.is2xx()) {
@@ -607,10 +552,7 @@ if (response.is2xx()) {
     throw new RuntimeException("Cycles request failed: " + response.getErrorMessage());
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 const response = await client.createReservation(request);
 
 if (response.isSuccess) {
@@ -627,6 +569,7 @@ if (response.isSuccess) {
   console.error(`Cycles client error: status=${response.status}, error=${response.errorMessage}`);
 }
 ```
+:::
 
 ## Transient vs non-transient errors
 

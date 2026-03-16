@@ -113,32 +113,23 @@ Once confidence is high, switch all action classes to live enforcement.
 
 ## Dry run in client code
 
-### Python
+The decorator/annotation supports dry run. When enabled, the client evaluates the reservation without holding budget. The decorated function does not execute — a `DryRunResult` is returned instead (Python) or the decision is logged for monitoring (Java). This allows teams to observe what would have happened under enforcement without affecting runtime behavior.
 
-The `@cycles` decorator supports dry run:
-
-```python
+::: code-group
+```python [Python]
 from runcycles import cycles
 
 @cycles(estimate=1000, dry_run=True)
 def summarize(text: str) -> str:
     return call_llm(text)
 ```
-
-When `dry_run=True`, the client evaluates the reservation without holding budget. The decorated function does not execute — a `DryRunResult` is returned instead. This allows teams to observe what would have happened under enforcement without affecting runtime behavior.
-
-### Java (Spring Boot)
-
-The `@Cycles` annotation supports dry run:
-
-```java
+```java [Java (Spring Boot)]
 @Cycles(value = "1000", dryRun = true)
 public String summarize(String text) {
     return chatModel.call(text);
 }
 ```
-
-When `dryRun = true`, the starter evaluates the reservation without holding budget. The method does not execute. The decision is logged for monitoring, allowing teams to observe what would have happened under enforcement without affecting runtime behavior.
+:::
 
 ## Idempotency on dry run
 

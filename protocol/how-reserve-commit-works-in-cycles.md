@@ -42,7 +42,9 @@ Reservation changes that.
 
 Before work starts, the system asks:
 
-> Is this action allowed to consume up to this amount of exposure?
+::: info
+Is this action allowed to consume up to this amount of exposure?
+:::
 
 If the answer is no, the action can be denied, downgraded, deferred, or rerouted before cost or side effects occur.
 
@@ -150,11 +152,15 @@ That is not the same thing.
 
 Post-hoc tracking says:
 
-> We can tell you what happened after execution.
+::: info
+We can tell you what happened after execution.
+:::
 
 Reserve → commit says:
 
-> We decide whether work may proceed before execution, then reconcile actual usage afterward.
+::: info
+We decide whether work may proceed before execution, then reconcile actual usage afterward.
+:::
 
 That difference is the entire point.
 

@@ -2,7 +2,9 @@
 
 This tutorial takes you from nothing to a working budget-guarded OpenAI call in about 10 minutes. You will deploy the Cycles stack, create a tenant, fund a budget, and make your first budget-enforced LLM call.
 
-> **Want to see Cycles in action before building?** Run the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — no LLM key required, shows the problem and the fix in 60 seconds.
+::: tip Want to see Cycles in action before building?
+Run the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — no LLM key required, shows the problem and the fix in 60 seconds.
+:::
 
 ## Prerequisites
 
@@ -134,15 +136,11 @@ You should see `"decision": "ALLOW"`, then `"status": "COMMITTED"`, then a balan
 
 Choose your language:
 
-### Python
+::: code-group
+```python [Python]
+# Install: pip install runcycles openai
+# Save as app.py
 
-```bash
-pip install runcycles openai
-```
-
-Create `app.py`:
-
-```python
 import os
 from openai import OpenAI
 from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
@@ -178,25 +176,10 @@ try:
 except Exception as e:
     print(f"Error: {e}")
 ```
+```typescript [TypeScript]
+// Install: npm init -y && npm install runcycles openai
+// Save as app.ts
 
-Run it:
-
-```bash
-export CYCLES_API_KEY="cyc_live_..."   # your key from Step 3
-export OPENAI_API_KEY="sk-..."          # your OpenAI key
-python app.py
-```
-
-### TypeScript
-
-```bash
-npm init -y
-npm install runcycles openai
-```
-
-Create `app.ts`:
-
-```typescript
 import OpenAI from "openai";
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
@@ -228,13 +211,14 @@ const ask = withCycles(
 const result = await ask("What is budget governance for AI agents? Reply in one sentence.");
 console.log("Response:", result);
 ```
+:::
 
 Run it:
 
 ```bash
-export CYCLES_API_KEY="cyc_live_..."
-export OPENAI_API_KEY="sk-..."
-npx tsx app.ts
+export CYCLES_API_KEY="cyc_live_..."   # your key from Step 3
+export OPENAI_API_KEY="sk-..."          # your OpenAI key
+python app.py                           # or: npx tsx app.ts
 ```
 
 ## Step 7: Watch the budget decrease

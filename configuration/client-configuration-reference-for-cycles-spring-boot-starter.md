@@ -1,6 +1,8 @@
 # Client Configuration Reference for the Cycles Spring Boot Starter
 
-> **Using Python?** See the [Python Client Configuration Reference](/configuration/python-client-configuration-reference) instead.
+::: tip Using Python?
+See the [Python Client Configuration Reference](/configuration/python-client-configuration-reference) instead.
+:::
 
 This is the complete reference for all configuration properties available in the Cycles Spring Boot Starter.
 

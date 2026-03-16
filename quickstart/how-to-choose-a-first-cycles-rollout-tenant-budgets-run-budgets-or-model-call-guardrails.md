@@ -82,7 +82,9 @@ Tenant budgets are usually the best first rollout when the core concern is:
 
 A tenant budget answers:
 
-> How much total exposure is this customer allowed to create?
+::: info
+How much total exposure is this customer allowed to create?
+:::
 
 That makes it a strong economic and operational starting point.
 
@@ -139,7 +141,9 @@ Run budgets are usually the best first rollout when the core concern is:
 
 A run budget answers:
 
-> How much exposure can this individual execution consume before it must stop or degrade?
+::: info
+How much exposure can this individual execution consume before it must stop or degrade?
+:::
 
 That makes it the strongest first step for many autonomous systems.
 
@@ -331,11 +335,15 @@ This sequence works well because it moves from easiest integration to strongest 
 
 Another common mistake is to ask:
 
-> What is the perfect first policy model?
+::: info
+What is the perfect first policy model?
+:::
 
 A better question is:
 
-> What is the narrowest rollout that prevents the incident we care about most?
+::: info
+What is the narrowest rollout that prevents the incident we care about most?
+:::
 
 That mindset leads to faster adoption.
 

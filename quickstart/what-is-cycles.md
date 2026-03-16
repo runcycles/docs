@@ -21,7 +21,7 @@ git clone https://github.com/runcycles/cycles-runaway-demo
 cd cycles-runaway-demo
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r agent/requirements.txt
-./demo.sh
+./demo.sh # [!code focus]
 ```
 
 Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 seconds. With Cycles it stops cleanly at $1.00.
@@ -38,13 +38,14 @@ Cycles sits between your application and costly external services (LLMs, APIs, t
 
 If the budget is exhausted, the reservation is **denied before any money is spent**.
 
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
 
 client = CyclesClient(CyclesConfig.from_env())
 set_default_client(client)
 
-@cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
+@cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o") # [!code focus]
 def ask(prompt: str) -> str:
     return openai.chat.completions.create(
         model="gpt-4o",
@@ -54,15 +55,14 @@ def ask(prompt: str) -> str:
 # Budget is reserved before the call, committed after, released on failure.
 result = ask("Summarize this document")
 ```
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const client = new CyclesClient(CyclesConfig.fromEnv());
 setDefaultClient(client);
 
-const ask = withCycles(
-  { estimate: 5000, actionKind: "llm.completion", actionName: "openai:gpt-4o" },
+const ask = withCycles( // [!code focus]
+  { estimate: 5000, actionKind: "llm.completion", actionName: "openai:gpt-4o" }, // [!code focus]
   async (prompt: string) => {
     const res = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -74,6 +74,7 @@ const ask = withCycles(
 
 const result = await ask("Summarize this document");
 ```
+:::
 
 ## Key guarantees
 

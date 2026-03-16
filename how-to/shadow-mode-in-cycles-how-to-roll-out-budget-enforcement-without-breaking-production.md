@@ -76,11 +76,15 @@ In shadow mode, the same model still runs conceptually, but reservation failures
 
 Instead of saying:
 
-> deny this action
+::: info
+deny this action
+:::
 
 the system says:
 
-> this action would have been denied under the current policy
+::: info
+this action would have been denied under the current policy
+:::
 
 That gives teams a safe way to tune policy before the consequences become user-facing.
 

@@ -49,7 +49,7 @@ const config = CyclesConfig.fromEnv();
 
 The simplest usage — wrap an async function with a fixed estimate:
 
-```typescript
+```typescript :line-numbers
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const config = new CyclesConfig({
@@ -60,8 +60,8 @@ const config = new CyclesConfig({
 const client = new CyclesClient(config);
 setDefaultClient(client);
 
-const summarize = withCycles(
-  { estimate: 1000 },
+const summarize = withCycles( // [!code focus]
+  { estimate: 1000 }, // [!code focus]
   async (text: string) => {
     return await callLlm(text);
   },
@@ -78,7 +78,7 @@ The estimate can be a function that receives the wrapped function's arguments:
 
 ```typescript
 const generate = withCycles(
-  { estimate: (text: string, maxTokens: number) => maxTokens * 10 },
+  { estimate: (text: string, maxTokens: number) => maxTokens * 10 }, // [!code focus]
   async (text: string, maxTokens: number) => {
     return await callLlm(text, maxTokens);
   },
@@ -93,7 +93,7 @@ By default, the estimate is used as the actual cost at commit time. To calculate
 const chat = withCycles(
   {
     estimate: 5000,
-    actual: (result: string) => result.length * 5,
+    actual: (result: string) => result.length * 5, // [!code focus]
   },
   async (prompt: string) => {
     return await callLlm(prompt);
@@ -129,13 +129,13 @@ const chat = withCycles(
 
 Inside a `withCycles`-guarded function, the current reservation context is available via `getCyclesContext()`:
 
-```typescript
+```typescript :line-numbers
 import { withCycles, getCyclesContext } from "runcycles";
 
 const process = withCycles(
   { estimate: 1000, client },
   async (text: string) => {
-    const ctx = getCyclesContext();
+    const ctx = getCyclesContext(); // [!code focus]
 
     // Check reservation details
     console.log(`Reservation: ${ctx?.reservationId}`);
@@ -175,13 +175,13 @@ When the reservation decision comes back, the HOF handles each case:
 - **ALLOW_WITH_CAPS** — the function runs. Caps are available through `getCyclesContext()` for the function to inspect and respect.
 - **DENY** — the function does not run. A `BudgetExceededError` (or appropriate subclass) is raised.
 
-```typescript
+```typescript :line-numbers
 import { BudgetExceededError, CyclesProtocolError } from "runcycles";
 
 try {
   const result = await summarize("Hello");
 } catch (err) {
-  if (err instanceof BudgetExceededError) {
+  if (err instanceof BudgetExceededError) { // [!code focus]
     result = fallbackResponse();
   } else if (err instanceof CyclesProtocolError) {
     if (err.retryAfterMs) {
@@ -209,7 +209,7 @@ try {
 
 For LLM streaming where usage is only known after the stream finishes, use `reserveForStream`:
 
-```typescript
+```typescript :line-numbers
 import { CyclesClient, CyclesConfig, reserveForStream } from "runcycles";
 
 const config = new CyclesConfig({
@@ -221,7 +221,7 @@ const client = new CyclesClient(config);
 
 let handle;
 try {
-  handle = await reserveForStream({
+  handle = await reserveForStream({ // [!code focus]
     client,
     estimate: 5000,
     actionKind: "llm.completion",
@@ -238,7 +238,7 @@ try {
     messages,
     onFinish: async ({ usage }) => {
       const actualCost = (usage.promptTokens + usage.completionTokens) * 3;
-      await handle.commit(actualCost, {
+      await handle.commit(actualCost, { // [!code focus]
         tokensInput: usage.promptTokens,
         tokensOutput: usage.completionTokens,
       });
@@ -266,7 +266,7 @@ The handle is once-only and race-safe: `commit()` throws if already finalized (s
 
 For full control, use `CyclesClient` directly. The client operates on wire-format (snake_case) JSON. Use typed mappers for camelCase convenience, or pass raw snake_case objects:
 
-```typescript
+```typescript :line-numbers
 import {
   CyclesClient,
   CyclesConfig,
@@ -283,7 +283,7 @@ const config = new CyclesConfig({
 const client = new CyclesClient(config);
 
 // 1. Reserve
-const response = await client.createReservation(
+const response = await client.createReservation( // [!code focus]
   reservationCreateRequestToWire({
     idempotencyKey: "req-001",
     subject: { tenant: "acme", agent: "support-bot" },
@@ -304,7 +304,7 @@ try {
   const result = await callLlm("Hello");
 
   // 3. Commit
-  await client.commitReservation(
+  await client.commitReservation( // [!code focus]
     parsed.reservationId!,
     commitRequestToWire({
       idempotencyKey: "commit-001",
@@ -339,7 +339,7 @@ const response = await client.createReservation({
 
 ### Preflight decision check
 
-```typescript
+```typescript :line-numbers
 import { decisionRequestToWire, decisionResponseFromWire } from "runcycles";
 
 const response = await client.decide(
@@ -376,7 +376,7 @@ if (response.isSuccess) {
 ```typescript
 import { eventCreateRequestToWire } from "runcycles";
 
-const response = await client.createEvent(
+const response = await client.createEvent( // [!code focus]
   eventCreateRequestToWire({
     idempotencyKey: "evt-001",
     subject: { tenant: "acme" },
@@ -392,7 +392,7 @@ Follow this order to build understanding progressively:
 
 **1. Reserve and commit with a fixed estimate**
 
-```typescript
+```typescript :line-numbers
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const config = new CyclesConfig({
@@ -403,8 +403,8 @@ const config = new CyclesConfig({
 const client = new CyclesClient(config);
 setDefaultClient(client);
 
-const hello = withCycles(
-  { estimate: 1000 },
+const hello = withCycles( // [!code focus]
+  { estimate: 1000 }, // [!code focus]
   async (name: string) => `Hello, ${name}!`,
 );
 
@@ -437,13 +437,13 @@ await dryRunFunc();
 
 **4. Use dynamic estimates with metrics**
 
-```typescript
+```typescript :line-numbers
 import { getCyclesContext } from "runcycles";
 
 const generate = withCycles(
   {
-    estimate: (prompt: string, maxTokens: number) => maxTokens * 10,
-    actual: (result: string) => result.length * 5,
+    estimate: (prompt: string, maxTokens: number) => maxTokens * 10, // [!code focus]
+    actual: (result: string) => result.length * 5, // [!code focus]
     actionKind: "llm.completion",
     actionName: "gpt-4",
   },
@@ -461,7 +461,7 @@ const result = await generate("Explain budgets", 500);
 
 **5. Handle denials gracefully**
 
-```typescript
+```typescript :line-numbers
 import { BudgetExceededError } from "runcycles";
 
 const expensiveFunc = withCycles(
@@ -472,7 +472,7 @@ const expensiveFunc = withCycles(
 try {
   await expensiveFunc();
 } catch (err) {
-  if (err instanceof BudgetExceededError) {
+  if (err instanceof BudgetExceededError) { // [!code focus]
     console.log("Budget exhausted — using fallback");
   }
 }

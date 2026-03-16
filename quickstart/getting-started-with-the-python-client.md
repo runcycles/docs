@@ -55,7 +55,7 @@ from runcycles import CyclesClient, cycles, set_default_client
 client = CyclesClient(config)
 set_default_client(client)
 
-@cycles(estimate=1000)
+@cycles(estimate=1000) # [!code focus]
 def summarize(text: str) -> str:
     return call_llm(text)
 
@@ -69,7 +69,7 @@ This reserves 1000 USD_MICROCENTS before `summarize()` runs, then commits the sa
 The estimate can be a callable that receives the function's arguments:
 
 ```python
-@cycles(estimate=lambda text, max_tokens: max_tokens * 10)
+@cycles(estimate=lambda text, max_tokens: max_tokens * 10) # [!code focus]
 def generate(text: str, max_tokens: int) -> str:
     return call_llm(text, max_tokens=max_tokens)
 ```
@@ -81,7 +81,7 @@ By default, the estimate is used as the actual cost at commit time. To calculate
 ```python
 @cycles(
     estimate=5000,
-    actual=lambda result: len(result) * 5,
+    actual=lambda result: len(result) * 5, # [!code focus]
 )
 def chat(prompt: str) -> str:
     return call_llm(prompt)
@@ -115,12 +115,12 @@ def chat(prompt: str) -> str:
 
 Inside a decorated function, the current reservation context is available via `get_cycles_context()`:
 
-```python
+```python :line-numbers
 from runcycles import cycles, get_cycles_context, CyclesMetrics
 
 @cycles(estimate=1000)
 def process(text: str) -> str:
-    ctx = get_cycles_context()
+    ctx = get_cycles_context() # [!code focus]
 
     # Check reservation details
     print(f"Reservation: {ctx.reservation_id}")
@@ -159,7 +159,7 @@ from runcycles import BudgetExceededError, CyclesProtocolError
 
 try:
     result = summarize("Hello")
-except BudgetExceededError:
+except BudgetExceededError: # [!code focus]
     result = fallback_response()
 except CyclesProtocolError as e:
     if e.retry_after_ms:
@@ -178,7 +178,7 @@ from runcycles import AsyncCyclesClient, cycles, set_default_client
 async_client = AsyncCyclesClient(config)
 set_default_client(async_client)
 
-@cycles(estimate=1000)
+@cycles(estimate=1000) # [!code focus]
 async def async_summarize(text: str) -> str:
     return await call_llm_async(text)
 
@@ -189,7 +189,7 @@ result = await async_summarize("Hello")
 
 For full control, use `CyclesClient` directly:
 
-```python
+```python :line-numbers
 from runcycles import (
     CyclesClient, ReservationCreateRequest, CommitRequest, ReleaseRequest,
     Subject, Action, Amount, Unit, CyclesMetrics,
@@ -197,7 +197,7 @@ from runcycles import (
 
 with CyclesClient(config) as client:
     # 1. Reserve
-    response = client.create_reservation(ReservationCreateRequest(
+    response = client.create_reservation(ReservationCreateRequest( # [!code focus]
         idempotency_key="req-001",
         subject=Subject(tenant="acme", agent="support-bot"),
         action=Action(kind="llm.completion", name="gpt-4"),
@@ -215,7 +215,7 @@ with CyclesClient(config) as client:
         result = call_llm("Hello")
 
         # 3. Commit
-        client.commit_reservation(reservation_id, CommitRequest(
+        client.commit_reservation(reservation_id, CommitRequest( # [!code focus]
             idempotency_key="commit-001",
             actual=Amount(unit=Unit.USD_MICROCENTS, amount=420_000),
             metrics=CyclesMetrics(tokens_input=1200, tokens_output=800),
@@ -235,7 +235,7 @@ with CyclesClient(config) as client:
 ```python
 from runcycles import DecisionRequest
 
-response = client.decide(DecisionRequest(
+response = client.decide(DecisionRequest( # [!code focus]
     idempotency_key="decide-001",
     subject=Subject(tenant="acme"),
     action=Action(kind="llm.completion", name="gpt-4"),
@@ -257,7 +257,7 @@ print(response.body)
 ```python
 from runcycles import EventCreateRequest
 
-response = client.create_event(EventCreateRequest(
+response = client.create_event(EventCreateRequest( # [!code focus]
     idempotency_key="evt-001",
     subject=Subject(tenant="acme"),
     action=Action(kind="api.call", name="geocode"),
@@ -278,7 +278,7 @@ config = CyclesConfig(base_url="http://localhost:7878", api_key="cyc_live_...", 
 client = CyclesClient(config)
 set_default_client(client)
 
-@cycles(estimate=1000)
+@cycles(estimate=1000) # [!code focus]
 def hello(name: str) -> str:
     return f"Hello, {name}!"
 
@@ -306,12 +306,12 @@ dry_run_func()
 
 **4. Use dynamic estimates with metrics**
 
-```python
+```python :line-numbers
 from runcycles import get_cycles_context, CyclesMetrics
 
 @cycles(
-    estimate=lambda prompt, max_tokens: max_tokens * 10,
-    actual=lambda result: len(result) * 5,
+    estimate=lambda prompt, max_tokens: max_tokens * 10, # [!code focus]
+    actual=lambda result: len(result) * 5, # [!code focus]
     action_kind="llm.completion",
     action_name="gpt-4",
 )
@@ -334,7 +334,7 @@ def expensive_func() -> str:
 
 try:
     expensive_func()
-except BudgetExceededError:
+except BudgetExceededError: # [!code focus]
     print("Budget exhausted — using fallback")
 ```
 

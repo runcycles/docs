@@ -126,11 +126,15 @@ At a high level:
 
 This changes the control surface from:
 
-> “observe what happened”
+::: info
+“observe what happened”
+:::
 
 to:
 
-> “authorize bounded execution, then reconcile actual usage”
+::: info
+“authorize bounded execution, then reconcile actual usage”
+:::
 
 That difference matters under retries, crashes, concurrency, and long-running workflows.
 
@@ -138,11 +142,15 @@ That difference matters under retries, crashes, concurrency, and long-running wo
 
 A quota says:
 
-> you may use up to this much over time
+::: info
+you may use up to this much over time
+:::
 
 A reserve/commit model says:
 
-> this execution is allowed to consume up to this bounded amount now
+::: info
+this execution is allowed to consume up to this bounded amount now
+:::
 
 That makes several important things possible.
 

@@ -33,7 +33,9 @@ These fields set default values for the Subject used in `withCycles` calls. They
 | `connectTimeout` | `number` | `2000` | Connection timeout in milliseconds |
 | `readTimeout` | `number` | `5000` | Read timeout in milliseconds |
 
-> **Note:** Node's built-in `fetch` does not distinguish connection timeout from read timeout. `connectTimeout` and `readTimeout` are summed into a single `AbortSignal.timeout()` value (default: 7000ms total) that caps the entire request duration.
+::: info Note
+Node's built-in `fetch` does not distinguish connection timeout from read timeout. `connectTimeout` and `readTimeout` are summed into a single `AbortSignal.timeout()` value (default: 7000ms total) that caps the entire request duration.
+:::
 
 ### Retry configuration
 

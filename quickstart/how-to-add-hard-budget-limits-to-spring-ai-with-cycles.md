@@ -186,11 +186,15 @@ That is not the same as pre-execution budget control.
 
 Post-hoc tracking tells you:
 
-> what happened after the work completed
+::: info
+what happened after the work completed
+:::
 
 Cycles tells you:
 
-> whether the work is allowed to begin, how much room it has, and what it actually consumed afterward
+::: info
+whether the work is allowed to begin, how much room it has, and what it actually consumed afterward
+:::
 
 That distinction becomes critical in long-running or multi-step systems.
 

@@ -133,11 +133,10 @@ This means a full reservation lifecycle can carry metadata from creation through
 
 ## Metrics in client code
 
-### Python
+Attach metrics and metadata through the context object inside a decorated function or annotated method. The SDK automatically includes these in the commit request when the function returns.
 
-Inside a `@cycles`-decorated function, attach metrics and metadata through `get_cycles_context()`:
-
-```python
+::: code-group
+```python [Python]
 from runcycles import cycles, get_cycles_context, CyclesMetrics
 
 @cycles(estimate=1000)
@@ -158,14 +157,7 @@ def chat(prompt: str) -> str:
 
     return response.text
 ```
-
-The decorator automatically includes these metrics and metadata in the commit request when the function returns.
-
-### Java (Spring Boot)
-
-The Spring Boot client exposes metrics through `CyclesContextHolder`:
-
-```java
+```java [Java (Spring Boot)]
 @Cycles("1000")
 public ChatResponse chat(String prompt) {
     ChatResponse response = chatModel.call(prompt);
@@ -187,8 +179,7 @@ public ChatResponse chat(String prompt) {
     return response;
 }
 ```
-
-The starter automatically includes these metrics and metadata in the commit request when the method returns.
+:::
 
 ## Why standard metrics matter
 

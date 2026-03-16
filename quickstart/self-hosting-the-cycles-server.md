@@ -2,7 +2,9 @@
 
 The Cycles server is a Spring Boot application that enforces budget reservations backed by Redis. This guide covers how to run it locally, with Docker, and in production.
 
-> **Looking for the full deployment walkthrough?** See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for an end-to-end guide that covers the admin server, tenant setup, API key creation, budget allocation, and verification — everything you need from zero to a working deployment.
+::: tip Looking for the full deployment walkthrough?
+See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for an end-to-end guide that covers the admin server, tenant setup, API key creation, budget allocation, and verification — everything you need from zero to a working deployment.
+:::
 
 ## Prerequisites
 
@@ -23,7 +25,9 @@ docker compose -f docker-compose.prod.yml up -d
 
 This pulls `ghcr.io/runcycles/cycles-server:latest` and starts it with Redis.
 
-> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) in `docker-compose.prod.yml` for reproducible deployments.
+::: tip Pinning versions
+Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) in `docker-compose.prod.yml` for reproducible deployments.
+:::
 
 ### Building from source with Docker
 

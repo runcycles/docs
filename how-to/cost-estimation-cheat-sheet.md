@@ -57,7 +57,9 @@ microcents = price_per_million_tokens × token_count × 100
 | Gemini 2.5 Flash | $0.15 | $0.60 | 15 | 60 |
 | Gemini 2.0 Flash | $0.10 | $0.40 | 10 | 40 |
 
-> **Note:** Prices change. Check your provider's pricing page for current rates. The formulas and approach remain the same regardless of specific prices.
+::: info Note
+Prices change. Check your provider's pricing page for current rates. The formulas and approach remain the same regardless of specific prices.
+:::
 
 ## Quick estimation formula
 
@@ -93,9 +95,8 @@ with buffer = 5,040,000 microcents
 
 ## Estimation helpers in code
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 # Simple cost estimator
 def estimate_cost(input_tokens: int, max_output_tokens: int, model: str) -> int:
     """Return estimated cost in USD_MICROCENTS with 20% buffer."""
@@ -120,10 +121,7 @@ def estimate_cost(input_tokens: int, max_output_tokens: int, model: str) -> int:
 def ask(prompt: str, max_tokens: int = 1000) -> str:
     ...
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 function estimateCost(inputTokens: number, maxOutputTokens: number, model: string): number {
   const rates: Record<string, [number, number]> = {
     "gpt-4o":        [250, 1000],
@@ -145,6 +143,7 @@ const ask = withCycles(
   async (prompt: string) => { ... },
 );
 ```
+:::
 
 ## Common reservation amounts
 

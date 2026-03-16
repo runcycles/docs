@@ -6,9 +6,10 @@ The Python `CyclesClient`, the Java `CyclesClient` interface, and the TypeScript
 
 ## Getting the client
 
-### Python
+In Java (Spring Boot Starter), `CyclesClient` is auto-configured and available for injection.
 
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesClient, CyclesConfig
 
 config = CyclesConfig(
@@ -19,19 +20,7 @@ config = CyclesConfig(
 
 client = CyclesClient(config)
 ```
-
-Or from environment variables:
-
-```python
-config = CyclesConfig.from_env()  # reads CYCLES_BASE_URL, CYCLES_API_KEY, etc.
-client = CyclesClient(config)
-```
-
-### Java (Spring Boot Starter)
-
-If you are using the Spring Boot Starter, `CyclesClient` is auto-configured and available for injection:
-
-```java
+```java [Java]
 @Service
 public class BudgetService {
 
@@ -42,10 +31,7 @@ public class BudgetService {
     }
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig } from "runcycles";
 
 const config = new CyclesConfig({
@@ -56,19 +42,25 @@ const config = new CyclesConfig({
 
 const client = new CyclesClient(config);
 ```
+:::
 
-Or from environment variables:
+Or from environment variables (Python and TypeScript):
 
-```typescript
+::: code-group
+```python [Python]
+config = CyclesConfig.from_env()  # reads CYCLES_BASE_URL, CYCLES_API_KEY, etc.
+client = CyclesClient(config)
+```
+```typescript [TypeScript]
 const config = CyclesConfig.fromEnv(); // reads CYCLES_BASE_URL, CYCLES_API_KEY, etc.
 const client = new CyclesClient(config);
 ```
+:::
 
 ## Creating a reservation
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import (
     CyclesClient, ReservationCreateRequest,
     Subject, Action, Amount, Unit, CommitOveragePolicy,
@@ -95,10 +87,7 @@ with CyclesClient(config) as client:
 
     # Proceed with work...
 ```
-
-### Java
-
-```java
+```java [Java]
 ReservationCreateRequest request = ReservationCreateRequest.builder()
     .idempotencyKey(UUID.randomUUID().toString())
     .subject(Subject.builder()
@@ -127,10 +116,7 @@ String decision = (String) body.get("decision");
 
 // Proceed with work...
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig, Unit } from "runcycles";
 
 const response = await client.createReservation({
@@ -154,12 +140,12 @@ const decision = response.getBodyAttribute("decision") as string;
 
 // Proceed with work...
 ```
+:::
 
 ## Committing actual usage
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import CommitRequest, CyclesMetrics
 
 client.commit_reservation(reservation_id, CommitRequest(
@@ -174,10 +160,7 @@ client.commit_reservation(reservation_id, CommitRequest(
     metadata={"request_id": "req-abc-123"},
 ))
 ```
-
-### Java
-
-```java
+```java [Java]
 CyclesMetrics metrics = new CyclesMetrics();
 metrics.setTokensInput(150);
 metrics.setTokensOutput(80);
@@ -194,10 +177,7 @@ CommitRequest commitRequest = CommitRequest.builder()
 CyclesResponse<Map<String, Object>> commitResponse =
     cyclesClient.commitReservation(reservationId, commitRequest);
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 await client.commitReservation(reservationId, {
   idempotency_key: "commit-abc-123",
   actual: { unit: Unit.USD_MICROCENTS, amount: 3200 },
@@ -210,14 +190,14 @@ await client.commitReservation(reservationId, {
   metadata: { request_id: "req-abc-123" },
 });
 ```
+:::
 
 ## Releasing a reservation
 
 If work is cancelled or fails before producing any usage:
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import ReleaseRequest
 
 client.release_reservation(reservation_id, ReleaseRequest(
@@ -225,10 +205,7 @@ client.release_reservation(reservation_id, ReleaseRequest(
     reason="Task cancelled by user",
 ))
 ```
-
-### Java
-
-```java
+```java [Java]
 ReleaseRequest releaseRequest = ReleaseRequest.builder()
     .idempotencyKey("release-" + UUID.randomUUID())
     .reason("Task cancelled by user")
@@ -236,21 +213,18 @@ ReleaseRequest releaseRequest = ReleaseRequest.builder()
 
 cyclesClient.releaseReservation(reservationId, releaseRequest);
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 await client.releaseReservation(reservationId, {
   idempotency_key: "release-abc-123",
   reason: "Task cancelled by user",
 });
 ```
+:::
 
 ## Full lifecycle example
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import (
     CyclesClient, CyclesConfig, ReservationCreateRequest, CommitRequest,
     ReleaseRequest, Subject, Action, Amount, Unit, CyclesMetrics,
@@ -302,10 +276,7 @@ def process_document(doc_id: str, content: str) -> str:
             ))
             raise
 ```
-
-### Java
-
-```java
+```java [Java]
 @Service
 public class DocumentProcessor {
 
@@ -376,10 +347,7 @@ public class DocumentProcessor {
     }
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig, Unit } from "runcycles";
 
 const config = new CyclesConfig({
@@ -434,14 +402,14 @@ async function processDocument(docId: string, content: string): Promise<string> 
   }
 }
 ```
+:::
 
 ## Preflight decision check
 
 Check budget availability without creating a reservation.
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import DecisionRequest
 
 response = client.decide(DecisionRequest(
@@ -455,10 +423,7 @@ decision = response.get_body_attribute("decision")  # "ALLOW" or "DENY"
 if decision == "DENY":
     print("Budget low — show warning in UI")
 ```
-
-### Java
-
-```java
+```java [Java]
 DecisionRequest decisionRequest = DecisionRequest.builder()
     .idempotencyKey("decide-" + UUID.randomUUID())
     .subject(Subject.builder()
@@ -476,10 +441,7 @@ if ("DENY".equals(decision)) {
     // Show "budget low" warning in UI
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 const decisionResponse = await client.decide({
   idempotency_key: "decide-001",
   subject: { tenant: "acme", workspace: "production" },
@@ -492,21 +454,18 @@ if (decision === "DENY") {
   console.log("Budget low — show warning in UI");
 }
 ```
+:::
 
 ## Querying balances
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 response = client.get_balances(tenant="acme", workspace="production")
 if response.is_success:
     for balance in response.body.get("balances", []):
         print(f"Scope: {balance['scope']}, remaining: {balance['remaining']}")
 ```
-
-### Java
-
-```java
+```java [Java]
 Map<String, String> params = Map.of(
     "tenant", "acme",
     "workspace", "production"
@@ -525,10 +484,7 @@ for (Map<String, Object> balance : balances) {
         scope, allocated.longValue(), spent.longValue(), reserved.longValue());
 }
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 const balanceResponse = await client.getBalances({ tenant: "acme", workspace: "production" });
 if (balanceResponse.isSuccess) {
   const balances = balanceResponse.getBodyAttribute("balances") as Array<Record<string, unknown>>;
@@ -537,21 +493,18 @@ if (balanceResponse.isSuccess) {
   }
 }
 ```
+:::
 
 ## Listing reservations
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 response = client.list_reservations(tenant="acme", status="ACTIVE", limit="20")
 if response.is_success:
     for reservation in response.body.get("reservations", []):
         print(f"ID: {reservation['reservation_id']}, status: {reservation['status']}")
 ```
-
-### Java
-
-```java
+```java [Java]
 Map<String, String> params = Map.of(
     "tenant", "acme",
     "status", "ACTIVE",
@@ -561,10 +514,7 @@ Map<String, String> params = Map.of(
 CyclesResponse<Map<String, Object>> listResponse =
     cyclesClient.listReservations(params);
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 const listResponse = await client.listReservations({
   tenant: "acme",
   status: "ACTIVE",
@@ -577,14 +527,14 @@ if (listResponse.isSuccess) {
   }
 }
 ```
+:::
 
 ## Recording events (direct debit)
 
 For post-hoc accounting without a reservation.
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import EventCreateRequest
 
 response = client.create_event(EventCreateRequest(
@@ -594,10 +544,7 @@ response = client.create_event(EventCreateRequest(
     actual=Amount(unit=Unit.USD_MICROCENTS, amount=1200),
 ))
 ```
-
-### Java
-
-```java
+```java [Java]
 EventCreateRequest event = EventCreateRequest.builder()
     .idempotencyKey("evt-" + UUID.randomUUID())
     .subject(Subject.builder()
@@ -610,10 +557,7 @@ EventCreateRequest event = EventCreateRequest.builder()
 
 cyclesClient.createEvent(event);
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 await client.createEvent({
   idempotency_key: "evt-001",
   subject: { tenant: "acme", workspace: "production" },
@@ -621,14 +565,14 @@ await client.createEvent({
   actual: { unit: Unit.USD_MICROCENTS, amount: 1200 },
 });
 ```
+:::
 
 ## CyclesResponse
 
-### Python
+All client methods return a `CyclesResponse` (in Java, `CyclesResponse<Map<String, Object>>`):
 
-All client methods return `CyclesResponse`:
-
-```python
+::: code-group
+```python [Python]
 response = client.create_reservation(request)
 
 response.is_success          # True if HTTP 2xx
@@ -640,12 +584,7 @@ response.error_message       # Error message (if error)
 response.request_id          # X-Request-Id header
 response.rate_limit_remaining  # X-RateLimit-Remaining (int or None)
 ```
-
-### Java
-
-All client methods return `CyclesResponse<Map<String, Object>>`:
-
-```java
+```java [Java]
 CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(request);
 
 response.is2xx();           // true if HTTP 2xx
@@ -655,12 +594,7 @@ response.getStatus();       // HTTP status code
 response.getBody();         // parsed JSON body as Map
 response.getErrorMessage(); // error message (if error)
 ```
-
-### TypeScript
-
-All client methods return `CyclesResponse`:
-
-```typescript
+```typescript [TypeScript]
 const response = await client.createReservation(request);
 
 response.isSuccess;          // true if HTTP 2xx
@@ -673,6 +607,7 @@ response.requestId;          // X-Request-Id header
 response.rateLimitRemaining; // X-RateLimit-Remaining (number or undefined)
 response.cyclesTenant;       // X-Cycles-Tenant header
 ```
+:::
 
 ## Async support (Python)
 

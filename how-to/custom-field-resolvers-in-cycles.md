@@ -2,7 +2,9 @@
 
 The `CyclesFieldResolver` interface lets you resolve Subject fields dynamically at runtime in the Spring Boot Starter. This is useful when values like tenant, workspace, or agent depend on the current request context, user session, or database lookup.
 
-> **Python equivalent:** In the Python client, Subject fields are resolved from decorator parameters, then from `CyclesConfig` defaults. For dynamic resolution, pass a `CyclesConfig` with fields set at initialization time, or pass subject fields directly to each `@cycles` decorator call. See the [Python Client Configuration Reference](/configuration/python-client-configuration-reference) for details.
+::: info Python equivalent
+In the Python client, Subject fields are resolved from decorator parameters, then from `CyclesConfig` defaults. For dynamic resolution, pass a `CyclesConfig` with fields set at initialization time, or pass subject fields directly to each `@cycles` decorator call. See the [Python Client Configuration Reference](/configuration/python-client-configuration-reference) for details.
+:::
 
 ## The interface
 

@@ -17,11 +17,15 @@ But as autonomous systems become more capable, visibility alone stops being enou
 
 At some point, the question changes from:
 
-> What happened?
+::: info
+What happened?
+:::
 
 to:
 
-> What should be allowed to happen next?
+::: info
+What should be allowed to happen next?
+:::
 
 That is the transition from observability to enforcement.
 
@@ -143,7 +147,9 @@ That is where enforcement begins.
 
 Enforcement adds a new question:
 
-> Is this action still authorized to continue under the current budget?
+::: info
+Is this action still authorized to continue under the current budget?
+:::
 
 That is different from asking how much the system spent yesterday or which run was expensive.
 
