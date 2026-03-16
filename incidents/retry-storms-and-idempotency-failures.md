@@ -1,3 +1,8 @@
+---
+title: "Retry Storms and Idempotency Failures"
+description: "How retry loops without idempotency create unbounded spend, and how Cycles budget enforcement prevents this failure mode."
+---
+
 # Retry Storms and Idempotency Failures
 
 A common failure mode in autonomous systems where retry logic multiplies cost without bound.

@@ -1,3 +1,8 @@
+---
+title: "SpEL Expression Reference for Cycles"
+description: "Comprehensive reference for writing SpEL expressions in the @Cycles annotation to dynamically evaluate estimate and actual costs."
+---
+
 # SpEL Expression Reference for Cycles
 
 The `@Cycles` annotation uses Spring Expression Language (SpEL) to evaluate `estimate` and `actual` cost values dynamically. This page is a comprehensive reference for writing SpEL expressions in Cycles.

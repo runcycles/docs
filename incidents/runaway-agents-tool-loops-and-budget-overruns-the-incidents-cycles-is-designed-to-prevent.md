@@ -1,3 +1,8 @@
+---
+title: "Runaway Agents, Tool Loops, and Budget Overruns: The Incidents Cycles Is Designed to Prevent"
+description: "Overview of the real-world incidents Cycles prevents: runaway agents, tool loops, retry storms, and uncontrolled budget overruns."
+---
+
 # Runaway Agents, Tool Loops, and Budget Overruns: The Incidents Cycles Is Designed to Prevent
 
 Most infrastructure gets adopted after a painful incident.

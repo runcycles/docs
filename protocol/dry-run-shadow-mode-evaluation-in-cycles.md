@@ -1,3 +1,8 @@
+---
+title: "Dry Run: Shadow Mode Evaluation in Cycles"
+description: "Test budget enforcement in shadow mode with dry run, evaluating the full reservation path without modifying budget state."
+---
+
 # Dry Run: Shadow Mode Evaluation in Cycles
 
 Before enforcing budget limits in production, teams need a way to test the full reservation path without actually holding budget.

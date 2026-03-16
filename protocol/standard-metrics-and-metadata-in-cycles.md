@@ -1,3 +1,8 @@
+---
+title: "Standard Metrics and Metadata in Cycles"
+description: "Attach execution metrics and custom metadata to commits and events in Cycles for debugging and analytics."
+---
+
 # Standard Metrics and Metadata in Cycles
 
 Budget enforcement tells you whether work is allowed and how much it costs.

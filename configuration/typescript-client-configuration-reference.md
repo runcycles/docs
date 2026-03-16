@@ -1,3 +1,8 @@
+---
+title: "TypeScript Client Configuration Reference"
+description: "Complete reference for all configuration options in the runcycles TypeScript client, including connection, retry, and timeout settings."
+---
+
 # TypeScript Client Configuration Reference
 
 This is the complete reference for all configuration options available in the `runcycles` TypeScript client.

@@ -1,3 +1,8 @@
+---
+title: "Changelog"
+description: "Release history and version notes for the Cycles Protocol and reference implementations."
+---
+
 # Changelog
 
 Release history for the Cycles Protocol and reference implementations.
