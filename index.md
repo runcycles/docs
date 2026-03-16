@@ -5,7 +5,8 @@ hero:
   text: "A budget authority for autonomous execution"
   tagline: "Hard limits on agent spend and actions enforced before execution — not after. Multi-language SDKs. Open protocol, Apache 2.0."
   image:
-    src: /runcycles-hero.svg
+    light: /runcycles-hero.svg
+    dark: /runcycles-hero-dark.svg
     alt: Cycles hero image
   actions:
     - theme: brand
