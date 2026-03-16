@@ -1,3 +1,8 @@
+---
+title: "Querying Balances in Cycles: Understanding Budget State"
+description: "Query current budget state in Cycles to see allocations, reservations, spend, and remaining balance for any scope."
+---
+
 # Querying Balances in Cycles: Understanding Budget State
 
 Budget enforcement is only useful if the system can also answer: **how much is left?**

@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with LangChain"
+description: "Add budget management to LangChain apps using a custom callback handler that wraps every LLM call with a Cycles reservation."
+---
+
 # Integrating Cycles with LangChain
 
 This guide shows how to add budget management to LangChain applications using a custom callback handler that wraps every LLM call with a Cycles reservation.

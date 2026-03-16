@@ -1,3 +1,8 @@
+---
+title: "How Scope Derivation Works in Cycles"
+description: "Learn how the Cycles server derives hierarchical budget scopes from subject fields to enforce limits at multiple levels."
+---
+
 # How Scope Derivation Works in Cycles
 
 Budget enforcement in Cycles is hierarchical.

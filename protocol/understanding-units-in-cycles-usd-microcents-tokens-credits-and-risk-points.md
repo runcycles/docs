@@ -1,3 +1,8 @@
+---
+title: "Understanding Units in Cycles: USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS"
+description: "Reference for the four standard unit types in Cycles and how they affect budget expression, estimation, and ledger interpretation."
+---
+
 # Understanding Units in Cycles: USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS
 
 Every amount in Cycles — reservations, commits, events, balances — has a unit.

@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with FastAPI"
+description: "Add budget management to a FastAPI application using middleware, dependency injection, and per-tenant isolation with Cycles."
+---
+
 # Integrating Cycles with FastAPI
 
 This guide shows how to add budget management to a FastAPI application using middleware, dependency injection, per-tenant isolation, and exception handling.

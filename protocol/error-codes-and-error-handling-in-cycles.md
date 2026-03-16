@@ -1,3 +1,8 @@
+---
+title: "Error Codes and Error Handling in Cycles"
+description: "Reference for all Cycles error codes and structured error responses, with guidance on handling each failure condition."
+---
+
 # Error Codes and Error Handling in Cycles
 
 Cycles uses structured error responses with specific error codes for every failure condition.

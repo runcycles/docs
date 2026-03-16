@@ -1,3 +1,8 @@
+---
+title: "Choosing the Right Integration Pattern"
+description: "Pick the right Cycles integration pattern for your use case: decorator, streaming adapter, middleware, or programmatic client."
+---
+
 # Choosing the Right Integration Pattern
 
 Each Cycles SDK offers multiple integration patterns. This guide helps you pick the right one for your use case.

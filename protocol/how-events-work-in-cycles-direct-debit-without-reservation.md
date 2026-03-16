@@ -1,3 +1,8 @@
+---
+title: "How Events Work in Cycles: Direct Debit Without Reservation"
+description: "Understand how Cycles events record usage directly without a reservation, for known-cost or externally sourced budget charges."
+---
+
 # How Events Work in Cycles: Direct Debit Without Reservation
 
 The core Cycles lifecycle is reserve → execute → commit.

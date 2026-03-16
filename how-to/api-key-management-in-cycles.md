@@ -1,3 +1,8 @@
+---
+title: "API Key Management in Cycles"
+description: "Learn how to create, manage, and rotate API keys in Cycles, including tenant isolation and key lifecycle states."
+---
+
 # API Key Management in Cycles
 
 Every request to the Cycles server requires an API key. This page explains how API keys work, how to create and manage them, and how they relate to tenant isolation.

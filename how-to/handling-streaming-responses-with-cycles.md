@@ -1,3 +1,8 @@
+---
+title: "Handling Streaming Responses with Cycles"
+description: "Learn the reserve, stream, and commit pattern for managing budget reservations with streaming LLM responses in Cycles."
+---
+
 # Handling Streaming Responses with Cycles
 
 Streaming LLM responses require special handling because the actual cost is only known after the stream completes. This guide shows the reserve → stream → commit pattern.
