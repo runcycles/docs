@@ -188,7 +188,7 @@ export default defineConfig({
             { text: 'Overview', link: '/how-to/integrations-overview' },
             { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
             { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
-            { text: 'LangChain (Python)', link: '/how-to/integrating-cycles-with-langchain' },
+            { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
             { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
             { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
             { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
