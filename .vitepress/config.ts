@@ -19,7 +19,7 @@ export default defineConfig({
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
-    ['link', { rel: 'icon', href: '/docs/runcycles-favicon.png' }],
+    ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
   ],
   lastUpdated: true,
   themeConfig: {
