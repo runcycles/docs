@@ -1,7 +1,7 @@
 {
-  "name": "Cycles Documentation",
-  "short_name": "Cycles Docs",
-  "description": "Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution.",
+  "name": "Cycles",
+  "short_name": "Cycles",
+  "description": "Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0F1A",

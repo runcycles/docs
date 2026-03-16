@@ -11,16 +11,16 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 
 | Integration | Language | Streaming | Pattern |
 |-------------|----------|-----------|---------|
-| [OpenAI](/how-to/integrating-cycles-with-openai) | Python, TypeScript | Yes | Decorator / `withCycles` |
-| [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python, TypeScript | Yes | Decorator / `withCycles` |
+| [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
+| [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
 | [LangChain.js](/how-to/integrating-cycles-with-langchain-js) | TypeScript | Yes | Callback handler |
 | [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk) | TypeScript | Yes | `reserveForStream` |
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
-| [Express](/how-to/integrating-cycles-with-express) | TypeScript | — | Middleware |
-| [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Decorator |
-| [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Agent framework hooks |
+| [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
+| [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
+| [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
 
 ## Integration patterns
 

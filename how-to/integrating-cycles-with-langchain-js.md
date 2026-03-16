@@ -32,8 +32,6 @@ import { v4 as uuidv4 } from "uuid";
 import {
   CyclesClient,
   CyclesConfig,
-  BudgetExceededError,
-  CyclesProtocolError,
 } from "runcycles";
 
 interface CyclesBudgetHandlerOptions {
@@ -73,30 +71,18 @@ export class CyclesBudgetHandler extends BaseCallbackHandler {
     this.keys.set(runId, key);
 
     const res = await this.client.createReservation({
-      idempotencyKey: key,
+      idempotency_key: key,
       subject: this.subject,
       action: { kind: this.actionKind, name: this.actionName },
       estimate: { unit: "USD_MICROCENTS", amount: this.estimateAmount },
-      ttlMs: 60_000,
+      ttl_ms: 60_000,
     });
 
     if (!res.isSuccess) {
-      const error = res.getErrorResponse();
-      if (error?.error === "BUDGET_EXCEEDED") {
-        throw new BudgetExceededError(error.message, {
-          status: res.status,
-          errorCode: error.error,
-          requestId: error.requestId,
-        });
-      }
-      const msg = error?.message ?? res.errorMessage ?? "Reservation failed";
-      throw new CyclesProtocolError(msg, {
-        status: res.status,
-        errorCode: error?.error,
-      });
+      throw new Error(res.errorMessage ?? "Reservation failed");
     }
 
-    this.reservations.set(runId, res.getBodyAttribute("reservation_id"));
+    this.reservations.set(runId, res.getBodyAttribute("reservation_id") as string);
   }
 
   async handleLLMEnd(output: LLMResult, runId: string): Promise<void> {
@@ -111,14 +97,14 @@ export class CyclesBudgetHandler extends BaseCallbackHandler {
     const outputTokens = usage.completionTokens ?? 0;
 
     await this.client.commitReservation(rid, {
-      idempotencyKey: `commit-${key}`,
+      idempotency_key: `commit-${key}`,
       actual: {
         unit: "USD_MICROCENTS",
         amount: inputTokens * 250 + outputTokens * 1_000,
       },
       metrics: {
-        tokensInput: inputTokens,
-        tokensOutput: outputTokens,
+        tokens_input: inputTokens,
+        tokens_output: outputTokens,
       },
     });
   }
@@ -130,7 +116,7 @@ export class CyclesBudgetHandler extends BaseCallbackHandler {
     this.keys.delete(runId);
     if (rid && key) {
       await this.client.releaseReservation(rid, {
-        idempotencyKey: `release-${key}`,
+        idempotency_key: `release-${key}`,
       });
     }
   }
@@ -237,7 +223,6 @@ const handle = await reserveForStream({
   unit: "USD_MICROCENTS",
   actionKind: "llm.completion",
   actionName: "gpt-4o",
-  subject: { tenant: "acme", agent: "streaming-agent" },
 });
 
 const llm = new ChatOpenAI({ model: "gpt-4o" });
