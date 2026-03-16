@@ -1,3 +1,10 @@
+/* Brand color — match teal accent across site */
+:root {
+  --vp-c-brand-1: #00C9A7;
+  --vp-c-brand-2: #00B396;
+  --vp-c-brand-3: #009D85;
+}
+
 /* Hero image — make the SVG large enough to read */
 .VPHero .image-container {
   max-width: 500px !important;
