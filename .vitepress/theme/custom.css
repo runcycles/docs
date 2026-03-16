@@ -5,21 +5,33 @@
   --vp-c-brand-3: #009D85;
 }
 
-/* Hero image — enlarge and remove VitePress card wrapper */
+/* Hero image — remove VitePress card decoration */
+.VPHero .image-bg {
+  display: none;
+}
+
 .VPHero .image-container {
-  max-width: 500px !important;
-  width: 100%;
-  height: auto !important;
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
 }
 
+/* Enlarge hero image beyond VitePress defaults (192→280, 256→340, 320→420) */
 .VPHero .image-src {
-  max-width: 100% !important;
-  height: auto !important;
+  max-width: 280px !important;
+  max-height: 280px !important;
 }
 
-.VPHero .image-bg {
-  display: none;
+@media (min-width: 640px) {
+  .VPHero .image-src {
+    max-width: 340px !important;
+    max-height: 340px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHero .image-src {
+    max-width: 420px !important;
+    max-height: 420px !important;
+  }
 }
