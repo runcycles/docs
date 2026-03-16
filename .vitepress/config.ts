@@ -18,7 +18,9 @@ export default defineConfig({
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   cleanUrls: true,
-  srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
+  lang: 'en',
+  titleTemplate: ':title - Cycles Docs',
+  srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
