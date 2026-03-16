@@ -36,7 +36,7 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#0B0F1A' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'Cycles — Budget authority for autonomous agents' }],
-    ['meta', { name: 'twitter:description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
+    ['meta', { name: 'twitter:description', content: 'Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
     ['script', { type: 'application/ld+json' }, JSON.stringify({
