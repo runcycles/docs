@@ -18,9 +18,6 @@ hero:
     - theme: alt
       text: "Try the Demo"
       link: "https://github.com/runcycles/cycles-runaway-demo"
-    - theme: alt
-      text: "View on GitHub"
-      link: "https://github.com/runcycles"
 features:
   - icon: 🚀
     title: "Quickstart Guides"
