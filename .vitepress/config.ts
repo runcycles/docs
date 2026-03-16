@@ -19,7 +19,7 @@ export default defineConfig({
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   cleanUrls: true,
   lang: 'en',
-  titleTemplate: ':title — Cycles',
+  titleTemplate: ':title — Budget authority for autonomous agents',
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
@@ -242,8 +242,6 @@ export default defineConfig({
     if (pageData.params?.pageTitle) {
       pageData.title = pageData.params.pageTitle
     }
-    if (pageData.relativePath === 'index.md') {
-      pageData.titleTemplate = 'Cycles — Budget authority for autonomous agents'
-    }
+
   },
 })
