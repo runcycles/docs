@@ -55,7 +55,12 @@ export default defineConfig({
   ],
   sitemap: {
     hostname: 'https://runcycles.io',
-    transformItems: (items) => items.filter((item) => item.url !== '404'),
+    transformItems: (items) => {
+      const fallback = new Date().toISOString()
+      return items
+        .filter((item) => item.url !== '404')
+        .map((item) => item.lastmod ? item : { ...item, lastmod: fallback })
+    },
   },
   markdown: {
     image: {
