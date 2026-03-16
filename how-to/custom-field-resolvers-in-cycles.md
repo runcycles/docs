@@ -1,3 +1,8 @@
+---
+title: "Custom Field Resolvers in Cycles"
+description: "Use CyclesFieldResolver to dynamically resolve Subject fields like tenant and workspace at runtime in the Spring Boot Starter."
+---
+
 # Custom Field Resolvers in Cycles
 
 The `CyclesFieldResolver` interface lets you resolve Subject fields dynamically at runtime in the Spring Boot Starter. This is useful when values like tenant, workspace, or agent depend on the current request context, user session, or database lookup.

@@ -1,3 +1,8 @@
+---
+title: "Production Operations Guide"
+description: "Run Cycles reliably in production with Redis configuration, high availability, backup strategies, and operational best practices."
+---
+
 # Production Operations Guide
 
 This guide covers what you need to run Cycles reliably in production. It assumes you've already deployed the stack per [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) and are preparing for production traffic.

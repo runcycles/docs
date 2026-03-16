@@ -1,3 +1,8 @@
+---
+title: "Common Budget Patterns"
+description: "Practical recipes for common budget governance scenarios including per-user daily budgets, per-workflow limits, and scope hierarchies."
+---
+
 # Common Budget Patterns
 
 Practical recipes for common budget governance scenarios. Each pattern shows the scope hierarchy and budget allocation needed.

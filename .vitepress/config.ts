@@ -17,14 +17,40 @@ export default defineConfig({
   base: '/',
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
-  srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
+  cleanUrls: true,
+  lang: 'en',
+  titleTemplate: ':title - Cycles Docs',
+  srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.png' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'Cycles Docs' }],
+    ['meta', { property: 'og:description', content: 'Documentation for Cycles, a budget authority for autonomous execution.' }],
+    ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-logo-1k.png' }],
+    ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
   ],
+  sitemap: {
+    hostname: 'https://runcycles.io'
+  },
+  markdown: {
+    image: {
+      lazyLoading: true
+    }
+  },
   lastUpdated: true,
   themeConfig: {
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: {
+        detailedView: true,
+        miniSearch: {
+          searchOptions: {
+            fuzzy: 0.2,
+            prefix: true,
+          }
+        }
+      }
     },
     logo: '/runcycles-logo-64.png',
     externalLinkIcon: true,
@@ -50,7 +76,7 @@ export default defineConfig({
         text: 'API Reference',
         items: [
           { text: 'Cycles Protocol API', link: '/api/' },
-          { text: 'RunCyles Admin API', link: '/admin-api/' },
+          { text: 'RunCycles Admin API', link: '/admin-api/' },
         ],
       },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
@@ -68,7 +94,7 @@ export default defineConfig({
       ],
       '/admin-api/': [
         {
-          text: 'RunCyles Admin API',
+          text: 'RunCycles Admin API',
           items: [
             { text: 'Overview', link: '/admin-api/' },
             ...adminApiSidebar.generateSidebarGroups(),
@@ -195,6 +221,10 @@ export default defineConfig({
           ]
         }
       ],
+    },
+    footer: {
+      message: 'Released under the Apache 2.0 License.',
+      copyright: 'Copyright 2024-present RunCycles'
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/runcycles/docs' }

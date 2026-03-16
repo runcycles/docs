@@ -1,3 +1,8 @@
+---
+title: "Idempotency, Retries, and Concurrency: Why Cycles Is Built for Real Failure Modes"
+description: "Learn how Cycles handles idempotency, retries, and concurrency to provide reliable budget enforcement under real-world failure conditions."
+---
+
 # Idempotency, Retries, and Concurrency: Why Cycles Is Built for Real Failure Modes
 
 Most budget systems look correct in the happy path.

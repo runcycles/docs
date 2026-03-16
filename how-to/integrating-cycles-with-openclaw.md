@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with OpenClaw"
+description: "Add budget enforcement to OpenClaw agents using the cycles-openclaw-budget-guard plugin for automatic reserve, commit, and release."
+---
+
 # Integrating Cycles with OpenClaw
 
 This guide shows how to add budget enforcement to OpenClaw agents using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin. The plugin handles the full reserve → commit → release lifecycle for both model and tool calls automatically, with no custom code required.

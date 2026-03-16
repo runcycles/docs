@@ -1,3 +1,8 @@
+---
+title: "Error Handling Patterns in Cycles Client Code"
+description: "Handle Cycles protocol errors, transport failures, and budget exceeded responses in Python, Java, and TypeScript client code."
+---
+
 # Error Handling Patterns in Cycles Client Code
 
 This guide covers practical patterns for handling Cycles errors in your application — both with the decorator/annotation and with the programmatic client.

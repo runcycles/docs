@@ -1,3 +1,8 @@
+---
+title: "Debt, Overdraft, and the Over-Limit Model in Cycles"
+description: "Learn how Cycles handles budget overruns, tracks debt from overspend, and models overdraft recovery for production systems."
+---
+
 # Debt, Overdraft, and the Over-Limit Model in Cycles
 
 Budget enforcement in Cycles is designed to prevent unbounded execution.

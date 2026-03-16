@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with Anthropic"
+description: "Guard Anthropic Messages API calls with Cycles budget reservations, including per-tool-call tracking for agentic workflows."
+---
+
 # Integrating Cycles with Anthropic
 
 This guide shows how to guard Anthropic Messages API calls with Cycles budget reservations, including per-tool-call budget tracking for agentic workflows.

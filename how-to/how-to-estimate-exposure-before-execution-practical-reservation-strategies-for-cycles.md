@@ -1,3 +1,8 @@
+---
+title: "How to Estimate Exposure Before Execution: Practical Reservation Strategies for Cycles"
+description: "Practical strategies for estimating budget reservations before execution, including how to handle over- and under-reserving in Cycles."
+---
+
 # How to Estimate Exposure Before Execution: Practical Reservation Strategies for Cycles
 
 One of the first practical questions teams ask when adopting Cycles is:

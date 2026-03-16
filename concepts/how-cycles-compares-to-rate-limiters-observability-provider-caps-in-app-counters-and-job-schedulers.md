@@ -1,3 +1,8 @@
+---
+title: "How Cycles Compares to Rate Limiters, Observability, Provider Caps, In-App Counters, and Job Schedulers"
+description: "See how Cycles differs from rate limiters, observability tools, provider caps, in-app counters, and job schedulers for budget governance."
+---
+
 # How Cycles Compares to Rate Limiters, Observability, Provider Caps, In-App Counters, and Job Schedulers
 
 Teams building autonomous systems usually already have some controls in place.

@@ -1,3 +1,8 @@
+---
+title: "How to Think About Degradation Paths in Cycles: Deny, Downgrade, Disable, or Defer?"
+description: "Choose the right degradation strategy when a budget boundary is hit: deny, downgrade to a cheaper model, disable features, or defer work."
+---
+
 # How to Think About Degradation Paths in Cycles: Deny, Downgrade, Disable, or Defer?
 
 A budget boundary should not always mean a hard stop.

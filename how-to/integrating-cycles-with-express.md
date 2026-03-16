@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with Express"
+description: "Add budget governance to an Express.js application using reusable middleware and inline patterns with Cycles."
+---
+
 # Integrating Cycles with Express
 
 This guide shows how to add budget governance to an Express.js application using reusable middleware.

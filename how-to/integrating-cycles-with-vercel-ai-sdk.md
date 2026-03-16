@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with the Vercel AI SDK"
+description: "Add budget governance to a Next.js app using the Vercel AI SDK with the reserveForStream pattern for streaming LLM responses."
+---
+
 # Integrating Cycles with the Vercel AI SDK
 
 This guide shows how to add budget governance to a Next.js application using the [Vercel AI SDK](https://sdk.vercel.ai/) and the `runcycles` TypeScript client.

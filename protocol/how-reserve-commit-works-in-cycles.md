@@ -1,3 +1,8 @@
+---
+title: "How Reserve → Commit Works in Cycles"
+description: "Understand the reserve-then-commit lifecycle in Cycles that enforces budget limits before work begins, not after."
+---
+
 # How Reserve → Commit Works in Cycles
 
 Most systems discover usage after work is already done.

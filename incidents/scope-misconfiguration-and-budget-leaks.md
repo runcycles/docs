@@ -1,3 +1,8 @@
+---
+title: "Scope Misconfiguration and Budget Leaks"
+description: "How misconfigured subject fields cause budget leaks by bypassing scope-level limits, and how to prevent them with Cycles."
+---
+
 # Scope Misconfiguration and Budget Leaks
 
 A failure mode where budget is consumed from unintended scopes due to misconfigured subject fields, or where budget is not properly tracked because scopes don't match.

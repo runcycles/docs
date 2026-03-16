@@ -1,3 +1,8 @@
+---
+title: "Error Handling Patterns in Python"
+description: "Practical patterns for handling Cycles errors in Python using the @cycles decorator and the programmatic CyclesClient."
+---
+
 # Error Handling Patterns in Python
 
 This guide covers practical patterns for handling Cycles errors in Python applications — both with the `@cycles` decorator and with the programmatic `CyclesClient`.

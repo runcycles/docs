@@ -1,3 +1,8 @@
+---
+title: "Security Hardening"
+description: "Security best practices for production Cycles deployments including network isolation, API key rotation, and access control."
+---
+
 # Security Hardening
 
 This guide covers security best practices for a production Cycles deployment.

@@ -1,3 +1,8 @@
+---
+title: "Getting Started with the TypeScript Client"
+description: "Add budget enforcement to Node.js apps using the runcycles TypeScript package with the withCycles HOF, streaming support, and programmatic client."
+---
+
 # Getting Started with the TypeScript Client
 
 The `runcycles` TypeScript package provides a `withCycles` higher-order function, a `reserveForStream` streaming adapter, and a programmatic `CyclesClient` for adding budget enforcement to any Node.js application.

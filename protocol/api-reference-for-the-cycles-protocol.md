@@ -1,3 +1,8 @@
+---
+title: "API Reference for the Cycles Protocol"
+description: "Complete developer reference for every Cycles protocol endpoint, including request and response formats, headers, and curl examples."
+---
+
 # API Reference for the Cycles Protocol
 
 This is a developer-friendly reference for every endpoint in the Cycles protocol. Each endpoint includes the request format, response format, and curl examples.

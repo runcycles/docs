@@ -1,3 +1,8 @@
+---
+title: "Client Configuration Reference for the Cycles Spring Boot Starter"
+description: "Complete reference for all configuration properties in the Cycles Spring Boot Starter client library."
+---
+
 # Client Configuration Reference for the Cycles Spring Boot Starter
 
 ::: tip Using Python?

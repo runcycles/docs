@@ -1,3 +1,8 @@
+---
+title: "Server Configuration Reference for Cycles"
+description: "Complete reference for all Cycles server configuration properties, including server, Redis, and Spring Boot settings."
+---
+
 # Server Configuration Reference for Cycles
 
 This is the complete reference for all configuration properties available in the Cycles server.

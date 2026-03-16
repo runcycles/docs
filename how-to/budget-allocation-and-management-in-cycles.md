@@ -1,3 +1,8 @@
+---
+title: "Budget Allocation and Management in Cycles"
+description: "Learn how budget allocation works in Cycles, how to set up scope-level budgets, and how to manage them over time."
+---
+
 # Budget Allocation and Management in Cycles
 
 Before you can enforce budgets with Cycles, budgets need to be allocated to scopes. This page explains how budget allocation works, how to set it up, and how to manage budgets over time.

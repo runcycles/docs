@@ -1,3 +1,8 @@
+---
+title: "What is Cycles?"
+description: "Cycles is a budget authority for autonomous execution that enforces hard spend limits on AI agents and workflows before expensive actions happen."
+---
+
 # What is Cycles?
 
 Cycles is a **budget authority for autonomous execution**. It enforces hard spend limits on AI agents and autonomous workflows *before* expensive actions happen — not after.

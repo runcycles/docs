@@ -1,3 +1,8 @@
+---
+title: "Troubleshooting and FAQ"
+description: "Solutions to common Cycles issues including budget exceeded errors, reservation failures, connectivity problems, and configuration mistakes."
+---
+
 # Troubleshooting and FAQ
 
 Common issues when integrating and operating Cycles, with solutions.

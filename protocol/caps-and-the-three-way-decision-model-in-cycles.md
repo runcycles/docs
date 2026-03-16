@@ -1,3 +1,8 @@
+---
+title: "Caps and the Three-Way Decision Model in Cycles"
+description: "How Cycles uses ALLOW, ALLOW_WITH_CAPS, and DENY decisions to provide nuanced budget enforcement beyond binary allow/deny."
+---
+
 # Caps and the Three-Way Decision Model in Cycles
 
 Most budget systems make a binary decision: allow or deny.

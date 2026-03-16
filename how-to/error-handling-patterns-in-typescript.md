@@ -1,3 +1,8 @@
+---
+title: "Error Handling Patterns in TypeScript"
+description: "Practical patterns for handling Cycles errors in TypeScript with withCycles, reserveForStream, and the programmatic CyclesClient."
+---
+
 # Error Handling Patterns in TypeScript
 
 This guide covers practical patterns for handling Cycles errors in TypeScript applications — with `withCycles`, `reserveForStream`, and the programmatic `CyclesClient`.

@@ -1,3 +1,8 @@
+---
+title: "Adding Cycles to an Existing Application"
+description: "Incrementally adopt Cycles budget governance in an existing application using shadow mode, single-call wrapping, and staged enforcement."
+---
+
 # Adding Cycles to an Existing Application
 
 This guide covers how to incrementally add budget governance to an application that already makes LLM or API calls. Rather than rewriting your integration layer, you can adopt Cycles in stages.

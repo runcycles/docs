@@ -1,3 +1,8 @@
+---
+title: "Concurrent Agent Overspend"
+description: "How concurrent agents sharing a budget can collectively exceed limits due to race conditions, and how Cycles prevents it."
+---
+
 # Concurrent Agent Overspend
 
 A failure mode where multiple agents sharing a budget each pass local checks but collectively exceed the limit.

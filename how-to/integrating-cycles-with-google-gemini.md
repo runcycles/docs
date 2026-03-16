@@ -1,3 +1,8 @@
+---
+title: "Integrating Cycles with Google Gemini"
+description: "Add budget governance to Google Gemini API calls using the runcycles TypeScript client and the @google/generative-ai SDK."
+---
+
 # Integrating Cycles with Google Gemini
 
 This guide shows how to add budget governance to Google Gemini API calls using the `runcycles` TypeScript client and the `@google/generative-ai` SDK.
