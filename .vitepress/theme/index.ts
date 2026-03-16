@@ -4,7 +4,6 @@ import { useRoute } from 'vitepress'
 import { theme, useOpenapi } from 'vitepress-openapi/client'
 import { nextTick, onMounted, watch } from 'vue'
 import 'vitepress-openapi/dist/style.css'
-import './custom.css'
 import spec from '../../public/openapi.json'
 
 export default {
