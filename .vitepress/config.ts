@@ -14,7 +14,7 @@ const adminApiSidebar = useSidebar({
 })
 
 export default defineConfig({
-  base: '/docs/',
+  base: '/',
   title: 'Cycles Docs',
   description: 'Documentation for Cycles, a budget authority for autonomous execution.',
   srcExclude: ['cycles-protocol/**', 'cycles-server-admin/**'],
