@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <filter id="og-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="og-shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000030"/>
+    </filter>
+    <marker id="og-teal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#00C9A7"/>
+    </marker>
+    <marker id="og-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#FF453A"/>
+    </marker>
+    <marker id="og-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#636366"/>
+    </marker>
+    <radialGradient id="bg-glow" cx="72%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#00C9A7" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#1B1B1F"/>
+  <rect width="1200" height="630" fill="url(#bg-glow)"/>
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="3" fill="#00C9A7" opacity="0.6"/>
+
+  <!-- ══ LEFT PANEL ══ -->
+
+  <!-- Logo mark -->
+  <circle cx="120" cy="102" r="32" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.12"/>
+  <path d="M 138 72 A 32 32 0 1 1 102 72" fill="none" stroke="#00C9A7" stroke-width="10" stroke-linecap="round" filter="url(#og-glow)"/>
+  <line x1="108" y1="67" x2="132" y2="67" stroke="#00C9A7" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 133 102 L 113 91 L 113 113 Z" fill="#00C9A7"/>
+
+  <!-- Product name -->
+  <text x="172" y="115" font-size="42" font-weight="700" fill="#FFFFFF"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    letter-spacing="-0.5">Cycles</text>
+
+  <!-- Divider -->
+  <line x1="64" y1="152" x2="560" y2="152" stroke="#3C3C43" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="64" y="208" font-size="26" font-weight="600" fill="#DFDFD6"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    letter-spacing="-0.2">Hard limits on agent spend and</text>
+  <text x="64" y="245" font-size="26" font-weight="600" fill="#DFDFD6"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    letter-spacing="-0.2">actions enforced before execution</text>
+  <text x="64" y="282" font-size="26" font-weight="600" fill="#DFDFD6"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    letter-spacing="-0.2">— not after.</text>
+
+  <!-- Pills -->
+  <rect x="64" y="316" width="152" height="32" rx="16" fill="#00C9A7" fill-opacity="0.12" stroke="#00C9A7" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="140" y="337" text-anchor="middle" font-size="13" font-weight="600" fill="#00C9A7"
+    font-family="-apple-system, BlinkMacSystemFont, sans-serif">Open Protocol</text>
+
+  <rect x="228" y="316" width="184" height="32" rx="16" fill="#00C9A7" fill-opacity="0.12" stroke="#00C9A7" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="320" y="337" text-anchor="middle" font-size="13" font-weight="600" fill="#00C9A7"
+    font-family="-apple-system, BlinkMacSystemFont, sans-serif">Multi-language SDKs</text>
+
+  <rect x="424" y="316" width="116" height="32" rx="16" fill="#00C9A7" fill-opacity="0.12" stroke="#00C9A7" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="482" y="337" text-anchor="middle" font-size="13" font-weight="600" fill="#00C9A7"
+    font-family="-apple-system, BlinkMacSystemFont, sans-serif">Apache 2.0</text>
+
+  <!-- Domain -->
+  <text x="64" y="410" font-size="16" fill="#636366"
+    font-family="-apple-system, BlinkMacSystemFont, sans-serif">runcycles.io</text>
+
+  <!-- Tech stack — names only -->
+  <text x="64" y="466" font-size="18" font-weight="700" fill="#AEAEB2"
+    font-family="ui-monospace, 'Menlo', monospace">Java</text>
+
+  <line x1="112" y1="448" x2="112" y2="474" stroke="#48484A" stroke-width="1.5"/>
+
+  <text x="122" y="466" font-size="18" font-weight="700" fill="#AEAEB2"
+    font-family="ui-monospace, monospace">Python</text>
+
+  <line x1="196" y1="448" x2="196" y2="474" stroke="#48484A" stroke-width="1.5"/>
+
+  <text x="206" y="466" font-size="18" font-weight="700" fill="#AEAEB2"
+    font-family="ui-monospace, monospace">TypeScript</text>
+
+  <line x1="316" y1="448" x2="316" y2="474" stroke="#48484A" stroke-width="1.5"/>
+
+  <text x="326" y="466" font-size="18" font-weight="700" fill="#AEAEB2"
+    font-family="ui-monospace, monospace">OpenAPI 3.1</text>
+
+  <line x1="450" y1="448" x2="450" y2="474" stroke="#48484A" stroke-width="1.5"/>
+
+  <text x="460" y="466" font-size="18" font-weight="700" fill="#AEAEB2"
+    font-family="ui-monospace, monospace">OpenClaw</text>
+
+  <!-- Vertical separator -->
+  <line x1="620" y1="40" x2="620" y2="590" stroke="#2C2C2E" stroke-width="1"/>
+
+  <!-- ══ RIGHT PANEL — Hero diagram ══ -->
+  <g transform="translate(622, 55) scale(0.96)">
+
+    <!-- Agent A -->
+    <rect x="18" y="80" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#og-shadow)"/>
+    <circle cx="44" cy="106" r="12" fill="#3A3A3C"/>
+    <text x="44" y="111" text-anchor="middle" font-size="12" fill="#00C9A7">&#x26A1;</text>
+    <text x="64" y="101" font-size="10" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent A</text>
+    <text x="64" y="116" font-size="9" fill="#636366" font-family="-apple-system,sans-serif">llm.completion</text>
+
+    <!-- Agent B -->
+    <rect x="18" y="224" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#og-shadow)"/>
+    <circle cx="44" cy="250" r="12" fill="#3A3A3C"/>
+    <text x="44" y="255" text-anchor="middle" font-size="12" fill="#00C9A7">&#x26A1;</text>
+    <text x="64" y="245" font-size="10" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent B</text>
+    <text x="64" y="260" font-size="9" fill="#636366" font-family="-apple-system,sans-serif">tool.web_search</text>
+
+    <!-- Agent C -->
+    <rect x="18" y="368" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#og-shadow)"/>
+    <circle cx="44" cy="394" r="12" fill="#3A3A3C"/>
+    <text x="44" y="399" text-anchor="middle" font-size="12" fill="#00C9A7">&#x26A1;</text>
+    <text x="64" y="389" font-size="10" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent C</text>
+    <text x="64" y="404" font-size="9" fill="#636366" font-family="-apple-system,sans-serif">tool.db_delete</text>
+
+    <!-- Arrows -->
+    <line x1="130" y1="106" x2="196" y2="215" stroke="#636366" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#og-gray)"/>
+    <line x1="130" y1="250" x2="196" y2="250" stroke="#636366" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#og-gray)"/>
+    <line x1="130" y1="394" x2="196" y2="287" stroke="#636366" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#og-gray)"/>
+    <text x="148" y="150" font-size="8" fill="#636366" font-family="-apple-system,sans-serif" transform="rotate(-28,148,150)">reserve?</text>
+    <text x="148" y="243" font-size="8" fill="#636366" font-family="-apple-system,sans-serif">reserve?</text>
+    <text x="140" y="352" font-size="8" fill="#636366" font-family="-apple-system,sans-serif" transform="rotate(28,140,352)">reserve?</text>
+
+    <!-- Glow rings -->
+    <circle cx="300" cy="250" r="82" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.15"/>
+    <circle cx="300" cy="250" r="96" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.07"/>
+
+    <!-- Enforcement ring -->
+    <path d="M 333.6 174.0 A 80 80 0 1 1 266.4 174.0" fill="none" stroke="#00C9A7" stroke-width="24" stroke-linecap="round" filter="url(#og-glow)"/>
+    <line x1="286" y1="162" x2="314" y2="162" stroke="#00C9A7" stroke-width="8" stroke-linecap="round"/>
+    <path d="M 316 250 L 284 231 L 284 269 Z" fill="#00C9A7"/>
+
+    <text x="300" y="336" text-anchor="middle" font-size="11" font-weight="700" fill="#00C9A7" font-family="-apple-system,sans-serif" letter-spacing="0.1em">CYCLES</text>
+    <text x="300" y="351" text-anchor="middle" font-size="9" fill="#636366" font-family="-apple-system,sans-serif" letter-spacing="0.05em">enforcement gate</text>
+
+    <!-- ALLOWED -->
+    <line x1="382" y1="215" x2="450" y2="150" stroke="#00C9A7" stroke-width="1.5" marker-end="url(#og-teal)"/>
+    <rect x="452" y="96" width="128" height="64" rx="10" fill="#1A3A32" filter="url(#og-shadow)"/>
+    <rect x="452" y="96" width="4" height="64" rx="2" fill="#00C9A7"/>
+    <text x="472" y="118" font-size="10" font-weight="700" fill="#00C9A7" font-family="-apple-system,sans-serif">ALLOWED</text>
+    <text x="472" y="133" font-size="9" fill="#D1D1D6" font-family="-apple-system,sans-serif">Reserved: 50,000</text>
+    <text x="472" y="148" font-size="9" fill="#AEAEB2" font-family="-apple-system,sans-serif">decision: ALLOW &#x2713;</text>
+
+    <!-- BLOCKED -->
+    <line x1="382" y1="287" x2="450" y2="352" stroke="#FF453A" stroke-width="1.5" marker-end="url(#og-red)"/>
+    <rect x="452" y="336" width="128" height="64" rx="10" fill="#3A1A1A" filter="url(#og-shadow)"/>
+    <rect x="452" y="336" width="4" height="64" rx="2" fill="#FF453A"/>
+    <text x="472" y="358" font-size="10" font-weight="700" fill="#FF453A" font-family="-apple-system,sans-serif">BLOCKED</text>
+    <text x="472" y="373" font-size="9" fill="#D1D1D6" font-family="-apple-system,sans-serif">Budget: $0.00</text>
+    <text x="472" y="388" font-size="9" fill="#AEAEB2" font-family="-apple-system,sans-serif">409 BUDGET_EXCEEDED</text>
+
+    <!-- Budget meter -->
+    <rect x="152" y="440" width="296" height="36" rx="10" fill="#2C2C2E" filter="url(#og-shadow)"/>
+    <text x="168" y="463" font-size="9" font-weight="600" fill="#636366" font-family="-apple-system,sans-serif">BUDGET</text>
+    <rect x="222" y="453" width="160" height="6" rx="3" fill="#3A3A3C"/>
+    <rect x="222" y="453" width="120" height="6" rx="3" fill="#00C9A7"/>
+    <text x="393" y="463" font-size="9" fill="#D1D1D6" font-family="-apple-system,sans-serif" font-weight="600">$0.25 left</text>
+    <line x1="300" y1="358" x2="300" y2="436" stroke="#00C9A7" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+  </g>
+</svg>
