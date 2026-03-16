@@ -16,7 +16,7 @@ const adminApiSidebar = useSidebar({
 export default defineConfig({
   base: '/',
   title: 'Cycles',
-  description: 'Documentation for Cycles, a budget authority for autonomous execution.',
+  description: 'Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.',
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Budget authority for autonomous agents',
