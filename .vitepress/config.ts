@@ -37,6 +37,16 @@ export default defineConfig({
     ['meta', { name: 'twitter:description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-logo-1024.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
+    ['script', { type: 'application/ld+json' }, JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Cycles",
+      "applicationCategory": "DeveloperApplication",
+      "description": "Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution.",
+      "url": "https://runcycles.io",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "offers": { "@type": "Offer", "price": "0" }
+    })],
   ],
   sitemap: {
     hostname: 'https://runcycles.io'
@@ -60,7 +70,7 @@ export default defineConfig({
         }
       }
     },
-    logo: '/runcycles-logo-64.png',
+    logo: { src: '/runcycles-logo-64.png', alt: 'Cycles' },
     externalLinkIcon: true,
     editLink: {
       pattern: 'https://github.com/runcycles/docs/edit/main/:path',
