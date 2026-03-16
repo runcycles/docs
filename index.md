@@ -4,6 +4,9 @@ hero:
   name: "Cycles"
   text: "A budget authority for autonomous execution"
   tagline: "Hard limits on agent spend and actions enforced before execution — not after. Multi-language SDKs. Open protocol, Apache 2.0."
+  image:
+    src: /runcycles-hero.svg
+    alt: Cycles hero image
   actions:
     - theme: brand
       text: "What is Cycles?"
