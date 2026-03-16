@@ -85,7 +85,9 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:pro
   }'
 ```
 
-> **Note:** Tenants and API keys must be created first using the admin key (`X-Admin-API-Key`). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
+::: info Note
+Tenants and API keys must be created first using the admin key (`X-Admin-API-Key`). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
+:::
 
 ### Budget hierarchy
 

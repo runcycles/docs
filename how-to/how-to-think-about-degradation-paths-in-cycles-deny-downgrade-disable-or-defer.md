@@ -17,11 +17,15 @@ Real systems often need a middle ground.
 
 Cycles is designed to support bounded execution. In practice, that often means the most useful question is not only:
 
-> Should this action be denied?
+::: info
+Should this action be denied?
+:::
 
 It is also:
 
-> If this action cannot proceed normally, what is the safest lower-cost behavior?
+::: info
+If this action cannot proceed normally, what is the safest lower-cost behavior?
+:::
 
 This article explains how to think about degradation paths in Cycles, and when to choose:
 
@@ -53,11 +57,15 @@ It should also decide **how** work may continue.
 
 That means moving from:
 
-> allow or deny
+::: info
+allow or deny
+:::
 
 to something closer to:
 
-> allow normally, allow in reduced mode, or stop
+::: info
+allow normally, allow in reduced mode, or stop
+:::
 
 This creates much better operational outcomes.
 

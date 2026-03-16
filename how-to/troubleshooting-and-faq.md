@@ -154,15 +154,14 @@ curl -s -X POST http://localhost:7979/v1/auth/validate \
 
 **Fix for SDK clients:** Increase the client timeout:
 
-```python
-# Python
+::: code-group
+```python [Python]
 config = CyclesConfig(base_url="http://localhost:7878", timeout=10.0)  # 10 seconds
 ```
-
-```typescript
-// TypeScript
+```typescript [TypeScript]
 const config = new CyclesConfig({ baseUrl: "http://localhost:7878", timeout: 10000 });
 ```
+:::
 
 ## SDK-specific issues
 

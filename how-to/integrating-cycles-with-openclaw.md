@@ -144,7 +144,9 @@ Configure per-tool cost estimates via `toolBaseCosts`:
 
 Any tool not listed defaults to 100,000 units.
 
-> **Type safety note:** Config values in `toolBaseCosts` and `modelBaseCosts` are not runtime-validated. If a value is accidentally a string (e.g., `"500000"` instead of `500000`), cost arithmetic will silently produce `NaN`. Ensure all cost values are numbers, not quoted strings.
+::: warning Type safety note
+Config values in `toolBaseCosts` and `modelBaseCosts` are not runtime-validated. If a value is accidentally a string (e.g., `"500000"` instead of `500000`), cost arithmetic will silently produce `NaN`. Ensure all cost values are numbers, not quoted strings.
+:::
 
 For more accurate cost tracking, provide a `costEstimator` callback programmatically:
 
@@ -301,7 +303,9 @@ Optionally retry tool reservations that are denied, useful when budget is being 
 }
 ```
 
-> **Latency note:** Retries block the `before_tool_call` hook synchronously. With the defaults (`retryDelayMs: 2000`, `maxRetries: 1`), a denied tool call pauses for 2 seconds before returning a block result. For interactive agents where responsiveness matters, consider lowering `retryDelayMs` or keeping `retryOnDeny: false` (the default) and handling denials at the application level instead.
+::: warning Latency note
+Retries block the `before_tool_call` hook synchronously. With the defaults (`retryDelayMs: 2000`, `maxRetries: 1`), a denied tool call pauses for 2 seconds before returning a block result. For interactive agents where responsiveness matters, consider lowering `retryDelayMs` or keeping `retryOnDeny: false` (the default) and handling denials at the application level instead.
+:::
 
 ## Budget transition alerts
 
@@ -333,7 +337,9 @@ Or set a callback programmatically:
 
 Webhooks are fire-and-forget (best-effort). For guaranteed delivery, use the callback.
 
-> **Note:** Transition detection runs on every budget snapshot refresh (controlled by `snapshotCacheTtlMs`, default 5 seconds). If a budget oscillates rapidly around a threshold between cache refreshes, the same transition (e.g., healthy → low) may fire more than once. Callbacks should be idempotent or deduplicate by timestamp if this matters for your use case.
+::: info Note
+Transition detection runs on every budget snapshot refresh (controlled by `snapshotCacheTtlMs`, default 5 seconds). If a budget oscillates rapidly around a threshold between cache refreshes, the same transition (e.g., healthy → low) may fire more than once. Callbacks should be idempotent or deduplicate by timestamp if this matters for your use case.
+:::
 
 ## Session analytics and cost breakdown
 

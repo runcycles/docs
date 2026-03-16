@@ -329,11 +329,15 @@ At a high level:
 
 That changes the system from:
 
-> keep going until something external notices
+::: info
+keep going until something external notices
+:::
 
 to:
 
-> continue only while bounded execution is still authorized
+::: info
+continue only while bounded execution is still authorized
+:::
 
 That is a different operating model.
 

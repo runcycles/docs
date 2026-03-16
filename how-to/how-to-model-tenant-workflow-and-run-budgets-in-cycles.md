@@ -58,7 +58,9 @@ Each one solves a different problem.
 
 This answers:
 
-> How much total exposure is this customer allowed to create?
+::: info
+How much total exposure is this customer allowed to create?
+:::
 
 It is your platform-level financial and isolation control.
 
@@ -66,7 +68,9 @@ It is your platform-level financial and isolation control.
 
 This answers:
 
-> How much exposure is this type of process allowed to consume?
+::: info
+How much exposure is this type of process allowed to consume?
+:::
 
 It is your product and feature-level control.
 
@@ -74,7 +78,9 @@ It is your product and feature-level control.
 
 This answers:
 
-> How much exposure is this individual execution allowed to consume before it stops?
+::: info
+How much exposure is this individual execution allowed to consume before it stops?
+:::
 
 It is your execution safety control.
 
@@ -131,7 +137,9 @@ Workflow budgets are often the most important scope once autonomous behavior bec
 
 A workflow budget answers:
 
-> How much exposure should this type of process be allowed to consume?
+::: info
+How much exposure should this type of process be allowed to consume?
+:::
 
 For example, not all workflows are equal.
 
@@ -185,7 +193,9 @@ In the Cycles protocol, "run" is not a built-in subject field like tenant or wor
 
 A run budget answers:
 
-> How much exposure can this single execution consume before it must stop?
+::: info
+How much exposure can this single execution consume before it must stop?
+:::
 
 This scope is especially important for:
 

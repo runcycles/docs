@@ -4,7 +4,9 @@ The Cycles Spring Boot Starter provides a declarative way to add budget enforcem
 
 Instead of manually calling the Cycles API for every reservation, commit, and release, the starter provides an `@Cycles` annotation that handles the full lifecycle automatically.
 
-> **Using Python?** See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) instead.
+::: tip Using Python?
+See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) instead.
+:::
 
 ## What the starter does
 
@@ -80,7 +82,9 @@ The demo app includes working examples for every major feature area:
 **Error handling**
 - Global `@RestControllerAdvice` for `CyclesProtocolException` with structured JSON error responses
 
-> **Note:** The deployment guide creates a `USD_MICROCENTS` budget. The `unit=TOKENS` and `unit=CREDITS` demo endpoints require separate budget ledgers for those units. If you only created the default budget, those endpoints will return `BUDGET_EXCEEDED`. Start with the `USD_MICROCENTS` endpoints (minimal, caps, overdraft, custom-ttl, dry-run) and create additional budgets via the admin API if you want to explore other units.
+::: info Note
+The deployment guide creates a `USD_MICROCENTS` budget. The `unit=TOKENS` and `unit=CREDITS` demo endpoints require separate budget ledgers for those units. If you only created the default budget, those endpoints will return `BUDGET_EXCEEDED`. Start with the `USD_MICROCENTS` endpoints (minimal, caps, overdraft, custom-ttl, dry-run) and create additional budgets via the admin API if you want to explore other units.
+:::
 
 ### Suggested walkthrough
 

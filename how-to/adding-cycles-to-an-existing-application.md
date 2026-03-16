@@ -15,11 +15,12 @@ This guide covers how to incrementally add budget governance to an application t
 
 Start by deploying the Cycles stack and using the **decide endpoint** as a side-channel to observe what budget decisions would be made without blocking any calls.
 
-> **Important:** The `dry_run` flag on the `@cycles` decorator / `withCycles` HOF skips executing the wrapped function entirely (it returns a `DryRunResult` instead). For shadow observation where your existing code still runs, use the `decide` endpoint separately.
+::: warning Important
+The `dry_run` flag on the `@cycles` decorator / `withCycles` HOF skips executing the wrapped function entirely (it returns a `DryRunResult` instead). For shadow observation where your existing code still runs, use the `decide` endpoint separately.
+:::
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesClient, CyclesConfig
 
 client = CyclesClient(CyclesConfig.from_env())
@@ -40,10 +41,7 @@ def existing_chat_function(prompt: str) -> str:
     # Your existing code — completely unchanged
     return call_openai(prompt)
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig } from "runcycles";
 
 const client = new CyclesClient(CyclesConfig.fromEnv());
@@ -66,6 +64,7 @@ async function existingChatFunction(prompt: string) {
   return await callOpenAI(prompt);
 }
 ```
+:::
 
 This approach lets you observe decisions in production logs while your existing code continues to run unmodified. Use the data to tune budgets before moving to enforcement.
 

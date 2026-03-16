@@ -225,7 +225,9 @@ Start the stack:
 docker compose up -d
 ```
 
-> **Pinning versions:** Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) for reproducible deployments.
+::: tip Pinning versions
+Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) for reproducible deployments.
+:::
 
 Verify all services are healthy:
 
@@ -370,7 +372,9 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
   }' | jq .
 ```
 
-> **Note:** The CREDIT operation adds to the existing balance. If you created the budget with 10M and then credit 10M, the total available becomes 20M.
+::: info Note
+The CREDIT operation adds to the existing balance. If you created the budget with 10M and then credit 10M, the total available becomes 20M.
+:::
 
 ## Step 5: Verify the full lifecycle
 
@@ -463,17 +467,23 @@ public class LlmService {
 }
 ```
 
-### Python (using the runcycles client)
+### Python / TypeScript (using the runcycles client)
 
 Install the client:
 
-```bash
+::: code-group
+```bash [Python]
 pip install runcycles
 ```
+```bash [TypeScript]
+npm install runcycles
+```
+:::
 
-Use the `@cycles` decorator for automatic reserve/execute/commit:
+Use the decorator or higher-order function for automatic reserve/execute/commit:
 
-```python
+::: code-group
+```python [Python]
 from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
 
 config = CyclesConfig(
@@ -490,20 +500,7 @@ def generate(prompt: str) -> str:
 
 result = generate("Hello")
 ```
-
-Or use `CyclesConfig.from_env()` to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) for full details.
-
-### TypeScript / Node.js (using the runcycles client)
-
-Install the client:
-
-```bash
-npm install runcycles
-```
-
-Use the `withCycles` higher-order function for automatic reserve/execute/commit:
-
-```typescript
+```typescript [TypeScript]
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const config = new CyclesConfig({
@@ -523,8 +520,9 @@ const generate = withCycles(
 
 const result = await generate("Hello");
 ```
+:::
 
-Or use `CyclesConfig.fromEnv()` to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [TypeScript Client quickstart](/quickstart/getting-started-with-the-typescript-client) for full details.
+Use `CyclesConfig.from_env()` (Python) or `CyclesConfig.fromEnv()` (TypeScript) to load from `CYCLES_BASE_URL`, `CYCLES_API_KEY`, and `CYCLES_TENANT` environment variables. See the [Python Client quickstart](/quickstart/getting-started-with-the-python-client) or [TypeScript Client quickstart](/quickstart/getting-started-with-the-typescript-client) for full details.
 
 ### Any language (raw HTTP)
 

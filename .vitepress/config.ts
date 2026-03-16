@@ -21,11 +21,28 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', href: '/docs/runcycles-favicon.png' }],
   ],
+  lastUpdated: true,
   themeConfig: {
     search: {
       provider: 'local'
     },
     logo: '/runcycles-logo-64.png',
+    externalLinkIcon: true,
+    editLink: {
+      pattern: 'https://github.com/runcycles/docs/edit/main/:path',
+      text: 'Edit this page on GitHub'
+    },
+    lastUpdated: {
+      text: 'Last updated'
+    },
+    docFooter: {
+      prev: 'Previous',
+      next: 'Next'
+    },
+    outline: {
+      level: [2, 3],
+      label: 'On this page'
+    },
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
@@ -63,7 +80,7 @@ export default defineConfig({
           text: 'Quickstart',
           items: [
             { text: 'What is Cycles?', link: '/quickstart/what-is-cycles' },
-            { text: 'End-to-End Tutorial', link: '/quickstart/end-to-end-tutorial' },
+            { text: 'End-to-End Tutorial', link: '/quickstart/end-to-end-tutorial', badge: { text: 'Start Here', type: 'tip' } },
             { text: 'Add to a Python App', link: '/quickstart/getting-started-with-the-python-client' },
             { text: 'Add to a TypeScript App', link: '/quickstart/getting-started-with-the-typescript-client' },
             { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
@@ -86,6 +103,7 @@ export default defineConfig({
         },
         {
           text: 'How-To Guides',
+          collapsed: true,
           items: [
             { text: 'Adding Cycles to an Existing App', link: '/how-to/adding-cycles-to-an-existing-application' },
             { text: 'Choosing the Right Pattern', link: '/how-to/choosing-the-right-integration-pattern' },
@@ -109,6 +127,7 @@ export default defineConfig({
         },
         {
           text: 'Integrations',
+          collapsed: true,
           items: [
             { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
             { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
@@ -123,9 +142,10 @@ export default defineConfig({
         },
         {
           text: 'Protocol Reference',
+          collapsed: true,
           items: [
             { text: 'API Reference (Manual)', link: '/protocol/api-reference-for-the-cycles-protocol' },
-            { text: 'API Reference (Interactive)', link: '/api/' },
+            { text: 'API Reference (Interactive)', link: '/api/', badge: { text: 'Interactive', type: 'info' } },
             { text: 'Reserve / Commit Lifecycle', link: '/protocol/how-reserve-commit-works-in-cycles' },
             { text: 'Authentication and Tenancy', link: '/protocol/authentication-tenancy-and-api-keys-in-cycles' },
             { text: 'Scope Derivation', link: '/protocol/how-scope-derivation-works-in-cycles' },
@@ -145,6 +165,7 @@ export default defineConfig({
         },
         {
           text: 'Configuration Reference',
+          collapsed: true,
           items: [
             { text: 'Python Client Configuration', link: '/configuration/python-client-configuration-reference' },
             { text: 'TypeScript Client Configuration', link: '/configuration/typescript-client-configuration-reference' },
@@ -155,6 +176,7 @@ export default defineConfig({
         },
         {
           text: 'Incident Patterns',
+          collapsed: true,
           items: [
             { text: 'Runaway Agents and Tool Loops', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
             { text: 'Retry Storms', link: '/incidents/retry-storms-and-idempotency-failures' },
@@ -164,6 +186,7 @@ export default defineConfig({
         },
         {
           text: 'Operations',
+          collapsed: true,
           items: [
             { text: 'Production Operations', link: '/how-to/production-operations-guide' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },

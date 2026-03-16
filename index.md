@@ -18,16 +18,34 @@ hero:
       text: "View on GitHub"
       link: "https://github.com/runcycles"
 features:
-  - title: "Quickstart Guides"
+  - icon: 🚀
+    title: "Quickstart Guides"
     details: "Get started in Python, TypeScript, or Spring Boot. Deploy the full stack with Docker in under 5 minutes."
-  - title: "Concepts"
+    link: /quickstart/what-is-cycles
+    linkText: Get started
+  - icon: 💡
+    title: "Concepts"
     details: "Understand why rate limits fail for agents, what Cycles actually solves, and how teams evolve from dashboards to budget authority."
-  - title: "How-To Guides"
+    link: /concepts/why-rate-limits-are-not-enough-for-autonomous-systems
+    linkText: Learn more
+  - icon: 🔧
+    title: "How-To Guides"
     details: "Integrate with OpenAI, Anthropic, LangChain, Vercel AI SDK, AWS Bedrock, and more. Budget patterns, estimation strategies, error handling, and testing."
-  - title: "Protocol Reference"
+    link: /how-to/adding-cycles-to-an-existing-application
+    linkText: Browse guides
+  - icon: 📐
+    title: "Protocol Reference"
     details: "Reserve-commit lifecycle, authentication, scope derivation, units, caps, overage policies, TTL, decide, dry run, events, debt, balances, metrics, and error handling."
-  - title: "Incident Patterns"
+    link: /protocol/how-reserve-commit-works-in-cycles
+    linkText: Read reference
+  - icon: 🔥
+    title: "Incident Patterns"
     details: "Real failure modes — runaway agents, tool loops, retry storms, concurrent overspend, and scope misconfigurations."
-  - title: "Operations"
+    link: /incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent
+    linkText: See patterns
+  - icon: ⚙️
+    title: "Operations"
     details: "Production deployment, monitoring, security hardening, and troubleshooting guides for platform teams."
+    link: /how-to/production-operations-guide
+    linkText: View guides
 ---

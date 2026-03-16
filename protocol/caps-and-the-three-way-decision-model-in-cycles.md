@@ -115,11 +115,10 @@ This reduces execution velocity without stopping the workflow.
 
 ## Caps in client code
 
-### Python
+Inside a `@cycles`-decorated function (Python) or `@Cycles`-annotated method (Java), access caps through the context object:
 
-Inside a `@cycles`-decorated function, access caps through `get_cycles_context()`:
-
-```python
+::: code-group
+```python [Python]
 from runcycles import cycles, get_cycles_context
 
 @cycles(estimate=1000)
@@ -134,12 +133,7 @@ def process(prompt: str) -> str:
             pass
     return call_llm(prompt)
 ```
-
-### Java (Spring Boot)
-
-The Spring Boot client makes caps available through the `CyclesReservationContext`:
-
-```java
+```java [Java (Spring Boot)]
 CyclesReservationContext ctx = CyclesContextHolder.get();
 if (ctx.hasCaps()) {
     Caps caps = ctx.getCaps();
@@ -151,6 +145,7 @@ if (ctx.hasCaps()) {
     }
 }
 ```
+:::
 
 The `@Cycles` annotation logs a warning when ALLOW_WITH_CAPS is returned, so teams can see when caps are being applied even without explicit handling.
 

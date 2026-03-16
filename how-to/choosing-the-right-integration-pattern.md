@@ -32,9 +32,8 @@ Is the call streaming?
 
 The simplest pattern. Wrap a function and let the SDK handle the full reserve-execute-commit lifecycle.
 
-### Python (`@cycles`)
-
-```python
+::: code-group
+```python [Python]
 @cycles(estimate=2000000, action_kind="llm.completion", action_name="gpt-4o")
 def ask(prompt: str) -> str:
     return openai.chat.completions.create(
@@ -42,10 +41,7 @@ def ask(prompt: str) -> str:
         messages=[{"role": "user", "content": prompt}],
     ).choices[0].message.content
 ```
-
-### TypeScript (`withCycles`)
-
-```typescript
+```typescript [TypeScript]
 const ask = withCycles(
   { estimate: 2000000, actionKind: "llm.completion", actionName: "gpt-4o" },
   async (prompt: string) => {
@@ -57,15 +53,13 @@ const ask = withCycles(
   },
 );
 ```
-
-### Java (`@Cycles`)
-
-```java
+```java [Java]
 @Cycles(estimate = "2000000", actionKind = "llm.completion", actionName = "gpt-4o")
 public String ask(String prompt) {
     return callOpenAI(prompt);
 }
 ```
+:::
 
 **Use when:**
 - The function makes one LLM/API call and returns a result
@@ -122,20 +116,17 @@ try {
 
 For web applications where every request needs budget governance.
 
-### Express
-
-```typescript
+::: code-group
+```typescript [Express]
 app.post("/api/chat", cyclesGuard({ client, actionKind: "llm.completion", ... }), handler);
 ```
-
-### FastAPI
-
-```python
+```python [FastAPI]
 @app.post("/api/chat")
 @cycles(estimate=2000000, action_kind="llm.completion", action_name="gpt-4o")
 async def chat(request: ChatRequest):
     ...
 ```
+:::
 
 **Use when:**
 - Budget enforcement should apply to every request on a route
@@ -150,9 +141,8 @@ async def chat(request: ChatRequest):
 
 Full control over the reserve-commit lifecycle. Use this when no higher-level pattern fits.
 
-### Python
-
-```python
+::: code-group
+```python [Python]
 client = CyclesClient(config)
 
 reservation = client.create_reservation(
@@ -173,10 +163,7 @@ else:
         actual={"amount": actual_cost, "unit": "USD_MICROCENTS"},
     )
 ```
-
-### TypeScript
-
-```typescript
+```typescript [TypeScript]
 const reservation = await client.createReservation({
   idempotencyKey: "req-001",
   subject: { tenant: "acme-corp" },
@@ -195,6 +182,7 @@ if (reservation.body.decision === "DENY") {
   });
 }
 ```
+:::
 
 **Use when:**
 - You need to inspect the reservation decision before proceeding
