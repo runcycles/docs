@@ -23,12 +23,20 @@ export default defineConfig({
   srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
+    ['meta', { name: 'description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Cycles Docs' }],
-    ['meta', { property: 'og:description', content: 'Documentation for Cycles, a budget authority for autonomous execution.' }],
+    ['meta', { property: 'og:site_name', content: 'Cycles' }],
+    ['meta', { property: 'og:title', content: 'Cycles — Budget authority for autonomous agents' }],
+    ['meta', { property: 'og:description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
     ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-logo-1024.png' }],
+    ['meta', { property: 'og:image:alt', content: 'Cycles logo' }],
     ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
-    ['meta', { name: 'twitter:card', content: 'summary' }],
+    ['meta', { name: 'theme-color', content: '#0B0F1A' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'Cycles — Budget authority for autonomous agents' }],
+    ['meta', { name: 'twitter:description', content: 'Hard limits on agent spend and actions, enforced before execution.' }],
+    ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-logo-1024.png' }],
+    ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
   ],
   sitemap: {
     hostname: 'https://runcycles.io'
