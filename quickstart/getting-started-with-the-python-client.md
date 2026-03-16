@@ -178,7 +178,7 @@ from runcycles import AsyncCyclesClient, cycles, set_default_client
 async_client = AsyncCyclesClient(config)
 set_default_client(async_client)
 
-@cycles(estimate=1000)
+@cycles(estimate=1000) # [!code focus]
 async def async_summarize(text: str) -> str:
     return await call_llm_async(text)
 
@@ -235,7 +235,7 @@ with CyclesClient(config) as client:
 ```python
 from runcycles import DecisionRequest
 
-response = client.decide(DecisionRequest(
+response = client.decide(DecisionRequest( # [!code focus]
     idempotency_key="decide-001",
     subject=Subject(tenant="acme"),
     action=Action(kind="llm.completion", name="gpt-4"),
@@ -257,7 +257,7 @@ print(response.body)
 ```python
 from runcycles import EventCreateRequest
 
-response = client.create_event(EventCreateRequest(
+response = client.create_event(EventCreateRequest( # [!code focus]
     idempotency_key="evt-001",
     subject=Subject(tenant="acme"),
     action=Action(kind="api.call", name="geocode"),
@@ -334,7 +334,7 @@ def expensive_func() -> str:
 
 try:
     expensive_func()
-except BudgetExceededError:
+except BudgetExceededError: # [!code focus]
     print("Budget exhausted — using fallback")
 ```
 

@@ -21,7 +21,7 @@ git clone https://github.com/runcycles/cycles-runaway-demo
 cd cycles-runaway-demo
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r agent/requirements.txt
-./demo.sh
+./demo.sh # [!code focus]
 ```
 
 Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 seconds. With Cycles it stops cleanly at $1.00.

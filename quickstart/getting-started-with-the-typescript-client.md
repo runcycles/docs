@@ -175,7 +175,7 @@ When the reservation decision comes back, the HOF handles each case:
 - **ALLOW_WITH_CAPS** — the function runs. Caps are available through `getCyclesContext()` for the function to inspect and respect.
 - **DENY** — the function does not run. A `BudgetExceededError` (or appropriate subclass) is raised.
 
-```typescript
+```typescript :line-numbers
 import { BudgetExceededError, CyclesProtocolError } from "runcycles";
 
 try {
@@ -376,7 +376,7 @@ if (response.isSuccess) {
 ```typescript
 import { eventCreateRequestToWire } from "runcycles";
 
-const response = await client.createEvent(
+const response = await client.createEvent( // [!code focus]
   eventCreateRequestToWire({
     idempotencyKey: "evt-001",
     subject: { tenant: "acme" },
@@ -392,7 +392,7 @@ Follow this order to build understanding progressively:
 
 **1. Reserve and commit with a fixed estimate**
 
-```typescript
+```typescript :line-numbers
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const config = new CyclesConfig({
@@ -461,7 +461,7 @@ const result = await generate("Explain budgets", 500);
 
 **5. Handle denials gracefully**
 
-```typescript
+```typescript :line-numbers
 import { BudgetExceededError } from "runcycles";
 
 const expensiveFunc = withCycles(
@@ -472,7 +472,7 @@ const expensiveFunc = withCycles(
 try {
   await expensiveFunc();
 } catch (err) {
-  if (err instanceof BudgetExceededError) {
+  if (err instanceof BudgetExceededError) { // [!code focus]
     console.log("Budget exhausted — using fallback");
   }
 }
