@@ -13,6 +13,11 @@
   height: 500px;
 }
 
+/* Hide VitePress circular gradient that clips the rectangular SVG */
+.VPHero .image-bg {
+  display: none;
+}
+
 @media (max-width: 959px) {
   .VPHero .image-container,
   .VPHero .image-src {

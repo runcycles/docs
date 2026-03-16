@@ -18,6 +18,9 @@
     </marker>
   </defs>
 
+  <!-- Background so the diagram is visible on any page theme -->
+  <rect x="0" y="0" width="600" height="500" rx="16" fill="#FAFAFA" stroke="#E5E5EA" stroke-width="1"/>
+
   <!-- Agent A -->
   <rect x="18" y="80" width="110" height="52" rx="10" fill="#F2F2F7" filter="url(#shadow)"/>
   <circle cx="44" cy="106" r="12" fill="#E5E5EA"/>
