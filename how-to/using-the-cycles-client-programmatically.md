@@ -62,6 +62,10 @@ const client = new CyclesClient(config);
 ```
 :::
 
+::: tip TypeScript naming convention
+`CyclesClient` methods accept and return wire-format (snake_case) JSON. For camelCase convenience, use the typed mapper functions (`reservationCreateRequestToWire`, `reservationCreateResponseFromWire`, etc.) documented in the [TypeScript Getting Started guide](/quickstart/getting-started-with-the-typescript-client#programmatic-client).
+:::
+
 ## Creating a reservation
 
 ::: code-group
