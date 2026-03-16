@@ -52,6 +52,151 @@ def process_document(doc):
 
 When total spend across all retries hits the budget limit, further attempts are denied immediately — no LLM call is made.
 
+### TypeScript equivalent
+
+Using the `runcycles` SDK, the same pattern works with `withCycles`:
+
+```typescript
+import { withCycles, BudgetExceededError } from "runcycles";
+
+const callLlmGuarded = withCycles(
+  {
+    estimate: 5_000_000,
+    actionKind: "llm.completion",
+    actionName: "gpt-4o",
+  },
+  async (prompt: string): Promise<string> => {
+    return await callLlm(prompt);
+  }
+);
+
+async function processDocument(doc: string): Promise<string> {
+  let currentDoc = doc;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const response = await callLlmGuarded(
+        `Process this document: ${currentDoc}`
+      );
+      if (validate(response)) {
+        return response;
+      }
+      currentDoc = currentDoc + "\n\nPrevious attempt failed validation. Try again.";
+    } catch (err) {
+      if (err instanceof BudgetExceededError) {
+        return "Document processing stopped: budget limit reached.";
+      }
+      throw err;
+    }
+  }
+  return "Document processing stopped: max retries reached.";
+}
+```
+
+## Severity and impact
+
+Retry storms are deceptive because each individual retry is cheap. The damage comes from multiplication across a fleet.
+
+**Single-document cost explosion:**
+
+| Retries per doc | Cost per call | Docs in batch | Total cost |
+|-----------------|---------------|---------------|------------|
+| 1 (no retries)  | $0.05         | 1,000         | $50        |
+| 5               | $0.05         | 1,000         | $250       |
+| 10              | $0.05         | 1,000         | $500       |
+| 10              | $0.05         | 10,000        | $5,000     |
+
+**Prompt growth makes it worse.** Each retry in the example above appends context to the prompt. By attempt #10, the prompt is significantly longer than the original. With token-based pricing, later retries cost more than earlier ones:
+
+| Attempt | Prompt tokens | Cost per call |
+|---------|--------------|---------------|
+| 1       | 500          | $0.05         |
+| 5       | 2,500        | $0.12         |
+| 10      | 5,000        | $0.22         |
+
+A 10-retry loop with growing prompts costs roughly $1.00 per document, not $0.50. Across 10,000 documents, that is $10,000 instead of $500.
+
+**Fleet multiplication.** If you run 20 parallel workers processing the same batch, a retry storm in the shared batch job can multiply these figures by the worker count before any human notices the spend rate.
+
+## Detection
+
+### Querying for retry storm indicators
+
+Check the ratio of active reservations to recent commits. A healthy system commits most reservations quickly. A retry storm shows many reservations being created and released (or expiring) without successful commits.
+
+```bash
+# Count active reservations for a scope
+curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=ACTIVE" \
+  -H "X-Cycles-API-Key: $API_KEY" | jq 'length'
+
+# Check balance to see reserved vs spent
+curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.[] | {scope, allocated, spent, reserved, remaining}'
+```
+
+If `reserved` is growing much faster than `spent`, many reservations are being created without committing — a hallmark of retry loops.
+
+### Checking for repeated idempotency key prefixes
+
+If you use the pattern `doc-{id}-attempt-{n}`, you can look for documents with high attempt numbers:
+
+```bash
+# List reservations and look for high attempt numbers
+curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&workflow=doc-processing" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  | jq '[.[].idempotency_key | select(test("attempt-[5-9]|attempt-[0-9]{2,}"))]'
+```
+
+Any result means at least one document hit 5+ retries.
+
+## Monitoring
+
+### Alerting rules
+
+Use these Prometheus-style rules to detect retry storms before they drain budgets:
+
+```yaml
+# Alert when reservation creation rate spikes relative to commit rate
+# A ratio above 3 means most reservations are not committing — likely retries
+- alert: CyclesRetryStormDetected
+  expr: |
+    rate(cycles_reservations_created_total[5m])
+    / rate(cycles_commits_total[5m]) > 3
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Possible retry storm: reservation/commit ratio is {{ $value }}"
+
+# Alert when reserved amount exceeds a threshold relative to allocated
+- alert: CyclesHighReservedRatio
+  expr: |
+    cycles_scope_reserved_total
+    / cycles_scope_allocated_total > 0.5
+  for: 5m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Over 50% of budget is in active reservations — retries may be stacking"
+
+# Alert when BUDGET_EXCEEDED denials spike (retries hitting the wall)
+- alert: CyclesBudgetDenialSpike
+  expr: |
+    rate(cycles_reservations_denied_total{reason="BUDGET_EXCEEDED"}[5m]) > 10
+  for: 1m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Spike in budget denials — retry storm may have hit budget limit"
+```
+
+### Key metrics to track
+
+- **Reservation-to-commit ratio** per scope and per workflow. Healthy value is 1.0–1.2. Values above 2.0 indicate retries or abandoned work.
+- **Mean and p99 reservation lifetime.** Retry storms produce short-lived reservations that are released (not committed) quickly.
+- **Denied reservation rate.** A sudden spike in denials often means a retry storm just hit the budget ceiling.
+
+For detailed monitoring setup, see [Monitoring and Alerting](/how-to/monitoring-and-alerting).
+
 ## Key points
 
 - **Retries are individually valid requests.** Rate limiters can't distinguish retry #1 from retry #10.
@@ -68,9 +213,98 @@ idempotency_key = f"doc-{doc_id}-attempt-{attempt}"
 
 ## Prevention strategies
 
-1. **Per-document or per-task budget.** Create a workflow-scoped budget for each document or task. Retries share the same budget pool.
-2. **Cap retries with budget checks.** Before each retry, use `decide` to check if budget is available without reserving.
-3. **Track retry cost separately.** Use the `metrics` field on commit to tag retries, so you can monitor retry cost ratios.
+### 1. Per-document or per-task budget
+
+Create a workflow-scoped budget for each document or task. All retries for that document share the same budget pool, so a single stuck document can't drain the entire batch budget:
+
+```bash
+# Create a per-document budget under the workflow scope
+curl -s -X POST "http://localhost:7878/v1/budgets" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{
+    "scope": "tenant:acme-corp/workspace:prod/workflow:doc-processing",
+    "allocated": 10000000,
+    "window": "PT1H"
+  }'
+```
+
+This limits total retry spend per document to the workflow budget, regardless of how many attempts the agent makes.
+
+### 2. Cap retries with budget checks
+
+Before each retry, use `decide` to check if budget is available without creating a reservation. This avoids creating reservations you'll immediately release:
+
+```python
+from runcycles import decide
+
+def process_document(doc, doc_id):
+    for attempt in range(10):
+        allowed = decide(
+            estimate=5000000,
+            action_kind="llm.completion",
+            action_name="gpt-4o",
+            workflow=f"doc-{doc_id}",
+        )
+        if not allowed:
+            return f"Document {doc_id}: budget exhausted after {attempt} attempts."
+        response = call_llm_guarded(f"Process this document: {doc}")
+        if validate(response):
+            return response
+```
+
+### 3. Track retry cost separately
+
+Use the `metrics` field on commit to tag retries. This lets you build dashboards that show what fraction of your spend goes to retries versus first attempts:
+
+```python
+@cycles(
+    estimate=5000000,
+    action_kind="llm.completion",
+    action_name="gpt-4o",
+    metrics=lambda attempt: {"retry_attempt": attempt, "is_retry": attempt > 0},
+)
+def call_llm_guarded(prompt: str, attempt: int = 0) -> str:
+    return call_llm(prompt)
+```
+
+### 4. Set a maximum retry budget as a fraction of first-attempt cost
+
+A useful heuristic: retries should never cost more than 2x the original call. If your first attempt costs $0.05, cap total retry spend at $0.10. This prevents the long tail of expensive retries:
+
+```python
+MAX_RETRY_MULTIPLIER = 2
+first_attempt_cost = 5000000  # microcredits
+
+def process_with_capped_retries(doc, doc_id):
+    total_spent = 0
+    max_retry_budget = first_attempt_cost * MAX_RETRY_MULTIPLIER
+    for attempt in range(10):
+        if attempt > 0 and total_spent >= max_retry_budget:
+            return f"Document {doc_id}: retry budget exhausted."
+        response = call_llm_guarded(f"Process this document: {doc}")
+        total_spent += get_last_commit_cost()
+        if validate(response):
+            return response
+```
+
+### 5. Use circuit breakers for persistent failures
+
+If multiple documents in a batch hit max retries, the issue is likely systemic (model degradation, bad prompt template). A circuit breaker stops the entire batch early:
+
+```python
+class RetryCircuitBreaker:
+    def __init__(self, threshold=5):
+        self.failure_count = 0
+        self.threshold = threshold
+
+    def record_exhausted_retries(self):
+        self.failure_count += 1
+        if self.failure_count >= self.threshold:
+            raise SystemError(
+                f"{self.failure_count} documents exhausted retries. "
+                "Halting batch — likely systemic issue."
+            )
+```
 
 ## Next steps
 

@@ -1,0 +1,21 @@
+{
+  "name": "Cycles Documentation",
+  "short_name": "Cycles Docs",
+  "description": "Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F1A",
+  "theme_color": "#0B0F1A",
+  "icons": [
+    {
+      "src": "/runcycles-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/runcycles-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
