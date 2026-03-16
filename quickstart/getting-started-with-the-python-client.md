@@ -1,3 +1,8 @@
+---
+title: "Getting Started with the Python Client"
+description: "Add budget enforcement to Python apps using the runcycles package with the @cycles decorator, async support, and programmatic CyclesClient."
+---
+
 # Getting Started with the Python Client
 
 The `runcycles` Python package provides both a `@cycles` decorator and a programmatic `CyclesClient` for adding budget enforcement to any Python application.

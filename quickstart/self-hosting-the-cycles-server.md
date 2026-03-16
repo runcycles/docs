@@ -1,3 +1,8 @@
+---
+title: "Self-Hosting the Cycles Server"
+description: "Run the Cycles budget enforcement server locally, with Docker, or in production. Covers configuration, Redis setup, scaling, and health checks."
+---
+
 # Self-Hosting the Cycles Server
 
 The Cycles server is a Spring Boot application that enforces budget reservations backed by Redis. This guide covers how to run it locally, with Docker, and in production.

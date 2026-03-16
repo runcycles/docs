@@ -1,3 +1,8 @@
+---
+title: "Getting Started with the Cycles Spring Boot Starter"
+description: "Integrate budget enforcement into Spring Boot apps using the @Cycles annotation for automatic reserve, commit, and release lifecycle management."
+---
+
 # Getting Started with the Cycles Spring Boot Starter
 
 The Cycles Spring Boot Starter provides a declarative way to add budget enforcement to any Spring application.

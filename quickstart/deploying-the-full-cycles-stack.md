@@ -1,3 +1,8 @@
+---
+title: "Deploying the Full Cycles Stack"
+description: "Deploy the Cycles server, admin server, and Redis from zero to a working budget enforcement stack with Docker Compose or from source."
+---
+
 # Deploying the Full Cycles Stack
 
 This guide walks you from zero to a working Cycles deployment. By the end, you will have budget enforcement running and verified with a real reserve-commit cycle.

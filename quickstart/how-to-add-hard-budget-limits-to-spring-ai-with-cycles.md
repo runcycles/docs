@@ -1,3 +1,8 @@
+---
+title: "How to Add Hard Budget Limits to Spring AI with Cycles"
+description: "Add pre-execution budget enforcement to Spring AI applications using the Cycles reserve-commit lifecycle for model calls, tools, and agent loops."
+---
+
 # How to Add Hard Budget Limits to Spring AI with Cycles
 
 Most AI applications start with observability.

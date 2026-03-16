@@ -1,3 +1,8 @@
+---
+title: "How to Choose a First Cycles Rollout: Tenant Budgets, Run Budgets, or Model-Call Guardrails?"
+description: "Decide where to start with Cycles: tenant budgets for cost isolation, run budgets for runaway prevention, or model-call guardrails for low-friction adoption."
+---
+
 # How to Choose a First Cycles Rollout: Tenant Budgets, Run Budgets, or Model-Call Guardrails?
 
 One of the first questions teams ask after understanding Cycles is:

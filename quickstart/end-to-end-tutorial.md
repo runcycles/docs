@@ -1,3 +1,8 @@
+---
+title: "End-to-End Tutorial: Zero to Budget-Guarded LLM Call"
+description: "Go from zero to a working budget-guarded OpenAI call in 10 minutes by deploying Cycles, creating a tenant, funding a budget, and making your first LLM call."
+---
+
 # End-to-End Tutorial: Zero to Budget-Guarded LLM Call
 
 This tutorial takes you from nothing to a working budget-guarded OpenAI call in about 10 minutes. You will deploy the Cycles stack, create a tenant, fund a budget, and make your first budget-enforced LLM call.

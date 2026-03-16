@@ -1,3 +1,8 @@
+---
+title: "Architecture Overview: How Cycles Fits Together"
+description: "Learn how Cycles components interact — the protocol, server, admin server, and Spring Boot starter — and how budget enforcement flows through the system."
+---
+
 # Architecture Overview: How Cycles Fits Together
 
 Cycles is a budget authority for autonomous execution. It sits between your application and the actions that cost money or carry risk.
