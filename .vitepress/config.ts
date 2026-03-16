@@ -15,6 +15,7 @@ const adminApiSidebar = useSidebar({
 
 export default defineConfig({
   base: '/',
+  appearance: 'dark', 
   title: 'Cycles',
   description: 'Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.',
   cleanUrls: true,
