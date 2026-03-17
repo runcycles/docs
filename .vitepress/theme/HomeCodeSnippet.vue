@@ -47,7 +47,7 @@ const ask = withCycles(
     lang: 'java',
     code: `import io.runcycles.client.java.spring.annotation.Cycles;
 
-@Cycles(estimate = 5000, actionKind = "llm.completion", actionName = "openai:gpt-4o")
+@Cycles(estimate = "5000", actionKind = "llm.completion", actionName = "openai:gpt-4o")
 public String ask(String prompt) {
     return openAiClient.chatCompletion(prompt);
 }`,
