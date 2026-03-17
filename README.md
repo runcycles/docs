@@ -1,10 +1,10 @@
 # Cycles Docs
 
-Posts, guides, and architecture articles for [Cycles](https://runcycles.github.io/docs).
+Posts, guides, and architecture articles for [Cycles](https://runcycles.io).
 
 ## Read the docs
 
-👉 **[runcycles.github.io/docs](https://runcycles.github.io/docs)**
+👉 **[runcycles.io](https://runcycles.io)**
 
 ## Contributing
 

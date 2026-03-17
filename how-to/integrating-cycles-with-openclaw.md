@@ -15,8 +15,10 @@ npm install @runcycles/openclaw-budget-guard
 
 ```bash
 export CYCLES_BASE_URL="http://localhost:7878"
-export CYCLES_API_KEY="your-api-key"
+export CYCLES_API_KEY="your-api-key"   # create via Admin Server — see note below
 ```
+
+> **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
 You also need:
 - **OpenClaw** >= 0.1.0 with plugin support
