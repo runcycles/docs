@@ -95,8 +95,12 @@ const result = streamText({
   },
 
   openclaw: {
-    lang: 'json',
-    code: `{
+    lang: 'jsonc',
+    code: `// npm install @runcycles/openclaw-budget-guard
+// openclaw plugins enable cycles-openclaw-budget-guard
+
+// openclaw.json
+{
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
@@ -116,7 +120,7 @@ const result = streamText({
 onMounted(async () => {
   const highlighter = await createHighlighter({
     themes: ['github-dark', 'github-light'],
-    langs: ['python', 'typescript', 'java', 'json'],
+    langs: ['python', 'typescript', 'java', 'jsonc'],
   })
 
   const result = {}
