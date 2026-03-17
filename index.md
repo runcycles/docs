@@ -5,8 +5,7 @@ hero:
   text: "Budget authority for autonomous agents"
   tagline: >-
     Hard limits on agent spend and actions enforced before execution — not after. 
-    Multi-language SDKs. Open protocol, Apache 2.0. 
-    Python / TypeScript / Java / LangChain / OpenClaw.
+    Python, TypeScript, Java, OpenClaw. Open protocol, Apache 2.0.
   image:
     light: /runcycles-hero.svg
     dark: /runcycles-hero-dark.svg
