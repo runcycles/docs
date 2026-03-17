@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { createHighlighter } from 'shiki'
 
 const activeTab = ref('python')
+const highlighted = ref<Record<string, string>>({})
 
 const tabs = [
   { key: 'python', label: 'Python' },
@@ -9,8 +11,10 @@ const tabs = [
   { key: 'java', label: 'Spring Boot' },
 ]
 
-const snippets = {
-  python: `from cycles import cycles
+const snippets: Record<string, { code: string; lang: string }> = {
+  python: {
+    lang: 'python',
+    code: `from cycles import cycles
 
 @cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
 def ask(prompt: str) -> str:
@@ -18,8 +22,11 @@ def ask(prompt: str) -> str:
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     ).choices[0].message.content`,
+  },
 
-  typescript: `import { withCycles } from "@runcycles/cycles-client-typescript";
+  typescript: {
+    lang: 'typescript',
+    code: `import { withCycles } from "@runcycles/cycles-client-typescript";
 
 const ask = withCycles(
   { estimate: 5000, actionKind: "llm.completion", actionName: "openai:gpt-4o" },
@@ -31,14 +38,35 @@ const ask = withCycles(
     return res.choices[0].message.content;
   }
 );`,
+  },
 
-  java: `import io.runcycles.client.java.spring.annotation.Cycles;
+  java: {
+    lang: 'java',
+    code: `import io.runcycles.client.java.spring.annotation.Cycles;
 
 @Cycles(estimate = 5000, actionKind = "llm.completion", actionName = "openai:gpt-4o")
 public String ask(String prompt) {
     return openAiClient.chatCompletion(prompt);
 }`,
+  },
 }
+
+onMounted(async () => {
+  const highlighter = await createHighlighter({
+    themes: ['github-dark', 'github-light'],
+    langs: ['python', 'typescript', 'java'],
+  })
+
+  const result: Record<string, string> = {}
+  for (const [key, { code, lang }] of Object.entries(snippets)) {
+    result[key] = highlighter.codeToHtml(code, {
+      lang,
+      themes: { light: 'github-light', dark: 'github-dark' },
+      defaultColor: false,
+    })
+  }
+  highlighted.value = result
+})
 </script>
 
 <template>
@@ -56,7 +84,8 @@ public String ask(String prompt) {
         </button>
       </div>
       <div class="code-block">
-        <pre><code>{{ snippets[activeTab] }}</code></pre>
+        <div v-if="highlighted[activeTab]" v-html="highlighted[activeTab]" />
+        <pre v-else><code>{{ snippets[activeTab].code }}</code></pre>
       </div>
     </div>
   </section>
@@ -117,18 +146,25 @@ public String ask(String prompt) {
   background: var(--vp-code-block-bg);
   padding: 20px 24px;
   overflow-x: auto;
+  /* Fixed height prevents layout shift when switching tabs.
+     Tallest snippet (TypeScript) is 11 lines × 14px × 1.6 line-height = 246px + 40px padding */
+  min-height: 286px;
 }
 
-.code-block pre {
+.code-block :deep(pre) {
   margin: 0;
+  background: transparent !important;
 }
 
-.code-block code {
+.code-block :deep(code) {
   font-family: var(--vp-font-family-mono);
   font-size: 14px;
   line-height: 1.6;
-  color: var(--vp-c-text-1);
   white-space: pre;
+}
+
+.code-block :deep(.shiki) {
+  background: transparent !important;
 }
 
 @media (max-width: 640px) {
@@ -143,9 +179,10 @@ public String ask(String prompt) {
 
   .code-block {
     padding: 16px;
+    min-height: 260px;
   }
 
-  .code-block code {
+  .code-block :deep(code) {
     font-size: 13px;
   }
 }
