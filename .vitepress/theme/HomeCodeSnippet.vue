@@ -62,7 +62,7 @@ onMounted(async () => {
     result[key] = highlighter.codeToHtml(code, {
       lang,
       themes: { light: 'github-light', dark: 'github-dark' },
-      defaultColor: false,
+      defaultColor: 'light',
     })
   }
   highlighted.value = result
@@ -165,6 +165,10 @@ onMounted(async () => {
 
 .code-block :deep(.shiki) {
   background: transparent !important;
+}
+
+.dark .code-block :deep(.shiki span) {
+  color: var(--shiki-dark) !important;
 }
 
 @media (max-width: 640px) {
