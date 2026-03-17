@@ -4,8 +4,7 @@ hero:
   name: "Cycles"
   text: "Budget authority for autonomous agents"
   tagline: >-
-    Hard limits on agent spend and actions enforced before execution — not after.<br>
-    Python · TypeScript · Java · OpenClaw<br>Open protocol, Apache 2.0.
+    Hard limits on agent spend and actions enforced before execution — not after.<br>Python · TypeScript · Java · OpenClaw<br>Open protocol, Apache 2.0.
   image:
     light: /runcycles-hero.svg
     dark: /runcycles-hero-dark.svg
