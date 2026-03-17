@@ -32,6 +32,25 @@ The fastest way to see the starter in action is to run the included demo applica
 
 You need a running Cycles stack with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first. The demo app expects the same `acme-corp` tenant used in that guide.
 
+::: tip Where do I get my API key?
+API keys are created through the **Cycles Admin Server** (port 7979) and always start with `cyc_live_`. If your stack is already running with a tenant, create one directly:
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/api-keys \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "dev-key",
+    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read","decide","events:create"]
+  }' | jq -r '.key_secret'
+```
+
+The response returns the full key (e.g. `cyc_live_abc123...`). **Save it — the secret is only shown once.**
+
+Need the full setup? See [Deploy the Full Stack — Create an API key](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key). For rotation and lifecycle details, see [API Key Management](/how-to/api-key-management-in-cycles).
+:::
+
 ### Run the demo
 
 ```bash
@@ -39,10 +58,10 @@ git clone https://github.com/runcycles/cycles-spring-boot-starter.git
 cd cycles-spring-boot-starter/cycles-demo-client-java-spring
 ```
 
-Set your API key (the one you created in the deployment guide):
+Set your API key — the `cyc_live_...` value returned when you created the key via the Admin Server:
 
 ```bash
-export CYCLES_API_KEY=cyc_live_...
+export CYCLES_API_KEY=cyc_live_...   # from Admin Server /v1/admin/api-keys response
 mvn spring-boot:run
 ```
 
