@@ -62,7 +62,7 @@ onMounted(async () => {
     result[key] = highlighter.codeToHtml(code, {
       lang,
       themes: { light: 'github-light', dark: 'github-dark' },
-      defaultColor: false,
+      defaultColor: 'light',
     })
   }
   highlighted.value = result
@@ -71,6 +71,7 @@ onMounted(async () => {
 
 <template>
   <section class="home-code-snippet">
+    <div class="inner">
     <p class="tagline">Budget is reserved before the call. If exhausted, the call is blocked — not billed.</p>
     <div class="code-container">
       <div class="tab-bar">
@@ -88,15 +89,32 @@ onMounted(async () => {
         <pre v-else><code>{{ snippets[activeTab].code }}</code></pre>
       </div>
     </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .home-code-snippet {
-  max-width: 1152px;
-  margin: 0 auto;
+  position: relative;
   padding: 0 24px 48px;
   text-align: center;
+}
+
+@media (min-width: 640px) {
+  .home-code-snippet {
+    padding: 0 48px 48px;
+  }
+}
+
+@media (min-width: 960px) {
+  .home-code-snippet {
+    padding: 0 64px 48px;
+  }
+}
+
+.inner {
+  max-width: 1152px;
+  margin: 0 auto;
 }
 
 .tagline {
@@ -167,11 +185,11 @@ onMounted(async () => {
   background: transparent !important;
 }
 
-@media (max-width: 640px) {
-  .home-code-snippet {
-    padding: 0 16px 32px;
-  }
+.dark .code-block :deep(.shiki span) {
+  color: var(--shiki-dark) !important;
+}
 
+@media (max-width: 640px) {
   .tab {
     padding: 8px 14px;
     font-size: 13px;
