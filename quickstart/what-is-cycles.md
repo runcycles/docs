@@ -139,6 +139,7 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 ## Next steps
 
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
+- [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure
 - [Python Quickstart](/quickstart/getting-started-with-the-python-client) — add Cycles to a Python app
 - [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) — add Cycles to a TypeScript app

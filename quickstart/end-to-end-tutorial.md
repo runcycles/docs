@@ -15,7 +15,51 @@ Run the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) �
 
 - **Docker** and **Docker Compose v2+**
 - **Python 3.10+** or **Node.js 20+** (for the application step)
-- An **OpenAI API key** (for the final step — you can skip this and use a mock if preferred)
+- An **OpenAI API key** (for the final step — or use the mock tabs below if you don't have one)
+
+## Quick code preview
+
+Want to see what Cycles integration looks like before setting up the stack? Here is the complete pattern:
+
+::: code-group
+```python [Python]
+from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+
+client = CyclesClient(CyclesConfig(
+    base_url="http://localhost:7878",  # Cycles server
+    api_key="cyc_live_...",            # from the admin API
+    tenant="my-app",
+))
+set_default_client(client)
+
+@cycles(estimate=2000000, action_kind="llm.completion", action_name="openai:gpt-4o-mini")
+def ask(prompt: str) -> str:
+    return call_your_llm(prompt)  # any LLM provider
+
+result = ask("Hello")  # Budget reserved → LLM called → cost committed
+```
+```typescript [TypeScript]
+import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
+
+const client = new CyclesClient(new CyclesConfig({
+  baseUrl: "http://localhost:7878",
+  apiKey: "cyc_live_...",
+  tenant: "my-app",
+}));
+setDefaultClient(client);
+
+const ask = withCycles(
+  { estimate: 2000000, actionKind: "llm.completion", actionName: "openai:gpt-4o-mini" },
+  async (prompt: string) => callYourLlm(prompt),
+);
+
+const result = await ask("Hello");  // Budget reserved → LLM called → cost committed
+```
+:::
+
+::: info
+This code requires a running Cycles server. The tutorial below walks you through setting one up with Docker in about 2 minutes. If you just want to see the demo without any setup, try the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) instead.
+:::
 
 ## Step 1: Start the Cycles stack
 
@@ -216,14 +260,82 @@ const ask = withCycles(
 const result = await ask("What is budget governance for AI agents? Reply in one sentence.");
 console.log("Response:", result);
 ```
+```python [Python (mock)]
+# Install: pip install runcycles
+# Save as app_mock.py — no OpenAI key needed
+
+import os
+from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+
+# Configure Cycles
+cycles_client = CyclesClient(CyclesConfig(
+    base_url="http://localhost:7878",
+    api_key=os.environ["CYCLES_API_KEY"],
+    tenant="my-app",
+))
+set_default_client(cycles_client)
+
+@cycles(
+    estimate=2000000,  # Reserve $0.02 per call
+    action_kind="llm.completion",
+    action_name="mock:gpt-4o-mini",
+)
+def ask(prompt: str) -> str:
+    # Simulated LLM response — no API key required
+    return f"[Mock response to: {prompt[:50]}]"
+
+# Run it
+try:
+    result = ask("What is budget governance for AI agents? Reply in one sentence.")
+    print(f"Response: {result}")
+except Exception as e:
+    print(f"Error: {e}")
+```
+```typescript [TypeScript (mock)]
+// Install: npm init -y && npm install runcycles
+// Save as app_mock.ts — no OpenAI key needed
+
+import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
+
+const cyclesClient = new CyclesClient(new CyclesConfig({
+  baseUrl: "http://localhost:7878",
+  apiKey: process.env.CYCLES_API_KEY!,
+  tenant: "my-app",
+}));
+setDefaultClient(cyclesClient);
+
+const ask = withCycles(
+  {
+    estimate: 2000000,
+    actionKind: "llm.completion",
+    actionName: "mock:gpt-4o-mini",
+  },
+  async (prompt: string) => {
+    // Simulated LLM response — no API key required
+    return `[Mock response to: ${prompt.slice(0, 50)}]`;
+  },
+);
+
+const result = await ask("What is budget governance for AI agents? Reply in one sentence.");
+console.log("Response:", result);
+```
+:::
+
+::: tip No OpenAI key?
+The **mock tabs** replace the OpenAI call with a stub that returns a fixed string. The Cycles budget lifecycle (reserve → commit → balance deduction) works exactly the same — you just skip the LLM cost.
 :::
 
 Run it:
 
 ```bash
 export CYCLES_API_KEY="cyc_live_..."   # your key from Step 3
-export OPENAI_API_KEY="sk-..."          # your OpenAI key
+
+# With OpenAI:
+export OPENAI_API_KEY="sk-..."
 python app.py                           # or: npx tsx app.ts
+
+# Without OpenAI (mock):
+python app_mock.py                      # or: npx tsx app_mock.ts
 ```
 
 ## Step 7: Watch the budget decrease
