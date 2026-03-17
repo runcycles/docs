@@ -93,7 +93,7 @@ onMounted(async () => {
 
 <style scoped>
 .home-code-snippet {
-  max-width: 720px;
+  max-width: 1152px;
   margin: 0 auto;
   padding: 0 24px 48px;
   text-align: center;
