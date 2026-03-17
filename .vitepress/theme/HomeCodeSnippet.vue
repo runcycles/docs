@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { createHighlighter } from 'shiki'
 
 const activeTab = ref('python')
-const highlighted = ref<Record<string, string>>({})
+const highlighted = ref({})
 
 const tabs = [
   { key: 'python', label: 'Python' },
@@ -11,7 +11,7 @@ const tabs = [
   { key: 'java', label: 'Spring Boot' },
 ]
 
-const snippets: Record<string, { code: string; lang: string }> = {
+const snippets = {
   python: {
     lang: 'python',
     code: `from cycles import cycles
@@ -57,7 +57,7 @@ onMounted(async () => {
     langs: ['python', 'typescript', 'java'],
   })
 
-  const result: Record<string, string> = {}
+  const result = {}
   for (const [key, { code, lang }] of Object.entries(snippets)) {
     result[key] = highlighter.codeToHtml(code, {
       lang,
