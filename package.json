@@ -11,6 +11,7 @@
     "dev": "npm run convert-spec && vitepress dev"
   },
   "dependencies": {
+    "shiki": "^4.0.2",
     "vitepress-openapi": "^0.1.17",
     "yaml": "^2.8.2"
   }
