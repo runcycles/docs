@@ -83,11 +83,12 @@ Pick the highest-value call path to wrap first. Good candidates:
 - The call that runs most frequently
 - The call most likely to loop or retry
 
-### Wrapping an existing function (Python)
+### Wrapping an existing function
 
 **Before:**
 
-```python
+::: code-group
+```python [Python]
 def generate_summary(document: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -96,10 +97,22 @@ def generate_summary(document: str) -> str:
     )
     return response.choices[0].message.content
 ```
+```typescript [TypeScript]
+async function generateSummary(document: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [{ role: "user", content: `Summarize: ${document}` }],
+    max_tokens: 2000,
+  });
+  return response.choices[0].message.content!;
+}
+```
+:::
 
 **After:**
 
-```python
+::: code-group
+```python [Python]
 from runcycles import cycles
 
 @cycles(
@@ -115,14 +128,35 @@ def generate_summary(document: str) -> str:
     )
     return response.choices[0].message.content
 ```
+```typescript [TypeScript]
+import { withCycles } from "runcycles";
 
-The only change is adding the `@cycles` decorator. Your business logic stays exactly the same.
+const generateSummary = withCycles(
+  {
+    estimate: (document: string) => Math.ceil(document.length / 4 * 250 + 2000 * 1000) * 1.2,
+    actionKind: "llm.completion",
+    actionName: "openai:gpt-4o",
+  },
+  async (document: string) => {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: `Summarize: ${document}` }],
+      max_tokens: 2000,
+    });
+    return response.choices[0].message.content!;
+  },
+);
+```
+:::
+
+The only change is adding the `@cycles` decorator (Python) or `withCycles` wrapper (TypeScript). Your business logic stays exactly the same.
 
 ### Handling budget denial
 
 Your existing error handling needs one new branch — what to do when budget is denied:
 
-```python
+::: code-group
+```python [Python]
 from runcycles import BudgetExceededError
 
 try:
@@ -135,6 +169,23 @@ except BudgetExceededError:
     # Option C: Queue for later
     queue_for_retry(document)
 ```
+```typescript [TypeScript]
+import { BudgetExceededError } from "runcycles";
+
+try {
+  const result = await generateSummary(document);
+} catch (err) {
+  if (err instanceof BudgetExceededError) {
+    // Option A: Return a graceful fallback
+    result = "Summary unavailable — budget limit reached.";
+    // Option B: Use a cheaper model
+    result = await generateSummaryCheap(document);
+    // Option C: Queue for later
+    queueForRetry(document);
+  }
+}
+```
+:::
 
 See [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) for a full treatment of fallback strategies.
 
@@ -142,7 +193,8 @@ See [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-d
 
 Once the first call path is working, wrap additional calls. Use a consistent pattern:
 
-```python
+::: code-group
+```python [Python]
 @cycles(estimate=500000, action_kind="llm.completion", action_name="openai:gpt-4o-mini")
 def classify_intent(text: str) -> str:
     ...
@@ -155,6 +207,23 @@ def generate_response(context: str, intent: str) -> str:
 def search_web(query: str) -> list:
     ...
 ```
+```typescript [TypeScript]
+const classifyIntent = withCycles(
+  { estimate: 500000, actionKind: "llm.completion", actionName: "openai:gpt-4o-mini" },
+  async (text: string) => { ... },
+);
+
+const generateResponse = withCycles(
+  { estimate: 3000000, actionKind: "llm.completion", actionName: "openai:gpt-4o" },
+  async (context: string, intent: string) => { ... },
+);
+
+const searchWeb = withCycles(
+  { estimate: 100000, actionKind: "tool.call", actionName: "web-search" },
+  async (query: string) => { ... },
+);
+```
+:::
 
 Each wrapped function reserves independently. If the agent calls all three in sequence, the total budget consumed is the sum of actual usage — and each call is individually authorized before it runs.
 
@@ -162,7 +231,8 @@ Each wrapped function reserves independently. If the agent calls all three in se
 
 Once you're confident in your budget allocations (from shadow mode data), remove `dry_run=True`:
 
-```python
+::: code-group
+```python [Python]
 # Remove dry_run to enable enforcement
 @cycles(
     estimate=2000000,
@@ -173,6 +243,19 @@ Once you're confident in your budget allocations (from shadow mode data), remove
 def generate_summary(document: str) -> str:
     ...
 ```
+```typescript [TypeScript]
+// Remove dryRun to enable enforcement
+const generateSummary = withCycles(
+  {
+    estimate: 2000000,
+    actionKind: "llm.completion",
+    actionName: "openai:gpt-4o",
+    // dryRun: true,  ← remove this line
+  },
+  async (document: string) => { ... },
+);
+```
+:::
 
 ## Tips for existing applications
 

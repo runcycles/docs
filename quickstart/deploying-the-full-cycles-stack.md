@@ -41,7 +41,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:latest
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.23.3
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -51,7 +51,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:latest
+    image: ghcr.io/runcycles/cycles-server:0.1.23.3
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -196,7 +196,7 @@ services:
       retries: 5
 
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:latest
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.23.3
     ports:
       - "7979:7979"
     environment:
@@ -209,7 +209,7 @@ services:
         condition: service_healthy
 
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:latest
+    image: ghcr.io/runcycles/cycles-server:0.1.23.3
     ports:
       - "7878:7878"
     environment:
@@ -230,8 +230,8 @@ Start the stack:
 docker compose up -d
 ```
 
-::: tip Pinning versions
-Replace `:latest` with a specific version tag (e.g., `:0.1.23.3`) for reproducible deployments.
+::: tip Version pinning
+The examples above pin version `0.1.23.3`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
 :::
 
 Verify all services are healthy:
