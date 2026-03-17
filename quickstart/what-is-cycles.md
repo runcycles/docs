@@ -25,7 +25,7 @@ That exposure can be financial: thousands of dollars in LLM calls accumulated be
 
 Rate limiters control velocity — requests per second. They do not control total exposure: the cumulative cost, risk, or irreversible side effects a system is allowed to create before execution is halted. Nor do they constrain what each individual action is permitted to do.
 
-By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
+> By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
 
 ## See it in action
 
