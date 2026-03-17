@@ -197,11 +197,12 @@ onMounted(async () => {
 
   .code-block {
     padding: 16px;
-    min-height: 260px;
+    min-height: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .code-block :deep(code) {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 </style>
