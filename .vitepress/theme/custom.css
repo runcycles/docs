@@ -16,11 +16,17 @@
   --vp-c-brand-2: #008a74;
   --vp-c-brand-3: #007a66;
   --vp-home-hero-name-color: #00C9A7;
+}
 
-  /* CTA button: keep vivid teal — white text on button has fine contrast */
-  --vp-button-brand-bg: #009d85;
-  --vp-button-brand-hover-bg: #00b396;
-  --vp-button-brand-active-bg: #008a74;
+/* CTA button: keep vivid teal in light mode */
+:root:not(.dark) .VPButton.brand {
+  background-color: #009d85 !important;
+}
+:root:not(.dark) .VPButton.brand:hover {
+  background-color: #00b396 !important;
+}
+:root:not(.dark) .VPButton.brand:active {
+  background-color: #008a74 !important;
 }
 
 /* Hero image — remove VitePress card decoration */
