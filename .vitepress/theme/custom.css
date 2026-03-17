@@ -13,9 +13,9 @@
 
 /* Light mode: darken brand for text contrast without changing dark mode or decorative color */
 :root:not(.dark) {
-  --vp-c-brand-1: #007360;
+  --vp-c-brand-1: #009d85;
   --vp-c-brand-2: #008a74;
-  --vp-c-brand-3: #00a388;
+  --vp-c-brand-3: #007a66;
   --vp-home-hero-name-color: #00C9A7;
 }
 
