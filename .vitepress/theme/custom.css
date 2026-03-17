@@ -11,6 +11,14 @@
   --vp-c-brand-3: #009D85;
 }
 
+/* Light mode: darken brand for text contrast without changing dark mode or decorative color */
+:root:not(.dark) {
+  --vp-c-brand-1: #007360;
+  --vp-c-brand-2: #008a74;
+  --vp-c-brand-3: #00a388;
+  --vp-home-hero-name-color: #00C9A7;
+}
+
 /* Hero image — remove VitePress card decoration */
 .VPHero .image-bg {
   display: none;
