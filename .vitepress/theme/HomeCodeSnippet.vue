@@ -17,7 +17,7 @@ const tabs = [
 const snippets = {
   python: {
     lang: 'python',
-    code: `from cycles import cycles
+    code: `from runcycles import cycles
 
 @cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
 def ask(prompt: str) -> str:
@@ -29,7 +29,7 @@ def ask(prompt: str) -> str:
 
   typescript: {
     lang: 'typescript',
-    code: `import { withCycles } from "@runcycles/cycles-client-typescript";
+    code: `import { withCycles } from "runcycles";
 
 const ask = withCycles(
   { estimate: 5000, actionKind: "llm.completion", actionName: "openai:gpt-4o" },
@@ -58,6 +58,7 @@ public String ask(String prompt) {
     code: `from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from runcycles import CyclesClient, CyclesConfig, Subject
+from budget_handler import CyclesBudgetHandler  # see docs
 
 client = CyclesClient(CyclesConfig.from_env())
 handler = CyclesBudgetHandler(
@@ -76,13 +77,20 @@ import { openai } from "@ai-sdk/openai";
 import { reserveForStream } from "runcycles";
 
 const handle = await reserveForStream({
-  client, estimate: 2_000_000,
+  client, estimate: 2_000_000, unit: "USD_MICROCENTS",
   actionKind: "llm.completion", actionName: "gpt-4o",
 });
 
 const result = streamText({
   model: openai("gpt-4o"), messages,
-  onFinish: ({ usage }) => handle.commit(usage.totalTokens * 250),
+  onFinish: async ({ usage }) => {
+    const actual = (usage.promptTokens ?? 0) * 250
+      + (usage.completionTokens ?? 0) * 1000;
+    await handle.commit(actual, {
+      tokensInput: usage.promptTokens,
+      tokensOutput: usage.completionTokens,
+    });
+  },
 });`,
   },
 
@@ -228,8 +236,8 @@ onMounted(async () => {
   padding: 20px 24px;
   overflow-x: auto;
   /* Fixed height prevents layout shift when switching tabs.
-     Tallest snippets (TypeScript, LangChain, Vercel AI, OpenClaw) are ~13 lines */
-  min-height: 330px;
+     Tallest snippet (Vercel AI) is ~17 lines × 14px × 1.6 + 40px padding */
+  min-height: 420px;
 }
 
 .code-block :deep(pre) {
