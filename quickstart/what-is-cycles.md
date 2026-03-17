@@ -7,6 +7,16 @@ description: "Cycles is a budget authority for autonomous execution that enforce
 
 Cycles is a **budget authority for autonomous execution**. It enforces hard limits on agent spend and actions — **before they happen, not after**.
 
+```python
+@cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
+def ask(prompt: str) -> str:
+    return openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+    ).choices[0].message.content
+# Budget is reserved before the call. If exhausted, the call is blocked — not billed.
+```
+
 ## The problem
 
 Autonomous systems fail differently than traditional software. A runaway agent does not just burn dollars — **it creates unbounded exposure**.
@@ -15,7 +25,7 @@ That exposure can be financial: thousands of dollars in LLM calls accumulated be
 
 Rate limiters control velocity — requests per second. They do not control total exposure: the cumulative cost, risk, or irreversible side effects a system is allowed to create before execution is halted. Nor do they constrain what each individual action is permitted to do.
 
-By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
+> By the time an alert fires, the system has already acted. **Observation is useful for visibility. It is not enforcement.**
 
 ## See it in action
 

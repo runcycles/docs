@@ -7,6 +7,10 @@ description: "Incrementally adopt Cycles budget governance in an existing applic
 
 This guide covers how to incrementally add budget governance to an application that already makes LLM or API calls. Rather than rewriting your integration layer, you can adopt Cycles in stages.
 
+::: tip Spring Boot / Java
+This guide shows Python and TypeScript. For Spring Boot, equivalent patterns use the `@Cycles` annotation — see the [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) for full setup and examples.
+:::
+
 ## The incremental adoption path
 
 ```
@@ -147,9 +151,19 @@ const generateSummary = withCycles(
   },
 );
 ```
+```java [Spring Boot]
+import io.runcycles.client.java.spring.annotation.Cycles;
+
+@Cycles(value = "#{ T(Math).ceil(#document.length() / 4 * 250 + 2000 * 1000) * 1.2 }",
+        actionKind = "llm.completion", actionName = "openai:gpt-4o")
+public String generateSummary(String document) {
+    // Same OpenAI call — business logic unchanged
+    return openAiClient.chat(document);
+}
+```
 :::
 
-The only change is adding the `@cycles` decorator (Python) or `withCycles` wrapper (TypeScript). Your business logic stays exactly the same.
+The only change is adding the `@cycles` decorator (Python), `withCycles` wrapper (TypeScript), or `@Cycles` annotation (Spring Boot). Your business logic stays exactly the same.
 
 ### Handling budget denial
 
@@ -183,6 +197,22 @@ try {
     // Option C: Queue for later
     queueForRetry(document);
   }
+}
+```
+```java [Spring Boot]
+import io.runcycles.client.java.spring.model.CyclesProtocolException;
+
+try {
+    String result = summaryService.generateSummary(document);
+} catch (CyclesProtocolException e) {
+    if (e.isBudgetExceeded()) {
+        // Option A: Return a graceful fallback
+        result = "Summary unavailable — budget limit reached.";
+        // Option B: Use a cheaper model
+        result = summaryService.generateSummaryCheap(document);
+        // Option C: Queue for later
+        queueForRetry(document);
+    }
 }
 ```
 :::
@@ -254,6 +284,14 @@ const generateSummary = withCycles(
   },
   async (document: string) => { ... },
 );
+```
+```java [Spring Boot]
+// Remove dryRun to enable enforcement
+@Cycles(value = "2000000",
+        actionKind = "llm.completion", actionName = "openai:gpt-4o"
+        // dryRun = true  ← remove this line
+)
+public String generateSummary(String document) { ... }
 ```
 :::
 
