@@ -9,6 +9,9 @@ const tabs = [
   { key: 'python', label: 'Python' },
   { key: 'typescript', label: 'TypeScript' },
   { key: 'java', label: 'Spring Boot' },
+  { key: 'langchain', label: 'LangChain' },
+  { key: 'vercel', label: 'Vercel AI' },
+  { key: 'openclaw', label: 'OpenClaw' },
 ]
 
 const snippets = {
@@ -49,12 +52,63 @@ public String ask(String prompt) {
     return openAiClient.chatCompletion(prompt);
 }`,
   },
+
+  langchain: {
+    lang: 'python',
+    code: `from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+from runcycles import CyclesClient, CyclesConfig, Subject
+
+client = CyclesClient(CyclesConfig.from_env())
+handler = CyclesBudgetHandler(
+    client=client,
+    subject=Subject(tenant="acme", agent="my-agent"),
+)
+
+llm = ChatOpenAI(model="gpt-4o", callbacks=[handler])
+result = llm.invoke([HumanMessage(content="Hello!")])`,
+  },
+
+  vercel: {
+    lang: 'typescript',
+    code: `import { streamText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { reserveForStream } from "runcycles";
+
+const handle = await reserveForStream({
+  client, estimate: 2_000_000,
+  actionKind: "llm.completion", actionName: "gpt-4o",
+});
+
+const result = streamText({
+  model: openai("gpt-4o"), messages,
+  onFinish: ({ usage }) => handle.commit(usage.totalTokens * 250),
+});`,
+  },
+
+  openclaw: {
+    lang: 'json',
+    code: `{
+  "plugins": {
+    "entries": {
+      "cycles-openclaw-budget-guard": {
+        "tenant": "acme",
+        "modelBaseCosts": {
+          "gpt-4o": 1000000,
+          "gpt-4o-mini": 100000,
+          "claude-sonnet-4-20250514": 300000
+        }
+      }
+    }
+  }
+}`,
+  },
 }
 
 onMounted(async () => {
   const highlighter = await createHighlighter({
     themes: ['github-dark', 'github-light'],
-    langs: ['python', 'typescript', 'java'],
+    langs: ['python', 'typescript', 'java', 'json'],
   })
 
   const result = {}
@@ -133,9 +187,16 @@ onMounted(async () => {
 
 .tab-bar {
   display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   background: var(--vp-c-bg-soft);
   border-bottom: 1px solid var(--vp-c-divider);
   padding: 0;
+}
+
+.tab-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -146,6 +207,8 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.2s;
   font-family: var(--vp-font-family-base);
@@ -165,8 +228,8 @@ onMounted(async () => {
   padding: 20px 24px;
   overflow-x: auto;
   /* Fixed height prevents layout shift when switching tabs.
-     Tallest snippet (TypeScript) is 11 lines × 14px × 1.6 line-height = 246px + 40px padding */
-  min-height: 286px;
+     Tallest snippets (TypeScript, LangChain, Vercel AI, OpenClaw) are ~13 lines */
+  min-height: 330px;
 }
 
 .code-block :deep(pre) {
@@ -197,11 +260,12 @@ onMounted(async () => {
 
   .code-block {
     padding: 16px;
-    min-height: 260px;
+    min-height: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .code-block :deep(code) {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 </style>
