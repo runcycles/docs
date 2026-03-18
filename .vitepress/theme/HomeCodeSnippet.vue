@@ -138,7 +138,7 @@ onMounted(async () => {
 <template>
   <section class="home-code-snippet">
     <div class="inner">
-    <p class="tagline">Budget is reserved before the call. If exhausted, the call is blocked — not billed.</p>
+    <p class="code-caption"><code>@cycles</code> reserves budget before the call. If it's gone, the call never fires.</p>
     <div class="code-container">
       <div class="tab-bar">
         <button
@@ -183,13 +183,22 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-.tagline {
+.code-caption {
   font-size: 16px;
   color: var(--vp-c-text-2);
   margin-bottom: 20px;
   line-height: 1.5;
 }
-
+  
+.code-caption code {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.875em;
+  color: var(--vp-code-color);
+  background-color: var(--vp-code-bg);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+  
 .code-container {
   border-radius: 8px;
   overflow: hidden;
