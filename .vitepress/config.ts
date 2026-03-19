@@ -154,6 +154,7 @@ export default defineConfig({
             { text: 'Idempotency, Retries and Concurrency', link: '/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes' },
             { text: 'From Observability to Enforcement', link: '/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority' },
             { text: 'How Cycles Compares', link: '/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers' },
+            { text: 'Coding Agents Need Budget Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
             { text: 'Glossary', link: '/glossary' },
           ]
         },
