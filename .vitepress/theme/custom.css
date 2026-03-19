@@ -167,14 +167,25 @@
 }
 
 /* ── Blog dark mode fixes ── */
+.dark .blog-tags button {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--vp-c-text-1);
+}
+
 .dark .blog-meta,
 .dark .blog-post-meta {
   color: var(--vp-c-text-2);
 }
 
 .dark .blog-tag {
-  color: var(--vp-c-text-2);
-  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .blog-card {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ── Blog pagination ── */
