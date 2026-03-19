@@ -1,0 +1,116 @@
+# Cycles
+
+> Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.
+
+Cycles is an open-source budget enforcement system for AI agents and autonomous workflows. It prevents runaway spend by requiring agents to reserve budget before execution and commit actual usage afterward. It supports hierarchical scoped budgets (tenant → workspace → project → run), idempotent retries, concurrency-safe reservations, and overage policies.
+
+Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invocation costs, prevent runaway agent loops, govern multi-tenant AI platforms, or add budget guardrails to any autonomous system.
+
+## Quickstart
+
+- [What is Cycles?](https://runcycles.io/quickstart/what-is-cycles): Overview of what Cycles does and when to use it
+- [End-to-End Tutorial](https://runcycles.io/quickstart/end-to-end-tutorial): Zero to a working budget-guarded LLM call in 10 minutes
+- [Python Client](https://runcycles.io/quickstart/getting-started-with-the-python-client): Add budget enforcement to Python apps using the runcycles package
+- [TypeScript Client](https://runcycles.io/quickstart/getting-started-with-the-typescript-client): Add budget enforcement to Node.js apps using the runcycles package
+- [Spring Boot Starter](https://runcycles.io/quickstart/getting-started-with-the-cycles-spring-boot-starter): Integrate budget enforcement into Spring Boot apps with the @Cycles annotation
+- [Spring AI Integration](https://runcycles.io/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles): Add hard budget limits to Spring AI applications
+- [Choose a First Rollout](https://runcycles.io/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails): Decide between tenant budgets, run budgets, or model call guardrails
+- [Architecture Overview](https://runcycles.io/quickstart/architecture-overview-how-cycles-fits-together): How the Cycles components fit together
+- [Deploy the Full Stack](https://runcycles.io/quickstart/deploying-the-full-cycles-stack): Docker-based deployment guide
+- [Self-Hosting the Server](https://runcycles.io/quickstart/self-hosting-the-cycles-server): Run the Cycles server in your own infrastructure
+
+## Protocol Reference
+
+- [Reserve → Commit Lifecycle](https://runcycles.io/protocol/how-reserve-commit-works-in-cycles): The core pattern — reserve budget before work, commit actual usage after
+- [Events (Direct Debit)](https://runcycles.io/protocol/how-events-work-in-cycles-direct-debit-without-reservation): Record known-cost usage without a reservation
+- [API Reference](https://runcycles.io/protocol/api-reference-for-the-cycles-protocol): Complete endpoint reference with request/response formats and curl examples
+- [Scope Derivation](https://runcycles.io/protocol/how-scope-derivation-works-in-cycles): How hierarchical budget scopes are derived from subject fields
+- [Reservation TTL, Grace Period, and Extend](https://runcycles.io/protocol/reservation-ttl-grace-period-and-extend-in-cycles): Time-to-live, grace periods, and extending active reservations
+- [Commit Overage Policies](https://runcycles.io/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft): REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT
+- [Caps and the Three-Way Decision Model](https://runcycles.io/protocol/caps-and-the-three-way-decision-model-in-cycles): ALLOW, ALLOW_WITH_CAPS, and DENY decisions
+- [Decide (Preflight Check)](https://runcycles.io/protocol/how-decide-works-in-cycles-preflight-budget-checks-without-reservation): Check budget availability without reserving
+- [Debt, Overdraft, and Over-Limit](https://runcycles.io/protocol/debt-overdraft-and-the-over-limit-model-in-cycles): How Cycles handles budget overruns
+- [Dry Run / Shadow Mode](https://runcycles.io/protocol/dry-run-shadow-mode-evaluation-in-cycles): Evaluate budget impact without persisting changes
+- [Authentication and Tenancy](https://runcycles.io/protocol/authentication-tenancy-and-api-keys-in-cycles): API key auth and multi-tenant model
+- [Units](https://runcycles.io/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points): USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS
+- [Error Codes](https://runcycles.io/protocol/error-codes-and-error-handling-in-cycles): All error codes and handling guidance
+- [Querying Balances](https://runcycles.io/protocol/querying-balances-in-cycles-understanding-budget-state): Check remaining budget, reserved amounts, and debt
+- [Standard Metrics and Metadata](https://runcycles.io/protocol/standard-metrics-and-metadata-in-cycles): Attach structured metrics to reservations and events
+- [Reservation Recovery and Listing](https://runcycles.io/protocol/reservation-recovery-and-listing-in-cycles): Query and recover reservations
+
+## Concepts
+
+- [Why Rate Limits Are Not Enough](https://runcycles.io/concepts/why-rate-limits-are-not-enough-for-autonomous-systems): Why velocity controls cannot govern autonomous systems
+- [Coding Agents Need Runtime Budget Authority](https://runcycles.io/concepts/coding-agents-need-runtime-budget-authority): The runtime control layer coding agents need but do not have
+- [Why Coding Agents Do Not Replace Cycles](https://runcycles.io/concepts/why-coding-agents-do-not-replace-cycles): Business-layer governance that agents cannot provide
+- [What Cycles Is Not](https://runcycles.io/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion): Not billing, not rate limiting, not orchestration
+- [Idempotency, Retries, and Concurrency](https://runcycles.io/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes): How Cycles handles real-world failure modes
+- [From Observability to Enforcement](https://runcycles.io/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority): How teams evolve from dashboards to budget authority
+- [How Cycles Compares](https://runcycles.io/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers): Comparison with rate limiters, observability, provider caps, and counters
+
+## Integration Guides
+
+- [Integrations Overview](https://runcycles.io/how-to/integrations-overview): Summary of all supported integrations
+- [OpenAI](https://runcycles.io/how-to/integrating-cycles-with-openai): Budget-guarded OpenAI calls
+- [Anthropic](https://runcycles.io/how-to/integrating-cycles-with-anthropic): Budget-guarded Anthropic calls
+- [LangChain (Python)](https://runcycles.io/how-to/integrating-cycles-with-langchain): Budget enforcement for LangChain Python
+- [LangChain (JS)](https://runcycles.io/how-to/integrating-cycles-with-langchain-js): Budget enforcement for LangChain JS
+- [Vercel AI SDK](https://runcycles.io/how-to/integrating-cycles-with-vercel-ai-sdk): Budget enforcement for Vercel AI SDK
+- [AWS Bedrock](https://runcycles.io/how-to/integrating-cycles-with-aws-bedrock): Budget enforcement for AWS Bedrock
+- [Google Gemini](https://runcycles.io/how-to/integrating-cycles-with-google-gemini): Budget enforcement for Google Gemini
+- [Express](https://runcycles.io/how-to/integrating-cycles-with-express): Middleware for Express.js
+- [FastAPI](https://runcycles.io/how-to/integrating-cycles-with-fastapi): Middleware for FastAPI
+
+## How-To Guides
+
+- [Adding Cycles to an Existing App](https://runcycles.io/how-to/adding-cycles-to-an-existing-application): Step-by-step integration into existing codebases
+- [Choosing the Right Pattern](https://runcycles.io/how-to/choosing-the-right-integration-pattern): Reserve/commit vs events vs decide
+- [Cost Estimation Cheat Sheet](https://runcycles.io/how-to/cost-estimation-cheat-sheet): How to estimate costs for common AI operations
+- [Common Budget Patterns](https://runcycles.io/how-to/common-budget-patterns): Patterns for tenant, workflow, and run budgets
+- [Budget Allocation and Management](https://runcycles.io/how-to/budget-allocation-and-management-in-cycles): Fund, adjust, and manage scoped budgets
+- [Model Tenant/Workflow/Run Budgets](https://runcycles.io/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles): Budget hierarchy design patterns
+- [Degradation Paths](https://runcycles.io/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer): Deny, downgrade, disable, or defer when budget is low
+- [Shadow Mode Rollout](https://runcycles.io/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production): Roll out enforcement without breaking production
+- [Streaming Responses](https://runcycles.io/how-to/handling-streaming-responses-with-cycles): Handle streaming LLM responses with reservations
+- [Exposure Estimation](https://runcycles.io/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles): Practical reservation size strategies
+- [Error Handling (Python)](https://runcycles.io/how-to/error-handling-patterns-in-python): Error handling patterns for Python
+- [Error Handling (TypeScript)](https://runcycles.io/how-to/error-handling-patterns-in-typescript): Error handling patterns for TypeScript
+- [Error Handling (Spring)](https://runcycles.io/how-to/error-handling-patterns-in-cycles-client-code): Error handling patterns for Spring Boot
+- [Programmatic Client Usage](https://runcycles.io/how-to/using-the-cycles-client-programmatically): Direct CyclesClient API usage
+
+## Configuration
+
+- [Server Configuration](https://runcycles.io/configuration/server-configuration-reference-for-cycles): Server environment variables and Redis settings
+- [Python Client Configuration](https://runcycles.io/configuration/python-client-configuration-reference): Python client configuration options
+- [TypeScript Client Configuration](https://runcycles.io/configuration/typescript-client-configuration-reference): TypeScript client configuration options
+- [Spring Boot Configuration](https://runcycles.io/configuration/client-configuration-reference-for-cycles-spring-boot-starter): Spring Boot starter configuration properties
+
+## Operations
+
+- [Production Operations Guide](https://runcycles.io/how-to/production-operations-guide): Running Cycles in production
+- [Monitoring and Alerting](https://runcycles.io/how-to/monitoring-and-alerting): Metrics, dashboards, and alerts
+- [Security Hardening](https://runcycles.io/how-to/security-hardening): Security best practices
+- [Testing](https://runcycles.io/how-to/testing-with-cycles): Testing strategies for Cycles integrations
+- [Troubleshooting and FAQ](https://runcycles.io/how-to/troubleshooting-and-faq): Common issues and solutions
+
+## Incident Patterns
+
+- [Runaway Agents and Tool Loops](https://runcycles.io/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent): The incidents Cycles is designed to prevent
+- [Concurrent Agent Overspend](https://runcycles.io/incidents/concurrent-agent-overspend): When parallel agents exceed budget
+- [Retry Storms and Idempotency Failures](https://runcycles.io/incidents/retry-storms-and-idempotency-failures): Retry-driven budget overruns
+- [Scope Misconfiguration and Budget Leaks](https://runcycles.io/incidents/scope-misconfiguration-and-budget-leaks): When budget scopes are wrong
+
+## API Specifications
+
+- [Cycles Protocol OpenAPI Spec](https://runcycles.io/cycles-protocol-v0.yaml): Machine-readable protocol specification
+- [Server OpenAPI Spec](https://runcycles.io/openapi.json): Server API specification
+- [Admin API OpenAPI Spec](https://runcycles.io/admin-openapi.json): Admin API specification
+
+## Source Code
+
+- [Cycles Protocol](https://github.com/runcycles/cycles-protocol): Protocol specification (YAML)
+- [Cycles Server](https://github.com/runcycles/cycles-server): Reference server implementation (Java/Spring Boot)
+- [Cycles Server Admin](https://github.com/runcycles/cycles-server-admin): Admin API for tenant and budget management
+- [Python Client](https://github.com/runcycles/cycles-python-client): Python SDK (runcycles on PyPI)
+- [TypeScript Client](https://github.com/runcycles/cycles-typescript-client): TypeScript SDK (runcycles on npm)
+- [Spring Boot Starter](https://github.com/runcycles/cycles-spring-boot-starter): Spring Boot integration

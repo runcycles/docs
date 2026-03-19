@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://runcycles.io/sitemap.xml
+LLMs-Txt: https://runcycles.io/llms.txt
