@@ -637,6 +637,7 @@ redis-cli -h $REDIS_HOST -p $REDIS_PORT ping
 
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the components interact in detail
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all server configuration properties
+- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — add budget authority to Claude Desktop, Claude Code, Cursor, or Windsurf
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — full Spring Boot integration guide
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — budget patterns and strategies
 - [API Key Management](/how-to/api-key-management-in-cycles) — key rotation, scoping, and security

@@ -70,7 +70,7 @@ export CYCLES_API_KEY=cyc_live_...
 
 Use the stdio transport with:
 
-```
+```yaml
 command: npx
 args: ["-y", "@runcycles/mcp-server"]
 env: { CYCLES_API_KEY: "cyc_live_..." }
