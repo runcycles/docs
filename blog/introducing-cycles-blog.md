@@ -5,6 +5,7 @@ author: Cycles Team
 tags: [announcement]
 description: We're launching our blog to share engineering insights, product updates, and best practices for budget authority in autonomous systems.
 blog: true
+sidebar: false
 ---
 
 # Introducing the Cycles Blog

@@ -11,7 +11,7 @@ export interface PostData {
 
 export declare const data: PostData[]
 
-export default createContentLoader('blog/*.md', {
+export default createContentLoader('blog/**/*.md', {
   transform(raw) {
     return raw
       .filter(page => page.url !== '/blog/')
