@@ -130,6 +130,13 @@
   line-height: 1.6;
 }
 
+.blog-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
 .blog-tag {
   display: inline-block;
   background: var(--vp-c-bg-soft);
@@ -137,8 +144,6 @@
   padding: 2px 10px;
   font-size: 12px;
   color: var(--vp-c-text-3);
-  margin-right: 6px;
-  margin-top: 8px;
 }
 
 .blog-empty {
