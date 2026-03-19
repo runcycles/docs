@@ -173,6 +173,12 @@
   color: var(--vp-c-text-1);
 }
 
+.dark .blog-tags button.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
 .dark .blog-meta,
 .dark .blog-post-meta {
   color: var(--vp-c-text-2);
