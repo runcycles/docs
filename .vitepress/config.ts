@@ -21,7 +21,7 @@ export default defineConfig({
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Budget authority for autonomous agents',
-  srcExclude: ['README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
+  srcExclude: ['**/README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'icon', href: '/runcycles-favicon.ico' }],
     ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/runcycles-logo-192.png' }],
