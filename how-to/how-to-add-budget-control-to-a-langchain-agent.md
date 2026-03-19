@@ -97,7 +97,7 @@ def run_agent_with_budget(
         idempotency_key=key,
         subject=Subject(tenant=tenant, workflow="research"),
         action=Action(kind="agent.run", name="research-task"),
-        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=budget_microcents),
+        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=budget_microcents),  # 1 USD = 100_000_000 microcents
         ttl_ms=120_000,
     ))
 
@@ -149,7 +149,7 @@ def run_agent_with_budget(
 result = run_agent_with_budget(
     user_input="Research the top 10 competitors in the CRM space",
     tenant="acme",
-    budget_microcents=5_000_000,  # $50.00
+    budget_microcents=5_000_000_000,  # $50.00
 )
 ```
 
@@ -172,7 +172,7 @@ def search_web(query: str) -> str:
         idempotency_key=tool_key,
         subject=Subject(tenant="acme", toolset="web-search"),
         action=Action(kind="tool.call", name="search-web"),
-        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=100_000),
+        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=100_000_000),  # $1.00
         ttl_ms=30_000,
     ))
 
@@ -187,7 +187,7 @@ def search_web(query: str) -> str:
     # Commit actual usage
     client.commit_reservation(tool_reservation_id, CommitRequest(
         idempotency_key=f"commit-{tool_key}",
-        actual=Amount(unit=Unit.USD_MICROCENTS, amount=50_000),
+        actual=Amount(unit=Unit.USD_MICROCENTS, amount=40_000_000),  # $0.40
     ))
 
     return results
@@ -202,7 +202,7 @@ def run_for_customer(customer_id: str, user_input: str):
     return run_agent_with_budget(
         user_input=user_input,
         tenant=customer_id,
-        budget_microcents=10_000_000,  # or pull from the customer's plan
+        budget_microcents=10_000_000_000,  # $100.00, or pull from the customer's plan
     )
 ```
 
@@ -217,7 +217,7 @@ res = client.create_reservation(ReservationCreateRequest(
     idempotency_key=key,
     subject=Subject(tenant=tenant, workflow="research"),
     action=Action(kind="agent.run", name="research-task"),
-    estimate=Amount(unit=Unit.USD_MICROCENTS, amount=5_000_000),
+    estimate=Amount(unit=Unit.USD_MICROCENTS, amount=5_000_000_000),  # $50.00
     ttl_ms=120_000,
 ))
 
