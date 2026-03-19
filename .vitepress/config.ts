@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { useSidebar } from 'vitepress-openapi'
 import spec from '../public/openapi.json' with { type: 'json' }
 import adminSpec from '../public/admin-openapi.json' with { type: 'json' }
+import { generateFeed } from './rss'
 
 const openApiSidebar = useSidebar({
   spec,
@@ -15,8 +16,11 @@ const adminApiSidebar = useSidebar({
 
 export default defineConfig({
   base: '/',
-  appearance: 'dark', 
+  appearance: 'dark',
   title: 'Cycles',
+  async buildEnd(config) {
+    await generateFeed(config)
+  },
   description: 'Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.',
   cleanUrls: true,
   lang: 'en',
@@ -42,6 +46,8 @@ export default defineConfig({
     ['meta', { name: 'twitter:description', content: 'Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
+    ['link', { rel: 'alternate', type: 'application/rss+xml', title: 'Cycles Blog RSS', href: 'https://runcycles.io/feed.xml' }],
+    ['link', { rel: 'alternate', type: 'application/atom+xml', title: 'Cycles Blog Atom', href: 'https://runcycles.io/feed.atom' }],
     ['script', { type: 'application/ld+json' }, JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -289,8 +295,15 @@ export default defineConfig({
         ['meta', { property: 'og:type', content: 'article' }],
         ['meta', { property: 'og:title', content: pageData.frontmatter.title }],
         ['meta', { property: 'og:description', content: pageData.frontmatter.description }],
+        ['meta', { property: 'og:url', content: canonicalUrl }],
         ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
+        ['meta', { name: 'twitter:title', content: pageData.frontmatter.title }],
+        ['meta', { name: 'twitter:description', content: pageData.frontmatter.description }],
       )
+
+      // Hide editLink and lastUpdated on blog posts
+      pageData.frontmatter.editLink = false
+      pageData.frontmatter.lastUpdated = false
     }
   },
 })

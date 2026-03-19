@@ -4,6 +4,7 @@ import { useData } from 'vitepress'
 import NotFound from './NotFound.vue'
 import HomeCodeSnippet from './HomeCodeSnippet.vue'
 import BlogPost from './BlogPost.vue'
+import BlogPostNav from './BlogPostNav.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
@@ -19,6 +20,9 @@ const { frontmatter } = useData()
     </template>
     <template #doc-before>
       <BlogPost />
+    </template>
+    <template #doc-after>
+      <BlogPostNav />
     </template>
   </Layout>
 </template>
