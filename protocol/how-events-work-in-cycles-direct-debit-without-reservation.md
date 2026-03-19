@@ -100,7 +100,7 @@ Events support the same three overage policies as commits:
 
 If the actual amount exceeds the available budget, the event is rejected with `409 BUDGET_EXCEEDED`.
 
-This is the safest default. It prevents any accounting that would put the scope into negative remaining.
+REJECT is the default when neither the request nor the tenant's `default_commit_overage_policy` specifies a policy. It prevents any accounting that would put the scope into negative remaining.
 
 ### ALLOW_IF_AVAILABLE
 

@@ -111,9 +111,9 @@ Reserve budget before executing work.
 | `subject` | Subject | Yes | Budgeting scope |
 | `action` | Action | Yes | Action being budgeted |
 | `estimate` | Amount | Yes | Estimated cost |
-| `ttl_ms` | integer | No | Reservation TTL in ms (default: 60000, range: 1000–86400000) |
+| `ttl_ms` | integer | No | Reservation TTL in ms (default: tenant `default_reservation_ttl_ms` or 60000, range: 1000–86400000, capped to tenant `max_reservation_ttl_ms`) |
 | `grace_period_ms` | integer | No | Grace period after TTL for late commits (default: 5000, range: 0–60000) |
-| `overage_policy` | string | No | `REJECT` (default), `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
+| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `REJECT`) |
 | `dry_run` | boolean | No | If true, evaluate without reserving (default: false) |
 | `metadata` | object | No | Arbitrary key-value metadata |
 
@@ -391,6 +391,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/extend \
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
+| 409 | `MAX_EXTENSIONS_EXCEEDED` | Tenant `max_reservation_extensions` limit reached |
 | 410 | `RESERVATION_EXPIRED` | Past TTL (no grace period for extend) |
 
 ---
@@ -635,7 +636,7 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
 | `subject` | Subject | Yes | Budgeting scope |
 | `action` | Action | Yes | Action being recorded |
 | `actual` | Amount | Yes | Actual cost to record |
-| `overage_policy` | string | No | `REJECT` (default), `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
+| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `REJECT`) |
 | `metrics` | object | No | Standard metrics |
 | `client_time_ms` | integer | No | Client-side timestamp |
 | `metadata` | object | No | Arbitrary metadata |
