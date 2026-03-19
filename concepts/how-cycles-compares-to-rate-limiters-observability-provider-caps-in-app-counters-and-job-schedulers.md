@@ -5,6 +5,19 @@ description: "See how Cycles differs from rate limiters, observability tools, pr
 
 # How Cycles Compares to Rate Limiters, Observability, Provider Caps, In-App Counters, and Job Schedulers
 
+## Quick comparison
+
+| Approach | What it controls | Pre-execution? | Per-tenant? | Cost-aware? | Degradation? |
+|---|---|:---:|:---:|:---:|:---:|
+| **Rate limiter** | Request velocity | Velocity only | Partial | No | No |
+| **Observability** | Post-hoc visibility | No | No | After the fact | No |
+| **Provider cap** | Org-level spend | No (delayed) | No | Partial | No |
+| **In-app counter** | Custom metric | Partial | Partial | Partial | No |
+| **Job scheduler** | Execution timing | No | No | No | No |
+| **Cycles** | Bounded budget exposure | Yes | Yes | Yes | Yes (three-way) |
+
+---
+
 Teams building autonomous systems usually already have some controls in place.
 
 - Rate limiters.
@@ -370,6 +383,19 @@ It is "which layer is missing?"
 
 For most teams building autonomous systems, the missing layer is budget authority.
 
+## When to adopt Cycles
+
+Consider adding Cycles to your stack when:
+
+- **Agents run autonomously** — without human-in-the-loop approval for each action
+- **Cost is unpredictable** — fan-out, tool loops, or retries make per-run cost hard to bound
+- **Multiple tenants share infrastructure** — one tenant's runaway agent should not affect others
+- **You need graceful degradation** — switching to cheaper models or reducing scope when budget is low, rather than hard-failing
+- **Compliance requires cost limits** — audit trails showing that every action was authorized against a budget
+- **You've outgrown ad hoc counters** — custom counters work until concurrency, retries, and hierarchy make them unreliable
+
+If none of these apply yet, start with [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) to see what enforcement would look like on your current traffic.
+
 ## Next steps
 
 To explore the Cycles stack:
@@ -380,3 +406,4 @@ To explore the Cycles stack:
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- Browse the full [Integration Ecosystem](/how-to/ecosystem)

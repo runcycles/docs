@@ -197,6 +197,7 @@ export default defineConfig({
           text: 'Integrations',
           collapsed: false,
           items: [
+            { text: 'Ecosystem', link: '/how-to/ecosystem', badge: { text: 'New', type: 'tip' } },
             { text: 'Overview', link: '/how-to/integrations-overview' },
             { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
             { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
@@ -263,6 +264,13 @@ export default defineConfig({
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Changelog', link: '/changelog' },
+          ]
+        },
+        {
+          text: 'Community',
+          collapsed: true,
+          items: [
+            { text: 'Built with Cycles Badges', link: '/community/badges' },
           ]
         }
       ],

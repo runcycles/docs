@@ -121,6 +121,36 @@ Recording spend against a budget **without** a prior reservation. Events are use
 
 The current state of a budget, including fields such as `allocated`, `spent`, `reserved`, `remaining`, and `debt`. Balances are computed across the full scope hierarchy and reflect all committed, reserved, and event-based spend. See [Querying Balances](/protocol/querying-balances-in-cycles-understanding-budget-state).
 
+## Patterns & Architecture
+
+### Budget Envelope
+
+A fixed upper bound on how much an entity (tenant, workflow, run) is allowed to consume. Budget envelopes are enforced hierarchically — a run's envelope cannot exceed its parent workflow's remaining budget, which in turn cannot exceed the tenant's allocation.
+
+### Graceful Degradation
+
+A response strategy where the system reduces quality or capability instead of failing outright when budget is constrained. For example, switching from a large model to a smaller one, reducing `max_tokens`, or disabling optional tool calls. Enabled by the [three-way decision](#three-way-decision) model.
+
+### Fan-Out
+
+A pattern where a single workflow or agent spawns multiple concurrent sub-tasks, each consuming budget independently. Fan-out is a common source of budget overruns because the aggregate cost grows multiplicatively. Cycles handles this through [hierarchical scopes](#scope) and concurrent [reservations](#reservation).
+
+### Tool Loop
+
+A failure mode where an AI agent repeatedly calls the same tool in a loop, often due to ambiguous results or hallucinated tool arguments. Without budget authority, tool loops can run indefinitely and accumulate significant cost. See [Runaway Agents and Tool Loops](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent).
+
+### Retry Storm
+
+A cascade of retries triggered by transient failures, where each retry spawns additional retries across services. Without idempotency and budget controls, retry storms can amplify cost by orders of magnitude. See [Retry Storms](/incidents/retry-storms-and-idempotency-failures).
+
+### Tenant Isolation
+
+A budget pattern where each tenant receives an independent budget allocation that cannot be consumed by other tenants. Tenant isolation prevents the "noisy neighbor" problem where one tenant's runaway agent exhausts shared resources.
+
+### Cost Estimation
+
+The process of predicting the cost of an AI operation before execution. Accurate estimates improve reservation precision and reduce budget waste from over-reserving. See [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet).
+
 ## Infrastructure
 
 ### Cycles Server
@@ -138,3 +168,25 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes 
 ### Cycles Protocol
 
 The open specification defining the budget authority API. The protocol covers the complete reservation lifecycle, balance queries, event recording, and decision evaluation. See the [API Reference](/protocol/api-reference-for-the-cycles-protocol).
+
+## AI & Agent Terminology
+
+### Autonomous Agent
+
+A software system that takes actions on behalf of a user with minimal human oversight. Autonomous agents typically make multiple LLM calls, use tools, and can run for extended periods. Without budget authority, agents may consume resources indefinitely.
+
+### Model Context Protocol (MCP)
+
+An open protocol that allows AI hosts (Claude Desktop, Claude Code, Cursor, Windsurf) to discover and call external tools. Cycles provides an [MCP server](/quickstart/getting-started-with-the-mcp-server) that exposes budget authority as MCP tools, giving agents budget awareness without SDK integration.
+
+### Token
+
+The fundamental unit of text processing in large language models. Input and output tokens have different costs. Cycles can track budget in [tokens, dollars, credits, or risk points](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+
+### Agentic Loop
+
+The iterative cycle where an AI agent reasons, acts, observes results, and decides on the next action. Each iteration may involve one or more LLM calls and tool invocations, making the total cost of an agentic loop inherently unpredictable without budget controls.
+
+### Guardrail
+
+A constraint placed on an AI system to prevent undesirable outcomes. Budget authority is a financial guardrail — it prevents agents from consuming more resources than allocated, complementing safety and content guardrails.
