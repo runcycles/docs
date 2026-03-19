@@ -30,6 +30,8 @@ Consider a typical agentic workflow: a coding assistant that reads a file, propo
 | Deep research agent | 80–200 | 8,000 | $19.20–$48.00 |
 | Runaway agent (tool loop) | 500+ | 10,000 | $150+ |
 
+For detailed per-provider pricing tables and real-world scenario calculators (support bots, coding agents, data pipelines), see [How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost).
+
 Now multiply by concurrency. Ten users triggering deep research agents simultaneously? That's potentially $500 in a few minutes. A retry storm on a flaky tool? Thousands of calls in seconds.
 
 ## The four categories of cost

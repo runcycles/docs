@@ -30,6 +30,29 @@ CYCLES_TENANT=acme-corp
 OPENAI_API_KEY=sk-...
 ```
 
+::: tip 60-Second Quick Start
+```typescript
+import { streamText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { CyclesClient, CyclesConfig, reserveForStream } from "runcycles";
+
+const cycles = new CyclesClient(CyclesConfig.fromEnv());
+const handle = await reserveForStream({
+  client: cycles, estimate: 2_000_000, unit: "USD_MICROCENTS",
+  actionKind: "llm.completion", actionName: "gpt-4o",
+});
+
+const result = streamText({
+  model: openai("gpt-4o"),
+  prompt: "What is budget authority?",
+  onFinish: async ({ usage }) => {
+    await handle.commit((usage.promptTokens ?? 0) * 250 + (usage.completionTokens ?? 0) * 1000);
+  },
+});
+```
+Budget is reserved before the stream starts and committed when it finishes. Read on for the full Next.js API route pattern with error handling.
+:::
+
 ## API route with budget governance
 
 Create an API route that reserves budget before streaming and commits actual usage after:

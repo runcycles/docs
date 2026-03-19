@@ -22,6 +22,26 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 > **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
+::: tip 60-Second Quick Start
+```python
+from anthropic import Anthropic
+from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+
+set_default_client(CyclesClient(CyclesConfig.from_env()))
+
+@cycles(estimate=2_000_000, action_kind="llm.completion", action_name="claude-sonnet-4")
+def ask(prompt: str) -> str:
+    return Anthropic().messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    ).content[0].text
+
+print(ask("What is budget authority?"))
+```
+Every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the Anthropic call is made. Read on for production patterns with per-token cost tracking and tool-use workflows.
+:::
+
 ## Simple decorator pattern
 
 Use `@cycles` to wrap a single Anthropic call with automatic reserve → execute → commit:
