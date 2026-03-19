@@ -22,6 +22,22 @@ export OPENAI_API_KEY="sk-..."
 
 > **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
+::: tip 60-Second Quick Start
+```python
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+from runcycles import CyclesClient, CyclesConfig, Subject
+
+client = CyclesClient(CyclesConfig.from_env())
+handler = CyclesBudgetHandler(client=client, subject=Subject(tenant="acme", agent="my-agent"))
+
+llm = ChatOpenAI(model="gpt-4o", callbacks=[handler])
+result = llm.invoke([HumanMessage(content="What is budget authority?")])
+print(result.content)
+```
+Every LLM call — including multi-turn agent loops — is now budget-guarded. See the full `CyclesBudgetHandler` implementation below.
+:::
+
 ## The callback handler approach
 
 LangChain's callback system fires events on every LLM call. A custom `BaseCallbackHandler` can hook into `on_llm_start` and `on_llm_end` to create and commit Cycles reservations:

@@ -24,6 +24,25 @@ export OPENAI_API_KEY="sk-..."
 
 > **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
+::: tip 60-Second Quick Start
+```python
+from openai import OpenAI
+from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
+
+set_default_client(CyclesClient(CyclesConfig.from_env()))
+
+@cycles(estimate=1_500_000, action_kind="llm.completion", action_name="gpt-4o")
+def ask(prompt: str) -> str:
+    return OpenAI().chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+    ).choices[0].message.content
+
+print(ask("What is budget authority?"))
+```
+That's it — every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the OpenAI call is made. Read on for production patterns with accurate cost tracking.
+:::
+
 ## Basic pattern
 
 Use the `@cycles` decorator to wrap an OpenAI call with automatic reserve → execute → commit:

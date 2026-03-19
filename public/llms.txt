@@ -47,6 +47,16 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Idempotency, Retries, and Concurrency](https://runcycles.io/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes): How Cycles handles real-world failure modes
 - [From Observability to Enforcement](https://runcycles.io/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority): How teams evolve from dashboards to budget authority
 - [How Cycles Compares](https://runcycles.io/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers): Comparison with rate limiters, observability, provider caps, and counters
+- [Cycles vs Rate Limiting](https://runcycles.io/concepts/cycles-vs-rate-limiting): Why velocity controls fail for AI agents
+- [Cycles vs Guardrails AI](https://runcycles.io/concepts/cycles-vs-guardrails-ai): Budget authority vs content safety — different problems, complementary solutions
+- [Cycles vs Provider Spending Caps](https://runcycles.io/concepts/cycles-vs-provider-spending-caps): Why platform limits are not enough for per-run budget control
+- [Cycles vs Custom Token Counters](https://runcycles.io/concepts/cycles-vs-custom-token-counters): Build vs buy for agent budget control
+
+## Blog
+
+- [How Much Do AI Agents Actually Cost?](https://runcycles.io/blog/how-much-do-ai-agents-cost): Cost breakdown by provider and use case
+- [AI Agent Cost Management: The Complete Guide](https://runcycles.io/blog/ai-agent-cost-management-guide): Maturity model from monitoring to enforcement
+- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](https://runcycles.io/blog/ai-agent-failures-budget-controls-prevent): Concrete failure scenarios with dollar amounts
 
 ## Integration Guides
 
