@@ -108,6 +108,7 @@ export default defineConfig({
           { text: 'RunCycles Admin API', link: '/admin-api/' },
         ],
       },
+      { text: 'Blog', link: '/blog/' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
@@ -130,6 +131,7 @@ export default defineConfig({
           ],
         },
       ],
+      '/blog/': false,
       '/': [
         {
           text: 'Quickstart',
