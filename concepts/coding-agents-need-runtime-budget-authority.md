@@ -13,6 +13,8 @@ It becomes more important.
 
 Coding agents and runtime budget authority solve different problems at different layers. A coding agent is designed to complete work. Runtime budget authority is designed to decide whether autonomous work is still allowed to continue, under what limits, and with what reconciliation afterward.
 
+This article covers the **runtime-layer** problem: reservations, enforcement, retries, concurrency, and bounded execution inside a single agent run. The business-layer problem — whether the work was worth funding in the first place — is covered separately in [Why Coding Agents Do Not Replace Cycles](/concepts/why-coding-agents-do-not-replace-cycles).
+
 ## What coding agents do well
 
 Modern coding agents excel at:
@@ -137,6 +139,7 @@ That is the problem Cycles exists to solve.
 
 To learn more:
 
+- Read [Why Coding Agents Do Not Replace Cycles](/concepts/why-coding-agents-do-not-replace-cycles) for the business-layer companion to this piece
 - Read [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) for the broader case for budget authority
 - Understand the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles)
 - See [how events work](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) for direct-debit accounting

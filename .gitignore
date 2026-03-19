@@ -3,3 +3,4 @@ node_modules/
 .vitepress/cache/
 public/openapi.json
 public/admin-openapi.json
+public/llms-full.txt

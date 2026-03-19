@@ -7,7 +7,7 @@
   },
   "scripts": {
     "convert-spec": "node scripts/convert-spec.js",
-    "build": "npm run convert-spec && vitepress build",
+    "build": "npm run convert-spec && bash scripts/generate-llms-full.sh && vitepress build",
     "dev": "npm run convert-spec && vitepress dev"
   },
   "dependencies": {
