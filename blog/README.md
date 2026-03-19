@@ -44,11 +44,35 @@ That's it. VitePress picks it up automatically. No config changes needed.
 
 ---
 
-## File Naming
+## File Naming & Slugs
 
-- Use lowercase kebab-case: `my-post-title.md`
-- The filename becomes the URL slug: `/blog/my-post-title`
-- Subdirectories are supported: `blog/2026/my-post.md` → `/blog/2026/my-post`
+The filename **is** the URL slug. VitePress uses it directly — there's no separate slug field.
+
+### How to create a good slug
+
+1. Take your post title
+2. Lowercase it
+3. Replace spaces with hyphens
+4. Remove special characters (colons, commas, question marks, etc.)
+5. Keep it short but descriptive
+
+### Examples
+
+| Post Title | Filename | URL |
+|------------|----------|-----|
+| Why Budget Authority Matters | `why-budget-authority-matters.md` | `/blog/why-budget-authority-matters` |
+| Cycles v0.5: What's New | `cycles-v0-5-whats-new.md` | `/blog/cycles-v0-5-whats-new` |
+| How We Handle 10K Concurrent Agents | `how-we-handle-10k-concurrent-agents.md` | `/blog/how-we-handle-10k-concurrent-agents` |
+| Introducing MCP Support | `introducing-mcp-support.md` | `/blog/introducing-mcp-support` |
+
+### Rules
+
+- **Lowercase kebab-case only:** `my-post-title.md` (no spaces, underscores, or uppercase)
+- **No special characters:** strip `:`, `,`, `?`, `!`, `'`, `"`, `(`, `)`, etc.
+- **Keep it under ~60 chars** for clean URLs and social sharing
+- **Use words, not dates** in the slug — the date goes in frontmatter, not the filename
+- **Once published, don't rename** — it changes the URL and breaks existing links
+- **Subdirectories work:** `blog/2026/my-post.md` → `/blog/2026/my-post`
 
 ---
 
