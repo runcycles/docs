@@ -9,6 +9,7 @@ const tabs = [
   { key: 'python', label: 'Python' },
   { key: 'typescript', label: 'TypeScript' },
   { key: 'java', label: 'Spring Boot' },
+  { key: 'mcp', label: 'MCP' },
   { key: 'langchain', label: 'LangChain' },
   { key: 'vercel', label: 'Vercel AI' },
   { key: 'openclaw', label: 'OpenClaw' },
@@ -92,6 +93,24 @@ const result = streamText({
     });
   },
 });`,
+  },
+
+  mcp: {
+    lang: 'jsonc',
+    code: `// claude_desktop_config.json — zero code changes
+{
+  "mcpServers": {
+    "cycles": {
+      "command": "npx",
+      "args": ["-y", "@runcycles/mcp-server"],
+      "env": {
+        "CYCLES_API_KEY": "cyc_live_...",
+        "CYCLES_TENANT": "acme-corp",
+        "CYCLES_DEFAULT_CAP": "10000000"
+      }
+    }
+  }
+}`,
   },
 
   openclaw: {

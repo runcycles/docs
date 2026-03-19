@@ -100,111 +100,76 @@ Once connected, ask your agent to check a budget balance:
 
 > "Check the budget balance for tenant acme-corp"
 
-The agent calls the `cycles_check_balance` tool and returns something like:
-
-```json
-{
-  "balances": [{
-    "scope": "tenant:acme-corp",
-    "remaining": { "unit": "USD_MICROCENTS", "amount": 750000 },
-    "reserved":  { "unit": "USD_MICROCENTS", "amount": 50000 },
-    "spent":     { "unit": "USD_MICROCENTS", "amount": 200000 },
-    "allocated": { "unit": "USD_MICROCENTS", "amount": 1000000 }
-  }]
-}
-```
-
-If you see balances, the server is working. If you're in mock mode, you'll see the default mock balance.
+The agent will call `cycles_check_balance` with `tenant: "acme-corp"` and return balances for all scopes under that tenant — remaining budget, reserved amounts, and total spent.
 
 ## The reserve/commit lifecycle
 
-Every costly operation follows three steps:
+The core pattern is **reserve → execute → commit**. Here's how it works through MCP tools:
 
-### 1. Reserve budget
+**Step 1 — Reserve** before doing something expensive:
 
-Before making an LLM call or tool invocation, the agent calls `cycles_reserve` with an estimated cost:
+> "Reserve 500,000 USD_MICROCENTS for an OpenAI GPT-4o call"
 
-```json
-{
-  "idempotencyKey": "unique-uuid",
-  "subject": { "tenant": "acme-corp", "workflow": "summarize", "agent": "researcher" },
-  "action": { "kind": "llm.completion", "name": "claude-sonnet" },
-  "estimate": { "unit": "USD_MICROCENTS", "amount": 50000 },
-  "ttlMs": 60000
-}
-```
+The agent calls `cycles_reserve` and gets back a `reservation_id` and a `decision`. If the decision is `ALLOW`, the budget is locked and the agent can proceed.
 
-The server responds with a **decision**:
-- **ALLOW** — proceed normally
-- **ALLOW_WITH_CAPS** — proceed with constraints (e.g., reduced `maxTokens`)
-- **DENY** — insufficient budget, skip or degrade
+**Step 2 — Execute** the operation (the LLM call, API request, etc.)
 
-### 2. Execute the operation
+**Step 3 — Commit** the actual cost:
 
-If allowed, the agent performs the work. If the decision included caps, the agent should respect them — for example, using a lower `max_tokens` value.
+> "Commit reservation res_abc123 with actual cost 423,100 USD_MICROCENTS"
 
-### 3. Commit actual usage
+The agent calls `cycles_commit` with the `reservation_id` and the actual amount. The difference between the reserved estimate and the actual cost is returned to the budget pool.
 
-After the operation completes, the agent calls `cycles_commit` with the real cost:
+If the operation fails or is cancelled, the agent calls `cycles_release` instead to return the full reserved amount.
 
-```json
-{
-  "reservationId": "rsv_...",
-  "idempotencyKey": "commit-uuid",
-  "actual": { "unit": "USD_MICROCENTS", "amount": 35000 },
-  "metrics": {
-    "tokensInput": 1200,
-    "tokensOutput": 800,
-    "latencyMs": 2500,
-    "modelVersion": "claude-sonnet-4-20250514"
-  }
-}
-```
+## Handling decisions
 
-The difference between the estimate (50,000) and actual (35,000) is returned to the budget pool.
+When you call `cycles_reserve` or `cycles_decide`, the server returns one of three decisions:
 
-If the operation fails or is cancelled, call `cycles_release` instead to return the full reserved amount.
+| Decision | Meaning | Agent should… |
+|----------|---------|---------------|
+| `ALLOW` | Budget is available, proceed normally | Execute the operation |
+| `ALLOW_WITH_CAPS` | Budget is tight, proceed with constraints | Reduce scope — use a cheaper model, fewer tokens, or skip optional tools. The `caps` field contains `maxTokens`, `toolAllowlist`, and `cooldownMs` hints |
+| `DENY` | Budget exhausted or insufficient | Stop, inform the user, or switch to a free fallback |
 
 ## Available tools
 
+The MCP server exposes 9 tools:
+
 | Tool | Description |
 |------|-------------|
-| `cycles_reserve` | Reserve budget before a costly operation |
-| `cycles_commit` | Commit actual usage after an operation completes |
-| `cycles_release` | Release a reservation without committing |
-| `cycles_extend` | Extend reservation TTL (heartbeat for long operations) |
-| `cycles_decide` | Lightweight preflight budget check without reserving |
+| `cycles_reserve` | Reserve budget before a costly operation. Returns a reservation ID and decision |
+| `cycles_commit` | Commit actual usage after an operation completes. Finalizes the charge |
+| `cycles_release` | Release a reservation without committing. Returns budget to the pool |
+| `cycles_extend` | Extend the TTL of an active reservation (heartbeat for long-running ops) |
+| `cycles_decide` | Lightweight preflight check — ask if an action would be allowed without reserving |
 | `cycles_check_balance` | Check current budget balance for a scope |
-| `cycles_list_reservations` | List reservations with filters |
-| `cycles_get_reservation` | Get reservation details by ID |
-| `cycles_create_event` | Record usage without the reserve/commit lifecycle |
+| `cycles_list_reservations` | List reservations, filtered by status or subject |
+| `cycles_get_reservation` | Get details of a specific reservation by ID |
+| `cycles_create_event` | Record usage directly without reserve/commit (fire-and-forget) |
 
 ## Built-in prompts
 
-The MCP server includes three prompts that help AI assistants work with Cycles:
+The server includes 3 prompts that agents can invoke for guided workflows:
 
-| Prompt | What it does |
+| Prompt | Description |
 |--------|-------------|
-| `integrate_cycles` | Generates Cycles integration code for a given language and use case |
-| `diagnose_overrun` | Walks through debugging budget exhaustion or stopped runs |
-| `design_budget_strategy` | Recommends scope hierarchy, limits, units, and degradation strategy |
+| `integrate_cycles` | Generate reserve/commit/release patterns for a specific language and use case |
+| `diagnose_overrun` | Analyze budget exhaustion — guides through checking balances and listing reservations |
+| `design_budget_strategy` | Recommend scope hierarchy, limits, units, and degradation strategy for a workflow |
 
-Ask your agent to use these prompts directly:
+## Configuration reference
 
-> "Use the design_budget_strategy prompt to plan budgets for my multi-agent customer support system"
-
-## Configuration
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `CYCLES_API_KEY` | Yes (unless mock) | — | API key from the Admin Server |
-| `CYCLES_BASE_URL` | No | `https://api.runcycles.io` | Cycles Server URL |
-| `CYCLES_MOCK` | No | `false` | Enable mock mode for local development |
-| `PORT` | No | `3000` | HTTP transport port |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CYCLES_API_KEY` | *(required)* | API key for authenticating with the Cycles server |
+| `CYCLES_BASE_URL` | `https://api.runcycles.io` | Base URL of the Cycles API |
+| `CYCLES_MOCK` | — | Set to `"true"` to use mock mode (no server needed) |
+| `PORT` | `3000` | HTTP port when using `--transport http` |
 
 ## Next steps
 
-- [Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp) — detailed patterns for reserve/commit, degradation, long-running ops, and multi-step workflows
-- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the MCP server fits into the Cycles stack
-- [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — deploy the full stack and test the complete lifecycle
-- [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for LLM cost estimates
+- **[Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp)** — advanced patterns: preflight decisions, graceful degradation, long-running operations, fire-and-forget events
+- **[Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together)** — how the MCP server fits into the full Cycles stack
+- **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the complete reserve → commit lifecycle hands-on
+- **[Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet)** — estimate token costs for popular LLM models
