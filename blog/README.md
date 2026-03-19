@@ -24,6 +24,10 @@ sidebar: false
 # Your Post Title
 
 Your content here. Standard markdown — code blocks, images, links, etc.
+
+<!-- more -->
+
+Content after the fold. Everything above `<!-- more -->` becomes the excerpt.
 ```
 
 That's it. VitePress picks it up automatically. No config changes needed.
@@ -133,13 +137,19 @@ When you add a blog post, the following happens at build time with **zero config
 | What                        | How                                                                 |
 |-----------------------------|---------------------------------------------------------------------|
 | Post appears on blog index  | `posts.data.ts` scans `blog/**/*.md` via `createContentLoader`      |
-| Sorted newest-first         | Sorted by `date` frontmatter field                                  |
+| Sorted newest-first         | Sorted by `date` frontmatter, then alphabetically by title          |
 | Tag filtering works         | `BlogIndex.vue` reads `tags` from frontmatter                       |
+| Pagination                  | Blog index paginates at 10 posts per page                           |
+| Reading time                | Estimated from word count (~230 wpm), shown on index and post pages |
 | Date/author/tags header     | `BlogPost.vue` renders via `#doc-before` Layout slot                |
-| SEO meta tags               | `transformPageData` in `config.ts` sets `og:type=article`, `og:title`, `og:description`, `article:published_time` |
+| Prev/Next navigation        | `BlogPostNav.vue` renders via `#doc-after` Layout slot              |
+| Excerpt support             | Use `<!-- more -->` break; content above it becomes the excerpt     |
+| SEO meta tags               | `transformPageData` sets `og:type=article`, `og:title`, `og:description`, `og:url`, `article:published_time`, `twitter:title`, `twitter:description` |
 | Canonical URL               | Auto-generated: `https://runcycles.io/blog/<slug>`                  |
+| RSS / Atom feeds            | Generated at build time: `/feed.xml` (RSS 2.0), `/feed.atom` (Atom)|
 | Sitemap entry               | Auto-included by VitePress sitemap generator                        |
 | Search indexed              | VitePress local search indexes all blog content                     |
+| Edit link hidden            | "Edit this page" and "Last updated" are hidden on blog posts        |
 
 ---
 
@@ -153,13 +163,15 @@ docs/
 │   ├── introducing-cycles-blog.md # Example post
 │   └── your-new-post.md           # ← Add posts here
 ├── .vitepress/
-│   ├── config.ts                  # Nav link, sidebar config, OG meta logic
+│   ├── config.ts                  # Nav link, sidebar config, OG meta, RSS head links
+│   ├── rss.ts                     # RSS/Atom feed generation (runs at buildEnd)
 │   └── theme/
-│       ├── BlogIndex.vue          # Post listing with tag filtering
-│       ├── BlogPost.vue           # Date/author/tags header (guarded by frontmatter.blog)
-│       ├── Layout.vue             # Injects BlogPost via #doc-before slot
+│       ├── BlogIndex.vue          # Post listing with tag filtering and pagination
+│       ├── BlogPost.vue           # Date/author/tags/reading-time header (guarded by frontmatter.blog)
+│       ├── BlogPostNav.vue        # Previous/Next post navigation
+│       ├── Layout.vue             # Injects BlogPost via #doc-before, BlogPostNav via #doc-after
 │       ├── index.ts               # Registers BlogIndex + BlogPost globally
-│       └── custom.css             # Blog styles (cards, tags, metadata)
+│       └── custom.css             # Blog styles (cards, tags, pagination, nav)
 ```
 
 ---
@@ -170,4 +182,6 @@ docs/
 - **Tags are freeform.** Use whatever makes sense: `engineering`, `release`, `announcement`, `deep-dive`, etc. They auto-populate the filter bar.
 - **Images:** Place them in `docs/public/blog/` and reference as `/blog/my-image.png`.
 - **Drafts:** Omit the file from git, or set `draft: true` in frontmatter (not filtered by default — you'd need to add filtering if desired).
-- **Ordering:** Posts sort by `date` descending. For same-day ordering, use full ISO timestamps: `date: 2026-03-20T14:00:00`.
+- **Ordering:** Posts sort by `date` descending, then alphabetically by title. For same-day ordering, use full ISO timestamps: `date: 2026-03-20T14:00:00`.
+- **Excerpts:** Add `<!-- more -->` in your post body. Content above it is used as the excerpt in feeds.
+- **RSS/Atom:** Feeds are at `/feed.xml` and `/feed.atom`, auto-generated at build time.

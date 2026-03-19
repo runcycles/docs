@@ -12,6 +12,8 @@ sidebar: false
 
 We're excited to launch the Cycles blog — a space for engineering deep-dives, product updates, and practical guidance on budget authority for autonomous agents.
 
+<!-- more -->
+
 ## What to Expect
 
 - **Engineering deep-dives** on budget enforcement patterns, concurrency handling, and system design
