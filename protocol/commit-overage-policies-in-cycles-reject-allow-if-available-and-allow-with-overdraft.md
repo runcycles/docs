@@ -23,7 +23,19 @@ Cycles defines three overage policies, set at reservation time (or on events):
 
 Each policy makes a different tradeoff between ledger accuracy and budget strictness.
 
+### Resolution order
+
+When a reservation or event is created, the server resolves the overage policy in this order:
+
+1. **Request-level** `overage_policy` — if the client specifies one, it is used
+2. **Tenant default** `default_commit_overage_policy` — if the tenant has one configured via the Admin API
+3. **Hardcoded fallback** — `REJECT`
+
+This means tenant administrators can set an org-wide default (e.g. `ALLOW_IF_AVAILABLE`) and individual requests can still override it.
+
 ## REJECT (default)
+
+REJECT is the default overage policy when neither the request nor the tenant configuration specifies one. Tenant administrators can change the default for all reservations and events in their tenant by setting `default_commit_overage_policy` via the Admin API.
 
 REJECT is the simplest and strictest policy.
 

@@ -25,9 +25,9 @@ When a reservation is created, the server sets an expiration time:
 expires_at_ms = created_at_ms + ttl_ms
 ```
 
-The default TTL is 60 seconds (`ttl_ms: 60000`).
+The default TTL is 60 seconds (`ttl_ms: 60000`). Tenant administrators can change this default by setting `default_reservation_ttl_ms` via the Admin API.
 
-The allowed range is 1 second to 24 hours (`1000` to `86400000` milliseconds).
+The allowed range is 1 second to 24 hours (`1000` to `86400000` milliseconds). Tenant administrators can further restrict this range by setting `max_reservation_ttl_ms` — any requested TTL exceeding the tenant maximum is capped automatically.
 
 When the clock passes `expires_at_ms`, the reservation enters expiration processing. If it has not been committed or released, the server marks it as `EXPIRED` and returns the reserved budget to the available pool.
 
@@ -89,9 +89,14 @@ The reservation is the same reservation. It just lives longer.
 
 - If the reservation is already `COMMITTED` or `RELEASED`: `409 RESERVATION_FINALIZED`
 - If the reservation has already expired (past `expires_at_ms`): `410 RESERVATION_EXPIRED`
+- If the tenant's `max_reservation_extensions` limit has been reached: `409 MAX_EXTENSIONS_EXCEEDED`
 - If the reservation was never created: `404 NOT_FOUND`
 
 Note: extend must happen before TTL expires, not during the grace period. The grace period only covers commit and release.
+
+### Extension limits
+
+Tenant administrators can set `max_reservation_extensions` via the Admin API to limit how many times a single reservation can be extended (default: 10). This prevents infinite zombie reservations from clients that heartbeat indefinitely without committing or releasing.
 
 ## The heartbeat pattern
 
