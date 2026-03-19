@@ -61,7 +61,7 @@ A simple Q&A interaction is one LLM call. A coding agent that reads a file, plan
 
 ### Retries
 
-Tool calls fail. APIs time out. Validation checks reject the output. Each retry is a full LLM call — not a cheap repeat. Most retry logic is invisible: the SDK retries on 429s, the framework retries on parsing failures, and the application retries on business logic rejections. Three layers of retry logic with 3 attempts each means up to 27 calls for what should have been one.
+Each retry is a full LLM call, not a cheap repeat. Layered retry logic (SDK, framework, application) can multiply a single failed call into 27 actual calls. We cover the mechanics in detail in [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents).
 
 ### Context growth
 
@@ -75,7 +75,7 @@ For an 8-turn conversation where each turn adds 2,000 tokens of new content:
 
 ### Fan-out
 
-Multi-agent architectures multiply everything. A coordinator agent that dispatches work to 5 sub-agents, each making their own LLM calls, turns a single user request into 30-50 calls. If those sub-agents have their own retry logic and growing context windows, you're looking at 100+ calls per user interaction.
+Multi-agent architectures multiply everything. A coordinator dispatching to 5 sub-agents turns a single request into 30-50 calls — and each sub-agent has its own retry logic and growing context. See [the cost amplification math](/blog/true-cost-of-uncontrolled-agents#the-math-how-agents-amplify-api-costs) for the full breakdown.
 
 ## Real-world cost scenarios
 
@@ -194,13 +194,9 @@ Ten users triggering multi-agent workflows simultaneously means 160 concurrent L
 
 Knowing your costs is the first step. Controlling them is the next.
 
-The numbers in this post make one thing clear: agent costs are a function of call patterns, not just token prices. A 10% change in model pricing matters far less than a 3x change in retry rate or a runaway loop that makes 500 calls instead of 50.
+Agent costs are a function of call patterns, not just token prices. A 10% change in model pricing matters far less than a runaway loop that makes 500 calls instead of 50. We wrote about [why monitoring alone isn't sufficient](/blog/true-cost-of-uncontrolled-agents#the-observability-gap) and how [pre-execution budget authority](/blog/true-cost-of-uncontrolled-agents#budget-authority-as-infrastructure) closes the gap.
 
-This is why monitoring alone isn't sufficient. A dashboard that shows you spent $4,200 yesterday is useful for accounting. It's useless for preventing the $4,200 spend in the first place.
-
-Pre-execution budget enforcement — checking whether the budget allows a call _before_ making it, and atomically reserving the cost — is what closes the gap between knowing your costs and controlling them. It's the difference between a fire alarm and a firewall.
-
-Cycles provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent can degrade gracefully — falling back to a cheaper model, returning a cached result, or stopping with a clear explanation.
+[Cycles](/) provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent degrades gracefully.
 
 ## Next steps
 
