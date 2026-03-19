@@ -60,6 +60,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Google Gemini](https://runcycles.io/how-to/integrating-cycles-with-google-gemini): Budget enforcement for Google Gemini
 - [Express](https://runcycles.io/how-to/integrating-cycles-with-express): Middleware for Express.js
 - [FastAPI](https://runcycles.io/how-to/integrating-cycles-with-fastapi): Middleware for FastAPI
+- [OpenClaw](https://runcycles.io/how-to/integrating-cycles-with-openclaw): Budget enforcement for OpenClaw agents
 
 ## How-To Guides
 
@@ -77,6 +78,8 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Error Handling (TypeScript)](https://runcycles.io/how-to/error-handling-patterns-in-typescript): Error handling patterns for TypeScript
 - [Error Handling (Spring)](https://runcycles.io/how-to/error-handling-patterns-in-cycles-client-code): Error handling patterns for Spring Boot
 - [Programmatic Client Usage](https://runcycles.io/how-to/using-the-cycles-client-programmatically): Direct CyclesClient API usage
+- [API Key Management](https://runcycles.io/how-to/api-key-management-in-cycles): Create, manage, and rotate API keys with tenant isolation
+- [Custom Field Resolvers](https://runcycles.io/how-to/custom-field-resolvers-in-cycles): Dynamically resolve Subject fields at runtime in Spring Boot
 
 ## Configuration
 
@@ -84,6 +87,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Python Client Configuration](https://runcycles.io/configuration/python-client-configuration-reference): Python client configuration options
 - [TypeScript Client Configuration](https://runcycles.io/configuration/typescript-client-configuration-reference): TypeScript client configuration options
 - [Spring Boot Configuration](https://runcycles.io/configuration/client-configuration-reference-for-cycles-spring-boot-starter): Spring Boot starter configuration properties
+- [SpEL Expression Reference](https://runcycles.io/configuration/spel-expression-reference-for-cycles): Writing SpEL expressions in @Cycles annotations for dynamic cost evaluation
 
 ## Operations
 
