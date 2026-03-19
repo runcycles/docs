@@ -27,7 +27,7 @@ export default createContentLoader('blog/**/*.md', {
       .map(page => ({
         title: page.frontmatter.title,
         url: page.url,
-        date: page.frontmatter.date,
+        date: new Date(page.frontmatter.date).toISOString(),
         author: page.frontmatter.author ?? 'Cycles Team',
         tags: page.frontmatter.tags ?? [],
         description: page.frontmatter.description ?? '',
