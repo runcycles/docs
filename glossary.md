@@ -143,14 +143,6 @@ A failure mode where an AI agent repeatedly calls the same tool in a loop, often
 
 A cascade of retries triggered by transient failures, where each retry spawns additional retries across services. Without idempotency and budget controls, retry storms can amplify cost by orders of magnitude. See [Retry Storms](/incidents/retry-storms-and-idempotency-failures).
 
-### Budget Authority
-
-The architectural role responsible for deciding whether an action may proceed based on remaining budget. Budget authority is enforced **before** execution — not observed after the fact. Cycles is a purpose-built budget authority. See [What is Cycles?](/quickstart/what-is-cycles).
-
-### Shadow Mode
-
-A deployment strategy where budget enforcement logic runs in evaluation mode — computing decisions and logging results without actually blocking requests. Shadow mode allows teams to validate budget policies against production traffic before enabling enforcement. See [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production).
-
 ### Tenant Isolation
 
 A budget pattern where each tenant receives an independent budget allocation that cannot be consumed by other tenants. Tenant isolation prevents the "noisy neighbor" problem where one tenant's runaway agent exhausts shared resources.
