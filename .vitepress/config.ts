@@ -108,6 +108,7 @@ export default defineConfig({
           { text: 'RunCycles Admin API', link: '/admin-api/' },
         ],
       },
+      { text: 'Blog', link: '/blog/' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
@@ -130,6 +131,7 @@ export default defineConfig({
           ],
         },
       ],
+      '/blog/': [],
       '/': [
         {
           text: 'Quickstart',
@@ -281,5 +283,14 @@ export default defineConfig({
       'link',
       { rel: 'canonical', href: canonicalUrl },
     ])
+
+    if (pageData.frontmatter.blog) {
+      pageData.frontmatter.head.push(
+        ['meta', { property: 'og:type', content: 'article' }],
+        ['meta', { property: 'og:title', content: pageData.frontmatter.title }],
+        ['meta', { property: 'og:description', content: pageData.frontmatter.description }],
+        ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
+      )
+    }
   },
 })

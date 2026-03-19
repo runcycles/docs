@@ -7,6 +7,8 @@ import 'vitepress-openapi/dist/style.css'
 import './custom.css'
 import spec from '../../public/openapi.json'
 import Layout from './Layout.vue'
+import BlogIndex from './BlogIndex.vue'
+import BlogPost from './BlogPost.vue'
 
 export default {
   extends: DefaultTheme,
@@ -14,6 +16,8 @@ export default {
   async enhanceApp({ app }) {
     useOpenapi({ spec })
     theme.enhanceApp({ app })
+    app.component('BlogIndex', BlogIndex)
+    app.component('BlogPost', BlogPost)
   },
   setup() {
     const route = useRoute()
