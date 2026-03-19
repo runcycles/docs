@@ -166,6 +166,17 @@
   margin-top: 8px;
 }
 
+/* ── Blog dark mode fixes ── */
+.dark .blog-meta,
+.dark .blog-post-meta {
+  color: var(--vp-c-text-2);
+}
+
+.dark .blog-tag {
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-alt);
+}
+
 /* ── Blog pagination ── */
 .blog-pagination {
   display: flex;
