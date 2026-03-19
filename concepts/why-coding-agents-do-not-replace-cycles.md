@@ -19,8 +19,8 @@ The runtime-layer problem is different. It asks how an autonomous system is prev
 
 The two are complementary, not interchangeable.
 
-Coding agents increase execution capacity.
-Runtime budget authority bounds execution.
+Coding agents increase execution capacity.  
+Runtime budget authority bounds execution.  
 Cycles govern whether the work was worth funding in the first place, and whether the next unit of work deserves more budget.
 
 ## Agents optimize for output. Cycles optimize for value.
@@ -45,11 +45,11 @@ When output becomes cheaper, scope tends to expand.
 
 That is not because teams become irrational. It is because each incremental addition starts to feel inexpensive in isolation.
 
-Add the extra edge case.
-Support one more path.
-Polish the interface.
-Refactor the surrounding module.
-Generate another round of tests.
+Add the extra edge case.  
+Support one more path.  
+Polish the interface.  
+Refactor the surrounding module.  
+Generate another round of tests.  
 Handle one more environment.
 
 Each decision can sound reasonable on its own. The problem is cumulative. When the friction of implementation falls, the friction that used to enforce prioritization disappears with it.
@@ -74,9 +74,9 @@ That judgment does not emerge automatically from logs, traces, or model invoices
 
 Someone still has to decide:
 
-Was this worth the spend?
-Did this work move the priority that mattered?
-Should this area receive more budget, or should the team stop here?
+Was this worth the spend?  
+Did this work move the priority that mattered?  
+Should this area receive more budget, or should the team stop here?  
 Did the agent help compress valuable work, or did it simply make it easier to produce more of it?
 
 Cycles exist to force that conversation at a predictable boundary.
@@ -123,7 +123,7 @@ That is a business-layer governance problem.
 
 Both matter.
 
-If you have runtime control without Cycles, you may prevent overruns inside execution while still funding the wrong work.
+If you have runtime control without Cycles, you may prevent overruns inside execution while still funding the wrong work.  
 If you have Cycles without runtime control, you may make good planning decisions while still allowing autonomous runs to exceed safe limits in practice.
 
 The systems complement each other because they constrain different failure modes.
