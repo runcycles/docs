@@ -121,7 +121,7 @@ All three must have sufficient budget for the reservation to succeed.
 ```
 ┌──────────────────────────────┐
 │      Your Application        │
-│  @cycles / withCycles / HTTP │
+│ @cycles / withCycles / MCP   │
 └──────────────┬───────────────┘
                │ HTTP (port 7878)
                ▼
@@ -151,6 +151,7 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure
+- [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) — add budget authority to Claude Desktop, Claude Code, Cursor, or Windsurf with zero code changes
 - [Python Quickstart](/quickstart/getting-started-with-the-python-client) — add Cycles to a Python app
 - [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) — add Cycles to a TypeScript app
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — add Cycles to a Spring app

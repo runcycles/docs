@@ -131,6 +131,10 @@ The HTTP service that implements the [Cycles Protocol](#cycles-protocol) and pro
 
 The management API used to configure tenants, API keys, budgets, and policies. The Admin Server is separate from the Cycles Server and is not part of the protocol's hot path. See [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles).
 
+### MCP Server
+
+A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Cycles budget authority as MCP tools. MCP-compatible AI hosts (Claude Desktop, Claude Code, Cursor, Windsurf) discover and call these tools automatically, giving agents budget awareness without SDK integration in the agent's own code. See [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server).
+
 ### Cycles Protocol
 
 The open specification defining the budget authority API. The protocol covers the complete reservation lifecycle, balance queries, event recording, and decision evaluation. See the [API Reference](/protocol/api-reference-for-the-cycles-protocol).
