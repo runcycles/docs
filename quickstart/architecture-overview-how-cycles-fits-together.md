@@ -12,15 +12,15 @@ This page describes the components, how they interact, and where each piece runs
 ## System overview
 
 ```
-┌──────────────────────────────────────┐  ┌─────────────────────────────┐
-│         Your Application             │  │   AI Agent (MCP Host)       │
-│                                      │  │  Claude Desktop / Code /    │
-│  ┌──────────────┐  ┌──────────────┐  │  │  Cursor / Windsurf          │
-│  │  @Cycles     │  │ CyclesClient │  │  │           │                 │
-│  │  annotation  │  │   (direct)   │  │  │           ▼                 │
+┌──────────────────────────────────────┐  ┌────────────────────────────┐
+│         Your Application             │  │   AI Agent (MCP Host)      │
+│                                      │  │  Claude Desktop / Code /   │
+│  ┌──────────────┐  ┌──────────────┐  │  │  Cursor / Windsurf         │
+│  │  @Cycles     │  │ CyclesClient │  │  │           │                │
+│  │  annotation  │  │   (direct)   │  │  │           ▼                │
 │  └──────┬───────┘  └─────┬────────┘  │  │  ┌──────────────────────┐  │
-│         │                │           │  │  │ Cycles MCP Server     │  │
-│         ▼                ▼           │  │  │ (stdio / HTTP)        │  │
+│         │                │           │  │  │   Cycles MCP Server  │  │
+│         ▼                ▼           │  │  │   (stdio / HTTP)     │  │
 │  ┌──────────────────────────────┐    │  │  └──────────┬───────────┘  │
 │  │ Java Spring, Other bindings  │    │  └─────────────┼──────────────┘
 │  │     (Cycles Wire Protocol)   │    │                │
