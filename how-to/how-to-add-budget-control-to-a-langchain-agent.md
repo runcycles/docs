@@ -75,7 +75,7 @@ from langchain_core.tools import tool
 from runcycles import (
     CyclesClient, CyclesConfig, ReservationCreateRequest,
     CommitRequest, ReleaseRequest, Subject, Action, Amount,
-    Unit, CyclesMetrics, BudgetExceededError, CyclesProtocolError,
+    Unit, BudgetExceededError, CyclesProtocolError,
 )
 
 client = CyclesClient(CyclesConfig.from_env())
@@ -114,12 +114,12 @@ def run_agent_with_budget(
     reservation_id = res.get_body_attribute("reservation_id")
     decision = res.get_body_attribute("decision")
 
-    if decision == "DENY":
-        return {"error": "Budget denied — cannot start agent run"}
-
-    # 2. Execute the agent
+    # 2. Execute the agent — optionally downgrade if budget is tight
     try:
-        llm = ChatOpenAI(model="gpt-4o")
+        if decision == "ALLOW_WITH_CAPS":
+            llm = ChatOpenAI(model="gpt-4o-mini")
+        else:
+            llm = ChatOpenAI(model="gpt-4o")
         agent = create_openai_functions_agent(llm, [search_web], prompt)
         executor = AgentExecutor(
             agent=agent, tools=[search_web], max_iterations=10,
@@ -176,7 +176,7 @@ def search_web(query: str) -> str:
         ttl_ms=30_000,
     ))
 
-    if not res.is_success or res.get_body_attribute("decision") == "DENY":
+    if not res.is_success:
         return "Budget exhausted — skipping web search."
 
     tool_reservation_id = res.get_body_attribute("reservation_id")
@@ -210,7 +210,7 @@ Each customer's spend is tracked independently. One customer burning through the
 
 ## Graceful degradation with ALLOW_WITH_CAPS
 
-When budget is running low, Cycles can return `ALLOW_WITH_CAPS` instead of a hard `DENY`. Use the decision to switch to a cheaper model or limit tool access:
+When budget is running low, Cycles can return `ALLOW_WITH_CAPS` instead of a hard denial. Use the decision to switch to a cheaper model or limit tool access:
 
 ```python
 res = client.create_reservation(ReservationCreateRequest(
@@ -222,15 +222,20 @@ res = client.create_reservation(ReservationCreateRequest(
 ))
 
 if not res.is_success:
-    # handle error (see above)
-    ...
+    # Budget denial arrives as a 409 BUDGET_EXCEEDED error — handle it here
+    error = res.get_error_response()
+    if error and error.error == "BUDGET_EXCEEDED":
+        raise BudgetExceededError(
+            error.message, status=res.status,
+            error_code=error.error, request_id=error.request_id,
+        )
+    raise CyclesProtocolError(...)
 
+# On success, decision is ALLOW or ALLOW_WITH_CAPS
 decision = res.get_body_attribute("decision")
 
-if decision == "DENY":
-    raise BudgetExceededError("Budget exhausted")
-elif decision == "ALLOW_WITH_CAPS":
-    # Switch to a cheaper model
+if decision == "ALLOW_WITH_CAPS":
+    # Budget is tight — switch to a cheaper model
     llm = ChatOpenAI(model="gpt-4o-mini")
 else:
     # ALLOW — full capacity
