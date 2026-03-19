@@ -175,6 +175,7 @@ export default defineConfig({
             { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
             { text: 'Estimate Exposure Before Execution', link: '/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
             { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
+            { text: 'Budget Control for LangChain Agents', link: '/how-to/how-to-add-budget-control-to-a-langchain-agent' },
             { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
             { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
             { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
