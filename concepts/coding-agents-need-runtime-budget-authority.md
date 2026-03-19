@@ -144,4 +144,5 @@ To learn more:
 - Understand the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles)
 - See [how events work](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) for direct-debit accounting
 - Explore the full [API Reference](/protocol/api-reference-for-the-cycles-protocol)
+- Try the [MCP Server](/quickstart/getting-started-with-the-mcp-server) to give a coding agent direct budget tool access — zero code changes
 - Get started with the [Python Client](/quickstart/getting-started-with-the-python-client) or [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)

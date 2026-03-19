@@ -10,28 +10,54 @@ Each Cycles SDK offers multiple integration patterns. This guide helps you pick 
 ## Decision tree
 
 ```
-Is the call streaming?
-├── Yes → Use reserveForStream (TS) or programmatic client (Python)
+Is the agent an MCP-compatible host (Claude Desktop, Claude Code, Cursor, Windsurf)?
+├── Yes → Use the MCP Server (@runcycles/mcp-server) — zero code changes
 └── No
-    ├── Is budget logic per-request in a web framework?
-    │   ├── Yes → Use middleware (Express, FastAPI)
-    │   └── No
-    │       ├── Is it a simple function call?
-    │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
-    │       │   └── No → Use programmatic client
-    │       └── Do you need fine-grained control over commit timing?
-    │           ├── Yes → Use programmatic client
-    │           └── No → Use decorator
+    Is the call streaming?
+    ├── Yes → Use reserveForStream (TS) or programmatic client (Python)
+    └── No
+        ├── Is budget logic per-request in a web framework?
+        │   ├── Yes → Use middleware (Express, FastAPI)
+        │   └── No
+        │       ├── Is it a simple function call?
+        │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
+        │       │   └── No → Use programmatic client
+        │       └── Do you need fine-grained control over commit timing?
+        │           ├── Yes → Use programmatic client
+        │           └── No → Use decorator
 ```
 
 ## Pattern comparison
 
 | Pattern | Languages | Best for | Streaming | Auto-heartbeat | Auto-commit |
 |---|---|---|---|---|---|
+| **MCP Server** | Any (agent-native) | MCP-compatible AI agents | — | — | — |
 | **Decorator / HOF** | Python `@cycles`, TS `withCycles`, Java `@Cycles` | Simple function calls | No | Yes | Yes |
 | **Streaming adapter** | TS `reserveForStream` | Streaming responses | Yes | Yes | Manual |
 | **Middleware** | Express, FastAPI | Per-request budget in web apps | Both | Depends | Manual |
 | **Programmatic client** | All languages | Full control, complex flows | Both | Manual | Manual |
+
+## Pattern 0: MCP Server (zero-code)
+
+If your agent runs in an MCP-compatible host — Claude Desktop, Claude Code, Cursor, or Windsurf — you don't need any SDK integration. Add the Cycles MCP Server to your agent's tool configuration and the agent gets direct access to budget tools via MCP discovery.
+
+```bash
+# Claude Code
+claude mcp add cycles -- npx -y @runcycles/mcp-server
+```
+
+The agent calls `cycles_reserve`, `cycles_commit`, and other tools as part of its reasoning. No application code wraps the LLM call.
+
+**Use when:**
+- The agent host supports MCP
+- You want budget awareness with zero code changes
+- The agent should self-manage its own budget lifecycle
+
+**Don't use when:**
+- You're building a non-agent application (web API, batch pipeline)
+- You need to wrap specific functions with budget governance in your own code
+
+See [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) for setup instructions.
 
 ## Pattern 1: Decorator / Higher-Order Function
 
@@ -220,6 +246,7 @@ async def agent_loop(task: str):
 
 ## Next steps
 
+- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code budget authority for Claude / Cursor / Windsurf
 - [Getting Started with Python](/quickstart/getting-started-with-the-python-client)
 - [Getting Started with TypeScript](/quickstart/getting-started-with-the-typescript-client)
 - [Getting Started with Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter)

@@ -12,23 +12,24 @@ This page describes the components, how they interact, and where each piece runs
 ## System overview
 
 ```
-┌──────────────────────────────────────┐
-│         Your Application             │
-│                                      │
-│  ┌──────────────┐  ┌──────────────┐  │
-│  │  @Cycles     │  │ CyclesClient │  │
-│  │  annotation  │  │   (direct)   │  │
-│  └──────┬───────┘  └─────┬────────┘  │
-│         │                │           │
-│         ▼                ▼           │
-│  ┌──────────────────────────────┐    │
-│  │ Java Spring, Other bindings  │    │
-│  │     (Cycles Wire Protocol)   │    │
-│  └──────────────┬───────────────┘    │
-└─────────────────┼────────────────────┘
-                  │ HTTP (JSON)
-                  │ X-Cycles-API-Key
-                  ▼
+┌──────────────────────────────────────┐  ┌─────────────────────────────┐
+│         Your Application             │  │   AI Agent (MCP Host)       │
+│                                      │  │  Claude Desktop / Code /    │
+│  ┌──────────────┐  ┌──────────────┐  │  │  Cursor / Windsurf          │
+│  │  @Cycles     │  │ CyclesClient │  │  │           │                 │
+│  │  annotation  │  │   (direct)   │  │  │           ▼                 │
+│  └──────┬───────┘  └─────┬────────┘  │  │  ┌──────────────────────┐  │
+│         │                │           │  │  │ Cycles MCP Server     │  │
+│         ▼                ▼           │  │  │ (stdio / HTTP)        │  │
+│  ┌──────────────────────────────┐    │  │  └──────────┬───────────┘  │
+│  │ Java Spring, Other bindings  │    │  └─────────────┼──────────────┘
+│  │     (Cycles Wire Protocol)   │    │                │
+│  └──────────────┬───────────────┘    │                │
+└─────────────────┼────────────────────┘                │
+                  │ HTTP (JSON)                         │ HTTP (JSON)
+                  │ X-Cycles-API-Key                    │ X-Cycles-API-Key
+                  └──────────────┬──────────────────────┘
+                                 ▼
 ┌─────────────────────────────────────┐  ┌───────────────────────────────────┐
 │      Cycles Server (port 7878)      │  │  Cycles Admin Server (port 7979)  │
 │     (runtime budget enforcement)    │  │  (tenant, key, budget management) │
@@ -146,6 +147,21 @@ Separating the management plane from the runtime enforcement plane lets you:
 
 See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-admin) for the full API reference.
 
+### Cycles MCP Server
+
+A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Cycles budget authority as MCP tools. MCP-compatible AI hosts (Claude Desktop, Claude Code, Cursor, Windsurf) discover and call these tools automatically.
+
+**What it does:**
+
+- Exposes 9 MCP tools covering the full Cycles protocol (reserve, commit, release, extend, decide, balance, events, reservations)
+- Ships 3 built-in prompts for integration code generation, budget debugging, and strategy design
+- Provides resources for inspecting balances and reservation state
+- Wraps the `runcycles` TypeScript client internally — talks to the Cycles Server via HTTP
+
+**When to use it:**
+
+Use the MCP server when your agent host supports MCP. No SDK integration is needed in the agent's own code — adding the server to the agent's tool configuration is the only setup required. See [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server).
+
 ### Cycles Spring Boot Starter
 
 A client library that integrates Cycles into Spring Boot applications. It provides two usage modes:
@@ -253,10 +269,10 @@ The server authenticates every request via the `X-Cycles-API-Key` header. Each A
 A typical deployment:
 
 ```
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-│ Agent A  │  │ Agent B  │  │ Agent C  │  │ Agent D  │
-│ (Spring) │  │ (Python) │  │ (Node.js)│  │  (HTTP)  │
-└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
+┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+│ Agent A  │  │ Agent B  │  │ Agent C  │  │ Agent D  │  │ Agent E  │
+│ (Spring) │  │ (Python) │  │ (Node.js)│  │  (HTTP)  │  │  (MCP)   │
+└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
      │             │             │             │
      └──────┬──────┴─────────────┴─────────────┘
             │
@@ -278,13 +294,14 @@ A typical deployment:
 
 Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines.
 
-Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directly via HTTP — the client libraries are convenience layers, not a requirement.
+Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directly via HTTP — the client libraries are convenience layers, not a requirement. MCP-compatible agents (Claude Desktop, Claude Code, Cursor, Windsurf) can use the Cycles MCP Server for a zero-code integration path.
 
 ## Next steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
 - [API Reference](/api/) — interactive endpoint documentation
+- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — add budget authority to Claude Desktop, Claude Code, Cursor, or Windsurf
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — integrate with your Python app
 - [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — integrate with your TypeScript/Node.js app
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app

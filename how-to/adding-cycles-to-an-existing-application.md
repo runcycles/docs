@@ -7,6 +7,10 @@ description: "Incrementally adopt Cycles budget governance in an existing applic
 
 This guide covers how to incrementally add budget governance to an application that already makes LLM or API calls. Rather than rewriting your integration layer, you can adopt Cycles in stages.
 
+::: tip MCP-compatible agents
+If your agent runs in Claude Desktop, Claude Code, Cursor, or Windsurf, the fastest path is the [Cycles MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero code changes needed. The guide below covers SDK-based integration for application code.
+:::
+
 ::: tip Spring Boot / Java
 This guide shows Python and TypeScript. For Spring Boot, equivalent patterns use the `@Cycles` annotation — see the [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) for full setup and examples.
 :::

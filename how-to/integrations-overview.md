@@ -11,6 +11,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 
 | Integration | Language | Streaming | Pattern |
 |-------------|----------|-----------|---------|
+| [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
 | [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
 | [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
@@ -25,6 +26,12 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 ## Integration patterns
 
 Cycles offers several integration approaches depending on your stack:
+
+### MCP Server
+
+The zero-code approach. Add the Cycles MCP Server to your AI agent's tool configuration and the agent gets direct access to budget tools via the Model Context Protocol. No SDK integration in the agent's code required — the agent discovers and calls `cycles_reserve`, `cycles_commit`, and other tools through standard MCP tool discovery.
+
+Best for: Claude Desktop, Claude Code, Cursor, Windsurf, and any MCP-compatible AI host.
 
 ### Decorator / Higher-order function
 

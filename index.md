@@ -22,7 +22,7 @@ hero:
 features:
   - icon: 🚀
     title: "Quickstart Guides"
-    details: "Get started in Python, TypeScript, or Spring Boot. Deploy the full stack with Docker in under 5 minutes."
+    details: "Get started in Python, TypeScript, Spring Boot, or via MCP for Claude / Cursor / Windsurf. Deploy the full stack with Docker in under 5 minutes."
     link: /quickstart/what-is-cycles
     linkText: Get started
   - icon: 💡
