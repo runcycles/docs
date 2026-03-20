@@ -234,6 +234,7 @@ def handle_request(request):
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how the three building blocks fit together
 - [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — detailed multi-level budgeting guide
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — funding operations
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how hierarchical scopes work

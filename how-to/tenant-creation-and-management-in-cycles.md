@@ -1,0 +1,741 @@
+---
+title: "Tenant Creation and Management in Cycles"
+description: "How to create, configure, and manage tenants in Cycles using the Admin API — including status lifecycle, hierarchical tenants, metadata, and common multi-tenant use cases."
+---
+
+# Tenant Creation and Management in Cycles
+
+Tenants are the top-level isolation boundary in Cycles. Every budget, API key, and reservation is scoped to exactly one tenant.
+
+Before you can enforce budgets or issue API keys, you need at least one tenant. This guide covers the full tenant lifecycle through the Admin API. For an overview of how tenants fit into the broader scope and budget model, see [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
+
+## What tenants are and when to create them
+
+A tenant represents an isolated organizational unit in Cycles. Depending on your platform, a tenant might map to:
+
+- a customer account in a SaaS product
+- an internal team or department
+- a business unit with its own budget
+- a partner or reseller in a marketplace
+
+Every API key belongs to one tenant. Every reservation is owned by one tenant. Every balance query is scoped to one tenant. This isolation is enforced at the protocol level — not by convention.
+
+**Create a tenant when you need an independent budget boundary.** If two groups of users should not share budget, they should be separate tenants.
+
+## Creating a tenant
+
+Create a tenant using the Admin API with the `X-Admin-API-Key` header:
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "Acme Corporation"
+  }' | jq .
+```
+
+Response:
+
+```json
+{
+  "tenant_id": "acme-corp",
+  "name": "Acme Corporation",
+  "status": "ACTIVE",
+  "created_at": "2026-03-20T12:00:00Z"
+}
+```
+
+### Tenant ID format
+
+The `tenant_id` must be:
+
+- **Lowercase alphanumeric with hyphens:** matches `^[a-z0-9-]+$`
+- **Between 3 and 64 characters**
+- **Kebab-case by convention:** for example, `acme-corp`, `demo-tenant`, `team-engineering`
+
+Choose IDs that are stable and meaningful. The `tenant_id` is used in scope paths (e.g., `tenant:acme-corp/workspace:prod`), API key bindings, and audit logs. It cannot be changed after creation.
+
+### Optional fields on creation
+
+You can provide additional configuration when creating a tenant:
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "Acme Corporation",
+    "parent_tenant_id": "acme-group",
+    "default_commit_overage_policy": "ALLOW_IF_AVAILABLE",
+    "metadata": {
+      "billing_id": "cust_12345",
+      "plan": "enterprise",
+      "region": "us-east-1"
+    }
+  }' | jq .
+```
+
+The accepted optional fields on creation are:
+
+| Field | Description |
+|---|---|
+| `parent_tenant_id` | Parent tenant for hierarchical relationships (see [Hierarchical tenants](#hierarchical-tenants)) |
+| `default_commit_overage_policy` | Default overage policy: `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
+| `metadata` | Key-value pairs for external references (up to 32 keys) |
+
+Each of these fields is covered in detail in the sections below.
+
+### Idempotent creation
+
+Tenant creation is idempotent. If you retry a `POST /v1/admin/tenants` request with the same `tenant_id`:
+
+- If the existing tenant has the **same name**, the server returns `200` with the existing tenant (not `201`).
+- If the existing tenant has a **different name**, the server returns `409 CONFLICT`.
+
+This makes it safe to retry tenant creation without checking whether the tenant already exists.
+
+## Listing tenants
+
+List all tenants with optional filters:
+
+```bash
+# List all active tenants
+curl -s "http://localhost:7979/v1/admin/tenants?status=ACTIVE" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq .
+```
+
+Response:
+
+```json
+{
+  "tenants": [
+    {
+      "tenant_id": "acme-corp",
+      "name": "Acme Corporation",
+      "status": "ACTIVE",
+      "created_at": "2026-03-20T12:00:00Z"
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+### Available filters
+
+| Parameter | Description |
+|---|---|
+| `status` | Filter by status: `ACTIVE`, `SUSPENDED`, or `CLOSED` |
+| `parent_tenant_id` | Filter by parent tenant (for hierarchical tenants) |
+| `cursor` | Pagination cursor from a previous response |
+| `limit` | Page size (default: 50, max: 100) |
+
+### Cursor-based pagination
+
+For large tenant lists, use cursor-based pagination:
+
+```bash
+# First page
+curl -s "http://localhost:7979/v1/admin/tenants?limit=10" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq .
+
+# Next page (use next_cursor from previous response)
+curl -s "http://localhost:7979/v1/admin/tenants?limit=10&cursor=eyJ0ZW5..." \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq .
+```
+
+Continue until `has_more` is `false`.
+
+## Retrieving a tenant
+
+Get a single tenant by ID:
+
+```bash
+curl -s "http://localhost:7979/v1/admin/tenants/acme-corp" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq .
+```
+
+This returns the full tenant object including all configuration, metadata, and timestamps.
+
+## Updating a tenant
+
+Update a tenant with `PATCH`:
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "name": "Acme Corp (Enterprise)",
+    "metadata": {
+      "billing_id": "cust_12345",
+      "plan": "enterprise-plus"
+    }
+  }' | jq .
+```
+
+You can update:
+
+- `name` — the display name
+- `status` — transition between ACTIVE, SUSPENDED, and CLOSED (see lifecycle below)
+- `metadata` — key-value pairs (replaces the full metadata object)
+- `default_commit_overage_policy` — the default overage policy for all scopes
+
+Fields not included in the `PATCH` request are left unchanged.
+
+## Tenant status lifecycle
+
+Every tenant has a status that controls what operations are allowed:
+
+```
+              suspend
+  ACTIVE ─────────────► SUSPENDED
+    │    ◄─────────────    │
+    │       reactivate     │
+    │                      │
+    │   close              │   close
+    ▼                      ▼
+  CLOSED ◄────────────────────
+```
+
+### ACTIVE
+
+The default state. All operations are allowed:
+
+- New reservations can be created
+- Existing reservations can be committed, released, or extended
+- Balances can be queried
+- New API keys can be issued
+
+### SUSPENDED
+
+A temporary block. Use this when you need to pause a tenant without permanent closure:
+
+- **New reservations are blocked** — the server returns an error for any new reservation attempt
+- Existing active reservations **can still be committed or released** — this prevents data loss from in-flight work
+- Balances can still be queried
+- The tenant can be **reactivated** back to ACTIVE at any time
+
+**When to suspend:**
+
+- A customer's payment has failed
+- A security concern requires a temporary freeze
+- An investigation is underway
+- Usage needs to be paused during a plan change
+
+```bash
+# Suspend a tenant
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{"status": "SUSPENDED"}' | jq .
+
+# Reactivate the tenant
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{"status": "ACTIVE"}' | jq .
+```
+
+### CLOSED
+
+Permanent and irreversible. Use this only when a tenant is being decommissioned:
+
+- All operations are blocked
+- The tenant **cannot be reactivated**
+- Data is retained for audit purposes
+
+**When to close:**
+
+- A customer has churned and the account is being archived
+- A test or demo tenant is no longer needed
+- A department has been merged and its tenant is being retired
+
+```bash
+# Close a tenant (irreversible)
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{"status": "CLOSED"}' | jq .
+```
+
+::: warning
+Closing a tenant is irreversible. If you need a temporary block, use SUSPENDED instead.
+:::
+
+### Invalid transitions
+
+The server rejects invalid status transitions with `400 INVALID_REQUEST`:
+
+- `CLOSED → ACTIVE` (cannot reactivate a closed tenant)
+- `CLOSED → SUSPENDED` (cannot suspend a closed tenant)
+
+## Configuring tenant defaults
+
+Each tenant has configuration that governs how reservations behave. The `default_commit_overage_policy` can be set at creation or updated via `PATCH`. The remaining properties are server-level defaults that apply to all tenants.
+
+### Settable per tenant
+
+| Property | Default | Description |
+|---|---|---|
+| `default_commit_overage_policy` | `REJECT` | What happens when actual spend exceeds the reserved amount. Set via create or update. |
+
+### Server-level defaults
+
+These defaults apply to all tenants and are configured at the server level, not per-tenant:
+
+| Property | Default | Description |
+|---|---|---|
+| `default_reservation_ttl_ms` | `60000` (60s) | Default time-to-live for reservations when not specified per-request |
+| `max_reservation_ttl_ms` | `3600000` (1h) | Maximum allowed TTL; requests exceeding this are capped |
+| `max_reservation_extensions` | `10` | Maximum TTL extensions per reservation |
+| `reservation_expiry_policy` | `AUTO_RELEASE` | How expired reservations are handled |
+
+### Commit overage policies
+
+The `default_commit_overage_policy` controls what happens when a commit's `actual` amount exceeds the originally reserved `estimate`:
+
+| Policy | Behavior |
+|---|---|
+| `REJECT` | Fail the commit if actual > reserved |
+| `ALLOW_IF_AVAILABLE` | Charge the delta from remaining budget if sufficient |
+| `ALLOW_WITH_OVERDRAFT` | Create debt up to the scope's `overdraft_limit` if budget is insufficient |
+
+Set this at the tenant level to establish a baseline, then override per-budget-ledger or per-reservation as needed.
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{"default_commit_overage_policy": "ALLOW_IF_AVAILABLE"}' | jq .
+```
+
+### Reservation expiry policies
+
+The `reservation_expiry_policy` controls what happens when a reservation exceeds its TTL without being committed or released:
+
+| Policy | Behavior |
+|---|---|
+| `AUTO_RELEASE` | Expired reservations are automatically released after a grace period, freeing the reserved budget |
+| `MANUAL_CLEANUP` | Expired reservations require explicit release or a cleanup job |
+| `GRACE_ONLY` | Allow commits during the grace period, then mark the reservation as `EXPIRED` |
+
+For most deployments, `AUTO_RELEASE` is the safest default — it prevents zombie reservations from permanently locking budget.
+
+### TTL configuration
+
+- **`default_reservation_ttl_ms`** sets the TTL used when a reservation request does not specify `ttl_ms`. A value of 60,000 ms (60 seconds) works well for synchronous LLM calls. Increase it for longer-running workflows.
+
+- **`max_reservation_ttl_ms`** caps the maximum TTL any reservation can request. This prevents callers from holding budget indefinitely. Requests that specify a `ttl_ms` exceeding this value are silently capped.
+
+- **`max_reservation_extensions`** limits how many times a reservation's TTL can be extended. This prevents zombie reservations from being extended forever. A value of 10 is generous for most use cases.
+
+## Hierarchical tenants
+
+Cycles supports parent-child tenant relationships using the `parent_tenant_id` field. This enables:
+
+- **Organizational hierarchy:** A parent company with subsidiary business units
+- **Reseller models:** A partner who manages multiple end-customer tenants
+- **Budget delegation:** A parent tenant that distributes budget to child tenants
+
+### Creating a hierarchy
+
+```bash
+# Create the parent tenant
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-group",
+    "name": "Acme Group (Parent)"
+  }' | jq .
+
+# Create child tenants under the parent
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-engineering",
+    "name": "Acme Engineering",
+    "parent_tenant_id": "acme-group"
+  }' | jq .
+
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-marketing",
+    "name": "Acme Marketing",
+    "parent_tenant_id": "acme-group"
+  }' | jq .
+```
+
+### Listing child tenants
+
+```bash
+curl -s "http://localhost:7979/v1/admin/tenants?parent_tenant_id=acme-group" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq .
+```
+
+### How hierarchical tenants work
+
+Each child tenant is still a fully independent isolation boundary:
+
+- Child tenants have their own budgets, API keys, and reservations
+- A child tenant's API key cannot access the parent tenant's resources (and vice versa)
+- Budget is not automatically shared or aggregated between parent and child
+
+The `parent_tenant_id` relationship is useful for:
+
+- **Consolidated billing:** Query all child tenants under a parent for billing reports
+- **Administrative grouping:** List and manage related tenants together
+- **Organizational modeling:** Reflect your real-world structure in the tenant hierarchy
+
+## Tenant metadata
+
+Each tenant supports a `metadata` field — a map of up to 32 key-value pairs for storing arbitrary information:
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "Acme Corporation",
+    "metadata": {
+      "billing_id": "cust_12345",
+      "plan": "enterprise",
+      "region": "us-east-1",
+      "owner_email": "admin@acme.com",
+      "stripe_customer_id": "cus_abc123"
+    }
+  }' | jq .
+```
+
+Common metadata patterns:
+
+| Key | Purpose |
+|---|---|
+| `billing_id` | Link to your billing system's customer ID |
+| `plan` | Subscription tier (free, pro, enterprise) |
+| `region` | Geographic region for data residency |
+| `owner_email` | Primary contact for the tenant |
+| `external_id` | ID from your own system for correlation |
+
+::: info
+Updating metadata replaces the entire metadata object. To add a new key while keeping existing ones, include all keys in the update.
+:::
+
+## End-to-end: onboarding a new tenant
+
+Here is the complete sequence to go from zero to a working tenant with budget enforcement:
+
+### Step 1: Create the tenant
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "Acme Corporation",
+    "metadata": {"plan": "pro"}
+  }' | jq .
+```
+
+### Step 2: Create an API key for the tenant
+
+```bash
+API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "production-key",
+    "permissions": [
+      "reservations:create",
+      "reservations:commit",
+      "reservations:release",
+      "reservations:extend",
+      "reservations:list",
+      "balances:read",
+      "decide",
+      "events:create"
+    ]
+  }' | jq -r '.key_secret')
+
+echo "API Key: $API_KEY"
+```
+
+Save this key — the full secret is only returned once. See [API Key Management](/how-to/api-key-management-in-cycles) for rotation and security practices.
+
+### Step 3: Create a budget for the tenant
+
+```bash
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{
+    "scope": "tenant:acme-corp",
+    "unit": "USD_MICROCENTS",
+    "allocated": {"amount": 100000000, "unit": "USD_MICROCENTS"}
+  }' | jq .
+```
+
+This creates a budget of $1.00 (100,000,000 microcents). See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) for funding patterns and hierarchical budgets.
+
+### Step 4: Make the first reservation
+
+```bash
+RESERVATION_ID=$(curl -s -X POST http://localhost:7878/v1/reservations \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{
+    "idempotency_key": "onboard-test-001",
+    "subject": {"tenant": "acme-corp"},
+    "action": {"kind": "llm.completion", "name": "openai:gpt-4o"},
+    "estimate": {"amount": 500000, "unit": "USD_MICROCENTS"},
+    "ttl_ms": 30000
+  }' | jq -r '.reservation_id')
+
+echo "Reserved: $RESERVATION_ID"
+```
+
+If you see `"decision": "ALLOW"`, the tenant is fully operational.
+
+### Step 5: Commit and verify
+
+```bash
+# Commit actual spend
+curl -s -X POST "http://localhost:7878/v1/reservations/$RESERVATION_ID/commit" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d '{
+    "idempotency_key": "onboard-commit-001",
+    "actual": {"amount": 350000, "unit": "USD_MICROCENTS"}
+  }' | jq .
+
+# Check the balance
+curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
+  -H "X-Cycles-API-Key: $API_KEY" | jq .
+```
+
+The tenant is now live with budget enforcement.
+
+## Common use cases
+
+### SaaS per-customer isolation
+
+Each customer gets their own tenant with an independent budget:
+
+```bash
+# Customer onboarding script
+for customer in "startup-co" "bigcorp-inc" "agency-xyz"; do
+  curl -s -X POST http://localhost:7979/v1/admin/tenants \
+    -H "Content-Type: application/json" \
+    -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+    -d "{
+      \"tenant_id\": \"$customer\",
+      \"name\": \"$customer\"
+    }"
+done
+```
+
+This ensures one customer's runaway agent cannot consume another customer's budget. See [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) for the full pattern.
+
+### Internal department budgets
+
+Use tenants to give each department its own spending boundary:
+
+```bash
+# Engineering gets a larger budget than marketing
+# Create tenants under a parent
+for dept in "eng" "marketing" "support"; do
+  curl -s -X POST http://localhost:7979/v1/admin/tenants \
+    -H "Content-Type: application/json" \
+    -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+    -d "{
+      \"tenant_id\": \"dept-$dept\",
+      \"name\": \"Department: $dept\",
+      \"parent_tenant_id\": \"company-hq\"
+    }"
+done
+```
+
+### Partner and reseller hierarchies
+
+A reseller manages multiple end-customer tenants:
+
+```bash
+# Reseller as parent
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "reseller-alpha",
+    "name": "Alpha Partners",
+    "metadata": {"type": "reseller", "commission_rate": "15"}
+  }' | jq .
+
+# End customers under the reseller
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "alpha-customer-1",
+    "name": "Customer One",
+    "parent_tenant_id": "reseller-alpha"
+  }' | jq .
+```
+
+### Environment separation
+
+Use tenants to isolate production from staging and development:
+
+```bash
+for env in "acme-prod" "acme-staging" "acme-dev"; do
+  curl -s -X POST http://localhost:7979/v1/admin/tenants \
+    -H "Content-Type: application/json" \
+    -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+    -d "{
+      \"tenant_id\": \"$env\",
+      \"name\": \"Acme ($env)\"
+    }"
+done
+```
+
+Give production a large budget and dev a small one. A bug in staging cannot drain the production budget.
+
+## Best practices
+
+### Naming conventions
+
+Use stable, semantic tenant IDs that reflect your domain:
+
+| Good | Avoid |
+|---|---|
+| `customer-acme` | `cust_12345` (opaque database ID) |
+| `dept-engineering` | `eng` (too short, ambiguous) |
+| `partner-alpha` | `PARTNER_ALPHA` (must be lowercase) |
+
+Tenant IDs appear in scope paths (`tenant:customer-acme/workspace:prod`), audit logs, and API key bindings. Choose names that are readable and meaningful to your team.
+
+### One tenant = one isolation boundary
+
+Do not multiplex unrelated customers or teams into a single tenant. If two groups should not share budget, they need separate tenants. Use [hierarchical tenants](#hierarchical-tenants) to model organizational relationships rather than sharing a single tenant.
+
+### Suspend before you close
+
+Use `SUSPENDED` for temporary blocks — payment failures, security investigations, plan changes. A suspended tenant can be reactivated at any time.
+
+Use `CLOSED` only for permanent decommission. It is irreversible. If there is any chance you will need the tenant again, use `SUSPENDED`.
+
+### Use metadata consistently
+
+Pick a standard set of metadata keys and use them across all tenants. This makes it easy to query and correlate tenant data with external systems:
+
+```json
+{
+  "billing_id": "cust_12345",
+  "plan": "enterprise",
+  "region": "us-east-1",
+  "owner_email": "admin@acme.com"
+}
+```
+
+### Set overage policy at the tenant level
+
+The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. Start with `REJECT` (the default) — it is the safest option. Only switch to `ALLOW_IF_AVAILABLE` or `ALLOW_WITH_OVERDRAFT` when you understand the debt implications.
+
+Override the policy per-budget-ledger or per-reservation for specific scopes that need different behavior.
+
+### Create API keys per environment
+
+Issue separate API keys for production, staging, and development — even within the same tenant. This makes it easy to revoke one environment's access without affecting others. See [API Key Management](/how-to/api-key-management-in-cycles) for rotation practices.
+
+### Automate tenant onboarding
+
+The create tenant → create API key → create budget sequence should be scripted, not manual. This ensures consistency, reduces errors, and makes it easy to onboard new customers at scale.
+
+```bash
+# Example: onboard a new customer
+TENANT_ID="customer-${CUSTOMER_SLUG}"
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d "{\"tenant_id\": \"$TENANT_ID\", \"name\": \"$CUSTOMER_NAME\"}"
+
+API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d "{\"tenant_id\": \"$TENANT_ID\", \"name\": \"prod-key\", \"permissions\": [\"reservations:create\",\"reservations:commit\",\"reservations:release\",\"balances:read\"]}" \
+  | jq -r '.key_secret')
+
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d "{\"scope\": \"tenant:$TENANT_ID\", \"unit\": \"USD_MICROCENTS\", \"allocated\": {\"amount\": $BUDGET_AMOUNT, \"unit\": \"USD_MICROCENTS\"}}"
+```
+
+## Troubleshooting
+
+### TENANT_NOT_FOUND
+
+The tenant does not exist. Create it first with `POST /v1/admin/tenants`.
+
+This also occurs when creating an API key for a non-existent tenant — the tenant must exist before you can issue keys for it.
+
+### TENANT_SUSPENDED
+
+The tenant's status is `SUSPENDED`. New reservations are blocked.
+
+To resume operations, reactivate the tenant:
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{"status": "ACTIVE"}' | jq .
+```
+
+### TENANT_CLOSED
+
+The tenant has been permanently closed. This cannot be reversed. If you need a new tenant, create one with a different `tenant_id`.
+
+### 403 FORBIDDEN (tenant mismatch)
+
+The `subject.tenant` in your request does not match the effective tenant derived from the API key.
+
+Check:
+1. The `X-Cycles-API-Key` header is for the correct tenant
+2. The `subject.tenant` field matches the API key's tenant
+3. Use the `X-Cycles-Tenant` response header (if present) to see which tenant the server resolved
+
+See [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles) for the full authentication model.
+
+### 409 CONFLICT on tenant creation
+
+You tried to create a tenant with a `tenant_id` that already exists but with a different `name`. Either:
+- Use the existing tenant as-is
+- Choose a different `tenant_id`
+
+### Common mistakes
+
+**Creating budgets before tenants.** The tenant must exist before you can create API keys or budgets for it. Follow the onboarding sequence: tenant → API key → budget.
+
+**Using the wrong auth header.** Tenant management uses `X-Admin-API-Key` (system admin). Budget and reservation operations use `X-Cycles-API-Key` (tenant-scoped). See the [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) for which header to use where.
+
+**Closing tenants prematurely.** Use `SUSPENDED` for temporary blocks. Only use `CLOSED` when the tenant is being permanently decommissioned.
+
+## Next steps
+
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together
+- [API Key Management](/how-to/api-key-management-in-cycles) — create and rotate API keys for your tenants
+- [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — set up budgets at tenant and sub-scopes
+- [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — design multi-level budget policies
+- [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles) — how tenant isolation is enforced at the protocol level
+- [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how tenant scopes fit into the budget hierarchy
+- [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure from scratch

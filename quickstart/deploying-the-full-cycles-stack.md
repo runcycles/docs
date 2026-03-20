@@ -300,7 +300,11 @@ REDIS_HOST=localhost REDIS_PORT=6379 \
 
 ## Step 2: Create a tenant
 
-Every budget and API key belongs to a tenant. Create one using the admin API:
+Every budget and API key belongs to a tenant. Create one using the admin API.
+
+::: tip
+This step creates a single tenant for the quickstart. For the full tenant lifecycle — listing, updating, suspending, hierarchical tenants, and more — see [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles).
+:::
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/tenants \

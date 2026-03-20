@@ -149,11 +149,9 @@ This ensures that budget governance is always tenant-isolated, even in shared de
 
 ## Next steps
 
-To explore the Cycles stack:
-
-- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
-- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
-- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
-- Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
-- Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
-- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create, configure, and manage tenants via the Admin API
+- [API Key Management](/how-to/api-key-management-in-cycles) — create and rotate tenant-scoped API keys
+- [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — set up budgets at tenant and sub-scopes
+- [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how tenant scopes fit into the budget hierarchy
+- [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure from scratch
+- Integrate with [Python](/quickstart/getting-started-with-the-python-client), [TypeScript](/quickstart/getting-started-with-the-typescript-client), or [Spring AI](https://github.com/runcycles/cycles-spring-boot-starter)

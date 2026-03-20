@@ -14,7 +14,7 @@ Allocation is the total budget assigned to a scope. It is the ceiling against wh
 The formula for remaining budget is:
 
 ```
-remaining = allocated - spent - reserved
+remaining = allocated - spent - reserved - debt
 ```
 
 A reservation succeeds only if `remaining >= estimate` across all affected scopes.
@@ -261,6 +261,8 @@ Budget allocation in Cycles:
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
+- [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before allocating budgets
 - [Querying Balances](/protocol/querying-balances-in-cycles-understanding-budget-state) — detailed balance query guide
 - [Debt and Overdraft](/protocol/debt-overdraft-and-the-over-limit-model-in-cycles) — how overdraft affects allocation
 - [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles) — how scopes are derived from Subjects

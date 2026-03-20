@@ -192,6 +192,7 @@ Track which keys are making requests. If a key is compromised, revoke it immedia
 
 ## Next steps
 
+- [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and manage the tenants that API keys belong to
 - [Authentication and Tenancy](/protocol/authentication-tenancy-and-api-keys-in-cycles) — deeper dive into the auth model
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how authentication fits into the system

@@ -298,6 +298,7 @@ Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directl
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
 - [API Reference](/api/) — interactive endpoint documentation
