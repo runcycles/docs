@@ -16,7 +16,7 @@ A team we talked to recently launched their first production agent — a custome
 
 This post is a reference guide. We break down current per-token pricing across the major providers, then show what those prices actually mean when you multiply by the call patterns of real agent workloads. If you're planning a budget for an agent deployment — or trying to understand why your current one costs more than expected — this is the data you need.
 
-## Per-token pricing by provider
+## Per-Token Pricing by Provider
 
 All prices below are per 1 million tokens. Every provider charges separately for input tokens (what you send) and output tokens (what the model generates). Agents are output-heavy relative to simple completions, because they generate tool calls, reasoning chains, and structured responses.
 
@@ -49,21 +49,21 @@ All prices below are per 1 million tokens. Every provider charges separately for
 
 A quick observation: the spread between cheapest and most expensive is enormous. Gemini 2.0 Flash output costs $0.40 per million tokens. Claude Opus 4 output costs $75.00 per million tokens. That's a 187x difference. Model selection is the single biggest lever you have on agent costs — but only if your agent architecture actually lets you swap models without breaking functionality.
 
-## Why agents cost more than you think
+## Why Agents Cost More Than You Think
 
 A chatbot makes one call per user message. An agent makes many.
 
 The disconnect between "per-token pricing looks cheap" and "my agent bill is huge" comes down to four multipliers that compound against each other.
 
-### Calls per task
+### Calls Per Task
 
 A simple Q&A interaction is one LLM call. A coding agent that reads a file, plans a change, writes code, runs tests, reads the output, and iterates is 15-40 calls for a single task. A deep research agent that searches, reads, synthesizes, and cross-references can hit 80-200 calls. The per-token price is irrelevant if you don't know your call count.
 
-### Retries
+### Retries and Retry Cascades
 
 Each retry is a full LLM call, not a cheap repeat. Layered retry logic (SDK, framework, application) can multiply a single failed call into 27 actual calls. We cover the mechanics in detail in [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents).
 
-### Context growth
+### Context Growth
 
 Every turn of an agent conversation appends to the context window. Turn 1 might send 2,000 tokens. Turn 8 sends 16,000 tokens because it includes the entire conversation history. This is not linear cost growth — it's quadratic-ish, because each call sends everything that came before it plus the new content.
 
@@ -73,11 +73,11 @@ For an 8-turn conversation where each turn adds 2,000 tokens of new content:
 - Turn 8 input: 16,000 tokens
 - **Total input tokens across all 8 turns: 72,000** (not 16,000)
 
-### Fan-out
+### Fan-Out
 
 Multi-agent architectures multiply everything. A coordinator dispatching to 5 sub-agents turns a single request into 30-50 calls — and each sub-agent has its own retry logic and growing context. See [the cost amplification math](/blog/true-cost-of-uncontrolled-agents#the-math-how-agents-amplify-api-costs) for the full breakdown.
 
-## Real-world cost scenarios
+## Real-World Cost Scenarios
 
 Here's what agents actually cost in four common deployments. All estimates use a blended rate of 3,000 input tokens and 1,500 output tokens per call, which is conservative for production agent workloads.
 
@@ -170,27 +170,27 @@ A coordinator agent dispatches work to specialized sub-agents — a planner, a r
 
 The "mixed" row is important. Most production multi-agent systems don't run every agent on the same model. The coordinator and reviewer might use Sonnet 4, while the workers use Haiku 3.5. This cuts costs by 40-60% compared to running everything on the same frontier model.
 
-## The hidden cost multipliers
+## The Hidden Cost Multipliers
 
 The scenarios above assume clean execution — no failures, no retries, no runaway loops. Production isn't clean. Here are the multipliers that turn estimates into surprises.
 
-### Retry overhead
+### Retry Overhead
 
 A 5% tool failure rate with 3 retries per failure adds 15% to your total call count. That's the optimistic case. If retry logic exists at multiple layers (SDK, framework, application), failures cascade multiplicatively. A 5% failure rate with three-layer retry logic can produce a 45% increase in actual calls.
 
-### Growing context windows
+### Growing Context Windows
 
 The estimates above use average token counts. But agent conversations grow over time. A coding agent that starts with a 4,000-token context on step 1 might be sending 30,000 tokens by step 20 — because every previous step's output is in the context. The last few steps of a long agent run can cost 5-8x more than the first few steps.
 
-### Tool call overhead
+### Tool Call Overhead
 
 Each tool call adds tokens in both directions — the tool call schema in the output and the tool result in the next input. A single function call might add 200-500 tokens of overhead per round-trip. An agent that makes 3 tool calls per step adds 600-1,500 tokens of pure overhead per step, compounding across the conversation.
 
-### Concurrency spikes
+### Concurrency Spikes
 
 Ten users triggering multi-agent workflows simultaneously means 160 concurrent LLM calls in Scenario 4. If your rate limits can't handle the burst, you get 429 errors, which trigger retries, which create more load. Concurrency doesn't just multiply cost linearly — it creates failure modes that multiply cost super-linearly.
 
-## What budget enforcement changes
+## What Budget Enforcement Changes
 
 Knowing your costs is the first step. Controlling them is the next.
 
@@ -198,12 +198,14 @@ Agent costs are a function of call patterns, not just token prices. A 10% change
 
 [Cycles](/) provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent degrades gracefully.
 
-## Next steps
+## Next Steps
 
 If you're estimating costs for a new agent deployment or trying to understand an existing one:
 
 - The [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) provides formulas and lookup tables for quick sizing
 - [Common Budget Patterns](/how-to/common-budget-patterns) covers the most effective ways to structure budgets across the scenarios described above
+- [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the maturity model from monitoring to hard enforcement
+- [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — how the reserve-commit pattern works
 - The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) walks through setting up Cycles with a working agent in under 30 minutes
 
 The cheapest agent incident is the one that never happens. Start by knowing your numbers. Then put a system in place to enforce them.

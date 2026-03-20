@@ -16,7 +16,7 @@ Every team running AI agents in production eventually faces the same question: h
 
 These patterns aren't mutually exclusive — most production systems combine two or three. The [common budget patterns](/how-to/common-budget-patterns) page in our docs covers the Cycles-specific implementation details; this post focuses on the architectural thinking behind each approach.
 
-## Pattern 1: Tenant isolation budgets
+## Pattern 1: Tenant Isolation Budgets
 
 **When to use:** Multi-tenant platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
 
@@ -49,7 +49,7 @@ async def run_agent_for_tenant(tenant_id, task):
 
 This pattern maps directly to how [tenant, workflow, and run budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) work in Cycles.
 
-## Pattern 2: Workflow-level caps
+## Pattern 2: Workflow-Level Caps
 
 **When to use:** When different agent workflows have different cost profiles and risk levels, and you want to cap each independently.
 
@@ -80,7 +80,7 @@ async def run_workflow(workflow_type, input_data):
 - Requires understanding the cost distribution of each workflow upfront
 - New workflows need budget configuration before deployment
 
-## Pattern 3: Per-run budgets with graceful degradation
+## Pattern 3: Per-Run Budgets with Graceful Degradation
 
 **When to use:** When you want agents to produce _some_ result even when they hit budget limits, rather than failing entirely.
 
@@ -120,7 +120,7 @@ async def research_with_degradation(query, budget_dollars=10.00):
 
 We cover degradation strategies in detail in [How to Think About Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
-## Pattern 4: Shared pool with priority tiers
+## Pattern 4: Shared Pool with Priority Tiers
 
 **When to use:** When you want to maximize utilization of a fixed budget across multiple agents or users, with guarantees for high-priority work.
 
@@ -163,7 +163,7 @@ async def execute_with_priority(task, priority="normal"):
 - Requires agreement on what constitutes "critical" vs. "low" priority
 - Risk of low-priority work getting permanently starved in busy periods
 
-## Pattern 5: Shadow mode rollout
+## Pattern 5: Shadow Mode Rollout
 
 **When to use:** When you're introducing budget controls to an existing system and need to validate limits before enforcing them.
 
@@ -198,7 +198,7 @@ shadow_report = cycles.get_shadow_report(
 
 Our [shadow mode rollout guide](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) walks through the full process, including how to analyze shadow logs and choose enforcement cutover criteria.
 
-## Pattern 6: Hybrid model (tokens + dollars)
+## Pattern 6: Hybrid Model (Tokens + Dollars)
 
 **When to use:** When you need to track both the raw resource consumption (tokens) and the monetary cost (dollars), because they don't always move in lockstep.
 
@@ -236,7 +236,7 @@ async def execute_hybrid(task):
 - More complex to configure and explain to users
 - Requires accurate estimation for both dimensions
 
-## Combining patterns
+## Combining Patterns
 
 Most production systems layer two or three of these patterns. A common combination:
 
@@ -259,7 +259,7 @@ Tenant Budget ($500/mo)
 
 The [budget allocation and management guide](/how-to/budget-allocation-and-management-in-cycles) covers how to implement these hierarchies in Cycles, and the [cost estimation cheat sheet](/how-to/cost-estimation-cheat-sheet) helps with initial sizing for each tier.
 
-## Choosing your starting point
+## Choosing Your Starting Point
 
 If you're unsure where to begin:
 
@@ -269,3 +269,11 @@ If you're unsure where to begin:
 - **Migrating from no controls:** Start with Pattern 5 (shadow mode) to gather data first
 
 The most important step isn't picking the perfect pattern — it's having _any_ budget boundary in the execution path. You can always refine the structure later. You can't un-spend money that an uncontrolled agent already burned.
+
+## Next Steps
+
+- **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — how the reserve-commit pattern makes these patterns enforceable at runtime
+- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — deep dive on tenant isolation, quotas, and hierarchical budgets for SaaS platforms
+- **[Common Budget Patterns](/how-to/common-budget-patterns)** — Cycles-specific implementation details for each pattern
+- **[How to Model Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles)** — designing your scope hierarchy
+- **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the full reserve-commit lifecycle hands-on

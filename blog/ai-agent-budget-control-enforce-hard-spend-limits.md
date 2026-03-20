@@ -128,4 +128,6 @@ For a detailed shadow mode guide, see [Shadow Mode: How to Roll Out Budget Enfor
 - **[What is Cycles?](/quickstart/what-is-cycles)** — the runtime that implements the reserve-commit enforcement pattern
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the full reserve → execute → commit lifecycle hands-on
 - **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — the maturity curve from dashboards and alerts to runtime budget authority
+- **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
+- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets, quotas, and isolation for SaaS platforms
 - **[Getting Started](/quickstart/getting-started-with-the-python-client)** — integrate with the [Python](/quickstart/getting-started-with-the-python-client), [TypeScript](/quickstart/getting-started-with-the-typescript-client), or [MCP Server](/quickstart/getting-started-with-the-mcp-server) client
