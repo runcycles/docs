@@ -1,5 +1,5 @@
 ---
-title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority."
+title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority"
 date: 2026-03-20
 author: Cycles Team
 tags: [architecture, agents, budgets, engineering]
