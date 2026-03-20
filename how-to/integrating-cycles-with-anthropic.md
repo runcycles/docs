@@ -201,3 +201,8 @@ Adjust these constants for the model you use:
 ## Full example
 
 See [`examples/anthropic_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/anthropic_integration.py) for a complete, runnable script.
+
+## Next steps
+
+- [Anthropic example (TypeScript)](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/anthropic-sdk) — runnable Anthropic SDK integration
+- [Anthropic example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/anthropic_integration.py) — runnable Anthropic integration

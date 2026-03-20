@@ -238,3 +238,4 @@ def handle_request(request):
 - [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — detailed multi-level budgeting guide
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — funding operations
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how hierarchical scopes work
+- [AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide) — architectural thinking behind each budget pattern

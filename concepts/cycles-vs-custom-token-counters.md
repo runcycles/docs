@@ -235,3 +235,4 @@ The question is whether budget accounting is where your team should be spending 
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Try the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded LLM call in ten minutes
+- [How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost) — per-token pricing across providers and why counting tokens alone isn't enough

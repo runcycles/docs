@@ -165,3 +165,4 @@ To learn more:
 - See [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) for how teams evolve from dashboards to budget governance
 - Explore the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) that powers runtime enforcement
 - Get started with the [Python Client](/quickstart/getting-started-with-the-python-client) or [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
+- [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — the technical mechanism behind runtime budget enforcement

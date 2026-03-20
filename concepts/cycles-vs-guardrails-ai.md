@@ -215,3 +215,4 @@ Neither tool is optional if you care about both.
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Try the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded LLM call in ten minutes
+- [AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide) — six common budget patterns with trade-offs for each

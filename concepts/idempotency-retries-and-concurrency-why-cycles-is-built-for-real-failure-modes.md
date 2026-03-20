@@ -386,3 +386,4 @@ To explore the Cycles stack:
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete incidents involving retry storms and concurrency races

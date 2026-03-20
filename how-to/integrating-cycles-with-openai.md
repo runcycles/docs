@@ -181,3 +181,8 @@ ctx.metrics = CyclesMetrics(
 ## Full example
 
 See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/openai_integration.py) for a complete, runnable script.
+
+## Next steps
+
+- [OpenAI example (TypeScript)](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/openai-sdk) — runnable OpenAI SDK integration
+- [OpenAI example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/openai_integration.py) — runnable OpenAI integration

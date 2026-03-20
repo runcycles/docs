@@ -193,3 +193,4 @@ export function Chat() {
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use `withCycles` vs `reserveForStream`
+- [Vercel AI SDK example](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/vercel-ai-sdk) — runnable Vercel AI SDK integration

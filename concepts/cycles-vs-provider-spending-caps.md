@@ -215,3 +215,4 @@ One prevents catastrophe. The other maintains comfortable operating conditions.
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Try the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded LLM call in ten minutes
+- [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — why provider caps fail in multi-tenant systems and what to use instead

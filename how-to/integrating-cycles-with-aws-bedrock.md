@@ -169,3 +169,4 @@ Track both to calculate accurate actual cost for the commit.
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — handling budget errors
+- [AWS Bedrock example (TypeScript)](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/aws-bedrock) — runnable AWS Bedrock integration

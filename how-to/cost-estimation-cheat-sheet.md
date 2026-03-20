@@ -199,3 +199,4 @@ Your estimation strategy should match your [overage policy](/protocol/commit-ove
 - [Estimate Exposure Before Execution](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles) — detailed strategy guide for improving estimation over time
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — how USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS work
 - [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft) — what happens when actual exceeds estimated
+- [How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost) — per-token pricing across providers with real-world cost scenarios

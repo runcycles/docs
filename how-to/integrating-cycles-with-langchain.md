@@ -230,3 +230,7 @@ executor_handler = CyclesBudgetHandler(
 ## Full example
 
 See [`examples/langchain_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/langchain_integration.py) for a complete, runnable script.
+
+## Next steps
+
+- [LangChain example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/langchain_integration.py) — runnable LangChain integration

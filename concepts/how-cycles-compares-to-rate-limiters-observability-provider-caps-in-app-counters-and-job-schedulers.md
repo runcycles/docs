@@ -407,3 +407,4 @@ To explore the Cycles stack:
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - Browse the full [Integration Ecosystem](/how-to/ecosystem)
+- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios and what each approach prevents

@@ -146,3 +146,4 @@ To learn more:
 - Explore the full [API Reference](/protocol/api-reference-for-the-cycles-protocol)
 - Try the [MCP Server](/quickstart/getting-started-with-the-mcp-server) to give a coding agent direct budget tool access — zero code changes
 - Get started with the [Python Client](/quickstart/getting-started-with-the-python-client) or [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
+- [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — how the reserve-commit pattern works at runtime

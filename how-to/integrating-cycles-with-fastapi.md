@@ -170,3 +170,7 @@ async def get_budget(tenant_id: str, request: Request):
 ## Full example
 
 See [`examples/fastapi_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/fastapi_integration.py) for a complete, runnable server.
+
+## Next steps
+
+- [FastAPI example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/fastapi_integration.py) — runnable FastAPI integration
