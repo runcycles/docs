@@ -202,7 +202,7 @@ The best-run teams we see operate at all tiers simultaneously:
 - **Tier 2 (Alerting):** Alerts on anomalies that enforcement alone doesn't catch — unusual patterns, new cost trends, budget utilization approaching limits. These are informational alerts for humans, not enforcement mechanisms.
 - **Tier 4 (Hard Enforcement):** Cycles budget authority in the execution path. Every call is authorized before execution. Budgets are scoped per-tenant and per-run.
 
-Notice Tier 3 is absent. That's intentional. Once you have Tier 4, rate limits and application counters are redundant for cost control. You might still have rate limits for other reasons (protecting downstream services, fairness), but they're no longer your cost control mechanism.
+Notice Tier 3 is absent. That's intentional. Once you have Tier 4, rate limits and application counters are redundant for cost control. (For more on why building your own enforcement layer is deceptively complex, see [Vibe Coding a Budget Wrapper vs. Owning a Budget Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).) You might still have rate limits for other reasons (protecting downstream services, fairness), but they're no longer your cost control mechanism.
 
 The monitoring and alerting layers serve a different purpose once enforcement is in place. They shift from "detect overspend" to "understand cost patterns and optimize." An alert that says "Tenant X is using 80% of their monthly budget on day 15" isn't an emergency — enforcement prevents overspend. But it's a signal that you should review their budget allocation or their agent efficiency.
 
