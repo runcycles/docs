@@ -143,9 +143,13 @@ A failure mode where an AI agent repeatedly calls the same tool in a loop, often
 
 A cascade of retries triggered by transient failures, where each retry spawns additional retries across services. Without idempotency and budget controls, retry storms can amplify cost by orders of magnitude. See [Retry Storms](/incidents/retry-storms-and-idempotency-failures).
 
+### Tenant
+
+The top-level organizational isolation boundary in Cycles. Every budget, API key, and reservation is scoped to exactly one tenant. Tenants are created and managed through the [Admin Server](#admin-server) using the Admin API. See [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles).
+
 ### Tenant Isolation
 
-A budget pattern where each tenant receives an independent budget allocation that cannot be consumed by other tenants. Tenant isolation prevents the "noisy neighbor" problem where one tenant's runaway agent exhausts shared resources.
+A budget pattern where each tenant receives an independent budget allocation that cannot be consumed by other tenants. Tenant isolation prevents the "noisy neighbor" problem where one tenant's runaway agent exhausts shared resources. See [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles).
 
 ### Cost Estimation
 
@@ -159,7 +163,7 @@ The HTTP service that implements the [Cycles Protocol](#cycles-protocol) and pro
 
 ### Admin Server
 
-The management API used to configure tenants, API keys, budgets, and policies. The Admin Server is separate from the Cycles Server and is not part of the protocol's hot path. See [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles).
+The management API used to configure tenants, API keys, budgets, and policies. The Admin Server is separate from the Cycles Server and is not part of the protocol's hot path. See [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) and [Authentication, Tenancy, and API Keys](/protocol/authentication-tenancy-and-api-keys-in-cycles).
 
 ### MCP Server
 

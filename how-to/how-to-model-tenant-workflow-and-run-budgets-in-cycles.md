@@ -407,11 +407,9 @@ That is how teams move from simple usage caps to real autonomous execution contr
 
 ## Next steps
 
-To explore how Cycles models these boundaries:
-
-- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
-- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
-- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
-- Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
-- Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
-- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before setting up budgets
+- [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — allocate and fund budgets at each scope level
+- [API Key Management](/how-to/api-key-management-in-cycles) — create tenant-scoped API keys
+- [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how subject fields map to hierarchical scope paths
+- [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure from scratch
+- Integrate with [Python](/quickstart/getting-started-with-the-python-client), [TypeScript](/quickstart/getting-started-with-the-typescript-client), or [Spring AI](https://github.com/runcycles/cycles-spring-boot-starter)
