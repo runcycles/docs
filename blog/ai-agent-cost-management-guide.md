@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Cost Management: The Complete Guide for Engineering Teams"
-date: 2026-03-19
+date: 2026-03-18
 author: Cycles Team
 tags: [costs, engineering, best-practices]
 description: "A practical maturity model for managing AI agent costs — from no controls through monitoring, alerting, soft limits, and hard enforcement. Each tier explained with tools, trade-offs, and when to graduate."
