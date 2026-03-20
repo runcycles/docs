@@ -210,3 +210,4 @@ app.post(
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use middleware vs inline
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — handling Cycles errors
+- [Express middleware example](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/express-middleware) — runnable Express middleware integration

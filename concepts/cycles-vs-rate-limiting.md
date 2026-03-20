@@ -203,3 +203,4 @@ Production systems need both answers.
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Try the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded LLM call in ten minutes
+- [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents) — what happens when rate limits are the only line of defense

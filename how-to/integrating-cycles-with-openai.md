@@ -181,3 +181,12 @@ ctx.metrics = CyclesMetrics(
 ## Full example
 
 See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/openai_integration.py) for a complete, runnable script.
+
+## Next steps
+
+- [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
+- [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming
+- [Testing with Cycles](/how-to/testing-with-cycles) — testing budget-guarded code
+- [Production Operations Guide](/how-to/production-operations-guide) — running Cycles in production
+- [OpenAI example (TypeScript)](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/openai-sdk) — runnable OpenAI SDK integration
+- [OpenAI example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/openai_integration.py) — runnable OpenAI integration

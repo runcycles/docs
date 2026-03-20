@@ -278,3 +278,4 @@ To learn more:
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents) — real-world failure modes and costs of running agents without budget limits

@@ -16,6 +16,8 @@ Every team running AI agents in production eventually faces the same question: h
 
 These patterns aren't mutually exclusive — most production systems combine two or three. The [common budget patterns](/how-to/common-budget-patterns) page in our docs covers the Cycles-specific implementation details; this post focuses on the architectural thinking behind each approach.
 
+> **Note:** Code examples in this post are simplified pseudocode to illustrate the pattern intent. For production-ready implementations using the actual Cycles SDK, see the [Python quickstart](/quickstart/getting-started-with-the-python-client), [TypeScript quickstart](/quickstart/getting-started-with-the-typescript-client), or [common budget patterns](/how-to/common-budget-patterns).
+
 ## Pattern 1: Tenant Isolation Budgets
 
 **When to use:** Multi-tenant platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.

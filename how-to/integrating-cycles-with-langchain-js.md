@@ -288,3 +288,4 @@ Each agent draws from its own budget allocation. If the executor exhausts its bu
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Error Handling Patterns in TypeScript](/how-to/error-handling-patterns-in-typescript) — handling Cycles errors in TypeScript
+- [LangChain.js example](https://github.com/runcycles/cycles-client-typescript/tree/main/examples/langchain-js) — runnable LangChain.js integration

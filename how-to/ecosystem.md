@@ -111,21 +111,21 @@ Connect Cycles to OpenClaw for budget-controlled multi-agent orchestration.
 
 The official Cycles Python client. Install from PyPI and start enforcing budgets in minutes.
 
-- [cycles-client on PyPI](https://pypi.org/project/cycles-client/)
+- [runcycles on PyPI](https://pypi.org/project/runcycles/)
 - [Python quickstart](/quickstart/getting-started-with-the-python-client)
 
 ### TypeScript Client
 
 The official Cycles TypeScript client for Node.js and browser environments.
 
-- [@runcycles/client on npm](https://www.npmjs.com/package/@runcycles/client)
+- [runcycles on npm](https://www.npmjs.com/package/runcycles)
 - [TypeScript quickstart](/quickstart/getting-started-with-the-typescript-client)
 
 ### Spring Boot Starter
 
 Auto-configured Cycles integration for Spring Boot applications, available on Maven Central.
 
-- [cycles-spring-boot-starter on Maven Central](https://central.sonatype.com/artifact/io.runcycles/cycles-spring-boot-starter)
+- [cycles-client-java-spring on Maven Central](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring)
 - [Spring Boot quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
 
 ## Protocol & Standards

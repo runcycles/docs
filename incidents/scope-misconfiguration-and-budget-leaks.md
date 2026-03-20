@@ -350,3 +350,4 @@ For more testing patterns, see [Testing with Cycles](/how-to/testing-with-cycles
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how Cycles builds scope paths from subject fields
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — creating and funding budgets
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — testing scopes without enforcement
+- [AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide) — six common patterns to avoid scope misconfiguration

@@ -532,3 +532,4 @@ No. Parent and child scopes are independent ledgers. A reservation at `tenant:ac
 - [Common Budget Patterns](/how-to/common-budget-patterns) — practical recipes for real-world scope hierarchies
 - [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — multi-level policy design
 - [Scope Misconfiguration and Budget Leaks](/incidents/scope-misconfiguration-and-budget-leaks) — what can go wrong with scope design
+- [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-tenant budgets, quotas, and isolation for agent platforms

@@ -335,3 +335,4 @@ This pattern appears in:
 - [Idempotency, Retries and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) — how Cycles handles concurrency
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — hierarchical budget enforcement
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — handling denial gracefully
+- [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — how per-tenant budget isolation prevents concurrent overspend across tenants

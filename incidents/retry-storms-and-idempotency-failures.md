@@ -311,3 +311,4 @@ class RetryCircuitBreaker:
 - [Idempotency, Retries and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) — how Cycles handles retries safely
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — understanding IDEMPOTENCY_MISMATCH
 - [Runaway Agents and Tool Loops](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — the broader runaway agent problem
+- [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — how monitoring and alerting tiers handle retry storms before enforcement
