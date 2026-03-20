@@ -20,7 +20,7 @@ Common issues when integrating and operating Cycles, with solutions.
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
@@ -28,7 +28,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }' | jq .
 ```
 
-Remember: every scope in the subject hierarchy needs its own budget. If your reservation uses `tenant=acme-corp, workspace=prod`, you need budgets for both `tenant:acme-corp` and `tenant:acme-corp/workspace:prod`.
+Remember: a reservation is checked against every derived scope that has a budget defined. Scopes without budgets are skipped, but at least one derived scope must have a budget. If you have budgets at multiple levels, each one must have sufficient funds.
 
 ### BUDGET_EXCEEDED but I just funded the budget
 
@@ -72,7 +72,7 @@ The `remaining` field shows available budget after accounting for active reserva
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "operation": "REPAY_DEBT",
     "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
@@ -256,7 +256,7 @@ Use the RESET funding operation:
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001"}' | jq .
 ```
 
@@ -372,11 +372,15 @@ See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents
 
 ### Scopes not matching — reservation denied despite budget existing
 
-**Symptom:** A budget exists for `tenant:acme-corp` but reservations with `tenant=acme-corp, workspace=prod` are denied.
+**Symptom:** A budget exists but reservations are still denied with `BUDGET_EXCEEDED`.
 
-**Cause:** Every level in the subject hierarchy needs its own budget. A budget at `tenant:acme-corp` covers that scope, but a reservation that includes `workspace=prod` also checks `tenant:acme-corp/workspace:prod` — which has no budget.
+**Cause:** The budget scope path does not match any of the reservation's derived scopes. Enforcement checks every derived scope that has a budget defined — scopes without budgets are skipped, but at least one derived scope must have a budget. Common mismatches:
 
-**Fix:** Create budgets at each scope level that reservations will use. See [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) and [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles).
+- Budget at `tenant:acme-corp/workspace:prod` but subject uses `workspace=staging`
+- Budget at `tenant:acme-corp/workspace:prod` but subject omits `workspace` entirely (the derived scopes are just `tenant:acme-corp`, which has no budget)
+- Budget uses a different tenant ID than the one in the subject
+
+**Fix:** Check that the scope path on the budget matches the scopes derived from the reservation subject. Use the [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) reference to understand which scopes are derived. See also [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
 
 ## Debugging production incidents
 
