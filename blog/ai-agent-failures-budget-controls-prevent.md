@@ -277,8 +277,10 @@ The pattern is simple. Budget enforcement is a pre-execution check. It asks one 
 
 If these failure modes look familiar — or if you'd rather prevent them than experience them:
 
-- The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) gets you from zero to working budget enforcement in under 30 minutes
-- [Common Budget Patterns](/how-to/common-budget-patterns) covers the budget structures that prevent each of these failure modes
-- [How to Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) helps you decide where to start: tenant budgets, run budgets, or model call guardrails
+- **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — from zero to working budget enforcement in under 30 minutes
+- **[Common Budget Patterns](/how-to/common-budget-patterns)** — the budget structures that prevent each of these failure modes
+- **[How to Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails)** — decide where to start: tenant budgets, run budgets, or model call guardrails
+- **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the maturity model from no controls to hard enforcement
+- **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 
 The cheapest incident is the one that never happens. The second cheapest is the one that's capped at $15 instead of $4,200.

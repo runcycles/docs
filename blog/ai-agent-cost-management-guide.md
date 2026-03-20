@@ -175,7 +175,7 @@ Budgets can be scoped at any level — per tenant, per workflow, per run, or any
 
 The key insight behind Tier 4 is that budget enforcement is infrastructure, not application logic. You don't implement it in each agent. You implement it once, in the execution path, and every agent benefits.
 
-## How to graduate between tiers
+## How to Graduate Between Tiers
 
 The decision to move up isn't about sophistication. It's about whether your current tier's failure modes are acceptable.
 
@@ -194,7 +194,7 @@ You can't meaningfully skip to Tier 4 without Tiers 1 and 2. Hard enforcement te
 
 You _can_ skip from Tier 1 or 2 directly to Tier 4, bypassing Tier 3 entirely. Soft limits are the least durable tier — they're a band-aid that solves the symptom (too many calls) without solving the problem (no cost-aware enforcement). If you're going to invest engineering time, invest it in Tier 4.
 
-## Combining tiers: the production stack
+## Combining Tiers: The Production Stack
 
 The best-run teams we see operate at all tiers simultaneously:
 
@@ -206,7 +206,7 @@ Notice Tier 3 is absent. That's intentional. Once you have Tier 4, rate limits a
 
 The monitoring and alerting layers serve a different purpose once enforcement is in place. They shift from "detect overspend" to "understand cost patterns and optimize." An alert that says "Tenant X is using 80% of their monthly budget on day 15" isn't an emergency — enforcement prevents overspend. But it's a signal that you should review their budget allocation or their agent efficiency.
 
-## The rollout path
+## The Rollout Path
 
 For teams moving from Tier 0 or 1 to Tier 4, the recommended path:
 
@@ -222,12 +222,14 @@ For teams moving from Tier 0 or 1 to Tier 4, the recommended path:
 
 This process takes 4-8 weeks for most teams. The shadow mode step is critical — it prevents enforcement from breaking production workflows on day one.
 
-## Next steps
+## Next Steps
 
 The progression from no controls to hard enforcement is predictable. The question isn't whether you'll need Tier 4 — it's whether you get there before or after an expensive incident.
 
-- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) covers the conceptual framework behind this maturity model in more depth
-- [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) walks through deploying Cycles without breaking production
-- [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) covers what agents should do when they hit budget limits — deny, downgrade, disable, or defer
+- **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — the conceptual framework behind this maturity model in more depth
+- **[Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)** — deploying Cycles without breaking production
+- **[Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer)** — what agents should do when they hit budget limits: deny, downgrade, disable, or defer
+- **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — deep dive on the reserve-commit enforcement pattern
+- **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 
 Start by figuring out which tier you're at today. Then decide whether your current tier's failure modes are ones you can live with.
