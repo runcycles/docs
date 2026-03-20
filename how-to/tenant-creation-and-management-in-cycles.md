@@ -70,10 +70,6 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
     "name": "Acme Corporation",
     "parent_tenant_id": "acme-group",
     "default_commit_overage_policy": "ALLOW_IF_AVAILABLE",
-    "default_reservation_ttl_ms": 120000,
-    "max_reservation_ttl_ms": 3600000,
-    "max_reservation_extensions": 5,
-    "reservation_expiry_policy": "AUTO_RELEASE",
     "metadata": {
       "billing_id": "cust_12345",
       "plan": "enterprise",
@@ -81,6 +77,14 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
     }
   }' | jq .
 ```
+
+The accepted optional fields on creation are:
+
+| Field | Description |
+|---|---|
+| `parent_tenant_id` | Parent tenant for hierarchical relationships (see [Hierarchical tenants](#hierarchical-tenants)) |
+| `default_commit_overage_policy` | Default overage policy: `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
+| `metadata` | Key-value pairs for external references (up to 32 keys) |
 
 Each of these fields is covered in detail in the sections below.
 
@@ -127,7 +131,7 @@ Response:
 | `status` | Filter by status: `ACTIVE`, `SUSPENDED`, or `CLOSED` |
 | `parent_tenant_id` | Filter by parent tenant (for hierarchical tenants) |
 | `cursor` | Pagination cursor from a previous response |
-| `limit` | Page size (default: 50, max: 200) |
+| `limit` | Page size (default: 50, max: 100) |
 
 ### Cursor-based pagination
 
@@ -271,11 +275,20 @@ The server rejects invalid status transitions with `400 INVALID_REQUEST`:
 
 ## Configuring tenant defaults
 
-Tenants carry default configuration that applies to all reservations made under that tenant, unless overridden at the budget ledger or reservation level.
+Each tenant has configuration that governs how reservations behave. The `default_commit_overage_policy` can be set at creation or updated via `PATCH`. The remaining properties are server-level defaults that apply to all tenants.
+
+### Settable per tenant
 
 | Property | Default | Description |
 |---|---|---|
-| `default_commit_overage_policy` | `REJECT` | What happens when actual spend exceeds the reserved amount |
+| `default_commit_overage_policy` | `REJECT` | What happens when actual spend exceeds the reserved amount. Set via create or update. |
+
+### Server-level defaults
+
+These defaults apply to all tenants and are configured at the server level, not per-tenant:
+
+| Property | Default | Description |
+|---|---|---|
 | `default_reservation_ttl_ms` | `60000` (60s) | Default time-to-live for reservations when not specified per-request |
 | `max_reservation_ttl_ms` | `3600000` (1h) | Maximum allowed TTL; requests exceeding this are capped |
 | `max_reservation_extensions` | `10` | Maximum TTL extensions per reservation |
@@ -595,6 +608,77 @@ done
 ```
 
 Give production a large budget and dev a small one. A bug in staging cannot drain the production budget.
+
+## Best practices
+
+### Naming conventions
+
+Use stable, semantic tenant IDs that reflect your domain:
+
+| Good | Avoid |
+|---|---|
+| `customer-acme` | `cust_12345` (opaque database ID) |
+| `dept-engineering` | `eng` (too short, ambiguous) |
+| `partner-alpha` | `PARTNER_ALPHA` (must be lowercase) |
+
+Tenant IDs appear in scope paths (`tenant:customer-acme/workspace:prod`), audit logs, and API key bindings. Choose names that are readable and meaningful to your team.
+
+### One tenant = one isolation boundary
+
+Do not multiplex unrelated customers or teams into a single tenant. If two groups should not share budget, they need separate tenants. Use [hierarchical tenants](#hierarchical-tenants) to model organizational relationships rather than sharing a single tenant.
+
+### Suspend before you close
+
+Use `SUSPENDED` for temporary blocks — payment failures, security investigations, plan changes. A suspended tenant can be reactivated at any time.
+
+Use `CLOSED` only for permanent decommission. It is irreversible. If there is any chance you will need the tenant again, use `SUSPENDED`.
+
+### Use metadata consistently
+
+Pick a standard set of metadata keys and use them across all tenants. This makes it easy to query and correlate tenant data with external systems:
+
+```json
+{
+  "billing_id": "cust_12345",
+  "plan": "enterprise",
+  "region": "us-east-1",
+  "owner_email": "admin@acme.com"
+}
+```
+
+### Set overage policy at the tenant level
+
+The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. Start with `REJECT` (the default) — it is the safest option. Only switch to `ALLOW_IF_AVAILABLE` or `ALLOW_WITH_OVERDRAFT` when you understand the debt implications.
+
+Override the policy per-budget-ledger or per-reservation for specific scopes that need different behavior.
+
+### Create API keys per environment
+
+Issue separate API keys for production, staging, and development — even within the same tenant. This makes it easy to revoke one environment's access without affecting others. See [API Key Management](/how-to/api-key-management-in-cycles) for rotation practices.
+
+### Automate tenant onboarding
+
+The create tenant → create API key → create budget sequence should be scripted, not manual. This ensures consistency, reduces errors, and makes it easy to onboard new customers at scale.
+
+```bash
+# Example: onboard a new customer
+TENANT_ID="customer-${CUSTOMER_SLUG}"
+curl -s -X POST http://localhost:7979/v1/admin/tenants \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d "{\"tenant_id\": \"$TENANT_ID\", \"name\": \"$CUSTOMER_NAME\"}"
+
+API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d "{\"tenant_id\": \"$TENANT_ID\", \"name\": \"prod-key\", \"permissions\": [\"reservations:create\",\"reservations:commit\",\"reservations:release\",\"balances:read\"]}" \
+  | jq -r '.key_secret')
+
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d "{\"scope\": \"tenant:$TENANT_ID\", \"unit\": \"USD_MICROCENTS\", \"allocated\": {\"amount\": $BUDGET_AMOUNT, \"unit\": \"USD_MICROCENTS\"}}"
+```
 
 ## Troubleshooting
 

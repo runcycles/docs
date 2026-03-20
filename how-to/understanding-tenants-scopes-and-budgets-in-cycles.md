@@ -470,6 +470,34 @@ curl -s "http://localhost:7878/v1/balances?tenant=customer-a" \
 
 This shows the remaining and reserved amounts at every scope level — giving you visibility into where budget pressure exists in the hierarchy.
 
+## Best practices
+
+### Tenant best practices
+
+- **One tenant per isolation boundary.** If two groups of users should not share budget, they should be separate tenants. Do not multiplex unrelated customers into a single tenant.
+- **Use stable, meaningful tenant IDs.** Tenant IDs appear in scope paths, audit logs, and API key bindings. Use domain-meaningful names like `customer-acme` or `dept-engineering`, not internal database IDs. They cannot be changed after creation.
+- **Suspend before you close.** Use `SUSPENDED` for temporary blocks (payment failure, investigation). Only use `CLOSED` when you are permanently decommissioning — it is irreversible.
+- **Use metadata for external correlation.** Store billing IDs, plan tiers, and external system references in the `metadata` field. This makes it easy to join tenant data with your billing or CRM system.
+- **Set `default_commit_overage_policy` at the tenant level.** This establishes a baseline for all scopes. Override per-budget-ledger or per-reservation when specific scopes need different behavior.
+
+### Scope best practices
+
+- **Start with the fewest scope levels that solve your problem.** Tenant-only is a valid starting point. Add workspace, app, or workflow levels only when you need finer control.
+- **Keep Subject fields consistent across all code paths.** If some requests include `workspace` and others do not, enforcement becomes inconsistent — some requests bypass the workspace-level check. See [Scope Misconfiguration and Budget Leaks](/incidents/scope-misconfiguration-and-budget-leaks).
+- **Use the canonical hierarchy.** The protocol defines `tenant → workspace → app → workflow → agent → toolset`. Map your concepts to these standard levels rather than fighting the ordering.
+- **Prefer standard fields over custom dimensions.** Standard fields have built-in scope derivation support. Use `dimensions` only for concepts that truly do not fit (e.g., per-run IDs, cost centers).
+- **Validate scope consistency in tests.** Write tests that verify all code paths for the same operation include the same Subject fields. Inconsistencies cause silent budget bypasses.
+- **Only create budgets at scopes you need to enforce.** You do not need a budget at every level — scopes without budgets are skipped during enforcement.
+
+### Budget best practices
+
+- **Always create the tenant-level budget first.** The tenant scope is the foundation. Without it, child scope budgets have no parent boundary.
+- **Set child scope budgets smaller than parent scope budgets.** A workspace budget of $80 under a tenant budget of $100 makes sense. A workspace budget of $150 under a tenant budget of $100 wastes allocation — the tenant scope will deny before the workspace budget is exhausted.
+- **Use idempotency keys on all funding operations.** This prevents double-funding from retries. Use meaningful keys like `fund-acme-march-2026` rather than random UUIDs.
+- **Reset budgets at billing period boundaries.** Use the `RESET` operation rather than accumulating `CREDIT` operations. This gives you a clean ledger each period.
+- **Monitor `is_over_limit` and `debt` proactively.** When `debt > 0`, new reservations are blocked with `DEBT_OUTSTANDING`. When `debt > overdraft_limit`, the scope enters over-limit state. Detect these early.
+- **Use `REJECT` overage policy by default.** Only switch to `ALLOW_IF_AVAILABLE` or `ALLOW_WITH_OVERDRAFT` when you understand the debt implications. Overdraft creates blocking debt that must be explicitly repaid.
+
 ## Common questions
 
 ### Do I need a budget at every scope level?

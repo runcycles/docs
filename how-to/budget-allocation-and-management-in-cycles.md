@@ -14,7 +14,7 @@ Allocation is the total budget assigned to a scope. It is the ceiling against wh
 The formula for remaining budget is:
 
 ```
-remaining = allocated - spent - reserved
+remaining = allocated - spent - reserved - debt
 ```
 
 A reservation succeeds only if `remaining >= estimate` across all affected scopes.
