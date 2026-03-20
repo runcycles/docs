@@ -314,14 +314,14 @@ This pattern appears in:
 
    ```bash
    # Team-level cap
-   curl -s -X POST "http://localhost:7878/v1/budgets" \
-     -H "X-Cycles-API-Key: $API_KEY" \
+   curl -s -X POST "http://localhost:7979/v1/admin/budgets" \
+     -H "X-Admin-API-Key: admin-bootstrap-key" \
      -d '{"scope": "tenant:acme-corp/workspace:prod", "allocated": 10000000}'
 
    # Per-agent budgets (sum exceeds team cap — that's fine)
    for agent in agent-a agent-b agent-c agent-d agent-e; do
-     curl -s -X POST "http://localhost:7878/v1/budgets" \
-       -H "X-Cycles-API-Key: $API_KEY" \
+     curl -s -X POST "http://localhost:7979/v1/admin/budgets" \
+       -H "X-Admin-API-Key: admin-bootstrap-key" \
        -d "{\"scope\": \"tenant:acme-corp/workspace:prod/agent:${agent}\", \"allocated\": 5000000}"
    done
    ```
