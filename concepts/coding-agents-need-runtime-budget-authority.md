@@ -1,6 +1,6 @@
 ---
 title: "Coding Agents Need Runtime Budget Authority"
-description: "Learn why coding agents need runtime budget authority — the missing control layer between autonomous code execution and organizational spending limits."
+description: "Why coding agents need runtime budget authority — the missing control layer between autonomous execution and spending limits."
 ---
 
 # Coding Agents Need Runtime Budget Authority
@@ -72,7 +72,7 @@ Provider-level spending caps and rate limits are useful safety nets, but they so
 
 Coding agents need controls that are:
 
-- **scoped** — per tenant, per workspace, per run, per agent
+- **scoped** — per tenant, per workspace, per workflow, per agent
 - **pre-authorized** — checked before execution, not after
 - **concurrency-safe** — correct under parallel agent execution
 - **reconciled** — actual usage committed, unused budget released

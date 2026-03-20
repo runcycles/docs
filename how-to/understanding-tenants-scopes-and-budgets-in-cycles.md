@@ -302,7 +302,7 @@ Budgets are created through the Admin API. You need one budget per scope per uni
 # Tenant-level budget
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
@@ -312,7 +312,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # Workspace-level budget (within the tenant)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod",
     "unit": "USD_MICROCENTS",
@@ -322,7 +322,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # App-level budget (within the workspace)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod/app:chatbot",
     "unit": "USD_MICROCENTS",
@@ -349,7 +349,7 @@ At the start of a new billing period, reset budgets to their allocation:
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "operation": "RESET",
     "amount": {"amount": 10000000000, "unit": "USD_MICROCENTS"},
@@ -412,7 +412,7 @@ KEY_A=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
 # Customer A: tenant-level cap
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $KEY_A" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:customer-a",
     "unit": "USD_MICROCENTS",
@@ -422,7 +422,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # Customer A: production workspace cap
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $KEY_A" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:customer-a/workspace:prod",
     "unit": "USD_MICROCENTS",
@@ -432,7 +432,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # Customer A: chatbot app cap within production
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $KEY_A" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:customer-a/workspace:prod/app:chatbot",
     "unit": "USD_MICROCENTS",

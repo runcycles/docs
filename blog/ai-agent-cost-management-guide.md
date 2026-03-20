@@ -163,7 +163,7 @@ The atomic check-and-decrement is critical. It's what prevents the TOCTOU race c
 | Pre-execution prevention | Overspend cannot happen — calls are denied before execution |
 | Atomic concurrency control | No race conditions between concurrent agents |
 | Per-run granularity | Each agent run has its own budget, independent of daily/monthly caps |
-| Hierarchical budgets | Tenant > workspace > app > workflow > agent budgets, each enforced independently |
+| Hierarchical budgets | Tenant > workspace > app > workflow > agent > toolset budgets, each enforced independently |
 | Graceful degradation | Agents receive a clear signal to downgrade instead of crashing |
 | Audit trail | Every reservation and denial is logged with full context |
 

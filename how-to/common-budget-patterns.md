@@ -17,7 +17,7 @@ Give each user a daily spending limit.
 # Create a $5/day budget for user-123
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod/app:chatbot/agent:user-123",
     "unit": "USD_MICROCENTS",
@@ -56,7 +56,7 @@ Cap spending per conversation to prevent runaway loops.
 # Create a $0.50 budget per conversation
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp/workflow:conv-abc-123",
     "unit": "USD_MICROCENTS",
@@ -134,7 +134,7 @@ Cap the total cost of a single agent run to prevent runaway loops.
 # Create a $2 budget for this specific run
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp/workflow:run-xyz-789",
     "unit": "USD_MICROCENTS",

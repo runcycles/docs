@@ -3,7 +3,7 @@ title: "5 Real-World AI Agent Failures That Budget Controls Would Have Prevented
 date: 2026-03-17
 author: Cycles Team
 tags: [incidents, costs, best-practices]
-description: "Five concrete AI agent failure scenarios — with estimated dollar amounts — and how pre-execution budget enforcement would have caught each one before the damage was done."
+description: "Five AI agent failure scenarios with dollar estimates, and how pre-execution budget enforcement would have caught each one."
 blog: true
 sidebar: false
 ---
@@ -239,7 +239,7 @@ Five months of $8,500/month overspend from the ML workspace (relative to the $3,
 | Per-workflow | Workflow-level anomalies | Cross-workflow accumulation |
 | Per-run | Individual runaway runs | Gradual accumulation from many normal runs |
 
-The right answer is hierarchical scoping: tenant > workspace > app > workflow > agent. Each level has its own budget. A single agent can't blow through the workflow budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
+The right answer is hierarchical scoping: tenant > workspace > app > workflow > agent > toolset. Each level has its own budget. A single agent can't blow through the workflow budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
 
 **How budget enforcement prevents this:**
 

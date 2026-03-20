@@ -79,11 +79,11 @@ The mechanism that makes hard budget control work is the **reserve-commit lifecy
 This pattern survives the failure modes that break simpler approaches:
 
 - **Retries**: each retry attempt is a new reservation. The budget tracks cumulative exposure across all attempts, not just the latest one.
-- **Concurrency**: the reservation is atomic. Two workers cannot both claim the last $5 — one gets the reservation, the other gets DENY.
+- **Concurrency**: the reservation is atomic. Two workers cannot both claim the last $5 — one gets the reservation, the other is denied with `BUDGET_EXCEEDED`.
 - **Partial failures**: unreported reservations expire after a TTL (default 60 seconds, with a grace period for in-flight commits). Budget is not permanently lost if a process crashes mid-execution.
 - **Fan-out**: sub-agents share the parent scope's budget. The total is enforced across all branches, not per-branch.
 
-When the decision is DENY, the agent has options beyond hard-stopping. It can degrade — use a cheaper model, skip optional steps, reduce context length, or defer the task. The enforcement point gives the agent a structured moment to make that decision, rather than failing silently when it runs out of API credits.
+When a reservation is denied, the agent has options beyond hard-stopping. It can degrade — use a cheaper model, skip optional steps, reduce context length, or defer the task. The enforcement point gives the agent a structured moment to make that decision, rather than failing silently when it runs out of API credits.
 
 ## Why Budget Enforcement Prevents Real Failures
 
@@ -92,7 +92,7 @@ These are not hypothetical scenarios. They are patterns that show up in any team
 - **Runaway loop**: agent retries a failing API call 200 times with expanding context windows — $800 in four minutes. With budget enforcement, the agent is denied after attempt 12 when the reservation exceeds remaining budget.
 - **Retry storm**: a transient backend error triggers retries across 10 concurrent agent workers — $3,200 in aggregate before the error resolves. With atomic reservations, workers are denied as the shared budget depletes.
 - **Sub-agent fan-out**: an orchestrator spawns 15 research sub-agents, each making 50+ model calls — $1,500 total. With scoped budgets, the orchestrator's budget caps the sum of all sub-agent spend.
-- **Concurrent race**: two workers both check "budget remaining: $10" and both proceed — $20 spent on a $10 budget. Atomic reservations eliminate this: one worker gets the reservation, the other gets DENY.
+- **Concurrent race**: two workers both check "budget remaining: $10" and both proceed — $20 spent on a $10 budget. Atomic reservations eliminate this: one worker gets the reservation, the other is denied.
 
 For detailed breakdowns with full cost math, see [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent).
 

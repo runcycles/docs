@@ -1,6 +1,6 @@
 ---
 title: "Why Coding Agents Do Not Replace Cycles"
-description: "Learn why coding agents do not eliminate the need for Cycles — the business-layer governance that decides what work is worth funding, where scope should stop, and what deserves budget next."
+description: "Coding agents do not eliminate the need for Cycles — the governance layer that decides what work is worth funding and where scope should stop."
 ---
 
 # Why Coding Agents Do Not Replace Cycles
