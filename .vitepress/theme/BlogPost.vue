@@ -19,12 +19,14 @@ function formatDate(dateStr) {
 }
 
 function copyLink() {
+  if (typeof window === 'undefined') return
   navigator.clipboard.writeText(window.location.href)
   copied.value = true
   setTimeout(() => { copied.value = false }, 2000)
 }
 
 function shareUrl(platform) {
+  if (typeof window === 'undefined') return '#'
   const url = encodeURIComponent(window.location.href)
   const title = encodeURIComponent(frontmatter.value.title)
   if (platform === 'twitter') {
@@ -33,6 +35,7 @@ function shareUrl(platform) {
   if (platform === 'linkedin') {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
   }
+  return '#'
 }
 </script>
 
