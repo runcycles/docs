@@ -239,7 +239,7 @@ Five months of $8,500/month overspend from the ML workspace (relative to the $3,
 | Per-workflow | Workflow-level anomalies | Cross-workflow accumulation |
 | Per-run | Individual runaway runs | Gradual accumulation from many normal runs |
 
-The right answer is hierarchical scoping: tenant > workspace > workflow > agent. Each level has its own budget. A single agent can't blow through the workspace budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
+The right answer is hierarchical scoping: tenant > workspace > app > workflow > agent. Each level has its own budget. A single agent can't blow through the workflow budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
 
 **How budget enforcement prevents this:**
 

@@ -132,8 +132,8 @@ Cycles aggregates budget across providers. A single reservation can account for 
 
 | | Provider Cap | Cycles |
 |---|---|---|
-| **Granularity** | Monthly or daily, per-organization | Per-tenant, per-workspace, per-workflow, per-run, per-action |
-| **Scope** | Organization or API key | Hierarchical — tenant → workspace → workflow → run |
+| **Granularity** | Monthly or daily, per-organization | Per-tenant, per-workspace, per-workflow, per-agent |
+| **Scope** | Organization or API key | Hierarchical — tenant → workspace → app → workflow → agent → toolset |
 | **Enforcement timing** | Post-usage with reporting delay | Pre-execution — budget reserved before the call |
 | **Multi-provider** | Single provider only | Aggregates across all providers in one budget |
 | **Degradation** | Binary — all traffic blocked or all allowed | Three-way — ALLOW, ALLOW_WITH_CAPS, DENY |

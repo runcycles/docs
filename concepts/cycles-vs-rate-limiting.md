@@ -94,7 +94,7 @@ Rate limiters cannot express these nuances. They have one lever: velocity.
 | | Rate Limiter | Cycles |
 |---|---|---|
 | **Controls** | Request velocity (RPM, RPS) | Total budgeted exposure (cost, tokens, units) |
-| **Granularity** | Per-caller, per-endpoint, per-time-window | Per-tenant, per-workspace, per-workflow, per-run |
+| **Granularity** | Per-caller, per-endpoint, per-time-window | Per-tenant, per-workspace, per-workflow, per-agent |
 | **Cost-aware** | No — every request counts equally | Yes — reserves estimated cost, commits actual cost |
 | **Pre-execution budget check** | Velocity only — no cumulative awareness | Yes — checks remaining budget across all scopes before execution |
 | **Concurrency-safe** | Yes for velocity counting | Yes — atomic reservations prevent race conditions on budget |
@@ -107,7 +107,7 @@ Cycles introduces a reserve-then-commit model that is fundamentally different fr
 Before an agent action executes:
 
 1. The system declares how much budget the action is expected to consume.
-2. Cycles checks whether that budget is available across all applicable scopes (tenant, workspace, workflow, run).
+2. Cycles checks whether that budget is available across all applicable scopes (tenant, workspace, workflow, agent).
 3. If available, the budget is atomically reserved. No other concurrent request can claim the same budget.
 4. The action executes.
 5. After execution, the system commits the actual cost. If the actual cost is less than the reservation, the remainder is released automatically.
