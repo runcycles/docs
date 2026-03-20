@@ -45,6 +45,39 @@ For each Subject field, the starter resolves the value using this priority:
 
 If none of these provide a value, the field is omitted from the request.
 
+### Per-annotation overrides and budget scope targeting
+
+When you override a subject field on `@Cycles`, the resolved subject changes, which targets a different budget scope on the server.
+
+**Example:** Given this configuration:
+
+```yaml
+cycles:
+  tenant: acme
+  workspace: production
+  app: support-bot
+```
+
+A method with `@Cycles(value = "1000", workspace = "staging")` resolves to:
+
+| Field | Source | Resolved value |
+|---|---|---|
+| `tenant` | config | `acme` |
+| `workspace` | **annotation** | `staging` |
+| `app` | config | `support-bot` |
+
+The reservation targets scope `tenant:acme/workspace:staging/app:support-bot` instead of `tenant:acme/workspace:production/app:support-bot`.
+
+**Budget scope implications:** Each level in the scope hierarchy has an independent budget. If you have:
+- `tenant:acme/workspace:production` → $10,000 budget
+- `tenant:acme/workspace:staging` → $1,000 budget
+
+Using `workspace = "staging"` on an annotation targets the $1,000 staging budget. Without the override, the same method targets the $10,000 production budget.
+
+::: warning
+A reservation must pass budget checks at **all** affected scope levels. If you set `tenant` and `workspace`, the server checks remaining budget at both `tenant:acme` and `tenant:acme/workspace:staging`. If either scope is exhausted, the reservation is denied.
+:::
+
 ## HTTP configuration
 
 | Property | Type | Default | Description |
