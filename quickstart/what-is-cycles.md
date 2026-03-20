@@ -43,7 +43,7 @@ Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 sec
 
 ## How Cycles solves it
 
-Cycles enforces a budget decision before agent actions execute — LLM calls, tool invocations, API requests. Every action follows a **Reserve-Commit lifecycle**:
+Cycles enforces a budget decision before agent actions execute — LLM calls, tool invocations, API requests. Every action follows a **[Reserve-Commit lifecycle](/glossary#reservation)**:
 > Cycles enforces where you instrument it. Uninstrumented code paths are unaffected.
 
 ```

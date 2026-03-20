@@ -173,4 +173,8 @@ See [`examples/fastapi_integration.py`](https://github.com/runcycles/cycles-clie
 
 ## Next steps
 
+- [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
+- [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming
+- [Testing with Cycles](/how-to/testing-with-cycles) — testing budget-guarded code
+- [Production Operations Guide](/how-to/production-operations-guide) — running Cycles in production
 - [FastAPI example (Python)](https://github.com/runcycles/cycles-client-python/tree/main/examples/fastapi_integration.py) — runnable FastAPI integration

@@ -33,3 +33,5 @@ Start with the posts that match where you are today:
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — per-token pricing across providers with real-world cost scenarios
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — a maturity model from no controls to hard enforcement
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — how the reserve-commit pattern works at runtime
+
+New to Cycles? Start with **[What is Cycles?](/quickstart/what-is-cycles)** or jump into the **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)**.
