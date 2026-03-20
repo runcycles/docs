@@ -71,7 +71,7 @@ This is the difference between a budget as **billing metadata** (something you r
 
 The mechanism that makes hard budget control work is the **reserve-commit lifecycle**:
 
-1. **Reserve** — before doing anything expensive, the agent requests a budget reservation for the estimated cost. The system atomically checks available budget and, if sufficient, locks that amount. If insufficient, it returns DENY.
+1. **Reserve** — before doing anything expensive, the agent requests a budget reservation for the estimated cost. The system atomically checks available budget and, if sufficient, locks that amount. If insufficient, it rejects the reservation.
 2. **Execute** — only if the reservation succeeded. The agent makes the model call, runs the tool, or triggers the side effect.
 3. **Commit** — after execution, the agent reports the actual cost. Any difference between the estimated and actual cost is automatically returned to the budget pool.
 4. **Release** — if execution fails or is cancelled before commit, the agent explicitly releases the reservation. The full estimated amount returns to the pool.

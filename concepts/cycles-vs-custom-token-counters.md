@@ -142,7 +142,7 @@ Cycles centralizes budget authority in one service. Every client integrates thro
 | **Concurrency safety** | Race conditions under parallel access | Atomic reservations — no TOCTOU bugs |
 | **Multi-service** | Counter is local to one process or requires custom shared store | Centralized budget authority accessible from any service |
 | **Reservation model** | None — tracks past usage, not in-flight work | Reserve before execution, commit after, release on cancel |
-| **Hierarchical scopes** | Flat — one counter, one limit | Nested — tenant → workspace → workflow → run → action |
+| **Hierarchical scopes** | Flat — one counter, one limit | Nested — tenant → workspace → app → workflow → agent → toolset |
 | **Overage policies** | Binary — allow or deny | Three-way — ALLOW, ALLOW_WITH_CAPS, DENY |
 | **Maintenance** | Duplicated across services, each with its own bugs | Single integration point, one protocol, one source of truth |
 | **Retry handling** | Fragile — retries may double-count or skip counting | Idempotent — retries tied to the same reservation lifecycle |

@@ -30,7 +30,7 @@ tenant_budget = cycles.create_budget(
     scope=f"tenant:{tenant_id}",
     limit_dollars=500.00,
     period="monthly",
-    on_exhausted="deny"
+    on_exhausted="reject"
 )
 
 # Every agent call for this tenant checks against their budget
@@ -214,7 +214,7 @@ budget = cycles.create_budget(
         "tokens": 500_000,       # Hard cap on token consumption
         "dollars": 15.00,        # Hard cap on dollar spend
     },
-    on_exhausted="deny_and_notify"
+    on_exhausted="reject"
 )
 
 async def execute_hybrid(task):
@@ -278,4 +278,5 @@ The most important step isn't picking the perfect pattern — it's having _any_ 
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — deep dive on tenant isolation, quotas, and hierarchical budgets for SaaS platforms
 - **[Common Budget Patterns](/how-to/common-budget-patterns)** — Cycles-specific implementation details for each pattern
 - **[How to Model Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles)** — designing your scope hierarchy
+- **[The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents)** — real-world costs of running agents without budget limits
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the full reserve-commit lifecycle hands-on

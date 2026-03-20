@@ -239,18 +239,18 @@ Five months of $8,500/month overspend from the ML workspace (relative to the $3,
 | Per-workflow | Workflow-level anomalies | Cross-workflow accumulation |
 | Per-run | Individual runaway runs | Gradual accumulation from many normal runs |
 
-The right answer is hierarchical scoping: org > workspace > workflow > run. Each level has its own budget. A single run can't blow through the workspace budget. A single workspace can't consume the org budget. Each scope catches a different category of failure.
+The right answer is hierarchical scoping: tenant > workspace > workflow > agent. Each level has its own budget. A single agent can't blow through the workspace budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
 
 **How budget enforcement prevents this:**
 
-Per-workspace budgets in Cycles would have capped the ML team at $3,000/month. When their research agent usage hit that limit, the agents would be denied — not the entire org, just the ML workspace. The other four workspaces would continue operating normally.
+Per-workspace budgets in Cycles would have capped the ML team at $3,000/month. When their research agent usage hit that limit, the agents would be denied — not the entire tenant, just the ML workspace. The other four workspaces would continue operating normally.
 
 The ML team would immediately know they've hit their budget. They could request an increase (with justification), optimize their agent's efficiency, or prioritize which experiments run within the cap. The decision is explicit and intentional instead of invisible and accidental.
 
 With hierarchical enforcement:
-- Org budget: $10,000/month (hard cap)
+- Tenant budget: $10,000/month (hard cap)
 - ML workspace: $3,000/month (hard cap)
-- ML research workflow: $50/run (hard cap)
+- ML research workflow: $50/agent run (hard cap)
 - If any level is exhausted, the specific scope is blocked while everything else continues
 
 For more on this failure pattern, see [Scope Misconfiguration and Budget Leaks](/incidents/scope-misconfiguration-and-budget-leaks).

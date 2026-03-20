@@ -99,7 +99,7 @@ This is the problem [Cycles](/) was built to solve. Instead of layering alerts o
 
 The core mechanic is simple: before an agent makes an LLM call or tool invocation, it checks with Cycles. Cycles atomically reserves the estimated cost. If the budget is exhausted, the call is denied — and the agent can degrade gracefully instead of failing silently or running up a bill.
 
-This works across concurrency boundaries, across services, and across the full hierarchy of tenant, workflow, and run-level budgets. It's the same pattern that payment systems use for authorization holds, applied to AI agent execution.
+This works across concurrency boundaries, across services, and across the full scope hierarchy — from tenant down to individual workflow and agent. It's the same pattern that payment systems use for authorization holds, applied to AI agent execution.
 
 For teams evaluating this approach, the [common budget patterns guide](/how-to/common-budget-patterns) covers the most frequent architectures we see, and the [cost estimation cheat sheet](/how-to/cost-estimation-cheat-sheet) helps with initial sizing.
 

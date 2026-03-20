@@ -110,7 +110,7 @@ Agent
 
 Cycles decides **whether** to call. The proxy decides **which model** handles it.
 
-If Cycles denies the reservation, the proxy is never invoked. Zero cost. Zero tokens. The agent receives a DENY decision and can degrade gracefully — return a cached result, skip an optional step, or surface a budget limit to the user.
+If Cycles denies the reservation, the proxy is never invoked. Zero cost. Zero tokens. The agent receives a budget-exhausted signal and can degrade gracefully — return a cached result, skip an optional step, or surface a budget limit to the user.
 
 If Cycles allows the reservation, the proxy routes the call as usual. After the response arrives, the actual token count is committed to Cycles, and unused budget from the estimate is released.
 
