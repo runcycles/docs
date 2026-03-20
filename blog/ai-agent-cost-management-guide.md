@@ -3,7 +3,7 @@ title: "AI Agent Cost Management: The Complete Guide for Engineering Teams"
 date: 2026-03-18
 author: Cycles Team
 tags: [costs, engineering, best-practices]
-description: "A practical maturity model for managing AI agent costs — from no controls through monitoring, alerting, soft limits, and hard enforcement. Each tier explained with tools, trade-offs, and when to graduate."
+description: "A practical maturity model for AI agent costs — from no controls through monitoring, alerting, soft limits, and hard enforcement with trade-offs per tier."
 blog: true
 sidebar: false
 ---
@@ -230,6 +230,7 @@ The progression from no controls to hard enforcement is predictable. The questio
 - **[Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)** — deploying Cycles without breaking production
 - **[Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer)** — what agents should do when they hit budget limits: deny, downgrade, disable, or defer
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — deep dive on the reserve-commit enforcement pattern
+- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — concrete failure scenarios showing what each tier prevents
 - **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 
 Start by figuring out which tier you're at today. Then decide whether your current tier's failure modes are ones you can live with.

@@ -3,7 +3,7 @@ title: "The True Cost of Uncontrolled AI Agents"
 date: 2026-03-16
 author: Cycles Team
 tags: [costs, agents, incidents, best-practices]
-description: "What happens when autonomous AI agents run without budget limits? We break down the real-world costs, failure modes, and why pre-execution budget authority is the missing layer in most agent architectures."
+description: "What happens when AI agents run without budget limits? Real-world costs, failure modes, and why pre-execution budget authority is the missing layer."
 blog: true
 sidebar: false
 ---
