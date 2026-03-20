@@ -3,7 +3,7 @@ title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Bu
 date: 2026-03-20
 author: Cycles Team
 tags: [architecture, agents, budgets, engineering]
-description: "A thin budget wrapper is easy to vibe code. Owning a production budget authority — with concurrency, idempotency, and multi-tenant isolation — is a different problem entirely."
+description: "A budget wrapper is easy to vibe code. Owning a budget authority with concurrency safety, idempotency, and multi-tenant isolation is not."
 blog: true
 sidebar: false
 ---
