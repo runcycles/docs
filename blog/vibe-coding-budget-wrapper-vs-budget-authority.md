@@ -22,7 +22,7 @@ A team can absolutely use Claude Code or another coding agent to put a thin wrap
 
 But that is not the real question.
 
-The real question is whether you want to own a **budget enforcement subsystem** in production.
+The real question is whether you want to **own a budget authority forever — or use one.**
 
 That is a very different thing from generating a wrapper.
 
@@ -38,7 +38,7 @@ But production systems do not stay that simple for long.
 
 Agents retry. They fan out. They call multiple tools. They fail halfway through work. They share limits across tenants, teams, users, sessions, and workflows. They run concurrently. They move from "call a model" to "send an email," "modify a record," "trigger a deployment," or "place an order."
 
-At that point, you are no longer building a utility function. You are building a control system. The [failure modes are well-documented](/blog/ai-agent-failures-budget-controls-prevent) — and they get worse as concurrency increases.
+Once that happens, you are no longer building a utility function. You are building a control system. The [failure modes are well-documented](/blog/ai-agent-failures-budget-controls-prevent) — and they get worse as concurrency increases.
 
 ## What a real failure looks like
 
@@ -78,9 +78,9 @@ That is the line.
 
 ## Where DIY starts to get expensive
 
-The issue is not whether a team can build something. Of course they can.
+No one doubts a team can build something.
 
-The issue is that once the first version exists, they now own a subsystem that is deceptively central. It sits in the middle of agent execution and has to be correct precisely when the rest of the system is noisy.
+The problem is that once the first version exists, they now own a subsystem that is deceptively central. It sits in the middle of agent execution and has to be correct precisely when the rest of the system is noisy.
 
 That ownership expands quickly.
 
@@ -90,7 +90,7 @@ And once different teams adopt it, the burden grows again.
 
 Now you need policy consistency across services. You need auditability. You need multi-tenant isolation. You need a clean way to evolve enforcement rules without touching every application. You need client behavior that is consistent across languages and runtimes. You need enough determinism that engineers trust it, finance trusts it, and operators trust it.
 
-At that point, the question is no longer "could Claude Code write this?"
+Eventually the question is no longer "could Claude Code write this?"
 
 The question is "do we want to be in the business of maintaining this?"
 
@@ -130,11 +130,9 @@ That is why Cycles is built as an authority, not a reporting layer.
 
 ## The buy-versus-build question is being framed incorrectly
 
-This objection often frames the choice as: buy Cycles, or build nothing.
+This objection often frames the choice as: use Cycles, or build nothing.
 
-That is not the real tradeoff.
-
-The real tradeoff is: **own a budget authority forever, or use one.**
+But the real choice is not whether to build. It is whether to **keep building** — indefinitely.
 
 The moment a team ships its internal version, it has created a dependency that other workflows will start leaning on. From that point forward, every new agent, toolchain, workflow engine, and policy requirement increases the maintenance surface.
 
