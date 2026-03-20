@@ -20,7 +20,7 @@ Common issues when integrating and operating Cycles, with solutions.
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
@@ -28,7 +28,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }' | jq .
 ```
 
-Remember: every scope in the subject hierarchy needs its own budget. If your reservation uses `tenant=acme-corp, workspace=prod`, you need budgets for both `tenant:acme-corp` and `tenant:acme-corp/workspace:prod`.
+Remember: a reservation is checked against every derived scope that has a budget defined. Scopes without budgets are skipped, but at least one derived scope must have a budget. If you have budgets at multiple levels, each one must have sufficient funds.
 
 ### BUDGET_EXCEEDED but I just funded the budget
 
@@ -72,7 +72,7 @@ The `remaining` field shows available budget after accounting for active reserva
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "operation": "REPAY_DEBT",
     "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
@@ -256,7 +256,7 @@ Use the RESET funding operation:
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001"}' | jq .
 ```
 
@@ -277,6 +277,119 @@ curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
 ### Is there a way to test without a running server?
 
 Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) to evaluate budget policies without enforcing them. For unit tests, mock the `CyclesClient` — see [Testing with Cycles](/how-to/testing-with-cycles).
+
+## MCP server issues
+
+### MCP tool calls not enforcing budget
+
+**Symptom:** The MCP tools respond but reservations are not actually created on your Cycles server.
+
+**Checklist:**
+
+1. Is `CYCLES_API_KEY` set in the MCP server environment? Without it, the server cannot authenticate.
+2. Is `CYCLES_BASE_URL` pointing to your server? The default is `https://api.runcycles.io`. For local development, set it to `http://localhost:7878`.
+3. Is `CYCLES_MOCK` set to `"true"`? Mock mode returns realistic responses without contacting a real server. Remove it for production use.
+
+### MCP server not appearing in Claude Desktop or Cursor
+
+**Symptom:** The agent does not see Cycles tools.
+
+**Checklist:**
+
+1. Is the config file in the right location?
+   - Claude Desktop macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Claude Desktop Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+2. Is the JSON valid? A trailing comma or missing brace will silently break the config. Validate with `cat claude_desktop_config.json | jq .`
+3. Did you restart the application after editing the config? MCP server configs are read at startup.
+4. For Claude Code: did you run `claude mcp add cycles -- npx -y @runcycles/mcp-server`? Check with `claude mcp list`.
+
+### MCP decisions always return ALLOW
+
+**Symptom:** Every reservation or decide call returns `ALLOW` regardless of budget state.
+
+**Cause:** The server is running in mock mode (`CYCLES_MOCK=true`), which returns deterministic mock responses.
+
+**Fix:** Remove the `CYCLES_MOCK` environment variable and ensure `CYCLES_BASE_URL` and `CYCLES_API_KEY` are set correctly.
+
+## Admin API issues
+
+### Cannot create budget — 401 on admin API
+
+**Symptom:** `POST /v1/admin/budgets` returns `401 UNAUTHORIZED`.
+
+**Common causes:**
+
+1. **Wrong port.** The admin API runs on port **7979**, not 7878. The protocol API (reservations, commits) runs on 7878.
+2. **Wrong header.** The admin API uses `X-Admin-API-Key`, not `X-Cycles-API-Key`. These are different keys.
+3. **Using a protocol API key.** Protocol keys (`cyc_live_...`) do not work on the admin API. Use the admin bootstrap key configured in the server.
+
+### Budget fund operation has no effect
+
+**Symptom:** You called the fund endpoint but the balance did not change.
+
+**Checklist:**
+
+1. **Scope path mismatch.** The scope in the fund request must exactly match the budget scope. `tenant:acme-corp` is not the same as `tenant:acme-corp/workspace:prod`.
+2. **Wrong operation.** The `operation` field must be one of `ADD`, `SET`, `RESET`, or `REPAY_DEBT`. If you used `SET` with the same amount as the current balance, there is no visible change.
+3. **Check the response.** The fund endpoint returns the updated balance. Verify the response body confirms the change.
+
+### Tenant creation returns 409
+
+**Symptom:** `POST /v1/admin/tenants` returns `409`.
+
+**Cause:** A tenant with that ID already exists. Tenant IDs are unique. If you are rerunning a setup script, this is expected and safe to ignore.
+
+## Common first-integration mistakes
+
+### Commit fails with 404 NOT_FOUND
+
+**Symptom:** Reserve succeeds, but commit returns `404 NOT_FOUND`.
+
+**Cause:** The reservation expired before the commit arrived. The default TTL may be too short for long-running LLM calls.
+
+**Fix:**
+
+- Increase the `ttl_seconds` when creating reservations. For LLM calls, 60-120 seconds is typical.
+- Use the SDK decorators (`@cycles` in Python, `withCycles` in TypeScript, `@Cycles` in Spring) which automatically extend TTL via heartbeat.
+- For raw HTTP: call `POST /v1/reservations/{id}/extend` periodically before the TTL expires.
+
+### Budget math does not add up
+
+**Symptom:** You funded a budget with `100000000` expecting $100, but it shows as $1.
+
+**Cause:** Cycles uses `USD_MICROCENTS` where **1 dollar = 100,000,000 microcents** (1 microcent = 10⁻⁸ dollars).
+
+Quick reference:
+
+| Amount | USD_MICROCENTS |
+|---|---|
+| $0.01 (1 cent) | 1,000,000 |
+| $1.00 | 100,000,000 |
+| $10.00 | 1,000,000,000 |
+| $100.00 | 10,000,000,000 |
+
+See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) for the full unit reference.
+
+### Scopes not matching — reservation denied despite budget existing
+
+**Symptom:** A budget exists but reservations are still denied with `BUDGET_EXCEEDED`.
+
+**Cause:** The budget scope path does not match any of the reservation's derived scopes. Enforcement checks every derived scope that has a budget defined — scopes without budgets are skipped, but at least one derived scope must have a budget. Common mismatches:
+
+- Budget at `tenant:acme-corp/workspace:prod` but subject uses `workspace=staging`
+- Budget at `tenant:acme-corp/workspace:prod` but subject omits `workspace` entirely (the derived scopes are just `tenant:acme-corp`, which has no budget)
+- Budget uses a different tenant ID than the one in the subject
+
+**Fix:** Check that the scope path on the budget matches the scopes derived from the reservation subject. Use the [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) reference to understand which scopes are derived. See also [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
+
+## Debugging production incidents
+
+For deeper incident analysis, the Incident Patterns section documents common production failures with root cause analysis and prevention strategies:
+
+- **[Runaway Agents and Tool Loops](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent)** — agents that loop indefinitely, burning budget on repeated tool calls
+- **[Retry Storms](/incidents/retry-storms-and-idempotency-failures)** — retries that double-charge or bypass budget checks
+- **[Concurrent Agent Overspend](/incidents/concurrent-agent-overspend)** — race conditions where multiple agents collectively exceed a shared budget
+- **[Scope Misconfiguration](/incidents/scope-misconfiguration-and-budget-leaks)** — budget leaks caused by incorrect scope hierarchies
 
 ## Next steps
 
