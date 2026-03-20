@@ -67,7 +67,7 @@ The enforcement point also becomes the [tenancy boundary](/protocol/authenticati
 
 Tenant-level budgets solve the isolation problem. But within a tenant, you still need to control which workflows, agents, and individual runs can spend how much. This is where hierarchical scoping comes in.
 
-The Cycles protocol defines a canonical [scope hierarchy](/protocol/how-scope-derivation-works-in-cycles): **tenant → workspace → app → workflow → agent → toolset**. Each level is a budget scope. You use the levels that match your product model — most multi-tenant platforms start with tenant and workflow, then add finer-grained scopes as needed. Run-level budgets are modeled through the `dimensions` field (e.g., `dimensions: { "run": "run-7a3f" }`), which extends the hierarchy for execution-specific isolation.
+The Cycles protocol defines a canonical [scope hierarchy](/protocol/how-scope-derivation-works-in-cycles): **tenant → workspace → app → workflow → agent → toolset**. Each level is a budget scope. You use the levels that match your product model — most multi-tenant platforms start with tenant and workflow, then add finer-grained scopes as needed. Run-level budgets can be modeled through the `dimensions` field (e.g., `dimensions: { "run": "run-7a3f" }`), which provides additional metadata for execution-specific tracking. Note that v0 servers may not enforce budgets on dimensions — check your server's implementation for dimension-based enforcement support.
 
 ```
 Tenant: Acme Corp ($2,000/month)

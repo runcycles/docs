@@ -106,7 +106,7 @@ A single global cap does not help when:
 - a specific workspace within a tenant has its own limit
 - one agent run should not consume more than 50% of a tenant's remaining budget
 
-Cycles supports [hierarchical scoped budgets](/protocol/api-reference-for-the-cycles-protocol) — budgets defined at any level of a scope tree (tenant, workspace, project, run). A single reservation checks all applicable scopes atomically.
+Cycles supports [hierarchical scoped budgets](/protocol/api-reference-for-the-cycles-protocol) — budgets defined at any level of a scope tree (tenant, workspace, app, workflow, agent, toolset). A single reservation checks all applicable scopes atomically.
 
 This means a coding agent running inside a multi-tenant platform can be governed by organizational policy without any custom enforcement logic in the agent itself.
 

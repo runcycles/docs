@@ -163,13 +163,13 @@ The atomic check-and-decrement is critical. It's what prevents the TOCTOU race c
 | Pre-execution prevention | Overspend cannot happen — calls are denied before execution |
 | Atomic concurrency control | No race conditions between concurrent agents |
 | Per-run granularity | Each agent run has its own budget, independent of daily/monthly caps |
-| Hierarchical budgets | Tenant > workflow > run budgets, each enforced independently |
+| Hierarchical budgets | Tenant > workspace > workflow > agent budgets, each enforced independently |
 | Graceful degradation | Agents receive a clear signal to downgrade instead of crashing |
 | Audit trail | Every reservation and denial is logged with full context |
 
 **What Cycles provides at this tier:**
 
-[Cycles](/) is built specifically for Tier 4. It's an open-source budget authority system that enforces hard spend limits before execution. The core API is a reserve-execute-reconcile loop that works across any model provider and any agent framework.
+[Cycles](/) is built specifically for Tier 4. It's an open-source budget authority system that enforces hard spend limits before execution. The core API is a reserve-execute-commit loop that works across any model provider and any agent framework.
 
 Budgets can be scoped at any level — per tenant, per workflow, per run, or any combination. When a budget is exhausted, the denial includes enough context for the agent to make an intelligent decision: fall back to a cheaper model, return a partial result, or stop and explain why.
 
