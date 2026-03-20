@@ -193,9 +193,9 @@ Cycles provides fine-grained, application-aware budget enforcement.
 It operates at the level your system actually needs:
 
 - per-tenant
+- per-workspace
 - per-workflow
-- per-run
-- per-action
+- per-agent
 
 Budget is reserved before execution rather than inferred after usage occurs.
 

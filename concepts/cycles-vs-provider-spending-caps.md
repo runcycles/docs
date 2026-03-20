@@ -183,7 +183,7 @@ This is the layer that runs day-to-day. It handles the normal case, the edge cas
 
 The combination creates defense in depth:
 
-1. **Cycles** handles per-tenant, per-run, per-workflow budget enforcement with pre-execution checks. This is the primary control layer.
+1. **Cycles** handles per-tenant, per-workflow, per-agent budget enforcement with pre-execution checks. This is the primary control layer.
 2. **Provider caps** handle organizational safety nets. They catch anything that slips through the primary layer.
 
 If Cycles is working correctly, provider caps should never trigger. They exist for the case where Cycles is not working correctly.
