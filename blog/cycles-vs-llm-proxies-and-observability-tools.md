@@ -228,9 +228,11 @@ For most teams running autonomous agents, the missing layer is budget authority.
 
 ## Next steps
 
-- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-why-budget-authority-matters) — the maturity curve from dashboards to pre-execution budget decisions
+- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution budget decisions
 - [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — full capability matrix across rate limiters, observability, provider caps, in-app counters, and job schedulers
 - [Cycles vs Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps) — why monthly limits and delayed enforcement create blind spots
+- [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents) — real-world costs of running agents without budget limits
+- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios with dollar math
 - [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the five-tier maturity model from no controls to hard enforcement
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — set up Cycles with a working agent in under 30 minutes
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — evaluate budget enforcement on real traffic without blocking anything
