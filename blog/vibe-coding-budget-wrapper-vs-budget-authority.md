@@ -28,8 +28,6 @@ That is a very different thing from generating a wrapper.
 
 <!-- more -->
 
----
-
 ## Version 0 is easy
 
 Most teams imagining a build-it-yourself approach are picturing something like this: check a counter before a call, estimate cost, compare against a limit, allow or deny, maybe log the result.
@@ -42,8 +40,6 @@ Agents retry. They fan out. They call multiple tools. They fail halfway through 
 
 At that point, you are no longer building a utility function. You are building a control system. The [failure modes are well-documented](/blog/ai-agent-failures-budget-controls-prevent) — and they get worse as concurrency increases.
 
----
-
 ## What a real failure looks like
 
 Here is a concrete example of where the prototype breaks.
@@ -55,8 +51,6 @@ Nothing malfunctioned. No code was wrong. The logic was perfectly correct in iso
 Now multiply that by ten concurrent agents. Add retries. Add tool fan-out. Add a partial failure that causes one agent to re-run from a checkpoint. Add a policy change that updates limits while work is in flight.
 
 The wrapper that looked like it solved the problem in single-threaded testing is not actually enforcing anything under load. It is observing. That is not the same thing. If you want to understand the real cost of this gap, see [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents).
-
----
 
 ## A checker is not an authority
 
@@ -82,8 +76,6 @@ An authority lets you enforce.
 
 That is the line.
 
----
-
 ## Where DIY starts to get expensive
 
 The issue is not whether a team can build something. Of course they can.
@@ -104,8 +96,6 @@ The question is "do we want to be in the business of maintaining this?"
 
 For teams evaluating their options, the [AI Agent Cost Management Guide](/blog/ai-agent-cost-management-guide) walks through the maturity model from no controls to hard enforcement.
 
----
-
 ## AI makes building easier. It does not remove ownership.
 
 This is the broader pattern.
@@ -119,8 +109,6 @@ Could a strong team build its own version of those things? Yes.
 Would that be the best use of its time? Usually not.
 
 The same logic applies here. If budget enforcement is strategic IP for your company, build it. But if what you need is a boring, deterministic control plane that sits in front of autonomous spend and consequential actions, then "we can vibe code a prototype" is only answering the easy part.
-
----
 
 ## This gets sharper once actions have consequence
 
@@ -140,8 +128,6 @@ You need a deterministic answer **before** the next action happens.
 
 That is why Cycles is built as an authority, not a reporting layer.
 
----
-
 ## The buy-versus-build question is being framed incorrectly
 
 This objection often frames the choice as: buy Cycles, or build nothing.
@@ -153,8 +139,6 @@ The real tradeoff is: **own a budget authority forever, or use one.**
 The moment a team ships its internal version, it has created a dependency that other workflows will start leaning on. From that point forward, every new agent, toolchain, workflow engine, and policy requirement increases the maintenance surface.
 
 And the harder the organization leans into agents, the more important this layer becomes. The [budget patterns](/blog/agent-budget-patterns-visual-guide) that emerge in production — hierarchical scoping, graceful degradation, multi-tenant isolation — are not things that simplify over time.
-
----
 
 ## The only honest answer to the objection
 
