@@ -280,6 +280,22 @@ Override the defaults from configuration:
          toolset = "search-tools")
 ```
 
+Subject fields determine which budget scope the reservation targets. In most cases, set `tenant`, `workspace`, and `app` in configuration and only override specific fields per-method:
+
+```java
+// Given config: tenant=acme, workspace=production, app=support-bot
+
+// Uses config defaults → scope: tenant:acme/workspace:production/app:support-bot
+@Cycles("500")
+public String handleTicket(String text) { ... }
+
+// Overrides workspace → scope: tenant:acme/workspace:staging/app:support-bot
+@Cycles(value = "500", workspace = "staging")
+public String handleTicketStaging(String text) { ... }
+```
+
+The second method targets the **staging** budget scope instead of production. All other fields (`tenant`, `app`) still come from config. Budget scopes are independent — each has its own allocated budget.
+
 ### Action identity
 
 ```java
