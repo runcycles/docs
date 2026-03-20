@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Budget Control: How to Enforce Hard Spend Limits Before Execution"
+title: "AI Agent Budget Control: Enforce Hard Spend Limits"
 date: 2026-03-20
 author: Cycles Team
 tags: [budgets, agents, engineering, best-practices]
@@ -73,19 +73,19 @@ The mechanism that makes hard budget control work is the **reserve-commit lifecy
 
 1. **Reserve** — before doing anything expensive, the agent requests a budget reservation for the estimated cost. The system atomically checks available budget and, if sufficient, locks that amount. If insufficient, it returns DENY.
 2. **Execute** — only if the reservation succeeded. The agent makes the model call, runs the tool, or triggers the side effect.
-3. **Commit** — after execution, the agent reports the actual cost. The difference between the estimate and the actual cost is returned to the budget pool.
-4. **Release** — if execution fails or is cancelled, the agent releases the reservation entirely. The full estimated amount returns to the pool.
+3. **Commit** — after execution, the agent reports the actual cost. Any difference between the estimated and actual cost is automatically returned to the budget pool.
+4. **Release** — if execution fails or is cancelled before commit, the agent explicitly releases the reservation. The full estimated amount returns to the pool.
 
 This pattern survives the failure modes that break simpler approaches:
 
 - **Retries**: each retry attempt is a new reservation. The budget tracks cumulative exposure across all attempts, not just the latest one.
 - **Concurrency**: the reservation is atomic. Two workers cannot both claim the last $5 — one gets the reservation, the other gets DENY.
-- **Partial failures**: unreported reservations expire after a TTL. Budget is not permanently lost if a process crashes mid-execution.
+- **Partial failures**: unreported reservations expire after a TTL (default 60 seconds, with a grace period for in-flight commits). Budget is not permanently lost if a process crashes mid-execution.
 - **Fan-out**: sub-agents share the parent scope's budget. The total is enforced across all branches, not per-branch.
 
 When the decision is DENY, the agent has options beyond hard-stopping. It can degrade — use a cheaper model, skip optional steps, reduce context length, or defer the task. The enforcement point gives the agent a structured moment to make that decision, rather than failing silently when it runs out of API credits.
 
-## Why This Matters: Real Failure Modes
+## Why Budget Enforcement Prevents Real Failures
 
 These are not hypothetical scenarios. They are patterns that show up in any team running agents at scale:
 
@@ -111,7 +111,7 @@ Budget enforcement generates data that dashboards alone cannot provide:
 
 These metrics close the loop: enforcement generates the signal, and the signal informs how you set budgets, estimate costs, and design degradation paths.
 
-## Getting Started: A Practical Adoption Path
+## Getting Started: A Practical Budget Enforcement Path
 
 You do not need to enforce budgets everywhere on day one. The proven path:
 
