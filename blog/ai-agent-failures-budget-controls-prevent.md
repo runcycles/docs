@@ -1,6 +1,6 @@
 ---
 title: "5 Real-World AI Agent Failures That Budget Controls Would Have Prevented"
-date: 2026-03-19
+date: 2026-03-17
 author: Cycles Team
 tags: [incidents, costs, best-practices]
 description: "Five concrete AI agent failure scenarios — with estimated dollar amounts — and how pre-execution budget enforcement would have caught each one before the damage was done."
