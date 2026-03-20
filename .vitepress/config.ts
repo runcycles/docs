@@ -311,6 +311,23 @@ export default defineConfig({
         ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
         ['meta', { name: 'twitter:title', content: pageData.frontmatter.title }],
         ['meta', { name: 'twitter:description', content: pageData.frontmatter.description }],
+        ['script', { type: 'application/ld+json' }, JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": pageData.frontmatter.title,
+          "description": pageData.frontmatter.description,
+          "datePublished": pageData.frontmatter.date,
+          "author": {
+            "@type": "Organization",
+            "name": pageData.frontmatter.author || "Cycles Team"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Cycles",
+            "url": "https://runcycles.io"
+          },
+          "url": canonicalUrl
+        })],
       )
 
       // Hide editLink and lastUpdated on blog posts

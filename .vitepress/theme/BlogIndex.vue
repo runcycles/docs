@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { data as posts } from '../../blog/posts.data'
 
 const selectedTag = ref(null)
@@ -24,9 +24,21 @@ const paginatedPosts = computed(() =>
   filteredPosts.value.slice((page.value - 1) * perPage, page.value * perPage)
 )
 
+function isNew(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  return diff < 7 * 24 * 60 * 60 * 1000
+}
+
 function selectTag(tag) {
   selectedTag.value = tag
   page.value = 1
+  const url = new URL(window.location.href)
+  if (tag) {
+    url.searchParams.set('tag', tag)
+  } else {
+    url.searchParams.delete('tag')
+  }
+  history.replaceState(null, '', url.toString())
 }
 
 function formatDate(dateStr) {
@@ -34,28 +46,44 @@ function formatDate(dateStr) {
     year: 'numeric', month: 'long', day: 'numeric'
   })
 }
+
+onMounted(() => {
+  const url = new URL(window.location.href)
+  const tagParam = url.searchParams.get('tag')
+  if (tagParam && allTags.value.includes(tagParam)) {
+    selectedTag.value = tagParam
+  }
+})
 </script>
 
 <template>
   <div class="blog-index">
-    <div class="blog-tags" v-if="allTags.length">
-      <button
-        :class="{ active: !selectedTag }"
-        @click="selectTag(null)"
-      >All</button>
-      <button
-        v-for="tag in allTags" :key="tag"
-        :class="{ active: selectedTag === tag }"
-        @click="selectTag(tag)"
-      >{{ tag }}</button>
+    <div class="blog-tags-row">
+      <div class="blog-tags" v-if="allTags.length" role="group" aria-label="Filter by tag">
+        <button
+          :class="{ active: !selectedTag }"
+          :aria-pressed="!selectedTag"
+          @click="selectTag(null)"
+        >All</button>
+        <button
+          v-for="tag in allTags" :key="tag"
+          :class="{ active: selectedTag === tag }"
+          :aria-pressed="selectedTag === tag"
+          @click="selectTag(tag)"
+        >{{ tag }}</button>
+      </div>
+      <a href="/feed.xml" class="blog-rss-link" aria-label="Subscribe via RSS">RSS</a>
     </div>
 
-    <article v-for="post in paginatedPosts" :key="post.url" class="blog-card">
-      <h2><a :href="post.url">{{ post.title }}</a></h2>
+    <article v-for="(post, i) in paginatedPosts" :key="post.url" class="blog-card">
+      <h2>
+        <a :href="post.url">{{ post.title }}</a>
+        <span v-if="i === 0 && page === 1 && !selectedTag && isNew(post.date)" class="blog-new-badge">NEW</span>
+      </h2>
       <div class="blog-meta">
-        <span class="blog-date">{{ formatDate(post.date) }}</span>
-        <span class="blog-author">{{ post.author }}</span>
-        <span class="blog-reading-time">{{ post.readingTime }} min read</span>
+        <time class="blog-date" :datetime="post.date">{{ formatDate(post.date) }}</time>
+        <span class="blog-author"> &middot; {{ post.author }}</span>
+        <span class="blog-reading-time"> &middot; {{ post.readingTime }} min read</span>
       </div>
       <p class="blog-description">{{ post.description }}</p>
       <div class="blog-card-tags" v-if="post.tags.length">
@@ -67,10 +95,10 @@ function formatDate(dateStr) {
       No posts found.
     </p>
 
-    <nav class="blog-pagination" v-if="totalPages > 1">
-      <button :disabled="page <= 1" @click="page--">&larr; Newer</button>
+    <nav class="blog-pagination" v-if="totalPages > 1" aria-label="Blog pagination">
+      <button :disabled="page <= 1" @click="page--" aria-label="Newer posts">&larr; Newer</button>
       <span class="blog-page-info">Page {{ page }} of {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="page++">&rarr; Older</button>
+      <button :disabled="page >= totalPages" @click="page++" aria-label="Older posts">&rarr; Older</button>
     </nav>
   </div>
 </template>

@@ -7,7 +7,6 @@ export interface PostData {
   author: string
   tags: string[]
   description: string
-  excerpt: string
   readingTime: number
 }
 
@@ -20,7 +19,6 @@ function estimateReadingTime(html: string): number {
 }
 
 export default createContentLoader('blog/**/*.md', {
-  excerpt: true,
   render: true,
   transform(raw) {
     return raw
@@ -32,7 +30,6 @@ export default createContentLoader('blog/**/*.md', {
         author: page.frontmatter.author ?? 'Cycles Team',
         tags: page.frontmatter.tags ?? [],
         description: page.frontmatter.description ?? '',
-        excerpt: page.excerpt ?? '',
         readingTime: estimateReadingTime(page.html ?? ''),
       }))
       .sort((a, b) => {
