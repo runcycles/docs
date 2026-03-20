@@ -387,3 +387,5 @@ To explore the Cycles stack:
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete incidents involving retry storms and concurrency races
+- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — how teams evolve from dashboards to budget authority
+- [Cycles vs Custom Token Counters](/concepts/cycles-vs-custom-token-counters) — why ad hoc counters break under the concurrency and retry patterns discussed here

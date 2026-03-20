@@ -77,7 +77,7 @@ That means a run cannot quietly accumulate cost beyond its envelope, regardless 
 | | Rate limiter | Cycles |
 |---|---|---|
 | Controls | Requests per time window | Total budgeted exposure |
-| Granularity | Per-caller or per-endpoint | Per-tenant, workflow, run, action |
+| Granularity | Per-caller or per-endpoint | Per-tenant, workspace, workflow, agent |
 | Understands retries | No | Yes (idempotent reservations) |
 | Understands cost | No | Yes (reserve estimated, commit actual) |
 | Pre-execution check | Velocity only | Budget availability across scopes |
@@ -201,7 +201,7 @@ Budget is reserved before execution rather than inferred after usage occurs.
 
 | | Provider budget cap | Cycles |
 |---|---|---|
-| Scope | Organization or API key | Tenant, workflow, run, action |
+| Scope | Organization or API key | Tenant, workspace, workflow, agent |
 | Enforcement | Binary (all-or-nothing) | Three-way (ALLOW / ALLOW_WITH_CAPS / DENY) |
 | Timing | Post-usage counter (often delayed) | Pre-execution reservation |
 | Multi-tenant aware | No | Yes |
@@ -260,7 +260,7 @@ It handles concurrency, retries, hierarchical scopes, and lifecycle semantics as
 |---|---|---|
 | Concurrency safety | Usually racy | Atomic reservations |
 | Timing | Post-execution increment | Pre-execution reservation |
-| Hierarchical scopes | Rarely | Built-in (tenant → workspace → workflow → agent) |
+| Hierarchical scopes | Rarely | Built-in (tenant → workspace → app → workflow → agent → toolset) |
 | Retry handling | Fragile | Idempotent lifecycle |
 | Lifecycle support | None | Reserve → commit / release / extend |
 | TTL and expiry | Manual if at all | Built-in reservation TTL and grace |
@@ -320,7 +320,7 @@ Cycles can tell the scheduler whether the task should proceed, degrade, or be de
 | Controls | When and how work runs | Whether work is allowed given budget |
 | Retry awareness | Max attempts, backoff | Budget remaining across retries |
 | Cost awareness | None | Reserve estimated, commit actual |
-| Scope | Per-job or per-queue | Per-tenant, workflow, run, action |
+| Scope | Per-job or per-queue | Per-tenant, workspace, workflow, agent |
 | Degradation | Not built-in | Three-way decision (allow / downgrade / deny) |
 | Cross-tenant limits | No | Yes |
 | Complements | Execution engine | Budget authority |
@@ -342,7 +342,7 @@ The table below maps specific capabilities against each approach.
 | Pre-execution budget check | ✗ | ✗ | ✗ | ◐ | ✗ | ✅ |
 | Reserve → commit lifecycle | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
 | Per-tenant limits | ◐ | ✗ | ✗ | ◐ | ✗ | ✅ |
-| Per-run / per-workflow limits | ✗ | ✗ | ✗ | ◐ | ✗ | ✅ |
+| Per-workflow / per-agent limits | ✗ | ✗ | ✗ | ◐ | ✗ | ✅ |
 | Hierarchical scopes | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
 | Cost-aware decisions | ✗ | ◐ | ◐ | ◐ | ✗ | ✅ |
 | Retry / idempotency safety | ✗ | ✗ | ✗ | ✗ | ◐ | ✅ |

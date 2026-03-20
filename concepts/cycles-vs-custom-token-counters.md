@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Custom Token Counters: Build vs Buy for Agent Budget Control"
-description: "Many teams start with in-app token counters. Here is why they break under concurrency, multi-service deployment, and production load — and when to adopt a dedicated budget authority."
+description: "In-app token counters break under concurrency, multi-service deployment, and production load. When to adopt a dedicated budget authority."
 ---
 
 # Cycles vs Custom Token Counters: Build vs Buy for Agent Budget Control
@@ -94,12 +94,12 @@ Production systems need limits at multiple levels:
 - **Tenant level:** This customer may spend $500 per month.
 - **Workspace level:** This workspace may spend $100 per day.
 - **Workflow level:** This workflow type may spend $10 per execution.
-- **Run level:** This specific run may spend $2.
-- **Action level:** This individual LLM call may spend $0.50.
+- **Agent level:** This agent may spend $2 per session.
+- **Toolset level:** This set of tools may spend $0.50 per call.
 
-Enforcing all of these simultaneously means a single action must check budget at five levels before proceeding. Each level must be decremented atomically. If any level is insufficient, the action must be denied.
+Enforcing all of these simultaneously means a single request must check budget at multiple levels before proceeding. Each level must be decremented atomically. If any level is insufficient, the action must be denied.
 
-Building this with ad hoc counters means maintaining five separate counters per action, with correct rollup logic, atomic multi-key operations, and consistent error handling. The complexity is substantial.
+Building this with ad hoc counters means maintaining separate counters per level, with correct rollup logic, atomic multi-key operations, and consistent error handling. The complexity is substantial.
 
 Cycles supports hierarchical scopes natively. A single reservation checks all applicable scopes in one atomic operation.
 
