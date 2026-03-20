@@ -199,7 +199,7 @@ The starter sends `POST /v1/reservations` to the Cycles server with the Subject,
 
 The server derives all affected scopes from the Subject, then executes `reserve.lua`. The Lua script:
 
-- Checks each scope has sufficient remaining budget (`allocated - spent - reserved >= estimate`)
+- Checks each scope has sufficient remaining budget (`allocated - spent - reserved - debt >= estimate`)
 - Checks no scope has outstanding debt or is over-limit
 - If all checks pass, atomically increments the `reserved` counter on every scope
 - Stores the reservation record with its TTL
