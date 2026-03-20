@@ -17,27 +17,27 @@ Understanding how these three pieces relate is the foundation for designing effe
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                       TENANT                             │
-│  The isolation boundary. All operations are scoped to    │
-│  exactly one tenant via the API key.                     │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │                    SCOPES                           │  │
-│  │  Hierarchical paths derived from the Subject:       │  │
-│  │  tenant:acme → tenant:acme/workspace:prod →         │  │
-│  │  tenant:acme/workspace:prod/app:chatbot             │  │
-│  │                                                     │  │
-│  │  ┌──────────────────────────────────────────────┐   │  │
-│  │  │               BUDGETS                         │   │  │
-│  │  │  An allocation at each scope you want to      │   │  │
-│  │  │  control. Checked atomically on every          │   │  │
-│  │  │  reservation.                                  │   │  │
-│  │  │                                                │   │  │
-│  │  │  tenant:acme               → $100 allocated    │   │  │
-│  │  │  tenant:acme/workspace:prod → $60 allocated    │   │  │
-│  │  │  tenant:acme/.../app:chatbot → $20 allocated   │   │  │
-│  │  └──────────────────────────────────────────────┘   │  │
-│  └────────────────────────────────────────────────────┘  │
+│                       TENANT                            │
+│  The isolation boundary. All operations are scoped to   │
+│  exactly one tenant via the API key.                    │
+│                                                         │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │                    SCOPES                          │ │
+│  │  Hierarchical paths derived from the Subject:      │ │
+│  │  tenant:acme → tenant:acme/workspace:prod →        │ │
+│  │  tenant:acme/workspace:prod/app:chatbot            │ │
+│  │                                                    │ │
+│  │  ┌──────────────────────────────────────────────┐  │ │
+│  │  │               BUDGETS                        │  │ │
+│  │  │  An allocation at each scope you want to     │  │ │
+│  │  │  control. Checked atomically on every        │  │ │
+│  │  │  reservation.                                │  │ │
+│  │  │                                              │  │ │
+│  │  │  tenant:acme               → $100 allocated  │  │ │
+│  │  │  tenant:acme/workspace:prod → $60 allocated  │  │ │
+│  │  │  tenant:acme/.../app:chatbot → $20 allocated │  │ │
+│  │  └──────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
