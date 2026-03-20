@@ -89,6 +89,7 @@ The demo app includes working examples for every major feature area:
 - `ALLOW_WITH_CAPS` — reading and respecting server-imposed constraints — `POST /api/demo/annotation/caps`
 - `unit=TOKENS` with `actionTags` — `POST /api/demo/annotation/tokens`
 - `unit=CREDITS` with `workflow`, `agent`, and custom `dimensions` — `POST /api/demo/annotation/credits`
+- Per-annotation budget scope targeting (`workspace`/`app` override) — `POST /api/demo/annotation/budget-targeting`
 - `overagePolicy=ALLOW_WITH_OVERDRAFT` — `POST /api/demo/annotation/overdraft`
 - Custom `ttlMs` and `gracePeriodMs` — `POST /api/demo/annotation/custom-ttl`
 - `dryRun=true` (shadow-mode evaluation) — `POST /api/demo/annotation/dry-run`
@@ -185,7 +186,7 @@ After this walkthrough, explore the remaining endpoints (`caps`, `custom-ttl`, `
 | File | What it demonstrates |
 |---|---|
 | `service/LlmService.java` | `@Cycles` annotation, `CyclesContextHolder`, `CyclesMetrics`, `commitMetadata` |
-| `service/AnnotationShowcaseService.java` | Annotation variations: minimal, caps-aware, units, TTL, overdraft, dry-run, dimensions |
+| `service/AnnotationShowcaseService.java` | Annotation variations: minimal, caps-aware, units, TTL, overdraft, dry-run, dimensions, budget scope targeting |
 | `service/ProgrammaticClientService.java` | Direct `CyclesClient` usage for the full reservation lifecycle |
 | `service/EventService.java` | Standalone events via `CyclesClient.createEvent()` |
 | `error/CyclesExceptionHandler.java` | Global error handling for `CyclesProtocolException` |
