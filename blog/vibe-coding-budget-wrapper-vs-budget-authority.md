@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority.
+# You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority
 
 A common reaction to Cycles is:
 
