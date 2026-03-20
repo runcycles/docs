@@ -158,6 +158,7 @@ export default defineConfig({
         {
           text: 'Concepts',
           items: [
+            { text: 'Comparisons', link: '/concepts/comparisons' },
             { text: 'Why Rate Limits Are Not Enough', link: '/concepts/why-rate-limits-are-not-enough-for-autonomous-systems' },
             { text: 'What Cycles Is Not', link: '/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion' },
             { text: 'Idempotency, Retries and Concurrency', link: '/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes' },
