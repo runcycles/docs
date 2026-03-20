@@ -21,6 +21,7 @@ function estimateReadingTime(html: string): number {
 
 export default createContentLoader('blog/**/*.md', {
   excerpt: true,
+  render: true,
   transform(raw) {
     return raw
       .filter(page => page.frontmatter.blog === true)
