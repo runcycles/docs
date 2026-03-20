@@ -41,7 +41,7 @@ A preflight budget check that evaluates whether a reservation **would** be allow
 
 ### Scope
 
-A hierarchical path that identifies a specific budget. Scopes are built from [subject](#subject) fields and take the form `tenant:acme/workspace:prod/agent:summarizer`. Budgets are enforced at every level of the scope hierarchy. See [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles).
+A hierarchical path that identifies a specific budget boundary. Scopes are built from [subject](#subject) fields and take the form `tenant:acme/workspace:prod/agent:summarizer`. Budgets are enforced at every level of the scope hierarchy. See [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) and [How Scope Derivation Works](/protocol/how-scope-derivation-works-in-cycles).
 
 ### Subject
 

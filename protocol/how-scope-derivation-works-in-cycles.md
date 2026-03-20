@@ -194,11 +194,8 @@ Understanding scope derivation is essential for designing effective budget polic
 
 ## Next steps
 
-To explore the Cycles stack:
-
-- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
-- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
-- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
-- Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
-- Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
-- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how the three building blocks fit together
+- [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — create budgets at each scope level
+- [Common Budget Patterns](/how-to/common-budget-patterns) — practical scope hierarchy recipes
+- [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — multi-level policy design
+- [Scope Misconfiguration and Budget Leaks](/incidents/scope-misconfiguration-and-budget-leaks) — what can go wrong with scope design

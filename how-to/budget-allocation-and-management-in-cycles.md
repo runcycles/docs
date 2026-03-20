@@ -261,6 +261,7 @@ Budget allocation in Cycles:
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before allocating budgets
 - [Querying Balances](/protocol/querying-balances-in-cycles-understanding-budget-state) — detailed balance query guide
 - [Debt and Overdraft](/protocol/debt-overdraft-and-the-over-limit-model-in-cycles) — how overdraft affects allocation

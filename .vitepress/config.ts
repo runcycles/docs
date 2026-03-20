@@ -181,6 +181,7 @@ export default defineConfig({
             { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
             { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
             { text: 'Programmatic Client Usage', link: '/how-to/using-the-cycles-client-programmatically' },
+            { text: 'Tenants, Scopes, and Budgets', link: '/how-to/understanding-tenants-scopes-and-budgets-in-cycles' },
             { text: 'Tenant Management', link: '/how-to/tenant-creation-and-management-in-cycles' },
             { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
             { text: 'API Key Management', link: '/how-to/api-key-management-in-cycles' },

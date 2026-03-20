@@ -7,7 +7,7 @@ description: "How to create, configure, and manage tenants in Cycles using the A
 
 Tenants are the top-level isolation boundary in Cycles. Every budget, API key, and reservation is scoped to exactly one tenant.
 
-Before you can enforce budgets or issue API keys, you need at least one tenant. This guide covers the full tenant lifecycle through the Admin API.
+Before you can enforce budgets or issue API keys, you need at least one tenant. This guide covers the full tenant lifecycle through the Admin API. For an overview of how tenants fit into the broader scope and budget model, see [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
 
 ## What tenants are and when to create them
 
@@ -648,6 +648,7 @@ You tried to create a tenant with a `tenant_id` that already exists but with a d
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together
 - [API Key Management](/how-to/api-key-management-in-cycles) — create and rotate API keys for your tenants
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — set up budgets at tenant and sub-scopes
 - [Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles) — design multi-level budget policies

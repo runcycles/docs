@@ -407,6 +407,7 @@ That is how teams move from simple usage caps to real autonomous execution contr
 
 ## Next steps
 
+- [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before setting up budgets
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — allocate and fund budgets at each scope level
 - [API Key Management](/how-to/api-key-management-in-cycles) — create tenant-scoped API keys
