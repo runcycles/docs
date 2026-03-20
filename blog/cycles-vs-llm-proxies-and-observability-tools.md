@@ -3,7 +3,7 @@ title: "Cycles vs LLM Proxies and Observability Tools: Where Budget Enforcement 
 date: 2026-03-20
 author: Cycles Team
 tags: [architecture, comparisons, best-practices]
-description: "LLM proxies route calls. Observability tools trace them. Neither enforces budget before execution. See where Cycles fits alongside LiteLLM, Portkey, Helicone, and Langfuse."
+description: "LLM proxies route calls. Observability tools trace them. Neither enforces budget before execution. See where Cycles fits."
 blog: true
 sidebar: false
 ---
