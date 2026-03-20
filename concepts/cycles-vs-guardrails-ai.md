@@ -106,7 +106,7 @@ These are independent concerns. Neither subsumes the other.
 | **Budget awareness** | None — does not track cost or spend | Core function — reserves, commits, and tracks budget across scopes |
 | **Protocol** | Python framework with validators and guards | Open protocol with reserve/commit/release lifecycle |
 | **Retry behavior** | Re-asks the model with corrected prompts | Idempotent reservations — retries do not double-spend |
-| **Scope** | Per-call input/output validation | Per-tenant, per-workflow, per-run hierarchical budgets |
+| **Scope** | Per-call input/output validation | Per-tenant, per-workflow, per-agent hierarchical budgets |
 | **Degradation** | Can correct or filter outputs | Can downgrade model choice, reduce scope, or deny execution |
 
 ## Where Guardrails AI falls short for budget control

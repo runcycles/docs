@@ -88,7 +88,7 @@ The gap appears when you need to **enforce** a budget, not just **track** spend.
 | Pre-execution budget check | ✗ | ✅ |
 | Non-LLM action coverage | ✗ | ✅ (tools, APIs, any action) |
 | Atomic reservations | ✗ | ✅ |
-| Per-tenant / per-run scopes | ✗ | ✅ |
+| Per-tenant / per-agent scopes | ✗ | ✅ |
 | Graceful degradation | ◐ (model fallback only) | ✅ (three-way decision) |
 | Caching | ✅ | ✗ |
 | Concurrency-safe accounting | ✗ | ✅ |

@@ -193,9 +193,9 @@ Cycles provides fine-grained, application-aware budget enforcement.
 It operates at the level your system actually needs:
 
 - per-tenant
+- per-workspace
 - per-workflow
-- per-run
-- per-action
+- per-agent
 
 Budget is reserved before execution rather than inferred after usage occurs.
 
@@ -260,7 +260,7 @@ It handles concurrency, retries, hierarchical scopes, and lifecycle semantics as
 |---|---|---|
 | Concurrency safety | Usually racy | Atomic reservations |
 | Timing | Post-execution increment | Pre-execution reservation |
-| Hierarchical scopes | Rarely | Built-in (tenant → workflow → run) |
+| Hierarchical scopes | Rarely | Built-in (tenant → workspace → workflow → agent) |
 | Retry handling | Fragile | Idempotent lifecycle |
 | Lifecycle support | None | Reserve → commit / release / extend |
 | TTL and expiry | Manual if at all | Built-in reservation TTL and grace |

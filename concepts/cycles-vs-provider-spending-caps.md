@@ -132,8 +132,8 @@ Cycles aggregates budget across providers. A single reservation can account for 
 
 | | Provider Cap | Cycles |
 |---|---|---|
-| **Granularity** | Monthly or daily, per-organization | Per-tenant, per-workspace, per-workflow, per-run, per-action |
-| **Scope** | Organization or API key | Hierarchical — tenant → workspace → workflow → run |
+| **Granularity** | Monthly or daily, per-organization | Per-tenant, per-workspace, per-workflow, per-agent |
+| **Scope** | Organization or API key | Hierarchical — tenant → workspace → app → workflow → agent → toolset |
 | **Enforcement timing** | Post-usage with reporting delay | Pre-execution — budget reserved before the call |
 | **Multi-provider** | Single provider only | Aggregates across all providers in one budget |
 | **Degradation** | Binary — all traffic blocked or all allowed | Three-way — ALLOW, ALLOW_WITH_CAPS, DENY |
@@ -183,7 +183,7 @@ This is the layer that runs day-to-day. It handles the normal case, the edge cas
 
 The combination creates defense in depth:
 
-1. **Cycles** handles per-tenant, per-run, per-workflow budget enforcement with pre-execution checks. This is the primary control layer.
+1. **Cycles** handles per-tenant, per-workflow, per-agent budget enforcement with pre-execution checks. This is the primary control layer.
 2. **Provider caps** handle organizational safety nets. They catch anything that slips through the primary layer.
 
 If Cycles is working correctly, provider caps should never trigger. They exist for the case where Cycles is not working correctly.
