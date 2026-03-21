@@ -5,6 +5,8 @@ description: "Add budget enforcement to Claude Desktop, Claude Code, Cursor, Win
 
 # Getting Started with the Cycles MCP Server
 
+[![npm downloads](https://img.shields.io/npm/dm/@runcycles/mcp-server?label=MCP%20Server%20downloads&color=00C9A7&style=flat-square)](https://www.npmjs.com/package/@runcycles/mcp-server)
+
 The Cycles MCP Server gives any MCP-compatible AI agent runtime authority. Instead of integrating an SDK into your application code, you add the MCP server to your agent's tool configuration and the agent gets direct access to budget tools — reserve, commit, release, check balance, and more.
 
 This is the fastest way to add budget awareness to an AI agent. One config change, zero code changes.

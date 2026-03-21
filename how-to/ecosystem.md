@@ -109,6 +109,8 @@ Connect Cycles to OpenClaw for budget-controlled multi-agent orchestration.
 
 ### Python Client
 
+![PyPI downloads](https://img.shields.io/pypi/dm/runcycles?label=downloads&color=00C9A7&style=flat-square)
+
 The official Cycles Python client. Install from PyPI and start enforcing budgets in minutes.
 
 - [runcycles on PyPI](https://pypi.org/project/runcycles/)
@@ -116,10 +118,21 @@ The official Cycles Python client. Install from PyPI and start enforcing budgets
 
 ### TypeScript Client
 
+![npm downloads](https://img.shields.io/npm/dm/runcycles?label=downloads&color=00C9A7&style=flat-square)
+
 The official Cycles TypeScript client for Node.js and browser environments.
 
 - [runcycles on npm](https://www.npmjs.com/package/runcycles)
 - [TypeScript quickstart](/quickstart/getting-started-with-the-typescript-client)
+
+### MCP Server
+
+![npm downloads](https://img.shields.io/npm/dm/@runcycles/mcp-server?label=downloads&color=00C9A7&style=flat-square)
+
+The Cycles MCP server exposes runtime authority as tools for Claude Desktop, Claude Code, Cursor, and Windsurf.
+
+- [@runcycles/mcp-server on npm](https://www.npmjs.com/package/@runcycles/mcp-server)
+- [MCP quickstart](/quickstart/getting-started-with-the-mcp-server)
 
 ### Spring Boot Starter
 
