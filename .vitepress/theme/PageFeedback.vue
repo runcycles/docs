@@ -1,12 +1,25 @@
 <script setup>
-import { ref } from 'vue'
-import { useData } from 'vitepress'
+import { ref, computed, onMounted } from 'vue'
+import { useData, useRoute } from 'vitepress'
 
-const { frontmatter, page } = useData()
+const { frontmatter } = useData()
+const route = useRoute()
 const feedback = ref(null) // null | 'yes' | 'no'
+
+const storageKey = computed(() => `page-feedback:${route.path}`)
+
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem(storageKey.value)
+    if (saved) feedback.value = saved
+  } catch {}
+})
 
 function vote(value) {
   feedback.value = value
+  try {
+    localStorage.setItem(storageKey.value, value)
+  } catch {}
 }
 </script>
 

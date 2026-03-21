@@ -18,6 +18,18 @@ const sectionMap = {
   'admin-api': 'Admin API',
 }
 
+const firstPageMap = {
+  'quickstart': '/quickstart/what-is-cycles',
+  'concepts': '/concepts/comparisons',
+  'how-to': '/how-to/adding-cycles-to-an-existing-application',
+  'protocol': '/protocol/how-reserve-commit-works-in-cycles',
+  'configuration': '/configuration/python-client-configuration-reference',
+  'incidents': '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent',
+  'community': '/community/badges',
+  'api': '/api/',
+  'admin-api': '/admin-api/',
+}
+
 const breadcrumb = computed(() => {
   if (frontmatter.value.layout === 'home' || frontmatter.value.blog) return null
   const path = route.path
@@ -26,7 +38,7 @@ const breadcrumb = computed(() => {
   const section = segments[0]
   const label = sectionMap[section]
   if (!label) return null
-  return { label, link: `/${section}/` }
+  return { label, link: firstPageMap[section] || `/${section}/` }
 })
 </script>
 
@@ -34,7 +46,7 @@ const breadcrumb = computed(() => {
   <nav v-if="breadcrumb" class="breadcrumb" aria-label="Breadcrumb">
     <a href="/">Docs</a>
     <span class="separator">/</span>
-    <span class="current-section">{{ breadcrumb.label }}</span>
+    <a :href="breadcrumb.link" class="current-section">{{ breadcrumb.label }}</a>
   </nav>
 </template>
 
@@ -65,5 +77,11 @@ const breadcrumb = computed(() => {
 
 .current-section {
   color: var(--vp-c-text-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.current-section:hover {
+  color: var(--vp-c-brand-1);
 }
 </style>
