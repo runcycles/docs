@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Action Control: Hard Limits on Side Effects"
-date: 2026-03-20
+date: 2026-03-21
 author: Cycles Team
 tags: [action-control, risk, agents, engineering, best-practices]
 description: "Why controlling what AI agents DO matters more than controlling what they spend — and how to enforce hard limits on emails, deploys, and file writes."
@@ -98,12 +98,24 @@ When an agent requests a reservation and the server determines that the action i
 - **`tool_denylist`** — these specific tools are blocked (everything else is allowed)
 - **`max_steps_remaining`** — the agent has this many steps left before it must stop
 
-This enables a pattern teams can implement on their server: **progressive capability narrowing** — a degradation strategy where the server narrows an agent's available tools as risk-point budget runs low. For example, an operator might configure thresholds like this:
+This enables a pattern teams can implement on their server: **progressive capability narrowing** — a degradation strategy where the server narrows an agent's available tools as risk-point budget runs low. For example, an operator might assign risk points per tool and configure narrowing thresholds:
 
-- **0-50% consumed**: full access to all tools
-- **50-80% consumed**: ALLOW_WITH_CAPS with `tool_denylist: ["deploy", "send_email"]` — highest-blast-radius actions disabled
-- **80-100% consumed**: ALLOW_WITH_CAPS with `tool_allowlist: ["read_file", "search"]` — only read operations permitted
-- **100% consumed**: DENY — no further actions allowed
+| Tool | Risk points | Tier |
+|------|:----------:|------|
+| `read_file`, `search` | 1 | Read |
+| `create_draft` | 5 | Write-local |
+| `send_email` | 20 | Write-external |
+| `create_ticket` | 20 | Write-external |
+| `deploy` | 50 | Execution |
+
+With a 100-point risk budget per run, the server applies progressive narrowing:
+
+| Risk budget consumed | Decision | Caps applied | Effect |
+|:-------------------:|----------|-------------|--------|
+| 0–50% | ALLOW | _(none)_ | Full tool access |
+| 50–80% | ALLOW_WITH_CAPS | `tool_denylist: ["deploy", "send_email"]` | High-blast-radius actions disabled |
+| 80–100% | ALLOW_WITH_CAPS | `tool_allowlist: ["read_file", "search"]` | Read-only mode |
+| 100% | DENY | — | No further actions |
 
 The agent degrades gracefully instead of hard-stopping. It can still complete useful work — reading files, running searches, generating summaries — while the most dangerous capabilities are removed from its reach. This is the "disable" degradation strategy applied to action control rather than cost control.
 
