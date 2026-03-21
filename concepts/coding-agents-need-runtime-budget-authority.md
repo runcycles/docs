@@ -1,9 +1,9 @@
 ---
-title: "Coding Agents Need Runtime Budget Authority"
-description: "Why coding agents need runtime budget authority — the missing control layer between autonomous execution and spending limits."
+title: "Coding Agents Need Runtime Authority"
+description: "Why coding agents need runtime authority — the missing control layer between autonomous execution and spending limits."
 ---
 
-# Coding Agents Need Runtime Budget Authority
+# Coding Agents Need Runtime Authority
 
 Coding agents are impressive.
 
@@ -11,7 +11,7 @@ They can search a codebase, scaffold features, write tests, fix bugs, and compre
 
 It becomes more important.
 
-Coding agents and runtime budget authority solve different problems at different layers. A coding agent is designed to complete work. Runtime budget authority is designed to decide whether autonomous work is still allowed to continue, under what limits, and with what reconciliation afterward.
+Coding agents and runtime authority solve different problems at different layers. A coding agent is designed to complete work. Runtime authority is designed to decide whether autonomous work is still allowed to continue, under what limits, and with what reconciliation afterward.
 
 This article covers the **runtime-layer** problem: reservations, enforcement, retries, concurrency, and bounded execution inside a single agent run. The business-layer problem — whether the work was worth funding in the first place — is covered separately in [Why Coding Agents Do Not Replace Cycles](/concepts/why-coding-agents-do-not-replace-cycles).
 
@@ -56,7 +56,7 @@ The distinction matters because coding agents create real cost as they run:
 - **Fan-out** — a single high-level task can expand into dozens of subtasks
 - **Long-running loops** — agents that iterate on test failures or linting errors can run indefinitely
 
-Without runtime budget authority, the only control is to wait until the run finishes — or until someone notices the bill.
+Without runtime authority, the only control is to wait until the run finishes — or until someone notices the bill.
 
 That is observability, not enforcement.
 
@@ -77,9 +77,9 @@ Coding agents need controls that are:
 - **concurrency-safe** — correct under parallel agent execution
 - **reconciled** — actual usage committed, unused budget released
 
-## What runtime budget authority looks like
+## What runtime authority looks like
 
-Runtime budget authority introduces a control loop around autonomous execution:
+Runtime authority introduces a control loop around autonomous execution:
 
 1. **Reserve** — before work begins, declare estimated cost and reserve budget against one or more scopes
 2. **Execute** — proceed only if reservation succeeds
@@ -122,7 +122,7 @@ Events give coding agent platforms a way to account for every unit of work, whet
 
 Coding agents are getting faster, cheaper, and more autonomous.
 
-That makes runtime budget authority more important, not less.
+That makes runtime authority more important, not less.
 
 Keep building capable agents. But do not assume that the agent itself is the right place to enforce spending limits, tenant isolation, or organizational policy.
 

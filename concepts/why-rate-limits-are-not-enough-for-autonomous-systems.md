@@ -1,6 +1,6 @@
 ---
 title: "Why Rate Limits Are Not Enough for Autonomous Systems"
-description: "Learn why rate limits alone cannot govern autonomous systems and how budget authority provides the missing control layer."
+description: "Learn why rate limits alone cannot govern autonomous systems and how runtime authority provides the missing control layer."
 ---
 
 # Why Rate Limits Are Not Enough for Autonomous Systems
@@ -98,7 +98,7 @@ Dashboards can show what happened after the fact.
 That is useful for analysis.  
 It is not the same as deciding, before execution, whether an action is allowed to proceed.
 
-## Autonomous systems need budget authority
+## Autonomous systems need runtime authority
 
 The missing primitive is not better logging.
 
@@ -207,7 +207,7 @@ But it does not answer:
 - should the system downgrade from a larger model to a smaller one?
 - should the email or ticket-creation step be blocked once the run is over budget?
 
-Those are budget authority questions, not velocity questions.
+Those are runtime authority questions, not velocity questions.
 
 ## What teams usually do today
 
@@ -228,7 +228,7 @@ The result is usually one of two extremes:
 - controls are too weak and failures become expensive
 - controls are too rigid and autonomous systems become brittle
 
-A proper budget authority gives teams a cleaner middle ground.
+A proper runtime authority gives teams a cleaner middle ground.
 
 ## What Cycles is for
 

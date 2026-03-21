@@ -15,12 +15,12 @@ That is where Cycles matter.
 
 This article is about the **business-layer governance problem**: how teams decide what work is worth funding, where scope should stop, and when priorities should be re-evaluated.
 
-The runtime-layer problem is different. It asks how an autonomous system is prevented from exceeding its allowed execution budget in the middle of a run — under retries, parallelism, partial failure, and tool fan-out. That is covered separately in [Coding Agents Need Runtime Budget Authority](/concepts/coding-agents-need-runtime-budget-authority).
+The runtime-layer problem is different. It asks how an autonomous system is prevented from exceeding its allowed execution budget in the middle of a run — under retries, parallelism, partial failure, and tool fan-out. That is covered separately in [Coding Agents Need Runtime Authority](/concepts/coding-agents-need-runtime-budget-authority).
 
 The two are complementary, not interchangeable.
 
 Coding agents increase execution capacity.  
-Runtime budget authority bounds execution.  
+Runtime authority bounds execution.  
 Cycles govern whether the work was worth funding in the first place, and whether the next unit of work deserves more budget.
 
 ## Agents optimize for output. Cycles optimize for value.
@@ -60,7 +60,7 @@ Cycles restore that missing discipline.
 
 They provide a business boundary: this is what we are funding now, this is what counts as done for this period, and this is the checkpoint before more scope is authorized.
 
-That is a different problem from runtime enforcement inside a single autonomous run. If the question is what happens when an agent retries, fans out, or exceeds its allowed execution budget mid-run, see [Coding Agents Need Runtime Budget Authority](/concepts/coding-agents-need-runtime-budget-authority). If the question is whether the team should continue funding the next increment of work at all, that is the role Cycles play.
+That is a different problem from runtime enforcement inside a single autonomous run. If the question is what happens when an agent retries, fans out, or exceeds its allowed execution budget mid-run, see [Coding Agents Need Runtime Authority](/concepts/coding-agents-need-runtime-budget-authority). If the question is whether the team should continue funding the next increment of work at all, that is the role Cycles play.
 
 ## Spend visibility is not value accountability
 
@@ -103,7 +103,7 @@ That is where the real upside of coding agents shows up. Teams that understand t
 
 It is worth stating the distinction directly.
 
-Runtime budget authority answers questions like:
+Runtime authority answers questions like:
 
 - Can this next autonomous step proceed?
 - Should this run be denied, degraded, or stopped?
@@ -144,13 +144,13 @@ A Cycle boundary is a natural point to ask not just whether the implementation w
 
 Coding agents are a force multiplier on execution.
 
-Runtime budget authority ensures autonomous execution stays bounded while it is happening.
+Runtime authority ensures autonomous execution stays bounded while it is happening.
 
 Cycles provide the governance structure above that layer: the discipline that asks whether the work was worth funding, whether scope should stop, and what should receive budget next.
 
 You need all three ideas if you want agentic software to be both fast and economically coherent.
 
-If you want the runtime-side companion to this piece — reservations, enforcement, retries, concurrency, and bounded execution inside a single agent run — see [Coding Agents Need Runtime Budget Authority](/concepts/coding-agents-need-runtime-budget-authority).
+If you want the runtime-side companion to this piece — reservations, enforcement, retries, concurrency, and bounded execution inside a single agent run — see [Coding Agents Need Runtime Authority](/concepts/coding-agents-need-runtime-budget-authority).
 
 The teams that get the most out of coding agents will not be the ones that simply generate the most output.
 
@@ -160,8 +160,8 @@ They will be the ones that pair machine-speed execution with explicit runtime co
 
 To learn more:
 
-- Read [Coding Agents Need Runtime Budget Authority](/concepts/coding-agents-need-runtime-budget-authority) for the runtime-layer companion to this piece
-- Understand [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) for how velocity controls differ from budget authority
+- Read [Coding Agents Need Runtime Authority](/concepts/coding-agents-need-runtime-budget-authority) for the runtime-layer companion to this piece
+- Understand [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) for how velocity controls differ from runtime authority
 - See [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) for how teams evolve from dashboards to budget governance
 - Explore the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) that powers runtime enforcement
 - Get started with the [Python Client](/quickstart/getting-started-with-the-python-client) or [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)

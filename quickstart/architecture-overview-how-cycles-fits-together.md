@@ -5,7 +5,7 @@ description: "Learn how Cycles components interact — the protocol, server, adm
 
 # Architecture Overview: How Cycles Fits Together
 
-Cycles is a budget authority for autonomous execution. It sits between your application and the actions that cost money or carry risk.
+Cycles is a runtime authority for autonomous agents. It sits between your application and the actions that cost money or carry risk.
 
 This page describes the components, how they interact, and where each piece runs.
 
@@ -149,7 +149,7 @@ See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-
 
 ### Cycles MCP Server
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Cycles budget authority as MCP tools. MCP-compatible AI hosts (Claude Desktop, Claude Code, Cursor, Windsurf) discover and call these tools automatically.
+A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Cycles runtime authority as MCP tools. MCP-compatible AI hosts (Claude Desktop, Claude Code, Cursor, Windsurf) discover and call these tools automatically.
 
 **What it does:**
 
@@ -302,7 +302,7 @@ Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directl
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — server-specific configuration and deployment
 - [API Reference](/api/) — interactive endpoint documentation
-- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — add budget authority to Claude Desktop, Claude Code, Cursor, or Windsurf
+- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — add runtime authority to Claude Desktop, Claude Code, Cursor, or Windsurf
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — integrate with your Python app
 - [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — integrate with your TypeScript/Node.js app
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — integrate with your Spring app

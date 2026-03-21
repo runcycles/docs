@@ -59,7 +59,7 @@ In a Spring AI application, that usually means guarding:
 
 ## The mental model
 
-Think of Cycles as a **budget authority for autonomous execution**.
+Think of Cycles as a **runtime authority for autonomous agents**.
 
 Spring AI handles prompting, model interaction, retrieval, and orchestration.
 

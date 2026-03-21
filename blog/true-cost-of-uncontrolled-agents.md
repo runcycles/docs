@@ -3,7 +3,7 @@ title: "The True Cost of Uncontrolled AI Agents"
 date: 2026-03-16
 author: Cycles Team
 tags: [costs, agents, incidents, best-practices]
-description: "What happens when AI agents run without budget limits? Real-world costs, failure modes, and why pre-execution budget authority is the missing layer."
+description: "What happens when AI agents run without budget limits? Real-world costs, failure modes, and why pre-execution runtime authority is the missing layer."
 blog: true
 sidebar: false
 ---
@@ -91,11 +91,11 @@ The fundamental gap looks like this:
 
 We wrote extensively about this progression in [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) and [Why Rate Limits Are Not Enough for Autonomous Systems](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems).
 
-The missing layer is **pre-execution budget authority**: a system that checks _before_ each call whether the budget allows it, atomically decrements the balance, and denies the call if the budget is exhausted. This is fundamentally different from post-hoc observation.
+The missing layer is **pre-execution runtime authority**: a system that checks _before_ each call whether the budget allows it, atomically decrements the balance, and denies the call if the budget is exhausted. This is fundamentally different from post-hoc observation.
 
-## Budget Authority as Infrastructure
+## Runtime Authority as Infrastructure
 
-This is the problem [Cycles](/) was built to solve. Instead of layering alerts on top of dashboards on top of logs, Cycles introduces a dedicated budget authority layer that sits in the execution path of every agent action.
+This is the problem [Cycles](/) was built to solve. Instead of layering alerts on top of dashboards on top of logs, Cycles introduces a dedicated runtime authority layer that sits in the execution path of every agent action.
 
 The core mechanic is simple: before an agent makes an LLM call or tool invocation, it checks with Cycles. Cycles atomically reserves the estimated cost. If the budget is exhausted, the call is denied — and the agent can degrade gracefully instead of failing silently or running up a bill.
 

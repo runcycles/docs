@@ -1,17 +1,17 @@
 ---
 title: "Integration Ecosystem"
-description: "Explore the full Cycles integration ecosystem — SDKs, AI providers, frameworks, and tools that work with budget authority for autonomous agents."
+description: "Explore the full Cycles integration ecosystem — SDKs, AI providers, frameworks, and tools that work with runtime authority for autonomous agents."
 ---
 
 # Integration Ecosystem
 
-Cycles integrates with the tools, frameworks, and AI providers you already use. Whether you're building autonomous agents, adding budget authority to an existing application, or exploring what's possible with controlled AI spending, there's an integration path for you.
+Cycles integrates with the tools, frameworks, and AI providers you already use. Whether you're building autonomous agents, adding runtime authority to an existing application, or exploring what's possible with controlled AI spending, there's an integration path for you.
 
 ## AI Model Providers
 
 ### OpenAI
 
-Integrate Cycles budget authority with ChatGPT, GPT-4, GPT-4o, and other OpenAI models. Control per-request and per-session spending when your agents call OpenAI APIs.
+Integrate Cycles runtime authority with ChatGPT, GPT-4, GPT-4o, and other OpenAI models. Control per-request and per-session spending when your agents call OpenAI APIs.
 
 - [OpenAI integration guide](/how-to/integrating-cycles-with-openai)
 - [openai.com](https://openai.com)
@@ -25,7 +25,7 @@ Use Cycles with Claude models to set spending limits on autonomous agent workflo
 
 ### Google Gemini
 
-Add budget authority to applications built on Google's Gemini family of models.
+Add runtime authority to applications built on Google's Gemini family of models.
 
 - [Gemini integration guide](/how-to/integrating-cycles-with-google-gemini)
 - [ai.google.dev](https://ai.google.dev)
@@ -55,14 +55,14 @@ The same LangChain integration, purpose-built for JavaScript and TypeScript envi
 
 ### Vercel AI SDK
 
-Add Cycles budget authority to applications built with the Vercel AI SDK for seamless spending control in Next.js and other Vercel-deployed projects.
+Add Cycles runtime authority to applications built with the Vercel AI SDK for seamless spending control in Next.js and other Vercel-deployed projects.
 
 - [Vercel AI SDK integration guide](/how-to/integrating-cycles-with-vercel-ai-sdk)
 - [sdk.vercel.ai](https://sdk.vercel.ai)
 
 ### Spring AI
 
-Integrate Cycles with Spring AI to bring budget authority to Java and Kotlin AI applications.
+Integrate Cycles with Spring AI to bring runtime authority to Java and Kotlin AI applications.
 
 - [Spring AI quickstart](/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles)
 - [spring.io/projects/spring-ai](https://spring.io/projects/spring-ai)
@@ -71,7 +71,7 @@ Integrate Cycles with Spring AI to bring budget authority to Java and Kotlin AI 
 
 ### Express.js
 
-Add Cycles middleware to your Express.js API to enforce budget authority on any route that triggers AI spending.
+Add Cycles middleware to your Express.js API to enforce runtime authority on any route that triggers AI spending.
 
 - [Express.js integration guide](/how-to/integrating-cycles-with-express)
 - [expressjs.com](https://expressjs.com)
@@ -85,7 +85,7 @@ Use the Cycles Python client with FastAPI for high-performance, budget-aware AI 
 
 ### Spring Boot
 
-Leverage the Cycles Spring Boot Starter for auto-configured budget authority in your Spring Boot applications.
+Leverage the Cycles Spring Boot Starter for auto-configured runtime authority in your Spring Boot applications.
 
 - [Spring Boot quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
 - [spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
@@ -94,7 +94,7 @@ Leverage the Cycles Spring Boot Starter for auto-configured budget authority in 
 
 ### MCP (Model Context Protocol)
 
-Cycles provides an MCP server that exposes budget authority as tools for any MCP-compatible client, including Claude Desktop, Claude Code, Cursor, and Windsurf.
+Cycles provides an MCP server that exposes runtime authority as tools for any MCP-compatible client, including Claude Desktop, Claude Code, Cursor, and Windsurf.
 
 - [MCP integration guide](/how-to/integrating-cycles-with-mcp)
 - [modelcontextprotocol.io](https://modelcontextprotocol.io)
@@ -132,7 +132,7 @@ Auto-configured Cycles integration for Spring Boot applications, available on Ma
 
 ### Cycles Protocol
 
-The Cycles Protocol is an open specification for budget authority in autonomous agent systems, licensed under Apache 2.0. Build your own implementation or contribute to the spec.
+The Cycles Protocol is an open specification for runtime authority in autonomous agent systems, licensed under Apache 2.0. Build your own implementation or contribute to the spec.
 
 - [Cycles Protocol on GitHub](https://github.com/runcycles/cycles-protocol)
 
@@ -144,6 +144,6 @@ A complete OpenAPI specification is available for the Cycles API, making it stra
 
 ## Community Tools
 
-The Cycles ecosystem grows with every project that adopts budget authority. If you've built a library, plugin, tool, or integration that works with Cycles, we want to hear about it.
+The Cycles ecosystem grows with every project that adopts runtime authority. If you've built a library, plugin, tool, or integration that works with Cycles, we want to hear about it.
 
 Building something with Cycles? Add a [Built with Cycles badge](/community/badges) to your project and let the community know what you're working on.

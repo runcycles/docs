@@ -168,7 +168,7 @@ export default defineConfig({
             { text: 'Cycles vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
             { text: 'Cycles vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
             { text: 'Cycles vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
-            { text: 'Coding Agents Need Budget Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
+            { text: 'Coding Agents Need Runtime Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
             { text: 'Why Agents Do Not Replace Cycles', link: '/concepts/why-coding-agents-do-not-replace-cycles' },
             { text: 'Glossary', link: '/glossary' },
           ]

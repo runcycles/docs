@@ -1,9 +1,9 @@
 ---
-title: "From Observability to Enforcement: How Teams Evolve from Dashboards to Budget Authority"
+title: "From Observability to Enforcement: How Teams Evolve from Dashboards to Runtime Authority"
 description: "Explore how teams progress from dashboards and alerts to runtime budget enforcement as autonomous systems mature."
 ---
 
-# From Observability to Enforcement: How Teams Evolve from Dashboards to Budget Authority
+# From Observability to Enforcement: How Teams Evolve from Dashboards to Runtime Authority
 
 Most teams do not begin with enforcement.
 
@@ -140,7 +140,7 @@ Teams often add:
 
 These controls can help, but they are often fragmented and inconsistent.
 
-### Stage 5: Budget authority
+### Stage 5: Runtime authority
 
 Eventually the team realizes it needs one thing the earlier stages do not provide:
 
@@ -176,7 +176,7 @@ This is the move from descriptive operations to governing execution.
 A useful way to think about it is:
 
 - **dashboards explain**
-- **budget authority decides**
+- **runtime authority decides**
 
 You still want the dashboard.
 
@@ -230,7 +230,7 @@ That means “request count” and “API throughput” stop being good proxies 
 
 The system needs to reason about total bounded execution, not just traffic volume.
 
-This is why observability naturally leads to budget authority as systems mature.
+This is why observability naturally leads to runtime authority as systems mature.
 
 ## A common evolution pattern
 
@@ -272,7 +272,7 @@ Questions become:
 - how do we add hard boundaries without breaking everything?
 - how do we make policy hold under retries and concurrency?
 
-That is when budget authority becomes necessary.
+That is when runtime authority becomes necessary.
 
 ## What enforcement should not mean
 
@@ -333,9 +333,9 @@ It is more often:
 
 That is a much safer operational path.
 
-## What changes once budget authority exists
+## What changes once runtime authority exists
 
-Once a system has a real budget authority, several things change.
+Once a system has a real runtime authority, several things change.
 
 ### Incidents become easier to bound
 
@@ -428,7 +428,7 @@ But understanding alone does not prevent the next incident.
 
 As systems become more autonomous, teams need a control layer that can decide whether work should continue before cost and side effects grow further.
 
-That is the move from dashboards to budget authority.
+That is the move from dashboards to runtime authority.
 
 That is the move Cycles is built to support.
 

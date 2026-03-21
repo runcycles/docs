@@ -24,7 +24,7 @@ This guide presents a maturity model for AI agent cost management. Five tiers, f
 | 1 | Monitoring | Dashboards and cost visibility | No | Hours |
 | 2 | Alerting | Automated notifications on thresholds | No | Minutes |
 | 3 | Soft Limits | Rate limiting, provider caps, counters | Partially | Seconds (but leaky) |
-| 4 | Hard Enforcement | Pre-execution budget authority | Yes | Milliseconds (before execution) |
+| 4 | Hard Enforcement | Pre-execution runtime authority | Yes | Milliseconds (before execution) |
 
 Each tier builds on the one below it. You don't skip tiers — you add capabilities. A team at Tier 4 still uses dashboards (Tier 1) and alerts (Tier 2). The difference is that dashboards are no longer the _last_ line of defense.
 
@@ -142,19 +142,19 @@ Alerts are essential. They are not sufficient. Every dollar spent between "alert
 
 ## Tier 4: Hard Enforcement
 
-**What it looks like:** A dedicated budget authority service sits in the execution path of every LLM call. Before an agent calls a model, it requests authorization from the budget service. The service atomically reserves the estimated cost. If the budget is exhausted, the call is denied before it executes. The agent receives a clear signal and can degrade gracefully.
+**What it looks like:** A dedicated runtime authority service sits in the execution path of every LLM call. Before an agent calls a model, it requests authorization from the budget service. The service atomically reserves the estimated cost. If the budget is exhausted, the call is denied before it executes. The agent receives a clear signal and can degrade gracefully.
 
 This is the tier where prevention replaces response. There is no gap between detection and action because the check happens _before_ the spend.
 
 **How it works:**
 
 1. Agent estimates the cost of the next LLM call
-2. Agent requests a reservation from the budget authority
-3. Budget authority atomically checks the balance and decrements it
+2. Agent requests a reservation from the runtime authority
+3. Runtime authority atomically checks the balance and decrements it
 4. If approved: the call proceeds, and actual cost is reconciled afterward
 5. If denied: the agent receives a budget-exhausted signal and follows its degradation path
 
-The atomic check-and-decrement is critical. It's what prevents the TOCTOU race condition from Tier 3. No matter how many concurrent agents check simultaneously, the budget authority serializes the reservations. If the budget has $5 left and two agents each request $4, one succeeds and one is denied. Always.
+The atomic check-and-decrement is critical. It's what prevents the TOCTOU race condition from Tier 3. No matter how many concurrent agents check simultaneously, the runtime authority serializes the reservations. If the budget has $5 left and two agents each request $4, one succeeds and one is denied. Always.
 
 **What you gain:**
 
@@ -169,7 +169,7 @@ The atomic check-and-decrement is critical. It's what prevents the TOCTOU race c
 
 **What Cycles provides at this tier:**
 
-[Cycles](/) is built specifically for Tier 4. It's an open-source budget authority system that enforces hard spend limits before execution. The core API is a reserve-execute-commit loop that works across any model provider and any agent framework.
+[Cycles](/) is built specifically for Tier 4. It's an open-source runtime authority system that enforces hard spend limits before execution. The core API is a reserve-execute-commit loop that works across any model provider and any agent framework.
 
 Budgets can be scoped at any level — per tenant, per workflow, per run, or any combination. When a budget is exhausted, the denial includes enough context for the agent to make an intelligent decision: fall back to a cheaper model, return a partial result, or stop and explain why.
 
@@ -200,9 +200,9 @@ The best-run teams we see operate at all tiers simultaneously:
 
 - **Tier 1 (Monitoring):** Dashboards showing real-time and historical spend by tenant, workflow, and model. Used for capacity planning, cost optimization, and trend analysis.
 - **Tier 2 (Alerting):** Alerts on anomalies that enforcement alone doesn't catch — unusual patterns, new cost trends, budget utilization approaching limits. These are informational alerts for humans, not enforcement mechanisms.
-- **Tier 4 (Hard Enforcement):** Cycles budget authority in the execution path. Every call is authorized before execution. Budgets are scoped per-tenant and per-run.
+- **Tier 4 (Hard Enforcement):** Cycles runtime authority in the execution path. Every call is authorized before execution. Budgets are scoped per-tenant and per-run.
 
-Notice Tier 3 is absent. That's intentional. Once you have Tier 4, rate limits and application counters are redundant for cost control. (For more on why building your own enforcement layer is deceptively complex, see [Vibe Coding a Budget Wrapper vs. Owning a Budget Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).) You might still have rate limits for other reasons (protecting downstream services, fairness), but they're no longer your cost control mechanism.
+Notice Tier 3 is absent. That's intentional. Once you have Tier 4, rate limits and application counters are redundant for cost control. (For more on why building your own enforcement layer is deceptively complex, see [Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).) You might still have rate limits for other reasons (protecting downstream services, fairness), but they're no longer your cost control mechanism.
 
 The monitoring and alerting layers serve a different purpose once enforcement is in place. They shift from "detect overspend" to "understand cost patterns and optimize." An alert that says "Tenant X is using 80% of their monthly budget on day 15" isn't an emergency — enforcement prevents overspend. But it's a signal that you should review their budget allocation or their agent efficiency.
 

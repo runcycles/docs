@@ -10,7 +10,7 @@ OUTPUT="$DOCS_ROOT/public/llms-full.txt"
 cat > "$OUTPUT" <<'HEADER'
 # Cycles — Complete Documentation
 
-> Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.
+> Runtime authority for autonomous agents. Keep agents within approved spend, risk, and action limits. Open protocol, multi-language SDKs, Apache 2.0.
 
 This file contains the full text of all Cycles documentation, optimized for LLM ingestion. For a lightweight navigation index, see llms.txt.
 

@@ -194,7 +194,7 @@ Ten users triggering multi-agent workflows simultaneously means 160 concurrent L
 
 Knowing your costs is the first step. Controlling them is the next.
 
-Agent costs are a function of call patterns, not just token prices. A 10% change in model pricing matters far less than a runaway loop that makes 500 calls instead of 50. We wrote about [why monitoring alone isn't sufficient](/blog/true-cost-of-uncontrolled-agents#the-observability-gap) and how [pre-execution budget authority](/blog/true-cost-of-uncontrolled-agents#budget-authority-as-infrastructure) closes the gap.
+Agent costs are a function of call patterns, not just token prices. A 10% change in model pricing matters far less than a runaway loop that makes 500 calls instead of 50. We wrote about [why monitoring alone isn't sufficient](/blog/true-cost-of-uncontrolled-agents#the-observability-gap) and how [pre-execution runtime authority](/blog/true-cost-of-uncontrolled-agents#runtime-authority-as-infrastructure) closes the gap.
 
 [Cycles](/) provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent degrades gracefully.
 

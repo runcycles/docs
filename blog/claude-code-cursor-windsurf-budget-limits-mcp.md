@@ -146,7 +146,7 @@ For the six MCP integration patterns (simple reserve/commit, preflight, graceful
 
 This is where MCP-based enforcement becomes more useful than a simple kill switch.
 
-When the session budget is getting low, the budget authority does not just deny — it returns `ALLOW_WITH_CAPS` with constraints the agent can use to self-regulate:
+When the session budget is getting low, the runtime authority does not just deny — it returns `ALLOW_WITH_CAPS` with constraints the agent can use to self-regulate:
 
 - **`maxTokens: 500`** — the agent generates shorter responses, completing the thought in fewer words
 - **`maxStepsRemaining: 3`** — the agent knows to wrap up in three more steps, so it prioritizes finishing the current task over starting new ones
@@ -181,11 +181,11 @@ Prompt-based tracking breaks in practice because:
 - **Agents hallucinate token counts.** An agent told to "track your token usage" will estimate, round, lose count, or simply stop tracking after the context grows long enough.
 - **Instructions degrade under long contexts.** A system prompt instruction to "stop after $10" competes with every other instruction in the context. In a 100k-token conversation, budget tracking is easily forgotten.
 - **No atomicity.** If two concurrent sessions share a budget, prompt-based tracking cannot prevent both from spending simultaneously. Each agent sees its own estimate of what is left.
-- **No enforcement.** The agent can choose to ignore its own tracking. A budget authority cannot be ignored — it returns ALLOW or DENY, and the tool call does not happen.
+- **No enforcement.** The agent can choose to ignore its own tracking. A runtime authority cannot be ignored — it returns ALLOW or DENY, and the tool call does not happen.
 
-The MCP-based approach is structurally different. The budget authority is an external process with its own state, atomicity guarantees, and enforcement semantics. The agent calls `cycles_reserve` and gets back a decision. It cannot negotiate, hallucinate, or reason its way around that decision. The money is either available or it is not.
+The MCP-based approach is structurally different. The runtime authority is an external process with its own state, atomicity guarantees, and enforcement semantics. The agent calls `cycles_reserve` and gets back a decision. It cannot negotiate, hallucinate, or reason its way around that decision. The money is either available or it is not.
 
-For the extended argument about why the gap between a wrapper and an authority is larger than it looks, see [Vibe Coding a Budget Wrapper vs. Owning a Budget Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).
+For the extended argument about why the gap between a wrapper and an authority is larger than it looks, see [Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).
 
 ## Next Steps
 
@@ -193,4 +193,4 @@ For the extended argument about why the gap between a wrapper and an authority i
 - **[Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp)** — advanced patterns: preflight decisions, graceful degradation, long-running operations, fire-and-forget events
 - **[Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles)** — protocol reference for ALLOW, ALLOW_WITH_CAPS, and DENY
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the complete reserve-commit lifecycle hands-on
-- **[Vibe Coding a Budget Wrapper vs. Owning a Budget Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why external budget authority beats self-policing
+- **[Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why external runtime authority beats self-policing

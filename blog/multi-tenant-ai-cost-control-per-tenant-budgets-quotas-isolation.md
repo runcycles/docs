@@ -46,7 +46,7 @@ Every major AI provider offers some form of spending limit — OpenAI monthly ca
 
 **Reactive, not preventive.** Most provider caps operate on billing cycles. They tell you what happened; they do not block the next model call in real time. By the time the cap triggers, the damage is done — and it affects everyone.
 
-The structural problem is clear: provider caps protect the provider's exposure to you, not your exposure to individual customers. For multi-tenant AI platforms, the enforcement boundary must exist **per customer, inside your runtime**. This is the problem [Cycles](/) was built to solve — budget authority as infrastructure, enforced before execution, scoped to each tenant.
+The structural problem is clear: provider caps protect the provider's exposure to you, not your exposure to individual customers. For multi-tenant AI platforms, the enforcement boundary must exist **per customer, inside your runtime**. This is the problem [Cycles](/) was built to solve — runtime authority as infrastructure, enforced before execution, scoped to each tenant.
 
 ## What Per-Tenant Budget Enforcement Looks Like
 

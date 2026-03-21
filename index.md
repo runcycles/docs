@@ -27,7 +27,7 @@ features:
     linkText: Get started
   - icon: 💡
     title: "Concepts"
-    details: "Understand why rate limits fail for agents, what Cycles actually solves, and how teams evolve from dashboards to budget authority."
+    details: "Understand why rate limits fail for agents, what Cycles actually solves, and how teams evolve from dashboards to runtime authority."
     link: /concepts/why-rate-limits-are-not-enough-for-autonomous-systems
     linkText: Learn more
   - icon: 🔧
