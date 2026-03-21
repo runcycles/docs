@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Rss } from 'lucide-vue-next'
 import { data as posts } from '../../blog/posts.data'
 
 const selectedTag = ref(null)
@@ -79,7 +80,7 @@ onMounted(() => {
         >{{ tag }} ({{ tagCounts[tag] }})</button>
       </div>
       <a href="/feed.xml" class="blog-rss-link" aria-label="Subscribe via RSS">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+        <Rss :size="14" style="margin-right:4px" />
         RSS
       </a>
     </div>
