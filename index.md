@@ -2,9 +2,9 @@
 layout: home
 hero:
   name: "Cycles"
-  text: "Budget authority for autonomous agents"
+  text: "Runtime authority for autonomous execution"
   tagline: >-
-    Hard limits on agent spend and actions enforced before execution — not after. Multi-language SDKs.<br>Open protocol, Apache 2.0.
+    Keep agents within approved spend, risk, and action limits. Multi-language SDKs.<br>Open protocol, Apache 2.0.
   image:
     light: /runcycles-hero.svg
     dark: /runcycles-hero-dark.svg
