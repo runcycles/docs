@@ -140,7 +140,7 @@ That is the problem Cycles exists to solve.
 To learn more:
 
 - Read [Why Coding Agents Do Not Replace Cycles](/concepts/why-coding-agents-do-not-replace-cycles) for the business-layer companion to this piece
-- Read [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) for the broader case for budget authority
+- Read [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) for the broader case for runtime authority
 - Understand the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles)
 - See [how events work](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) for direct-debit accounting
 - Explore the full [API Reference](/protocol/api-reference-for-the-cycles-protocol)
