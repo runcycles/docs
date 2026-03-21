@@ -157,7 +157,7 @@ onMounted(async () => {
 <template>
   <section class="home-code-snippet">
     <div class="inner">
-    <p class="code-caption"><code>@cycles</code> reserves budget before the call. If it's gone, the call never fires.</p>
+    <p class="code-caption"><code>@cycles</code> reserves cycles before the action runs. No remaining cycles — no action.</p>
     <div class="code-container">
       <div class="tab-bar">
         <button
