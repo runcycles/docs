@@ -5,7 +5,7 @@ description: "Add budget enforcement to Python apps using the runcycles package 
 
 # Getting Started with the Python Client
 
-[![PyPI downloads](https://img.shields.io/pypi/dt/runcycles?label=PyPI%20downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/runcycles?label=PyPI%20downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles/)
 
 The `runcycles` Python package provides both a `@cycles` decorator and a programmatic `CyclesClient` for adding budget enforcement to any Python application.
 

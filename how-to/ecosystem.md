@@ -109,7 +109,7 @@ Connect Cycles to OpenClaw for budget-controlled multi-agent orchestration.
 
 ### Python Client
 
-[![PyPI downloads](https://img.shields.io/pypi/dt/runcycles?label=downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/runcycles?label=downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles/)
 
 The official Cycles Python client. Install from PyPI and start enforcing budgets in minutes.
 
