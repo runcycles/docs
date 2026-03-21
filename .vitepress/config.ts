@@ -145,7 +145,6 @@ export default defineConfig({
         ],
       },
       { text: 'Blog', link: '/blog/' },
-      { text: 'Changelog', link: '/changelog' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
