@@ -47,7 +47,7 @@ Cycles enforces a budget decision before agent actions execute — LLM calls, to
 > Cycles enforces where you instrument it. Uninstrumented code paths are unaffected.
 
 ```
-1. Reserve    →  Lock estimated cost before the action runs
+1. Reserve    →  Lock estimated amount before the action runs
 2. Execute    →  Call the LLM / tool / API
 3. Commit     →  Record actual usage; unused budget is released automatically
 ```
