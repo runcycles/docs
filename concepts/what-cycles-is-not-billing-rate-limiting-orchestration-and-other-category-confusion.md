@@ -384,5 +384,5 @@ To explore the Cycles stack:
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the maturity model from monitoring to hard enforcement, and why Cycles is specifically Tier 4
-- [Cycles vs Rate Limiting](/concepts/cycles-vs-rate-limiting) — the detailed comparison between rate limiting and budget authority
+- [Cycles vs Rate Limiting](/concepts/cycles-vs-rate-limiting) — the detailed comparison between rate limiting and runtime authority
 - [Comparisons](/concepts/comparisons) — how Cycles differs from rate limiters, provider caps, observability tools, and more
