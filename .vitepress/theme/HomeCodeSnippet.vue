@@ -84,14 +84,8 @@ const handle = await reserveForStream({
 
 const result = streamText({
   model: openai("gpt-4o"), messages,
-  onFinish: async ({ usage }) => {
-    const actual = (usage.promptTokens ?? 0) * 250
-      + (usage.completionTokens ?? 0) * 1000;
-    await handle.commit(actual, {
-      tokensInput: usage.promptTokens,
-      tokensOutput: usage.completionTokens,
-    });
-  },
+  onFinish: async ({ usage }) =>
+    handle.commit((usage.promptTokens ?? 0) * 250 + (usage.completionTokens ?? 0) * 1000),
 });`,
   },
 
@@ -278,9 +272,9 @@ onMounted(async () => {
   background: var(--vp-code-block-bg);
   padding: 20px 24px;
   overflow-x: auto;
-  /* Fixed height prevents layout shift when switching tabs.
-     Tallest snippet (Vercel AI) is ~17 lines × 14px × 1.6 + 40px padding */
-  min-height: 420px;
+  /* Fixed height prevents layout shift when switching tabs */
+  height: 420px;
+  overflow-y: auto;
 }
 
 .code-block :deep(pre) {
