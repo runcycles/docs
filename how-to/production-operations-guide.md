@@ -7,6 +7,10 @@ description: "Run Cycles reliably in production with Redis configuration, high a
 
 This guide covers what you need to run Cycles reliably in production. It assumes you've already deployed the stack per [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) and are preparing for production traffic.
 
+::: info
+Cycles stores all state in Redis. Redis availability directly determines Cycles availability. Plan your Redis deployment accordingly.
+:::
+
 ## Redis configuration for production
 
 Cycles stores all state in Redis. Redis availability directly determines Cycles availability.

@@ -79,10 +79,30 @@ export default defineConfig({
       provider: 'local',
       options: {
         detailedView: true,
+        translations: {
+          button: {
+            buttonText: 'Search docs',
+            buttonAriaLabel: 'Search documentation',
+          },
+          modal: {
+            displayDetails: 'Show detailed view',
+            noResultsText: 'No results for',
+            resetButtonTitle: 'Clear search',
+            footer: {
+              selectText: 'to select',
+              navigateText: 'to navigate',
+              closeText: 'to close',
+            },
+          },
+        },
         miniSearch: {
           searchOptions: {
             fuzzy: 0.2,
             prefix: true,
+            boost: {
+              title: 4,
+              text: 2,
+            },
           }
         }
       }
@@ -108,6 +128,16 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       {
+        text: 'Docs',
+        items: [
+          { text: 'Concepts', link: '/concepts/comparisons' },
+          { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
+          { text: 'Integrations', link: '/how-to/integrations-overview' },
+          { text: 'Incident Patterns', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
+          { text: 'Configuration', link: '/configuration/python-client-configuration-reference' },
+        ],
+      },
+      {
         text: 'API Reference',
         items: [
           { text: 'Cycles Protocol API', link: '/api/' },
@@ -115,6 +145,7 @@ export default defineConfig({
         ],
       },
       { text: 'Blog', link: '/blog/' },
+      { text: 'Changelog', link: '/changelog' },
       { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
@@ -158,18 +189,24 @@ export default defineConfig({
         {
           text: 'Concepts',
           items: [
-            { text: 'Comparisons', link: '/concepts/comparisons' },
             { text: 'Why Rate Limits Are Not Enough', link: '/concepts/why-rate-limits-are-not-enough-for-autonomous-systems' },
             { text: 'What Cycles Is Not', link: '/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion' },
             { text: 'Idempotency, Retries and Concurrency', link: '/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes' },
             { text: 'From Observability to Enforcement', link: '/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority' },
-            { text: 'How Cycles Compares', link: '/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers' },
-            { text: 'Cycles vs Rate Limiting', link: '/concepts/cycles-vs-rate-limiting' },
-            { text: 'Cycles vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
-            { text: 'Cycles vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
-            { text: 'Cycles vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
             { text: 'Coding Agents Need Runtime Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
             { text: 'Why Agents Do Not Replace Cycles', link: '/concepts/why-coding-agents-do-not-replace-cycles' },
+            {
+              text: 'Comparisons',
+              collapsed: true,
+              items: [
+                { text: 'Overview', link: '/concepts/comparisons' },
+                { text: 'How Cycles Compares', link: '/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers' },
+                { text: 'vs Rate Limiting', link: '/concepts/cycles-vs-rate-limiting' },
+                { text: 'vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
+                { text: 'vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
+                { text: 'vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
+              ]
+            },
             { text: 'Glossary', link: '/glossary' },
           ]
         },
@@ -179,23 +216,41 @@ export default defineConfig({
           items: [
             { text: 'Adding Cycles to an Existing App', link: '/how-to/adding-cycles-to-an-existing-application' },
             { text: 'Choosing the Right Pattern', link: '/how-to/choosing-the-right-integration-pattern' },
-            { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
-            { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
-            { text: 'Programmatic Client Usage', link: '/how-to/using-the-cycles-client-programmatically' },
-            { text: 'Tenants, Scopes, and Budgets', link: '/how-to/understanding-tenants-scopes-and-budgets-in-cycles' },
-            { text: 'Tenant Management', link: '/how-to/tenant-creation-and-management-in-cycles' },
-            { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
-            { text: 'API Key Management', link: '/how-to/api-key-management-in-cycles' },
-            { text: 'Custom Field Resolvers', link: '/how-to/custom-field-resolvers-in-cycles' },
-            { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
-            { text: 'Estimate Exposure Before Execution', link: '/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
-            { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
-            { text: 'Budget Control for LangChain Agents', link: '/how-to/how-to-add-budget-control-to-a-langchain-agent' },
-            { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
-            { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
-            { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
-            { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
-            { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
+            {
+              text: 'Budget Patterns',
+              collapsed: true,
+              items: [
+                { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
+                { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
+                { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
+                { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
+                { text: 'Estimate Exposure Before Execution', link: '/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
+                { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
+                { text: 'Budget Control for LangChain Agents', link: '/how-to/how-to-add-budget-control-to-a-langchain-agent' },
+                { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
+              ]
+            },
+            {
+              text: 'Tenants and Configuration',
+              collapsed: true,
+              items: [
+                { text: 'Tenants, Scopes, and Budgets', link: '/how-to/understanding-tenants-scopes-and-budgets-in-cycles' },
+                { text: 'Tenant Management', link: '/how-to/tenant-creation-and-management-in-cycles' },
+                { text: 'API Key Management', link: '/how-to/api-key-management-in-cycles' },
+                { text: 'Custom Field Resolvers', link: '/how-to/custom-field-resolvers-in-cycles' },
+                { text: 'Programmatic Client Usage', link: '/how-to/using-the-cycles-client-programmatically' },
+              ]
+            },
+            {
+              text: 'Error Handling',
+              collapsed: true,
+              items: [
+                { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
+                { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
+                { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
+                { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
+              ]
+            },
             { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
             { text: 'Troubleshooting and FAQ', link: '/how-to/troubleshooting-and-faq' },
           ]

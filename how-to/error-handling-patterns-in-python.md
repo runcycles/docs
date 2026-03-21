@@ -7,6 +7,10 @@ description: "Practical patterns for handling Cycles errors in Python using the 
 
 This guide covers practical patterns for handling Cycles errors in Python applications — both with the `@cycles` decorator and with the programmatic `CyclesClient`.
 
+::: tip Also available
+See [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) for the equivalent patterns in TypeScript/Node.js, or the [general Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) for language-agnostic concepts.
+:::
+
 ## Exception hierarchy
 
 The `runcycles` package provides a typed exception hierarchy:

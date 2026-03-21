@@ -7,6 +7,10 @@ description: "Security best practices for production Cycles deployments includin
 
 This guide covers security best practices for a production Cycles deployment.
 
+::: warning Critical
+The Admin Server (port 7979) should **never** be exposed to the public internet. It has full control over tenants, API keys, and budgets.
+:::
+
 ## Network isolation
 
 ### Separate management and runtime planes

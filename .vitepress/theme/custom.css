@@ -121,6 +121,8 @@
 }
 
 .blog-card {
+  display: flex;
+  align-items: flex-start;
   padding: 24px 0;
   border-bottom: 1px solid var(--vp-c-divider);
 }
@@ -152,6 +154,32 @@
   border: 1px solid var(--vp-c-brand-1);
   border-radius: 8px;
   vertical-align: middle;
+}
+
+.blog-featured-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  vertical-align: middle;
+}
+
+.blog-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.blog-card-thumb {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
 .blog-meta {
@@ -240,6 +268,11 @@
   color: var(--vp-c-brand-1);
 }
 
+.blog-share-btn svg {
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
 /* ── Blog dark mode fixes ── */
 .dark .blog-tags button {
   background: rgba(255, 255, 255, 0.06);
@@ -271,6 +304,11 @@
 .dark .blog-share-btn {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .blog-featured-badge {
+  color: #fbbf24;
+  border-color: #fbbf24;
 }
 
 .dark .blog-rss-link {
@@ -405,6 +443,40 @@
   margin-top: 4px;
 }
 
+/* ── Light mode enhancements ── */
+:root:not(.dark) .blog-tags button {
+  background: #f6f6f7;
+  border-color: #e2e2e3;
+  color: #3c3c43;
+}
+
+:root:not(.dark) .blog-tags button.active {
+  background: rgba(0, 157, 133, 0.08);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+:root:not(.dark) .blog-tag {
+  background: #f6f6f7;
+  color: #3c3c43;
+  border: 1px solid #e2e2e3;
+}
+
+:root:not(.dark) .blog-share-btn {
+  background: #f6f6f7;
+  border-color: #e2e2e3;
+  color: #3c3c43;
+}
+
+:root:not(.dark) .blog-featured-badge {
+  color: #d97706;
+  border-color: #d97706;
+}
+
+:root:not(.dark) .blog-card-thumb {
+  border: 1px solid #e2e2e3;
+}
+
 /* ── Focus styles (keyboard accessibility) ── */
 .blog-tags button:focus-visible,
 .blog-pagination button:focus-visible,
@@ -463,5 +535,9 @@
   .blog-share-btn {
     min-height: 44px;
     padding: 8px 14px;
+  }
+
+  .blog-card-thumb {
+    display: none;
   }
 }

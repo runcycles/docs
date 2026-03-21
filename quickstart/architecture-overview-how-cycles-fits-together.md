@@ -9,6 +9,10 @@ Cycles is a runtime authority for autonomous agents. It sits between your applic
 
 This page describes the components, how they interact, and where each piece runs.
 
+::: tip Prerequisites
+This is a reference page. If you haven't set up Cycles yet, start with the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) or [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack).
+:::
+
 ## System overview
 
 ```

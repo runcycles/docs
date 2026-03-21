@@ -9,6 +9,10 @@ The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is the stand
 
 This guide covers the integration patterns, resources, prompts, and transport options available through the MCP server.
 
+::: tip Zero code changes
+MCP integration requires no changes to your agent code. You configure the Cycles MCP Server as an MCP server in your host's config file and the agent gains budget authority automatically.
+:::
+
 ## Prerequisites
 
 ```bash

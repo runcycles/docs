@@ -8,6 +8,8 @@ export interface PostData {
   tags: string[]
   description: string
   readingTime: number
+  featured: boolean
+  image: string | null
 }
 
 export declare const data: PostData[]
@@ -31,8 +33,12 @@ export default createContentLoader('blog/**/*.md', {
         tags: page.frontmatter.tags ?? [],
         description: page.frontmatter.description ?? '',
         readingTime: estimateReadingTime(page.html ?? ''),
+        featured: page.frontmatter.featured === true,
+        image: page.frontmatter.image ?? null,
       }))
       .sort((a, b) => {
+        // Featured posts first
+        if (a.featured !== b.featured) return a.featured ? -1 : 1
         const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime()
         if (dateDiff !== 0) return dateDiff
         return a.title.localeCompare(b.title)

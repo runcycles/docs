@@ -7,6 +7,10 @@ description: "How to unit test and integration test code that uses the Cycles de
 
 This guide covers how to test code that uses the `@cycles` decorator (Python), the `@Cycles` annotation (Java), or the `withCycles` HOF (TypeScript) and the `CyclesClient` interface.
 
+::: tip Key principle
+Test business logic separately from budget enforcement. Mock the Cycles client in unit tests and use a real Cycles server in integration tests.
+:::
+
 ## Python
 
 ### Unit testing @cycles-decorated functions

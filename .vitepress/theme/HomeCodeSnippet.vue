@@ -157,7 +157,8 @@ onMounted(async () => {
 <template>
   <section class="home-code-snippet">
     <div class="inner">
-    <p class="code-caption"><code>@cycles</code> reserves cycles before the action runs. No remaining cycles — no action.</p>
+    <h2 class="code-heading">Add budget authority in a few lines</h2>
+    <p class="code-caption"><code>@cycles</code> reserves budget before the action runs. No remaining budget — no action.</p>
     <div class="code-container">
       <div class="tab-bar">
         <button
@@ -200,6 +201,16 @@ onMounted(async () => {
 .inner {
   max-width: 1152px;
   margin: 0 auto;
+}
+
+.code-heading {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  border-top: none;
+  padding-top: 0;
 }
 
 .code-caption {
@@ -293,9 +304,13 @@ onMounted(async () => {
 }
 
 @media (max-width: 640px) {
+  .code-heading {
+    font-size: 20px;
+  }
+
   .tab {
-    padding: 8px 14px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
   .code-block {
@@ -306,6 +321,13 @@ onMounted(async () => {
 
   .code-block :deep(code) {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .tab {
+    padding: 6px 10px;
+    font-size: 11px;
   }
 }
 </style>
