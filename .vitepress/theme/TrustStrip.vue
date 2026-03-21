@@ -5,13 +5,13 @@
   <div class="trust-strip">
     <div class="trust-badges">
       <a href="https://pypi.org/project/runcycles/" target="_blank" rel="noopener" aria-label="runcycles on PyPI">
-        <img src="https://img.shields.io/pypi/dm/runcycles?label=PyPI&color=00C9A7&style=flat-square&logo=pypi&logoColor=white" alt="PyPI downloads" loading="lazy" />
+        <img src="https://img.shields.io/pypi/dm/runcycles?label=PyPI&color=555&style=flat-square&logo=pypi&logoColor=white" alt="PyPI downloads" loading="lazy" />
       </a>
       <a href="https://www.npmjs.com/package/runcycles" target="_blank" rel="noopener" aria-label="runcycles on npm">
-        <img src="https://img.shields.io/npm/dm/runcycles?label=npm&color=00C9A7&style=flat-square&logo=npm&logoColor=white" alt="npm downloads" loading="lazy" />
+        <img src="https://img.shields.io/npm/dm/runcycles?label=npm&color=555&style=flat-square&logo=npm&logoColor=white" alt="npm downloads" loading="lazy" />
       </a>
       <a href="https://www.npmjs.com/package/@runcycles/mcp-server" target="_blank" rel="noopener" aria-label="MCP Server on npm">
-        <img src="https://img.shields.io/npm/dm/@runcycles/mcp-server?label=MCP%20Server&color=00C9A7&style=flat-square&logo=npm&logoColor=white" alt="MCP Server downloads" loading="lazy" />
+        <img src="https://img.shields.io/npm/dm/@runcycles/mcp-server?label=MCP%20Server&color=555&style=flat-square&logo=npm&logoColor=white" alt="MCP Server downloads" loading="lazy" />
       </a>
     </div>
   </div>
@@ -44,6 +44,7 @@
 
 .trust-badges img {
   height: 16px;
+  opacity: 0.85;
 }
 
 @media (max-width: 640px) {

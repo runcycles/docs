@@ -109,7 +109,7 @@ Connect Cycles to OpenClaw for budget-controlled multi-agent orchestration.
 
 ### Python Client
 
-[![PyPI downloads](https://img.shields.io/pypi/dm/runcycles?label=downloads&color=00C9A7&style=flat-square)](https://pypi.org/project/runcycles/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/runcycles?label=downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles/)
 
 The official Cycles Python client. Install from PyPI and start enforcing budgets in minutes.
 
@@ -118,7 +118,7 @@ The official Cycles Python client. Install from PyPI and start enforcing budgets
 
 ### TypeScript Client
 
-[![npm downloads](https://img.shields.io/npm/dm/runcycles?label=downloads&color=00C9A7&style=flat-square)](https://www.npmjs.com/package/runcycles)
+[![npm downloads](https://img.shields.io/npm/dm/runcycles?label=downloads&color=555&style=flat-square)](https://www.npmjs.com/package/runcycles)
 
 The official Cycles TypeScript client for Node.js and browser environments.
 
@@ -127,7 +127,7 @@ The official Cycles TypeScript client for Node.js and browser environments.
 
 ### MCP Server
 
-[![npm downloads](https://img.shields.io/npm/dm/@runcycles/mcp-server?label=downloads&color=00C9A7&style=flat-square)](https://www.npmjs.com/package/@runcycles/mcp-server)
+[![npm downloads](https://img.shields.io/npm/dm/@runcycles/mcp-server?label=downloads&color=555&style=flat-square)](https://www.npmjs.com/package/@runcycles/mcp-server)
 
 The Cycles MCP server exposes runtime authority as tools for Claude Desktop, Claude Code, Cursor, and Windsurf.
 
@@ -136,7 +136,7 @@ The Cycles MCP server exposes runtime authority as tools for Claude Desktop, Cla
 
 ### Spring Boot Starter
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.runcycles/cycles-client-java-spring?label=Maven%20Central&color=00C9A7&style=flat-square)](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring)
+[![Maven Central](https://img.shields.io/maven-central/v/io.runcycles/cycles-client-java-spring?label=Maven%20Central&color=555&style=flat-square)](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring)
 
 Auto-configured Cycles integration for Spring Boot applications, available on Maven Central.
 
