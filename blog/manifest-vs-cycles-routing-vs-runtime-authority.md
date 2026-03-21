@@ -22,7 +22,7 @@ Manifest's pitch is straightforward: stop sending every query to the most expens
 
 ## What Cycles does
 
-[Cycles](https://runcycles.com) is a runtime authority for autonomous agents. Before an action executes, the agent reserves budget. If no budget remains, the action does not run. After execution, actual cost is committed and unused budget is released.
+[Cycles](https://runcycles.io) is a runtime authority for autonomous agents. Before an action executes, the agent reserves budget. If no budget remains, the action does not run. After execution, actual cost is committed and unused budget is released.
 
 Cycles enforces this across hierarchical scopes — tenant, workspace, app, workflow, agent, toolset — with atomic, concurrency-safe reservations. Instead of a binary allow/deny, it returns a three-way decision: **ALLOW**, **ALLOW_WITH_CAPS** (proceed with constraints like reduced tokens or restricted tools), or **DENY**. That makes graceful degradation possible rather than hard failure.
 
