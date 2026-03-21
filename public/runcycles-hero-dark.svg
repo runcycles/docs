@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 500" width="620" height="500">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 480" width="620" height="480">
   <defs>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000040"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#00000050"/>
+    </filter>
+    <filter id="shadow-lg" x="-10%" y="-10%" width="120%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#00000040"/>
     </filter>
     <marker id="arr-teal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#00C9A7"/>
@@ -18,75 +17,91 @@
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect x="0" y="0" width="620" height="500" rx="16" fill="none"/>
+  <!-- Dark background for grounding -->
+  <rect x="0" y="0" width="620" height="480" rx="18" fill="#141420" stroke="#2A2A3A" stroke-width="1"/>
 
   <!-- Agent A -->
-  <rect x="18" y="80" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#shadow)"/>
-  <circle cx="44" cy="106" r="12" fill="#3A3A3C"/>
-  <text x="44" y="111" text-anchor="middle" font-size="14" fill="#C7C7CC">&#x26A1;</text>
-  <text x="64" y="100" font-size="12" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent A</text>
-  <text x="64" y="117" font-size="11" fill="#C7C7CC" font-family="-apple-system,sans-serif">llm.completion</text>
+  <rect x="24" y="72" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
+  <circle cx="52" cy="100" r="13" fill="#3A3A3C"/>
+  <!-- Agent icon (simple bot head) -->
+  <rect x="44" y="93" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="98" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="98" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="86" x2="52" y2="93" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
+  <text x="74" y="95" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent A</text>
+  <text x="74" y="112" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">llm.completion</text>
 
   <!-- Agent B -->
-  <rect x="18" y="224" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#shadow)"/>
-  <circle cx="44" cy="250" r="12" fill="#3A3A3C"/>
-  <text x="44" y="255" text-anchor="middle" font-size="14" fill="#C7C7CC">&#x26A1;</text>
-  <text x="64" y="244" font-size="12" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent B</text>
-  <text x="64" y="261" font-size="11" fill="#C7C7CC" font-family="-apple-system,sans-serif">tool.web_search</text>
+  <rect x="24" y="212" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
+  <circle cx="52" cy="240" r="13" fill="#3A3A3C"/>
+  <rect x="44" y="233" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="238" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="238" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="226" x2="52" y2="233" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
+  <text x="74" y="235" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent B</text>
+  <text x="74" y="252" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">tool.web_search</text>
 
   <!-- Agent C -->
-  <rect x="18" y="368" width="110" height="52" rx="10" fill="#2C2C2E" filter="url(#shadow)"/>
-  <circle cx="44" cy="394" r="12" fill="#3A3A3C"/>
-  <text x="44" y="399" text-anchor="middle" font-size="14" fill="#C7C7CC">&#x26A1;</text>
-  <text x="64" y="388" font-size="12" font-weight="600" fill="#F2F2F7" font-family="-apple-system,sans-serif">Agent C</text>
-  <text x="64" y="405" font-size="11" fill="#C7C7CC" font-family="-apple-system,sans-serif">tool.db_delete</text>
+  <rect x="24" y="352" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
+  <circle cx="52" cy="380" r="13" fill="#3A3A3C"/>
+  <rect x="44" y="373" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="378" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="378" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="366" x2="52" y2="373" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
+  <text x="74" y="375" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent C</text>
+  <text x="74" y="392" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">tool.db_delete</text>
 
-  <!-- Arrows to gate -->
-  <line x1="130" y1="106" x2="196" y2="215" stroke="#8E8E93" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-gray)"/>
-  <line x1="130" y1="250" x2="196" y2="250" stroke="#8E8E93" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-gray)"/>
-  <line x1="130" y1="394" x2="196" y2="287" stroke="#8E8E93" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-gray)"/>
-  <text x="148" y="150" font-size="10" fill="#C7C7CC" font-family="-apple-system,sans-serif" transform="rotate(-28,148,150)">reserve?</text>
-  <text x="148" y="243" font-size="10" fill="#C7C7CC" font-family="-apple-system,sans-serif">reserve?</text>
-  <text x="140" y="352" font-size="10" fill="#C7C7CC" font-family="-apple-system,sans-serif" transform="rotate(28,140,352)">reserve?</text>
+  <!-- Curved flow lines to gate -->
+  <path d="M146 100 C180 100, 200 170, 240 200" fill="none" stroke="#8E8E93" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path d="M146 240 C190 240, 210 240, 240 240" fill="none" stroke="#8E8E93" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path d="M146 380 C180 380, 200 310, 240 280" fill="none" stroke="#8E8E93" stroke-width="2" marker-end="url(#arr-gray)"/>
 
   <!-- Glow rings -->
-  <circle cx="300" cy="250" r="82" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.2"/>
-  <circle cx="300" cy="250" r="94" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.1"/>
+  <circle cx="300" cy="240" r="86" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.30"/>
+  <circle cx="300" cy="240" r="98" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.16"/>
+  <circle cx="300" cy="240" r="110" fill="none" stroke="#00C9A7" stroke-width="0.5" opacity="0.08"/>
 
-  <!-- Main enforcement ring -->
-  <path d="M 333.6 174.0 A 80 80 0 1 1 266.4 174.0" fill="none" stroke="#00C9A7" stroke-width="24" stroke-linecap="round" filter="url(#glow)"/>
-  <line x1="286" y1="162" x2="314" y2="162" stroke="#00C9A7" stroke-width="8" stroke-linecap="round"/>
-  <path d="M 316 250 L 284 231 L 284 269 Z" fill="#00C9A7"/>
+  <!-- Shield shape — enforcement gate -->
+  <path d="M300 166 L348 184 L348 244 Q348 280 300 300 Q252 280 252 244 L252 184 Z"
+        fill="#1A3A32" stroke="#00C9A7" stroke-width="2.5" filter="url(#shadow-lg)"/>
 
-  <text x="300" y="336" text-anchor="middle" font-size="13" font-weight="700" fill="#00C9A7" font-family="-apple-system,sans-serif" letter-spacing="0.1em">CYCLES</text>
-  <text x="300" y="353" text-anchor="middle" font-size="11" fill="#C7C7CC" font-family="-apple-system,sans-serif" letter-spacing="0.05em">Cycles enforcement gate</text>
+  <!-- Shield inner glow arc -->
+  <path d="M300 174 L340 190 L340 242 Q340 272 300 290 Q260 272 260 242 L260 190 Z"
+        fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.4"/>
+
+  <!-- Lock icon inside shield -->
+  <rect x="288" y="220" width="24" height="18" rx="4" fill="#00C9A7"/>
+  <path d="M294 220 L294 213 Q294 204 300 204 Q306 204 306 213 L306 220" fill="none" stroke="#4DE8CC" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="300" cy="229" r="3" fill="#141420"/>
+  <line x1="300" y1="231" x2="300" y2="235" stroke="#141420" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- CYCLES label -->
+  <text x="300" y="330" text-anchor="middle" font-size="15" font-weight="800" fill="#00C9A7" font-family="-apple-system,system-ui,sans-serif" letter-spacing="0.15em">CYCLES</text>
+
+  <!-- Budget meter — tighter integration below shield -->
+  <rect x="232" y="346" width="136" height="32" rx="8" fill="#2C2C2E" filter="url(#shadow)"/>
+  <text x="244" y="366" font-size="10" font-weight="700" fill="#C7C7CC" font-family="-apple-system,system-ui,sans-serif">BUDGET</text>
+  <rect x="290" y="360" width="60" height="6" rx="3" fill="#3A3A3C"/>
+  <rect x="290" y="360" width="45" height="6" rx="3" fill="#00C9A7"/>
+  <text x="355" y="367" font-size="10" fill="#C7C7CC" font-family="-apple-system,system-ui,sans-serif" font-weight="600">75%</text>
 
   <!-- Arrow to ALLOWED -->
-  <line x1="382" y1="215" x2="450" y2="150" stroke="#00C9A7" stroke-width="2" marker-end="url(#arr-teal)"/>
+  <path d="M350 210 C380 195, 420 160, 452 145" fill="none" stroke="#00C9A7" stroke-width="2" marker-end="url(#arr-teal)"/>
 
   <!-- ALLOWED card -->
-  <rect x="452" y="96" width="155" height="68" rx="10" fill="#1A3A32" filter="url(#shadow)"/>
-  <rect x="452" y="96" width="4" height="68" rx="2" fill="#00C9A7"/>
-  <text x="472" y="118" font-size="12" font-weight="700" fill="#00C9A7" font-family="-apple-system,sans-serif">ALLOWED</text>
-  <text x="472" y="135" font-size="11" fill="#F2F2F7" font-family="-apple-system,sans-serif">Reserved: 50,000</text>
-  <text x="472" y="152" font-size="11" fill="#D1D1D6" font-family="-apple-system,sans-serif">decision: ALLOW &#x2713;</text>
+  <rect x="454" y="96" width="148" height="64" rx="12" fill="#1A3A32" filter="url(#shadow)"/>
+  <rect x="454" y="96" width="4" height="64" rx="2" fill="#00C9A7"/>
+  <text x="474" y="118" font-size="13" font-weight="800" fill="#00C9A7" font-family="-apple-system,system-ui,sans-serif">ALLOWED</text>
+  <text x="474" y="135" font-size="11" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Reserved: 50,000</text>
+  <text x="474" y="150" font-size="11" fill="#D1D1D6" font-family="-apple-system,system-ui,sans-serif">&#x2713; proceed</text>
 
   <!-- Arrow to BLOCKED -->
-  <line x1="382" y1="287" x2="450" y2="352" stroke="#FF453A" stroke-width="2" marker-end="url(#arr-red)"/>
+  <path d="M350 272 C380 287, 420 320, 452 335" fill="none" stroke="#FF453A" stroke-width="2" marker-end="url(#arr-red)"/>
 
   <!-- BLOCKED card -->
-  <rect x="452" y="336" width="155" height="68" rx="10" fill="#3A1A1A" filter="url(#shadow)"/>
-  <rect x="452" y="336" width="4" height="68" rx="2" fill="#FF453A"/>
-  <text x="472" y="358" font-size="12" font-weight="700" fill="#FF453A" font-family="-apple-system,sans-serif">BLOCKED</text>
-  <text x="472" y="375" font-size="11" fill="#F2F2F7" font-family="-apple-system,sans-serif">Budget: $0.00</text>
-  <text x="472" y="392" font-size="11" fill="#D1D1D6" font-family="-apple-system,sans-serif">409 BUDGET_EXCEEDED</text>
-
-  <!-- Budget meter -->
-  <rect x="152" y="440" width="296" height="40" rx="10" fill="#2C2C2E" filter="url(#shadow)"/>
-  <text x="168" y="465" font-size="11" font-weight="600" fill="#C7C7CC" font-family="-apple-system,sans-serif">BUDGET</text>
-  <rect x="226" y="456" width="156" height="8" rx="4" fill="#3A3A3C"/>
-  <rect x="226" y="456" width="117" height="8" rx="4" fill="#00C9A7"/>
-  <text x="393" y="465" font-size="11" fill="#F2F2F7" font-family="-apple-system,sans-serif" font-weight="600">$0.25 left</text>
-  <line x1="300" y1="358" x2="300" y2="436" stroke="#00C9A7" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+  <rect x="454" y="320" width="148" height="64" rx="12" fill="#3A1A1A" filter="url(#shadow)"/>
+  <rect x="454" y="320" width="4" height="64" rx="2" fill="#FF453A"/>
+  <text x="474" y="342" font-size="13" font-weight="800" fill="#FF453A" font-family="-apple-system,system-ui,sans-serif">BLOCKED</text>
+  <text x="474" y="359" font-size="11" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Budget: $0.00</text>
+  <text x="474" y="374" font-size="11" fill="#D1D1D6" font-family="-apple-system,system-ui,sans-serif">&#x2717; 409 exceeded</text>
 </svg>
