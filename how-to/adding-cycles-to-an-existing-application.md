@@ -343,4 +343,5 @@ It's better to have 3 well-instrumented call paths than 30 poorly-estimated ones
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — full guide to safe rollout
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — decorator vs programmatic vs middleware
+- [Integrations Overview](/how-to/integrations-overview) — all supported frameworks and providers
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what to do when budget is denied
