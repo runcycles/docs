@@ -14,7 +14,7 @@ def ask(prompt: str) -> str:
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
     ).choices[0].message.content
-# Budget is reserved before the call. If exhausted, the call is blocked — not billed.
+# Cycles are reserved before the action runs. If unavailable, execution is denied.
 ```
 
 ## The problem
@@ -47,12 +47,12 @@ Cycles enforces a budget decision before agent actions execute — LLM calls, to
 > Cycles enforces where you instrument it. Uninstrumented code paths are unaffected.
 
 ```
-1. Reserve    →  Lock estimated cost before the action runs
+1. Reserve    →  Lock estimated amount before the action runs
 2. Execute    →  Call the LLM / tool / API
-3. Commit     →  Record actual cost; unused budget is released automatically
+3. Commit     →  Record actual usage; unused budget is released automatically
 ```
 
-If the budget is exhausted, the reservation is **denied before any money is spent**.
+If the budget is exhausted, the reservation is **denied before the action executes**.
 
 ::: code-group
 ```python [Python]
@@ -68,7 +68,7 @@ def ask(prompt: str) -> str:
         messages=[{"role": "user", "content": prompt}],
     ).choices[0].message.content
 
-# Budget is reserved before the call, committed after, released on failure.
+# Cycles are reserved before the action, committed after, released on failure.
 result = ask("Summarize this document")
 ```
 ```typescript [TypeScript]

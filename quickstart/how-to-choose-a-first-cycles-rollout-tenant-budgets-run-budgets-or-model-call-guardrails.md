@@ -129,7 +129,7 @@ So tenant budgets are often a strong commercial first step, but not always the s
 ### Choose tenant budgets first if:
 
 - you are multi-tenant
-- billing or cost isolation is the immediate pain
+- spend isolation is the immediate pain
 - you need clear account-level boundaries
 - customer over-consumption is more urgent than runaway loops
 - you want the easiest policy story for internal stakeholders

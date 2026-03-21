@@ -98,9 +98,9 @@ def generate(text: str, max_tokens: int) -> str:
     return call_llm(text, max_tokens=max_tokens)
 ```
 
-### Specifying actual cost
+### Specifying actual usage
 
-By default, the estimate is used as the actual cost at commit time. To calculate actual cost from the return value:
+By default, the estimate is used as the actual amount at commit time. To calculate actual usage from the return value:
 
 ```python
 @cycles(
@@ -115,12 +115,12 @@ def chat(prompt: str) -> str:
 
 | Parameter | Default | Description |
 |---|---|---|
-| `estimate` | (required) | `int` or callable returning `int`. Estimated cost. |
+| `estimate` | (required) | `int` or callable returning `int`. Estimated amount. |
 | `actual` | `None` | `int` or callable receiving the return value. Defaults to estimate. |
 | `action_kind` | `None` | Action category (e.g. `"llm.completion"`). |
 | `action_name` | `None` | Action identifier (e.g. `"gpt-4"`). |
 | `action_tags` | `None` | List of tags for filtering/reporting. |
-| `unit` | `USD_MICROCENTS` | Cost unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
+| `unit` | `USD_MICROCENTS` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
 | `ttl_ms` | `60000` | Reservation TTL in milliseconds. |
 | `grace_period_ms` | `None` | Grace period after TTL expiry. |
 | `overage_policy` | `"REJECT"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
@@ -372,7 +372,7 @@ For each `@cycles`-decorated function call:
 4. If DENY: exception is raised, function does not run
 5. Heartbeat extension is scheduled (background thread)
 6. Function executes
-7. Actual cost is evaluated (callable, fixed value, or estimate)
+7. Actual usage is evaluated (callable, fixed value, or estimate)
 8. Commit is sent with actual amount and optional metrics
 9. Heartbeat is cancelled
 10. If function raised: reservation is released instead of committed

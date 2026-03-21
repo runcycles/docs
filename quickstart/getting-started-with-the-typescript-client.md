@@ -109,9 +109,9 @@ const generate = withCycles(
 );
 ```
 
-### Specifying actual cost
+### Specifying actual usage
 
-By default, the estimate is used as the actual cost at commit time. To calculate actual cost from the return value:
+By default, the estimate is used as the actual amount at commit time. To calculate actual usage from the return value:
 
 ```typescript
 const chat = withCycles(
@@ -129,12 +129,12 @@ const chat = withCycles(
 
 | Parameter | Default | Description |
 |---|---|---|
-| `estimate` | (required) | `number` or function returning `number`. Estimated cost. |
+| `estimate` | (required) | `number` or function returning `number`. Estimated amount. |
 | `actual` | `undefined` | `number` or function receiving the return value. Defaults to estimate. |
 | `actionKind` | `"unknown"` | Action category (e.g. `"llm.completion"`). |
 | `actionName` | `"unknown"` | Action identifier (e.g. `"gpt-4"`). |
 | `actionTags` | `undefined` | Array of tags for filtering/reporting. |
-| `unit` | `"USD_MICROCENTS"` | Cost unit: `"USD_MICROCENTS"`, `"TOKENS"`, `"CREDITS"`, `"RISK_POINTS"`. |
+| `unit` | `"USD_MICROCENTS"` | Budget unit: `"USD_MICROCENTS"`, `"TOKENS"`, `"CREDITS"`, `"RISK_POINTS"`. |
 | `ttlMs` | `60000` | Reservation TTL in milliseconds (range: 1000–86400000). |
 | `gracePeriodMs` | `undefined` | Grace period after TTL expiry (range: 0–60000). |
 | `overagePolicy` | `"REJECT"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
@@ -512,7 +512,7 @@ For each `withCycles`-guarded function call:
 4. If DENY: exception is thrown, function does not run
 5. Heartbeat extension is scheduled (background, at half the TTL interval)
 6. Function executes
-7. Actual cost is evaluated (function, fixed value, or estimate)
+7. Actual usage is evaluated (function, fixed value, or estimate)
 8. Commit is sent with actual amount and optional metrics
 9. Heartbeat is stopped
 10. If function threw: reservation is released instead of committed
