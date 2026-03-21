@@ -7,6 +7,10 @@ description: "Practical recipes for common budget governance scenarios including
 
 Practical recipes for common budget governance scenarios. Each pattern shows the scope hierarchy and budget allocation needed.
 
+::: tip Need cost estimates?
+See the [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) for per-model pricing and how to translate token counts into `USD_MICROCENTS`.
+:::
+
 ## Per-user daily budgets
 
 Give each user a daily spending limit.

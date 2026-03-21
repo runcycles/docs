@@ -146,15 +146,25 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 - **Enterprise operators** needing audit-grade cost accountability
 - **Teams building agents** that call paid APIs autonomously
 
+## Choose your stack
+
+Pick the quickstart that matches your environment:
+
+| Stack | Guide | Time |
+|-------|-------|------|
+| **Python** | [Python Quickstart](/quickstart/getting-started-with-the-python-client) | ~5 min |
+| **TypeScript / Node.js** | [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) | ~5 min |
+| **Spring Boot / Java** | [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) | ~5 min |
+| **Claude / Cursor / Windsurf** | [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) | ~3 min |
+| **Full stack (Docker)** | [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) | ~10 min |
+
+::: tip Not sure where to start?
+Follow the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — it walks you from zero to a working budget-guarded app in 10 minutes.
+:::
+
 ## Next steps
 
-- [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
-- [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure
-- [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) — add runtime authority to Claude Desktop, Claude Code, Cursor, or Windsurf with zero code changes
-- [Python Quickstart](/quickstart/getting-started-with-the-python-client) — add Cycles to a Python app
-- [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) — add Cycles to a TypeScript app
-- [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — add Cycles to a Spring app
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how components interact
 - [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — how Cycles compares to other alternatives
 
