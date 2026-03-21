@@ -1,7 +1,4 @@
 <script setup>
-import { useRouter } from 'vitepress'
-
-const { go } = useRouter()
 </script>
 
 <template>
