@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watchEffect, onUnmounted } from 'vue'
 import { useRoute, useData } from 'vitepress'
 
 const route = useRoute()
@@ -41,6 +41,27 @@ const breadcrumb = computed(() => {
   if (!label) return null
   return { label, link: firstPageMap[section] || `/${section}/` }
 })
+
+// Inject BreadcrumbList JSON-LD for search engines
+let scriptEl = null
+watchEffect(() => {
+  if (typeof document === 'undefined') return
+  if (scriptEl) { scriptEl.remove(); scriptEl = null }
+  if (!breadcrumb.value) return
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Docs', item: 'https://runcycles.io/' },
+      { '@type': 'ListItem', position: 2, name: breadcrumb.value.label, item: `https://runcycles.io${breadcrumb.value.link}` },
+    ],
+  }
+  scriptEl = document.createElement('script')
+  scriptEl.type = 'application/ld+json'
+  scriptEl.textContent = JSON.stringify(jsonLd)
+  document.head.appendChild(scriptEl)
+})
+onUnmounted(() => { if (scriptEl) scriptEl.remove() })
 </script>
 
 <template>
