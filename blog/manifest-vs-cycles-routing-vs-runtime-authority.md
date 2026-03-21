@@ -22,9 +22,9 @@ Manifest's pitch is straightforward: stop sending every query to the most expens
 
 ## What Cycles does
 
-[Cycles](https://runcycles.com) is a runtime authority for autonomous agents. Before an action executes, the agent reserves budget. If no budget remains, the action does not run. After execution, actual cost is committed and unused budget is released.
+[Cycles](https://runcycles.io) is a runtime authority for autonomous agents. Before an action executes, the agent reserves cycles. If no cycles remain, the action does not run. After execution, actual usage is committed and unused cycles are released.
 
-Cycles enforces this across hierarchical scopes — tenant, workspace, app, workflow, agent, toolset — with atomic, concurrency-safe reservations. Instead of a binary allow/deny, it returns a three-way decision: **ALLOW**, **ALLOW_WITH_CAPS** (proceed with constraints like reduced tokens or restricted tools), or **DENY**. That makes graceful degradation possible rather than hard failure.
+Cycles enforces this across hierarchical scopes — tenant, workspace, app, workflow, agent, toolset — with atomic, concurrency-safe reservations. It can fully allow, allow with constraints, or deny execution, which makes graceful degradation possible rather than hard failure.
 
 Cycles is not tied to OpenClaw or any single agent framework. It works across any tool, API, or workflow that needs bounded execution.
 
