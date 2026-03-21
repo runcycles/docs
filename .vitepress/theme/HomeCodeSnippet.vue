@@ -109,10 +109,7 @@ const result = streamText({
 
   openclaw: {
     lang: 'jsonc',
-    code: `// npm install @runcycles/openclaw-budget-guard
-// openclaw plugins enable cycles-openclaw-budget-guard
-
-// openclaw.json
+    code: `// openclaw.json
 {
   "plugins": {
     "entries": {
