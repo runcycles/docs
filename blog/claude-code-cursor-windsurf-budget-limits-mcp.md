@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# Budget Limits for Claude Code, Cursor, and Windsurf: Hard Spend Controls via MCP
+# Budget Limits for Claude Code, Cursor, and Windsurf via MCP
 
 A developer starts a Claude Code session at 2 PM to refactor an authentication module. The agent reads 40 files, generates test suites, rewrites three services, discovers a dependency conflict, and spirals into a research loop — reading documentation, trying alternative approaches, generating more tests. At 5 PM the developer checks the bill: $47.
 
