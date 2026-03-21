@@ -157,8 +157,8 @@ onMounted(async () => {
 <template>
   <section class="home-code-snippet">
     <div class="inner">
-    <h2 class="code-heading">Add budget authority in a few lines</h2>
-    <p class="code-caption"><code>@cycles</code> reserves budget before the action runs. No remaining budget — no action.</p>
+    <h2 class="code-heading">Add runtime authority in a few lines</h2>
+    <p class="code-caption"><code>@cycles</code> reserves cycles before the action runs. No remaining cycles — no action.</p>
     <div class="code-container">
       <div class="tab-bar">
         <button
