@@ -118,7 +118,7 @@ It assumes the problem is mostly about **spend**.
 
 But agents do not only burn dollars. They create **exposure**.
 
-They call APIs. They send emails. They update records. They delete data. They trigger downstream systems. They take actions whose impact is not measured purely in cost — which is why the Cycles protocol supports enforcement in [multiple unit types](/protocol/caps-and-the-three-way-decision-model-in-cycles) including tokens, credits, and risk points.
+They call APIs. They send emails. They update records. They delete data. They trigger downstream systems. They take actions whose impact is not measured purely in cost — which is why the Cycles protocol supports enforcement in [multiple unit types](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) including tokens, credits, and risk points.
 
 That changes the architecture.
 

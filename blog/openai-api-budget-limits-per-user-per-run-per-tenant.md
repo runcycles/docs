@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# OpenAI API Budget Limits: How to Enforce Per-User, Per-Run, and Per-Tenant Controls for Agents
+# OpenAI API Budget Limits: Per-User, Per-Run, and Per-Tenant Controls for Agents
 
 A team runs 30 OpenAI-powered agents across their platform. They set a $5,000/month spending cap in the OpenAI dashboard. On Thursday, one customer's research agent enters a retry loop — expanding its context window on each attempt, calling GPT-4o 200+ times in under an hour. The bill: $1,400 for a single agent run.
 
