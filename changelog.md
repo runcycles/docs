@@ -7,7 +7,7 @@ description: "Release history and version notes for the Cycles Protocol and refe
 
 Release history for the Cycles Protocol and reference implementations.
 
-## v0.1.23 (Current)
+## v0.1.23 — March 2026 (Current)
 
 **Protocol:**
 - Complete OpenAPI 3.1.0 specification

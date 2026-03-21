@@ -117,6 +117,8 @@ cycles:
 
 Reduce the interval for tighter TTL enforcement. Increase it to reduce Redis load if TTL precision is not critical.
 
+For listing and recovering stale or orphaned reservations after client crashes, see [Reservation Recovery and Listing](/protocol/reservation-recovery-and-listing-in-cycles).
+
 ## Network architecture
 
 ### Recommended topology

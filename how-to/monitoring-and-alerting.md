@@ -65,6 +65,8 @@ while True:
     time.sleep(60)  # Poll every minute
 ```
 
+For the full list of fields available on every reservation and event, see [Standard Metrics and Metadata](/protocol/standard-metrics-and-metadata-in-cycles).
+
 ### Reservation metrics
 
 Track reservation lifecycle events:
