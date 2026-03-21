@@ -5,7 +5,7 @@ description: "Integrate budget enforcement into Spring Boot apps using the @Cycl
 
 # Getting Started with the Cycles Spring Boot Starter
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.runcycles/cycles-client-java-spring?label=Maven%20Central&color=00C9A7&style=flat-square)](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring)
+[![Maven Central](https://img.shields.io/maven-central/v/io.runcycles/cycles-client-java-spring?label=Maven%20Central&color=555&style=flat-square)](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring)
 
 The Cycles Spring Boot Starter provides a declarative way to add budget enforcement to any Spring application.
 
