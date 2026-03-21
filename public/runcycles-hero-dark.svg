@@ -1,9 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 480" width="620" height="480">
   <defs>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#00000050"/>
     </filter>
@@ -27,31 +23,31 @@
   <!-- Agent A -->
   <rect x="24" y="72" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
   <circle cx="52" cy="100" r="13" fill="#3A3A3C"/>
-  <!-- Agent icon -->
-  <rect x="46" y="93" width="12" height="10" rx="3" fill="none" stroke="#C7C7CC" stroke-width="1.5"/>
-  <circle cx="49.5" cy="97" r="1.2" fill="#C7C7CC"/>
-  <circle cx="54.5" cy="97" r="1.2" fill="#C7C7CC"/>
-  <line x1="52" y1="87" x2="52" y2="93" stroke="#C7C7CC" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Agent icon (simple bot head) -->
+  <rect x="44" y="93" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="98" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="98" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="86" x2="52" y2="93" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
   <text x="74" y="95" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent A</text>
   <text x="74" y="112" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">llm.completion</text>
 
   <!-- Agent B -->
   <rect x="24" y="212" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
   <circle cx="52" cy="240" r="13" fill="#3A3A3C"/>
-  <rect x="46" y="233" width="12" height="10" rx="3" fill="none" stroke="#C7C7CC" stroke-width="1.5"/>
-  <circle cx="49.5" cy="237" r="1.2" fill="#C7C7CC"/>
-  <circle cx="54.5" cy="237" r="1.2" fill="#C7C7CC"/>
-  <line x1="52" y1="227" x2="52" y2="233" stroke="#C7C7CC" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="44" y="233" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="238" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="238" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="226" x2="52" y2="233" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
   <text x="74" y="235" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent B</text>
   <text x="74" y="252" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">tool.web_search</text>
 
   <!-- Agent C -->
   <rect x="24" y="352" width="120" height="56" rx="12" fill="#2C2C2E" filter="url(#shadow)"/>
   <circle cx="52" cy="380" r="13" fill="#3A3A3C"/>
-  <rect x="46" y="373" width="12" height="10" rx="3" fill="none" stroke="#C7C7CC" stroke-width="1.5"/>
-  <circle cx="49.5" cy="377" r="1.2" fill="#C7C7CC"/>
-  <circle cx="54.5" cy="377" r="1.2" fill="#C7C7CC"/>
-  <line x1="52" y1="367" x2="52" y2="373" stroke="#C7C7CC" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="44" y="373" width="16" height="12" rx="3" fill="none" stroke="#C7C7CC" stroke-width="2"/>
+  <circle cx="49" cy="378" r="2" fill="#C7C7CC"/>
+  <circle cx="55" cy="378" r="2" fill="#C7C7CC"/>
+  <line x1="52" y1="366" x2="52" y2="373" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round"/>
   <text x="74" y="375" font-size="13" font-weight="700" fill="#F2F2F7" font-family="-apple-system,system-ui,sans-serif">Agent C</text>
   <text x="74" y="392" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">tool.db_delete</text>
 
@@ -74,10 +70,10 @@
         fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.4"/>
 
   <!-- Lock icon inside shield -->
-  <rect x="290" y="218" width="20" height="16" rx="3" fill="#00C9A7"/>
-  <path d="M295 218 L295 212 Q295 205 300 205 Q305 205 305 212 L305 218" fill="none" stroke="#00C9A7" stroke-width="2.5" stroke-linecap="round"/>
-  <circle cx="300" cy="226" r="2.5" fill="#141420"/>
-  <line x1="300" y1="228" x2="300" y2="231" stroke="#141420" stroke-width="2" stroke-linecap="round"/>
+  <rect x="288" y="220" width="24" height="18" rx="4" fill="#00C9A7"/>
+  <path d="M294 220 L294 213 Q294 204 300 204 Q306 204 306 213 L306 220" fill="none" stroke="#4DE8CC" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="300" cy="229" r="3" fill="#141420"/>
+  <line x1="300" y1="231" x2="300" y2="235" stroke="#141420" stroke-width="2.5" stroke-linecap="round"/>
 
   <!-- CYCLES label -->
   <text x="300" y="330" text-anchor="middle" font-size="15" font-weight="800" fill="#00C9A7" font-family="-apple-system,system-ui,sans-serif" letter-spacing="0.15em">CYCLES</text>
