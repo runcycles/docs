@@ -9,7 +9,7 @@ LangChain makes it easy to build agents that call LLMs, search the web, execute 
 
 That's fine when you're experimenting. It's a real problem when you're running agents in production — especially across multiple users or tenants. A single misbehaving agent loop can burn through hundreds of dollars before anyone notices.
 
-This guide shows how to add per-run budget control to a LangChain agent using [Cycles](https://runcycles.com) — without rewriting your agent logic.
+This guide shows how to add per-run budget control to a LangChain agent using [Cycles](https://runcycles.io) — without rewriting your agent logic.
 
 ::: tip Already using the callback handler?
 If you want per-LLM-call budget tracking (a reservation around every model invocation), see [Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain). This guide covers a different pattern: a **single reservation around the entire agent run**, plus optional tool-level checks.

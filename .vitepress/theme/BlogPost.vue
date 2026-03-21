@@ -57,11 +57,11 @@ function shareUrl(platform) {
         <LinkIcon :size="14" />
         {{ copied ? 'Copied!' : 'Copy link' }}
       </button>
-      <a class="blog-share-btn" :href="shareUrl('twitter')" target="_blank" rel="noopener" aria-label="Share on X (Twitter)">
+      <a class="blog-share-btn" :href="shareUrl('twitter')" target="_blank" rel="noopener noreferrer" aria-label="Share on X (Twitter)">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path :d="xTwitterPath"/></svg>
         Share
       </a>
-      <a class="blog-share-btn" :href="shareUrl('linkedin')" target="_blank" rel="noopener" aria-label="Share on LinkedIn">
+      <a class="blog-share-btn" :href="shareUrl('linkedin')" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path :d="linkedInPath"/></svg>
         Share
       </a>

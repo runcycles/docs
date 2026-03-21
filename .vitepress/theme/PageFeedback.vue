@@ -21,6 +21,18 @@ function vote(value) {
   try {
     localStorage.setItem(storageKey.value, value)
   } catch {}
+  // Send feedback beacon — works with any analytics endpoint.
+  // Set window.__FEEDBACK_URL to enable (e.g. in a VitePress head script).
+  try {
+    const url = typeof window !== 'undefined' && window.__FEEDBACK_URL
+    if (url) {
+      navigator.sendBeacon(url, JSON.stringify({
+        page: route.path,
+        helpful: value === 'yes',
+        ts: Date.now(),
+      }))
+    }
+  } catch {}
 }
 </script>
 

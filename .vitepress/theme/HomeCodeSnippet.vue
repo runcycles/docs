@@ -4,6 +4,15 @@ import { createHighlighter } from 'shiki'
 
 const activeTab = ref('python')
 const highlighted = ref({})
+const copied = ref(false)
+
+function copyCode() {
+  const code = snippets[activeTab.value]?.code
+  if (!code || typeof navigator === 'undefined') return
+  navigator.clipboard.writeText(code)
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 2000)
+}
 
 const tabs = [
   { key: 'python', label: 'Python' },
@@ -162,6 +171,9 @@ onMounted(async () => {
         </button>
       </div>
       <div class="code-block">
+        <button class="copy-btn" @click="copyCode" :aria-label="copied ? 'Copied' : 'Copy code'">
+          {{ copied ? 'Copied!' : 'Copy' }}
+        </button>
         <div v-if="highlighted[activeTab]" v-html="highlighted[activeTab]" />
         <pre v-else><code>{{ snippets[activeTab].code }}</code></pre>
       </div>
@@ -266,12 +278,34 @@ onMounted(async () => {
 }
 
 .code-block {
+  position: relative;
   background: var(--vp-code-block-bg);
   padding: 20px 24px;
   overflow-x: auto;
   /* Fixed height prevents layout shift when switching tabs */
   height: 420px;
   overflow-y: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: var(--vp-font-family-base);
+  color: var(--vp-c-text-3);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.copy-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
 }
 
 .code-block :deep(pre) {
