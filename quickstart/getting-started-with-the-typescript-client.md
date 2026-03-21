@@ -5,6 +5,8 @@ description: "Add budget enforcement to Node.js apps using the runcycles TypeScr
 
 # Getting Started with the TypeScript Client
 
+[![npm downloads](https://img.shields.io/npm/dm/runcycles?label=npm%20downloads&color=00C9A7&style=flat-square)](https://www.npmjs.com/package/runcycles)
+
 The `runcycles` TypeScript package provides a `withCycles` higher-order function, a `reserveForStream` streaming adapter, and a programmatic `CyclesClient` for adding budget enforcement to any Node.js application.
 
 The `withCycles` HOF wraps any async function in a reserve → execute → commit lifecycle:
