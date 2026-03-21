@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Action Control: Hard Limits on Emails, Deploys, and Side Effects"
+title: "AI Agent Action Control: Hard Limits on Side Effects"
 date: 2026-03-20
 author: Cycles Team
 tags: [action-control, risk, agents, engineering, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Action Control: Hard Limits on Emails, Deploys, and Side Effects
+# AI Agent Action Control: Hard Limits on Side Effects
 
 A customer-onboarding agent is tasked with sending personalized welcome emails to 200 trial accounts. A bug in the template-selection logic causes it to fall back to a collections template — "Your payment is overdue. Immediate action required." The agent sends all 200 emails in under three minutes. Total model spend: $1.40. Total business impact: 34 support tickets, 12 public complaints on social media, and a customer-churn spike that the sales team estimates at over $50,000 in lost pipeline. No spending limit would have caught this. The agent was under budget the entire time.
 
@@ -24,11 +24,11 @@ Side effects are the actions an agent takes in the world. Sending emails. Creati
 
 The critical property of side effects is **irreversibility**. A sent email cannot be unsent. A triggered deploy is live. A deleted record may not be recoverable. A Slack message to a customer channel cannot be retracted without notice. These are consequences that persist after the agent stops — and no amount of post-hoc cost reconciliation changes what already happened.
 
-This is why [Cycles](/) is positioned as **runtime authority**, not just budget authority. Runtime authority is the umbrella: it covers both how much the agent spends (budget authority) and what the agent does (action authority). Both are enforced through the same protocol, the same lifecycle, and the same infrastructure. Budget authority is the subset most teams implement first. Action authority is the subset where the costliest incidents live.
+This is why [Cycles](/) is positioned as **runtime authority**, not just budget authority. Runtime authority is the umbrella: it covers both how much the agent spends (budget authority) and what the agent does (action authority). Both are enforced through a shared protocol, a common lifecycle, and the same infrastructure. Budget authority is the subset most teams implement first. Action authority is the subset where the costliest incidents live.
 
 | Dimension | What it limits | Example controls | What happens if missing |
 |-----------|---------------|------------------|------------------------|
-| **Budget authority** | How much the agent spends | Per-run dollar cap, per-tenant quota | Runaway cost — $4,200 tool loops, $12,400 weekend batches |
+| **Budget authority** | How much the agent spends | Per-run dollar cap, per-tenant quota | Runaway cost — [$4,200 tool loops, $12,400 weekend batches](/blog/ai-agent-failures-budget-controls-prevent) |
 | **Action authority** | What the agent does | Tool allowlist/denylist, risk-point caps, per-action reservation | Wrong emails sent, accidental deploys, unauthorized file writes, data deletion |
 
 For a deep dive on the budget authority side specifically, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits).
@@ -84,7 +84,7 @@ Cycles supports a **RISK_POINTS** unit specifically for this problem. Instead of
 
 A workflow capped at 100 risk points can make dozens of reads and searches (1-2 points each) but only send 5 emails (20 points each) before hitting the limit. Or it can do 2 deploys and nothing else. The cap forces the agent to prioritize — and it forces the team to decide, up front, how much action surface they are willing to expose per run.
 
-The specific point values are subjective and team-defined. A team that sends transactional emails as a core workflow might assign 5 points per email instead of 20. A team with strict compliance requirements might assign 100 points to any external communication. The value is not in the absolute numbers but in the **relative weighting** and the **hard cap**. What matters is that the cap exists and is enforced before execution.
+The specific point values are subjective and team-defined. The table above is an example schedule — your team's will differ. A team that sends transactional emails as a core workflow might assign 5 points per email instead of 20, because a misrouted transactional email is recoverable. A team with strict compliance requirements might assign 100 points to any external communication, because the blast radius of a wrong message is regulatory, not just reputational. The value is not in the absolute numbers but in the **relative weighting** and the **hard cap**. What matters is that the cap exists and is enforced before execution.
 
 For the full unit system including USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS, see [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
 
@@ -98,7 +98,7 @@ When an agent requests a reservation and the server determines that the action i
 - **`tool_denylist`** — these specific tools are blocked (everything else is allowed)
 - **`max_steps_remaining`** — the agent has this many steps left before it must stop
 
-This enables a powerful pattern: **progressive capability narrowing**. An agent starts a run with full tool access. As it consumes risk-point budget, the server progressively restricts what it can do:
+This enables a pattern teams can implement on their server: **progressive capability narrowing** — a degradation strategy where the server narrows an agent's available tools as risk-point budget runs low. For example, an operator might configure thresholds like this:
 
 - **0-50% consumed**: full access to all tools
 - **50-80% consumed**: ALLOW_WITH_CAPS with `tool_denylist: ["deploy", "send_email"]` — highest-blast-radius actions disabled
