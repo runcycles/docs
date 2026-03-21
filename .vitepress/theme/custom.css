@@ -306,6 +306,11 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.dark .blog-featured-badge {
+  color: #fbbf24;
+  border-color: #fbbf24;
+}
+
 .dark .blog-rss-link {
   border-color: rgba(255, 255, 255, 0.12);
 }
