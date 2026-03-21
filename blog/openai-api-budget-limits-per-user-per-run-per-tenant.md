@@ -144,11 +144,11 @@ The three patterns are not mutually exclusive. They compose. A single OpenAI API
 ```
 Tenant: customer-a ($500/month)
   └── App: chatbot
-       └── Agent: user-123 ($10/day)
-            └── Workflow: run-xyz ($3/run)
+       └── Workflow: run-xyz ($3/run)
+            └── Agent: user-123 ($10/day)
 ```
 
-When the agent calls `@cycles(tenant="customer-a", app="chatbot", agent="user-123", workflow="run-xyz")`, the reservation checks all four scopes atomically. If any scope is exhausted, the call is denied:
+When the agent calls `@cycles(tenant="customer-a", app="chatbot", workflow="run-xyz", agent="user-123")`, the reservation checks all four scopes atomically. If any scope is exhausted, the call is denied:
 
 - User 123 has burned through their $10 daily limit? Denied — even if the tenant has $400 remaining.
 - This run has hit its $3 cap? Denied — even if the user has $8 left today.
@@ -165,10 +165,10 @@ Cycles returns a three-way decision, not a binary allow/deny:
 | Decision | What it means | What to do |
 |---|---|---|
 | `ALLOW` | Full budget available | Call OpenAI normally |
-| `ALLOW_WITH_CAPS` | Budget is getting tight | Respect the caps — e.g., reduce `max_tokens` to the value in `caps.maxTokens` |
+| `ALLOW_WITH_CAPS` | Budget is getting tight | Respect the caps — e.g., reduce `max_tokens` to the value in `caps.max_tokens` |
 | `DENY` | Budget exhausted | Do not call OpenAI — degrade, defer, or inform the user |
 
-The `ALLOW_WITH_CAPS` decision is particularly useful for OpenAI integrations. When the budget authority returns `caps.maxTokens: 500`, the agent passes that directly to OpenAI's `max_tokens` parameter. The model generates a shorter response — still useful, but cheaper. The user gets an answer instead of an error.
+The `ALLOW_WITH_CAPS` decision is particularly useful for OpenAI integrations. When the budget authority returns `caps.max_tokens: 500`, the agent passes that directly to OpenAI's `max_tokens` parameter. The model generates a shorter response — still useful, but cheaper. The user gets an answer instead of an error.
 
 Beyond caps, four degradation strategies apply to OpenAI workloads:
 
