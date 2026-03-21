@@ -1,6 +1,6 @@
 ---
 title: "What Cycles Is Not: Billing, Rate Limiting, Orchestration, and Other Category Confusion"
-description: "Understand what Cycles is not — it is not billing, rate limiting, orchestration, or observability, but a budget authority for autonomous execution."
+description: "Understand what Cycles is not — it is not billing, rate limiting, orchestration, or observability, but a runtime authority for autonomous agents."
 ---
 
 # What Cycles Is Not: Billing, Rate Limiting, Orchestration, and Other Category Confusion
@@ -23,7 +23,7 @@ The honest answer is:
 
 **Cycles overlaps with some of these categories, but it is not reducible to any of them.**
 
-Cycles is a **budget authority for autonomous execution**.
+Cycles is a **runtime authority for autonomous agents**.
 
 That means it exists to decide whether autonomous work is allowed to proceed, how much bounded exposure it may reserve, and how that usage is reconciled afterward.
 
@@ -299,7 +299,7 @@ The point is to make autonomous systems governable, not tradable.
 
 The shortest answer is:
 
-**Cycles is a budget authority for autonomous execution.**
+**Cycles is a runtime authority for autonomous agents.**
 
 More specifically, it is a protocol and runtime model for:
 
@@ -351,7 +351,7 @@ For example:
 
 In these cases, the gap is usually not visibility.
 
-It is the absence of a runtime budget authority.
+It is the absence of a runtime authority.
 
 ## Summary
 
@@ -371,7 +371,7 @@ That control layer exists to make autonomous execution:
 
 That is why the best way to think about Cycles is not as a dashboard, a proxy, or a scheduler.
 
-It is a **budget authority for autonomous execution**.
+It is a **runtime authority for autonomous agents**.
 
 ## Next steps
 

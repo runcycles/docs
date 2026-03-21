@@ -1,11 +1,11 @@
 ---
 title: "Integrating Cycles with MCP"
-description: "Use the Cycles MCP Server to give any MCP-compatible AI agent budget authority — reserve, enforce, and reconcile spend using MCP tools."
+description: "Use the Cycles MCP Server to give any MCP-compatible AI agent runtime authority — reserve, enforce, and reconcile spend using MCP tools."
 ---
 
 # Integrating Cycles with MCP
 
-The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is the standard way AI hosts discover and call tools. The Cycles MCP Server exposes Cycles budget authority as MCP tools, so any MCP-compatible agent (Claude Desktop, Claude Code, Cursor, Windsurf, custom agents) can reserve, spend, and release budget without any SDK integration in the agent's own code.
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is the standard way AI hosts discover and call tools. The Cycles MCP Server exposes Cycles runtime authority as MCP tools, so any MCP-compatible agent (Claude Desktop, Claude Code, Cursor, Windsurf, custom agents) can reserve, spend, and release budget without any SDK integration in the agent's own code.
 
 This guide covers the integration patterns, resources, prompts, and transport options available through the MCP server.
 

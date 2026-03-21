@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Custom Token Counters: Build vs Buy for Agent Budget Control"
-description: "In-app token counters break under concurrency, multi-service deployment, and production load. When to adopt a dedicated budget authority."
+description: "In-app token counters break under concurrency, multi-service deployment, and production load. When to adopt a dedicated runtime authority."
 ---
 
 # Cycles vs Custom Token Counters: Build vs Buy for Agent Budget Control
@@ -23,7 +23,7 @@ This works. For a while.
 
 It works when you have one service, one process, one agent, and one developer who understands the counter. It stops working when any of those assumptions change.
 
-This article explains where custom token counters break, why they break, and when to replace them with a dedicated budget authority.
+This article explains where custom token counters break, why they break, and when to replace them with a dedicated runtime authority.
 
 ## The natural starting point
 
@@ -133,14 +133,14 @@ Service A uses Redis with INCR. Service B uses PostgreSQL with a row lock. Servi
 
 The result is inconsistent enforcement, duplicated logic, and fragile coordination. Every new service that makes LLM calls must re-implement the counter pattern, or integrate with whichever shared counter exists, or — most commonly — skip it and hope for the best.
 
-Cycles centralizes budget authority in one service. Every client integrates through the same protocol. The budget logic lives in one place. New services call the same API. There is one source of truth for budget state.
+Cycles centralizes runtime authority in one service. Every client integrates through the same protocol. The budget logic lives in one place. New services call the same API. There is one source of truth for budget state.
 
 ## Comparison
 
 | | In-App Counter | Cycles |
 |---|---|---|
 | **Concurrency safety** | Race conditions under parallel access | Atomic reservations — no TOCTOU bugs |
-| **Multi-service** | Counter is local to one process or requires custom shared store | Centralized budget authority accessible from any service |
+| **Multi-service** | Counter is local to one process or requires custom shared store | Centralized runtime authority accessible from any service |
 | **Reservation model** | None — tracks past usage, not in-flight work | Reserve before execution, commit after, release on cancel |
 | **Hierarchical scopes** | Flat — one counter, one limit | Nested — tenant → workspace → app → workflow → agent → toolset |
 | **Overage policies** | Binary — allow or deny | Three-way — ALLOW, ALLOW_WITH_CAPS, DENY |
@@ -175,7 +175,7 @@ When the business requires more than hard cutoffs — when "switch to a cheaper 
 
 When the organization needs to demonstrate that every LLM call was authorized against a budget, with a clear trail of reservations and commits, ad hoc counters do not provide the necessary structure.
 
-If none of these apply, a custom counter may be all you need. Not every system requires a dedicated budget authority. A prototype, a single-service application with low concurrency, or an internal tool with one user can work fine with a simple counter.
+If none of these apply, a custom counter may be all you need. Not every system requires a dedicated runtime authority. A prototype, a single-service application with low concurrency, or an internal tool with one user can work fine with a simple counter.
 
 But if two or more of these conditions are present, the custom counter is likely accumulating correctness debt faster than the team can repay it.
 
@@ -207,7 +207,7 @@ Move each service from its custom counter to Cycles. With each migration, the cu
 
 Once all services use Cycles, the custom counter code can be deleted. No more duplicated logic, no more inconsistent enforcement, no more race conditions in hand-rolled concurrency handling.
 
-The result is a system where budget authority is centralized, concurrency-safe, and consistent across every service that makes LLM calls.
+The result is a system where runtime authority is centralized, concurrency-safe, and consistent across every service that makes LLM calls.
 
 ## The build vs buy calculation
 
@@ -222,7 +222,7 @@ Maintaining it under production conditions costs more than most teams expect:
 - Handling edge cases around retries, crashes, and partial failures
 - Explaining to the team why the budget numbers do not add up
 
-Cycles is designed to handle these concerns from the start. It is not a better counter. It is a different primitive — a budget authority with reservation semantics, hierarchical scopes, and concurrency safety built in.
+Cycles is designed to handle these concerns from the start. It is not a better counter. It is a different primitive — a runtime authority with reservation semantics, hierarchical scopes, and concurrency safety built in.
 
 The question is not whether you can build it yourself. You can.
 

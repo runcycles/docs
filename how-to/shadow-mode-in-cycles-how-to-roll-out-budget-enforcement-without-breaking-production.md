@@ -371,7 +371,7 @@ By using shadow mode, teams can:
 - design degradation paths
 - move to enforcement with far more confidence
 
-That is how you roll out budget authority safely.
+That is how you roll out runtime authority safely.
 
 ## Next steps
 

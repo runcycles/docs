@@ -37,7 +37,7 @@ The common thread: these controls protect OpenAI's exposure to you. They do not 
 | **Per-run cap** | Single agent execution | **Yes (pre-execution)** | **Yes** |
 | **Per-tenant monthly limit** | Customer / team | **Yes (pre-execution)** | **Yes** |
 
-The bottom three rows require enforcement outside of OpenAI — a budget authority that sits between your application and the API, making a deterministic allow/deny decision before every call. For the general argument about why post-hoc controls fail, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits). For how this compares to other tools in the stack, see [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools).
+The bottom three rows require enforcement outside of OpenAI — a runtime authority that sits between your application and the API, making a deterministic allow/deny decision before every call. For the general argument about why post-hoc controls fail, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits). For how this compares to other tools in the stack, see [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools).
 
 ## Three Budget Patterns for OpenAI Agents
 
@@ -168,7 +168,7 @@ Cycles returns a three-way decision, not a binary allow/deny:
 | `ALLOW_WITH_CAPS` | Budget is getting tight | Respect the caps — e.g., reduce `max_tokens` to the value in `caps.max_tokens` |
 | `DENY` | Budget exhausted | Do not call OpenAI — degrade, defer, or inform the user |
 
-The `ALLOW_WITH_CAPS` decision is particularly useful for OpenAI integrations. When the budget authority returns `caps.max_tokens: 500`, the agent passes that directly to OpenAI's `max_tokens` parameter. The model generates a shorter response — still useful, but cheaper. The user gets an answer instead of an error.
+The `ALLOW_WITH_CAPS` decision is particularly useful for OpenAI integrations. When the runtime authority returns `caps.max_tokens: 500`, the agent passes that directly to OpenAI's `max_tokens` parameter. The model generates a shorter response — still useful, but cheaper. The user gets an answer instead of an error.
 
 Beyond caps, four degradation strategies apply to OpenAI workloads:
 

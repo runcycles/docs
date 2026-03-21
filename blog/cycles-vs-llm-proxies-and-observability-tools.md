@@ -26,7 +26,7 @@ By Monday morning, the agent has made 4,700 calls and consumed $2,800. The team 
 
 Every tool in the stack worked exactly as designed. None of them prevented the overspend.
 
-The missing layer was not routing or visibility. It was **budget authority** — a pre-execution decision about whether the next action should proceed given the remaining budget.
+The missing layer was not routing or visibility. It was **runtime authority** — a pre-execution decision about whether the next action should proceed given the remaining budget.
 
 ## Three layers, three questions
 
@@ -95,7 +95,7 @@ The gap appears when you need to **enforce** a budget, not just **track** spend.
 
 ### Using both together
 
-The proxy and the budget authority serve different purposes. They compose naturally.
+The proxy and the runtime authority serve different purposes. They compose naturally.
 
 ```
 Agent
@@ -179,7 +179,7 @@ By the time an alert fires and a human responds, the system has already spent. T
 
 ### Using both together
 
-Observability and budget authority form a feedback loop.
+Observability and runtime authority form a feedback loop.
 
 **Observability informs budgets.** Trace data shows you what runs actually cost — the distribution of per-run spend, which models drive the most cost, which workflows are bursty. This is how you set accurate budget limits instead of guessing.
 
@@ -200,7 +200,7 @@ Each layer in a production LLM stack answers a different question.
 ```
 Agent
   │
-  ├─ Cycles (budget authority)         → Should this action proceed?
+  ├─ Cycles (runtime authority)         → Should this action proceed?
   │
   ├─ LLM Proxy (routing layer)        → Which model handles this call?
   │
@@ -224,7 +224,7 @@ The question is not "which one should I use?"
 
 It is "which layer is missing?"
 
-For most teams running autonomous agents, the missing layer is budget authority.
+For most teams running autonomous agents, the missing layer is runtime authority.
 
 ## Next steps
 
@@ -234,6 +234,6 @@ For most teams running autonomous agents, the missing layer is budget authority.
 - [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents) — real-world costs of running agents without budget limits
 - [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios with dollar math
 - [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the five-tier maturity model from no controls to hard enforcement
-- [You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why building a prototype is easy but owning a budget authority is not
+- [You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why building a prototype is easy but owning a runtime authority is not
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — set up Cycles with a working agent in under 30 minutes
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — evaluate budget enforcement on real traffic without blocking anything

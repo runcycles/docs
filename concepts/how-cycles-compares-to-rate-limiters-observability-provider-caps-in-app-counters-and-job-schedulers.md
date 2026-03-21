@@ -252,7 +252,7 @@ Counter logic often lives inside business code, spread across services and endpo
 
 ### How Cycles differs
 
-Cycles replaces ad hoc counters with a purpose-built budget authority.
+Cycles replaces ad hoc counters with a purpose-built runtime authority.
 
 It handles concurrency, retries, hierarchical scopes, and lifecycle semantics as first-class concerns — not afterthoughts.
 
@@ -323,13 +323,13 @@ Cycles can tell the scheduler whether the task should proceed, degrade, or be de
 | Scope | Per-job or per-queue | Per-tenant, workspace, workflow, agent |
 | Degradation | Not built-in | Three-way decision (allow / downgrade / deny) |
 | Cross-tenant limits | No | Yes |
-| Complements | Execution engine | Budget authority |
+| Complements | Execution engine | Runtime authority |
 
 **Keep your scheduler.**
 
 It is the right tool for managing execution timing and retry mechanics.
 
-But pair it with a budget authority so retries and fan-out do not become unbounded cost.
+But pair it with a runtime authority so retries and fan-out do not become unbounded cost.
 
 ## Capability matrix
 
@@ -359,7 +359,7 @@ A few things worth noting:
 - The ◐ ratings are honest. Some of these capabilities can be approximated with enough custom work. But "possible with effort" is different from "supported by design."
 - Cycles does not try to replace traffic shaping, observability, or scheduling. Those are separate concerns with mature tooling. Cycles focuses on the budget governance column because that is the gap most teams hit as autonomous systems scale.
 
-Each of these tools earns its place in a production stack. The question is whether the stack has a gap where budget authority should be.
+Each of these tools earns its place in a production stack. The question is whether the stack has a gap where runtime authority should be.
 
 ## They work together
 
@@ -373,7 +373,7 @@ A well-governed autonomous system typically includes:
 - an **observability platform** for visibility, traces, and alerts
 - **provider caps** as an organizational safety net
 - a **job scheduler** for execution timing and retry policies
-- **Cycles** as the budget authority that decides whether bounded work may proceed
+- **Cycles** as the runtime authority that decides whether bounded work may proceed
 
 These layers are complementary, not competitive.
 
@@ -381,7 +381,7 @@ The question is not "which one should I use?"
 
 It is "which layer is missing?"
 
-For most teams building autonomous systems, the missing layer is budget authority.
+For most teams building autonomous systems, the missing layer is runtime authority.
 
 ## When to adopt Cycles
 

@@ -1,9 +1,9 @@
 ---
-title: "Cycles vs Guardrails AI: Budget Authority vs Content Safety"
+title: "Cycles vs Guardrails AI: Runtime Authority vs Content Safety"
 description: "Guardrails AI validates LLM outputs for content safety. Cycles enforces budget limits before execution. They solve different problems and work well together."
 ---
 
-# Cycles vs Guardrails AI: Budget Authority vs Content Safety
+# Cycles vs Guardrails AI: Runtime Authority vs Content Safety
 
 Guardrails AI and Cycles both sit in the path of LLM execution.
 
@@ -15,7 +15,7 @@ Guardrails AI validates **what the model says**.
 
 Cycles controls **whether the model gets called at all**.
 
-One is about content safety. The other is about budget authority. They operate at different points in the execution lifecycle, solve different problems, and complement each other cleanly.
+One is about content safety. The other is about runtime authority. They operate at different points in the execution lifecycle, solve different problems, and complement each other cleanly.
 
 ## What Guardrails AI does
 
@@ -49,7 +49,7 @@ But none of these capabilities address the question: should this model call happ
 
 ## What Cycles does
 
-Cycles is a budget authority for autonomous execution. It enforces cost limits before work begins, using a reserve-then-commit lifecycle.
+Cycles is a runtime authority for autonomous agents. It enforces cost limits before work begins, using a reserve-then-commit lifecycle.
 
 Its core capabilities include:
 
@@ -197,7 +197,7 @@ Consider an AI agent that handles customer inquiries.
 
 It is tempting to look for one tool that handles everything. That is not how production systems work.
 
-Content safety and budget authority are independent concerns:
+Content safety and runtime authority are independent concerns:
 
 - A safe output can be too expensive.
 - A cheap output can be unsafe.

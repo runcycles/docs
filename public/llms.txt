@@ -1,6 +1,6 @@
 # Cycles
 
-> Budget authority for autonomous agents. Hard limits on agent spend and actions enforced before execution — not after. Open protocol, multi-language SDKs, Apache 2.0.
+> Runtime authority for autonomous agents. Keep agents within approved spend, risk, and action limits. Open protocol, multi-language SDKs, Apache 2.0.
 
 Cycles is an open-source budget enforcement system for AI agents and autonomous workflows. It prevents runaway spend by requiring agents to reserve budget before execution and commit actual usage afterward. It supports hierarchical scoped budgets (tenant → workspace → project → run), idempotent retries, concurrency-safe reservations, and overage policies.
 
@@ -41,14 +41,14 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 ## Concepts
 
 - [Why Rate Limits Are Not Enough](https://runcycles.io/concepts/why-rate-limits-are-not-enough-for-autonomous-systems): Why velocity controls cannot govern autonomous systems
-- [Coding Agents Need Runtime Budget Authority](https://runcycles.io/concepts/coding-agents-need-runtime-budget-authority): The runtime control layer coding agents need but do not have
+- [Coding Agents Need Runtime Authority](https://runcycles.io/concepts/coding-agents-need-runtime-budget-authority): The runtime control layer coding agents need but do not have
 - [Why Coding Agents Do Not Replace Cycles](https://runcycles.io/concepts/why-coding-agents-do-not-replace-cycles): Business-layer governance that agents cannot provide
 - [What Cycles Is Not](https://runcycles.io/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion): Not billing, not rate limiting, not orchestration
 - [Idempotency, Retries, and Concurrency](https://runcycles.io/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes): How Cycles handles real-world failure modes
-- [From Observability to Enforcement](https://runcycles.io/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority): How teams evolve from dashboards to budget authority
+- [From Observability to Enforcement](https://runcycles.io/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority): How teams evolve from dashboards to runtime authority
 - [How Cycles Compares](https://runcycles.io/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers): Comparison with rate limiters, observability, provider caps, and counters
 - [Cycles vs Rate Limiting](https://runcycles.io/concepts/cycles-vs-rate-limiting): Why velocity controls fail for AI agents
-- [Cycles vs Guardrails AI](https://runcycles.io/concepts/cycles-vs-guardrails-ai): Budget authority vs content safety — different problems, complementary solutions
+- [Cycles vs Guardrails AI](https://runcycles.io/concepts/cycles-vs-guardrails-ai): Runtime authority vs content safety — different problems, complementary solutions
 - [Cycles vs Provider Spending Caps](https://runcycles.io/concepts/cycles-vs-provider-spending-caps): Why platform limits are not enough for per-run budget control
 - [Cycles vs Custom Token Counters](https://runcycles.io/concepts/cycles-vs-custom-token-counters): Build vs buy for agent budget control
 

@@ -1,14 +1,14 @@
 ---
-title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority"
+title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Runtime Authority"
 date: 2026-03-20
 author: Cycles Team
 tags: [architecture, agents, budgets, engineering]
-description: "A budget wrapper is easy to vibe code. Owning a budget authority with concurrency safety, idempotency, and multi-tenant isolation is not."
+description: "A budget wrapper is easy to vibe code. Owning a runtime authority with concurrency safety, idempotency, and multi-tenant isolation is not."
 blog: true
 sidebar: false
 ---
 
-# You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Budget Authority
+# You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Runtime Authority
 
 A common reaction to Cycles is:
 
@@ -22,7 +22,7 @@ A team can absolutely use Claude Code or another coding agent to put a thin wrap
 
 But that is not the real question.
 
-The real question is whether you want to **own a budget authority forever — or use one.**
+The real question is whether you want to **own a runtime authority forever — or use one.**
 
 That is a very different thing from generating a wrapper.
 
@@ -162,4 +162,4 @@ If the answer is no, that is exactly why Cycles exists.
 
 - **[What is Cycles?](/quickstart/what-is-cycles)** — start here if you are new to Cycles
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — see the reserve/commit lifecycle in action
-- **[How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles)** — the protocol mechanics behind budget authority
+- **[How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles)** — the protocol mechanics behind runtime authority

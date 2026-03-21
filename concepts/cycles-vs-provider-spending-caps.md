@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Provider Spending Caps: Why Platform Limits Are Not Enough"
-description: "OpenAI, Anthropic, and Google all offer spending limits — but they are monthly, org-wide, and delayed. See why teams need finer-grained budget authority."
+description: "OpenAI, Anthropic, and Google all offer spending limits — but they are monthly, org-wide, and delayed. See why teams need finer-grained runtime authority."
 ---
 
 # Cycles vs Provider Spending Caps: Why Platform Limits Are Not Enough

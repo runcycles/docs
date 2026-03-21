@@ -275,7 +275,7 @@ Observability can tell you:
 
 But it cannot prevent the initial overage or race by itself.
 
-A budget authority must do more than explain failure after the fact.  
+A runtime authority must do more than explain failure after the fact.  
 It must remain correct enough under failure to make enforcement meaningful.
 
 ## A concrete example
@@ -387,5 +387,5 @@ To explore the Cycles stack:
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete incidents involving retry storms and concurrency races
-- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — how teams evolve from dashboards to budget authority
+- [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — how teams evolve from dashboards to runtime authority
 - [Cycles vs Custom Token Counters](/concepts/cycles-vs-custom-token-counters) — why ad hoc counters break under the concurrency and retry patterns discussed here

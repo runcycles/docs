@@ -1,11 +1,11 @@
 ---
 title: "What is Cycles?"
-description: "Cycles is a budget authority for autonomous execution that enforces hard spend limits on AI agents and workflows before expensive actions happen."
+description: "Cycles is a runtime authority for autonomous agents that enforces hard spend limits on AI agents and workflows before expensive actions happen."
 ---
 
 # What is Cycles?
 
-Cycles is a **budget authority for autonomous execution**. It enforces hard limits on agent spend and actions — **before they happen, not after**.
+Cycles is a **runtime authority for autonomous agents**. It enforces hard limits on agent spend and actions — **before they happen, not after**.
 
 ```python
 @cycles(estimate=5000, action_kind="llm.completion", action_name="openai:gpt-4o")
@@ -151,7 +151,7 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) — set up the Cycles infrastructure
-- [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) — add budget authority to Claude Desktop, Claude Code, Cursor, or Windsurf with zero code changes
+- [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) — add runtime authority to Claude Desktop, Claude Code, Cursor, or Windsurf with zero code changes
 - [Python Quickstart](/quickstart/getting-started-with-the-python-client) — add Cycles to a Python app
 - [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) — add Cycles to a TypeScript app
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — add Cycles to a Spring app

@@ -1,11 +1,11 @@
 ---
 title: "Built with Cycles Badges"
-description: "Add a 'Built with Cycles' badge to your project README, documentation, or website to show your project uses budget authority for autonomous agents."
+description: "Add a 'Built with Cycles' badge to your project README, documentation, or website to show your project uses runtime authority for autonomous agents."
 ---
 
 # Built with Cycles
 
-Show the community that your project uses Cycles for budget authority. Add a "Built with Cycles" badge to your README, documentation site, or project website.
+Show the community that your project uses Cycles for runtime authority. Add a "Built with Cycles" badge to your README, documentation site, or project website.
 
 ## Badges
 

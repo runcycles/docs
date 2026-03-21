@@ -3,14 +3,14 @@ title: Introducing the Cycles Blog
 date: 2026-03-14
 author: Cycles Team
 tags: [announcement]
-description: We're launching our blog to share engineering insights, product updates, and best practices for budget authority in autonomous systems.
+description: We're launching our blog to share engineering insights, product updates, and best practices for runtime authority in autonomous systems.
 blog: true
 sidebar: false
 ---
 
 # Introducing the Cycles Blog
 
-We're excited to launch the Cycles blog — a space for engineering deep-dives, product updates, and practical guidance on budget authority for autonomous agents.
+We're excited to launch the Cycles blog — a space for engineering deep-dives, product updates, and practical guidance on runtime authority for autonomous agents.
 
 <!-- more -->
 
@@ -23,7 +23,7 @@ We're excited to launch the Cycles blog — a space for engineering deep-dives, 
 
 ## Why a Blog?
 
-Our docs cover the _how_. The blog covers the _why_ — the thinking behind design decisions, the incidents that shaped the protocol, and the patterns we see across teams adopting budget authority.
+Our docs cover the _how_. The blog covers the _why_ — the thinking behind design decisions, the incidents that shaped the protocol, and the patterns we see across teams adopting runtime authority.
 
 ## Next Steps
 

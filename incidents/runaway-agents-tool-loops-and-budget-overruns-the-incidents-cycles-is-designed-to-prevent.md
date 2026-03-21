@@ -21,7 +21,7 @@ Cycles exists for a specific class of incidents:
 
 These are not hypothetical problems.
 
-They are what happens when autonomous systems are allowed to keep executing without a clear budget authority.
+They are what happens when autonomous systems are allowed to keep executing without a clear runtime authority.
 
 ## The common pattern behind these incidents
 
@@ -295,7 +295,7 @@ That is the problem Cycles is designed to solve.
 
 ## What teams often use instead
 
-Before adopting a budget authority, teams usually piece together partial controls such as:
+Before adopting a runtime authority, teams usually piece together partial controls such as:
 
 - provider dashboards
 - usage alerts
@@ -389,7 +389,7 @@ The new failure model is often:
 
 This is exactly why autonomous software needs more than traffic shaping and dashboards.
 
-It needs budget authority.
+It needs runtime authority.
 
 ## Summary
 

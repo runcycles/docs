@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Rate Limiting: Why Velocity Controls Fail for AI Agents"
-description: "Rate limiters control request velocity but cannot govern total spend. See how Cycles adds cost-aware, pre-execution budget authority where rate limits fall short."
+description: "Rate limiters control request velocity but cannot govern total spend. See how Cycles adds cost-aware, pre-execution runtime authority where rate limits fall short."
 ---
 
 # Cycles vs Rate Limiting: Why Velocity Controls Fail for AI Agents
@@ -57,7 +57,7 @@ To a rate limiter, every request is identical. A call that uses 100 input tokens
 
 This is the fundamental mismatch. AI workloads have extreme cost variance between requests. A simple classification call might cost $0.001. A multi-turn agentic workflow with tool calls might cost $5.00. Both are one request.
 
-Rate limiting treats them identically. Budget authority cannot afford to.
+Rate limiting treats them identically. Runtime authority cannot afford to.
 
 ### Rate limiters have no per-run or per-workflow awareness
 
@@ -180,11 +180,11 @@ If both say yes, the action proceeds with reserved budget. After execution, the 
 
 ## The key insight
 
-Rate limiting and budget authority are orthogonal controls.
+Rate limiting and runtime authority are orthogonal controls.
 
 Rate limiting governs the speed of requests. It prevents bursts and abuse. It is stateless in the sense that it does not track what those requests cost in aggregate.
 
-Budget authority governs the total exposure of execution. It prevents overspend and cost runaway. It is stateful — it tracks reservations, commits, and remaining balances across scopes.
+Runtime authority governs the total exposure of execution. It prevents overspend and cost runaway. It is stateful — it tracks reservations, commits, and remaining balances across scopes.
 
 An AI agent that respects rate limits can still create unbounded cost.
 

@@ -426,7 +426,7 @@ That often means choosing among four main paths:
 
 These degradation paths help teams move from brittle enforcement to intentional control.
 
-That is how budget authority becomes usable in production.
+That is how runtime authority becomes usable in production.
 
 ## Next steps
 

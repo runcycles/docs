@@ -246,7 +246,7 @@ async def agent_loop(task: str):
 
 ## Next steps
 
-- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code budget authority for Claude / Cursor / Windsurf
+- [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code runtime authority for Claude / Cursor / Windsurf
 - [Getting Started with Python](/quickstart/getting-started-with-the-python-client)
 - [Getting Started with TypeScript](/quickstart/getting-started-with-the-typescript-client)
 - [Getting Started with Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
