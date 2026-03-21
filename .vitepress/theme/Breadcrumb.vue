@@ -26,6 +26,7 @@ const firstPageMap = {
   'configuration': '/configuration/python-client-configuration-reference',
   'incidents': '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent',
   'community': '/community/badges',
+  'blog': '/blog/',
   'api': '/api/',
   'admin-api': '/admin-api/',
 }
