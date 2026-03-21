@@ -347,7 +347,7 @@ curl -s "http://localhost:7878/v1/balances?tenant=my-app" \
   -H "X-Cycles-API-Key: $API_KEY" | jq '.[] | {scope, remaining, spent, reserved}'
 ```
 
-You'll see `spent` has increased by the actual cost of your LLM call, and `remaining` has decreased.
+You'll see `spent` has increased by the actual usage from your LLM call, and `remaining` has decreased.
 
 ## Step 8: See what happens when budget runs out
 

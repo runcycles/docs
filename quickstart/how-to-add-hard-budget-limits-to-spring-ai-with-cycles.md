@@ -307,7 +307,7 @@ That is the role Cycles plays.
 It brings:
 
 - pre-execution budget checks
-- retry-safe accounting
+- retry-safe enforcement
 - multi-scope budget enforcement
 - support for shadow mode and progressive rollout
 - a clean reserve → commit / release lifecycle
@@ -337,7 +337,7 @@ That sequence keeps adoption manageable.
 
 ## Summary
 
-If you are building with Spring AI, budget control should not live only in dashboards, billing pages, or after-the-fact alerts.
+If you are building with Spring AI, budget enforcement should not live only in dashboards, billing pages, or after-the-fact alerts.
 
 It should be part of the execution path.
 

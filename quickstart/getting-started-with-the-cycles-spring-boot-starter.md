@@ -177,7 +177,7 @@ The `decide` endpoint tells you whether a reservation *would* be allowed, withou
 curl -X POST 'http://localhost:7955/api/demo/events/record?amount=1500&description=API+call'
 ```
 
-Direct debit — no reservation needed. Useful for post-hoc accounting.
+Direct debit — no reservation needed. Useful for post-hoc usage recording.
 
 After this walkthrough, explore the remaining endpoints (`caps`, `custom-ttl`, `llm/generate`) and read the source files below to see how each feature is implemented.
 
@@ -252,9 +252,9 @@ public String generate(int tokens) {
 
 The expression is evaluated before the method runs, using method parameters as variables.
 
-### Specifying actual cost
+### Specifying actual usage
 
-By default, the estimate is used as the actual cost at commit time. To calculate actual cost from the return value:
+By default, the estimate is used as the actual amount at commit time. To calculate actual usage from the return value:
 
 ```java
 @Cycles(estimate = "5000", actual = "#result.usage.totalTokens * 8")
@@ -441,7 +441,7 @@ For each `@Cycles`-annotated method call:
 4. If DENY: throw exception, method does not run
 5. Heartbeat extension is scheduled (background thread)
 6. Method executes
-7. Actual cost is evaluated (SpEL expression or estimate)
+7. Actual usage is evaluated (SpEL expression or estimate)
 8. Commit is sent with actual amount and optional metrics
 9. Heartbeat is cancelled
 10. If method threw: reservation is released instead of committed

@@ -114,11 +114,11 @@ The agent calls `cycles_reserve` and gets back a `reservation_id` and a `decisio
 
 **Step 2 — Execute** the operation (the LLM call, API request, etc.)
 
-**Step 3 — Commit** the actual cost:
+**Step 3 — Commit** actual usage:
 
-> "Commit reservation res_abc123 with actual cost 423,100 USD_MICROCENTS"
+> "Commit reservation res_abc123 with actual usage 423,100 USD_MICROCENTS"
 
-The agent calls `cycles_commit` with the `reservation_id` and the actual amount. The difference between the reserved estimate and the actual cost is returned to the budget pool.
+The agent calls `cycles_commit` with the `reservation_id` and the actual amount. The difference between the reserved estimate and the actual usage is returned to the budget pool.
 
 If the operation fails or is cancelled, the agent calls `cycles_release` instead to return the full reserved amount.
 
@@ -139,7 +139,7 @@ The MCP server exposes 9 tools:
 | Tool | Description |
 |------|-------------|
 | `cycles_reserve` | Reserve budget before a costly operation. Returns a reservation ID and decision |
-| `cycles_commit` | Commit actual usage after an operation completes. Finalizes the charge |
+| `cycles_commit` | Commit actual usage after an operation completes. Records actual usage against the budget |
 | `cycles_release` | Release a reservation without committing. Returns budget to the pool |
 | `cycles_extend` | Extend the TTL of an active reservation (heartbeat for long-running ops) |
 | `cycles_decide` | Lightweight preflight check — ask if an action would be allowed without reserving |
