@@ -21,6 +21,8 @@ In a request-response system, the blast radius of a bad output is a bad output. 
 
 That is what runtime authority is for.
 
+Runtime authority is not only about spend. It is about whether an autonomous system is allowed to consume resources, take actions, or create exposure at all.
+
 ## What runtime authority is
 
 Runtime authority is the layer that makes pre-execution decisions over agent behavior: whether an action is allowed, under what limits, in which scope, and with what consequences if a limit is reached.
@@ -43,7 +45,7 @@ The key properties of a runtime authority are:
 - **Concurrency-safe.** Correct even when multiple agents share the same budget and act simultaneously.
 - **Reconciled.** Estimated cost is reserved before execution; actual cost is committed after. The difference is released.
 
-## Why runtime authority matters for tool-using agents
+## Why runtime authority matters for autonomous systems
 
 In a traditional LLM call, cost is predictable: input tokens plus output tokens, one round trip. Agents break that model. A single user request can trigger chains of model calls, tool invocations, retries, and fan-out — each with its own cost and side effects.
 
@@ -57,7 +59,7 @@ Four things make agent costs fundamentally harder to predict and control:
 
 **Tool invocations.** Agents do not only consume tokens. They call APIs, send messages, and trigger external systems. A model call that costs $0.03 in tokens might trigger a tool call that costs $2.00 — or sends an email that cannot be unsent.
 
-Without runtime authority, the only way to discover that an agent has exceeded its intended budget is to look at the bill afterward.
+Without runtime authority, you discover overspend, unintended side effects, and policy violations only after they already happened.
 
 That is observability. It is valuable. But it is not control.
 
@@ -69,7 +71,7 @@ Most teams building on LLMs assemble a stack that addresses three concerns. Each
 |---|---|---|---|
 | **Routing** | *Which* model handles this? | Before execution (model selection) | LiteLLM, Portkey, Manifest |
 | **Visibility** | *What* happened? | After execution (logging, tracing) | Helicone, Langfuse, LangSmith |
-| **Authority** | *Should* this happen at all? | Before execution (budget + policy check) | Cycles |
+| **Authority** | *Should* this happen at all? | Before execution (permission, limits, and policy) | Cycles |
 
 Routing is well-understood. Visibility is well-understood.
 
@@ -96,6 +98,9 @@ An orchestrator decides what should happen next — task sequencing, dependencie
 **Runtime authority is not a soft guardrail in application code.**
 A counter incremented after each call is a [checker, not an authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority). Under concurrency, two agents can both read the same counter, both decide they have room, and both proceed — exceeding the budget without either one seeing the violation. A real authority makes atomic decisions: this budget is now reserved, and no concurrent actor can also claim it.
 
+**Runtime authority is not prompt-level safety.**
+Content filters and guardrails govern what a model says. Runtime authority governs what the system around the model is allowed to do — reserve resources, invoke tools, trigger side effects. One shapes output. The other shapes execution.
+
 ## The reserve/commit lifecycle
 
 The mechanism behind runtime authority is the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles). Instead of tracking spend after the fact, budget is reserved before execution and actual cost is committed after.
@@ -118,11 +123,11 @@ The lifecycle also enables **hierarchical scopes**. A single reservation checks 
 
 ## How Cycles approaches runtime authority
 
-Cycles treats agent control as a runtime decision system over spend, risk, and actions — not as an after-the-fact reporting problem.
+Cycles is not a dashboard for agent costs. It is a protocol for runtime permissioning over spend, risk, and actions.
 
-Before an agent takes its next action, Cycles answers whether that action is allowed, under what constraints, and what happens if the budget is not sufficient. That decision is made by a [protocol](/protocol/api-reference-for-the-cycles-protocol) — not by a proxy, not by application code, not by a dashboard with alerts. The protocol defines the reserve/commit lifecycle, hierarchical scopes, three-way decisions, and idempotency guarantees that make runtime authority operational.
+Before an agent takes its next action, Cycles answers whether that action is allowed, under what constraints, and what happens if limits are reached. That decision is made by a [protocol](/protocol/api-reference-for-the-cycles-protocol) — not by a proxy, not by application code, not by a dashboard with alerts. The protocol defines the reserve/commit lifecycle, hierarchical scopes, three-way decisions, and idempotency guarantees that make runtime authority operational.
 
-Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not care whether the agent is built with LangGraph, CrewAI, a custom loop, or a coding agent like Claude Code. It cares whether the next action is within budget.
+Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not care whether the agent is built with LangGraph, CrewAI, a custom loop, or a coding agent like Claude Code. It cares whether the next action is permitted.
 
 ## Next steps
 
