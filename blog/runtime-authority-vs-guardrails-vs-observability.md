@@ -127,5 +127,5 @@ Because it is protocol-based, Cycles works across frameworks, languages, and pro
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions
 - [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) — deeper exploration of category boundaries
-- [You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why a DIY counter is a checker, not an authority
+- [Budget Wrapper vs Runtime Authority for AI Agents](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why a DIY counter is a checker, not an authority
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — set up Cycles with a working agent in under 30 minutes

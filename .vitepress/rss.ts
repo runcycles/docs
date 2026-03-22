@@ -56,6 +56,8 @@ export async function generateFeed(config: SiteConfig) {
 
     if (!frontmatter.blog || frontmatter.blog === 'false') continue
 
+    const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : []
+
     feed.addItem({
       title: frontmatter.title ?? '',
       id: url,
@@ -63,6 +65,7 @@ export async function generateFeed(config: SiteConfig) {
       description: frontmatter.description ?? '',
       date: new Date(frontmatter.date ?? Date.now()),
       author: [{ name: frontmatter.author ?? 'Cycles Team' }],
+      category: tags.map((t: string) => ({ name: t })),
     })
   }
 

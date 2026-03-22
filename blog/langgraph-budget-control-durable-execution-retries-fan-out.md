@@ -196,7 +196,7 @@ The insurance claim processor from the opening scenario would have stopped at $1
 
 - **[Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain)** — full callback handler implementation for LangChain and LangGraph
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern in depth
-- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
-- **[You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a checker is not enough when agents fan out
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
+- **[Budget Wrapper vs Runtime Authority for AI Agents](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a checker is not enough when agents fan out
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets for teams running LangGraph in multi-tenant platforms
 - **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — why dashboards and proxies cannot prevent the overspend

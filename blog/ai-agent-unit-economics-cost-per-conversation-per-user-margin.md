@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Unit Economics: Cost Per Conversation, Cost Per User, and Margin Analysis"
+title: "AI Agent Unit Economics: Cost and Margin Analysis"
 date: 2026-03-22
 author: Cycles Team
 tags: [unit-economics, costs, enterprise, margins, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Unit Economics: Cost Per Conversation, Cost Per User, and Margin Analysis
+# AI Agent Unit Economics: Cost and Margin Analysis
 
 A B2B SaaS company adds an AI copilot to their customer support product. They price the feature at $15/user/month and estimate $3/user/month in LLM costs based on their pilot: 20 conversations per user per month, 6 turns per conversation, GPT-4o at ~$0.15 per conversation. Gross margin target: 80%.
 
@@ -131,6 +131,6 @@ Token pricing is an engineering metric. Cost per conversation is a business KPI.
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — raw provider pricing and per-scenario cost breakdowns
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the five-tier maturity model from monitoring to hard enforcement
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets and chargeback models
-- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — what happens when variance is unbounded
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — what happens when variance is unbounded
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern for pre-execution enforcement
 - **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — why dashboards cannot prevent the overspend

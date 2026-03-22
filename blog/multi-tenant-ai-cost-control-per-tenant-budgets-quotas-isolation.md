@@ -1,5 +1,5 @@
 ---
-title: "Multi-Tenant AI Cost Control: Per-Tenant Budgets, Quotas, and Isolation"
+title: "Multi-Tenant AI Cost Control: Budgets and Isolation"
 date: 2026-03-20
 author: Cycles Team
 tags: [multi-tenant, budgets, architecture, costs]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# Multi-Tenant AI Cost Control: Per-Tenant Budgets, Quotas, and Isolation
+# Multi-Tenant AI Cost Control: Budgets and Isolation
 
 A platform team runs a SaaS product with AI-powered document analysis. Fifty customers share the same infrastructure. One afternoon, a single customer's integration triggers an agent loop — the same 200-page PDF reprocessed 40 times with increasingly long context windows. In three hours, that one tenant consumes $4,200 of the platform's $5,000 monthly provider budget.
 
