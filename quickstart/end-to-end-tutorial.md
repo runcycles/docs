@@ -58,7 +58,7 @@ const result = await ask("Hello");  // Budget reserved → LLM called → cost c
 :::
 
 ::: info
-This code requires a running Cycles server. The tutorial below walks you through setting one up with Docker in about 2 minutes. If you just want to see the demo without any setup, try the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) instead.
+This code requires a running Cycles server. The tutorial below walks you through setting one up with Docker in about 2 minutes. If you just want to see a demo without any setup, check the [Demos](/demos/) page instead.
 :::
 
 ## Step 1: Start the Cycles stack
@@ -389,6 +389,7 @@ docker compose down -v
 
 ## What's next
 
+- [Demos](/demos/) — see Cycles in action with the runaway agent and action authority scenarios
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Adding Cycles to an Existing Application](/how-to/adding-cycles-to-an-existing-application) — integrate incrementally
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model call

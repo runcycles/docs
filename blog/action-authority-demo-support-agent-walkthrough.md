@@ -208,5 +208,7 @@ For the conceptual foundation behind this demo:
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the definition of runtime authority and how it differs from observability and rate limits
 
 To add Cycles to your own application:
-- [End-to-End Tutorial](https://runcycles.io/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
-- [Adding Cycles to an Existing App](https://runcycles.io/how-to/adding-cycles-to-an-existing-application) — incremental adoption guide
+- [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
+- [Adding Cycles to an Existing App](/how-to/adding-cycles-to-an-existing-application) — incremental adoption guide
+
+Explore more scenarios on the [Demos](/demos/) page.

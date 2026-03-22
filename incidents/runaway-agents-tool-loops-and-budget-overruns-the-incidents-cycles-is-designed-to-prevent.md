@@ -421,6 +421,7 @@ to:
 To explore the Cycles stack:
 
 - Try the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — see the failure mode and the fix in action
+- Try the [Action Authority Demo](https://github.com/runcycles/cycles-agent-action-authority-demo) — see how Cycles blocks unauthorized side effects before they execute
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)

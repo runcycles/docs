@@ -22,3 +22,7 @@ A support agent handles a billing dispute in four steps. Cycles allows internal 
 **What it shows:** Toolset-scoped budgets give agents authority over safe actions while blocking risky ones.
 
 [View on GitHub](https://github.com/runcycles/cycles-agent-action-authority-demo) · [Blog walkthrough](/blog/action-authority-demo-support-agent-walkthrough)
+
+---
+
+New to Cycles? Start with [What is Cycles?](/quickstart/what-is-cycles) or jump straight to the [End-to-End Tutorial](/quickstart/end-to-end-tutorial).
