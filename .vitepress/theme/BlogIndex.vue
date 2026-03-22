@@ -60,25 +60,33 @@ onMounted(() => {
   if (tagParam && allTags.value.includes(tagParam)) {
     selectedTag.value = tagParam
   }
+  if (window.innerWidth <= 640) {
+    document.querySelector('.blog-tags-details')?.removeAttribute('open')
+  }
 })
 </script>
 
 <template>
   <div class="blog-index">
     <div class="blog-tags-row">
-      <div class="blog-tags" v-if="allTags.length" role="group" aria-label="Filter by tag">
-        <button
-          :class="{ active: !selectedTag }"
-          :aria-pressed="!selectedTag"
-          @click="selectTag(null)"
-        >All ({{ posts.length }})</button>
-        <button
-          v-for="tag in allTags" :key="tag"
-          :class="{ active: selectedTag === tag }"
-          :aria-pressed="selectedTag === tag"
-          @click="selectTag(tag)"
-        >{{ tag }} ({{ tagCounts[tag] }})</button>
-      </div>
+      <details class="blog-tags-details" open>
+        <summary class="blog-tags-summary">
+          Filter by tag<span v-if="selectedTag" class="blog-tags-active-indicator">: {{ selectedTag }}</span>
+        </summary>
+        <div class="blog-tags" v-if="allTags.length" role="group" aria-label="Filter by tag">
+          <button
+            :class="{ active: !selectedTag }"
+            :aria-pressed="!selectedTag"
+            @click="selectTag(null)"
+          >All ({{ posts.length }})</button>
+          <button
+            v-for="tag in allTags" :key="tag"
+            :class="{ active: selectedTag === tag }"
+            :aria-pressed="selectedTag === tag"
+            @click="selectTag(tag)"
+          >{{ tag }} ({{ tagCounts[tag] }})</button>
+        </div>
+      </details>
       <a href="/feed.xml" class="blog-rss-link" aria-label="Subscribe via RSS">
         <Rss :size="14" style="margin-right:4px" />
         RSS
