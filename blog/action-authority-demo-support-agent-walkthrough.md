@@ -1,18 +1,18 @@
 ---
-title: "AI Agent Action Authority: A Support Agent Demo"
+title: "AI Agent Action Authority: Blocking a Customer Email Before Execution"
 date: 2026-03-22
-author: Cycles Team
+author: Albert Mavashev
 tags: [action-authority, demo, agents, runtime-authority, walkthrough, action-control, side-effects]
 description: "A support agent can use CRM, notes, and email — but should every run send? Cycles blocks the customer email before execution. Three decorators, one exception."
 blog: true
 sidebar: false
 ---
 
-# AI Agent Action Authority: A Support Agent Demo
+# AI Agent Action Authority: Blocking a Customer Email Before Execution
 
 A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has no provisioned budget. The email function never runs. The customer never receives an unauthorized message.
 
-This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
+The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real. This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
 <!-- more -->
 
@@ -28,8 +28,6 @@ Customer case #4782: Acme Corp's invoice shows $847, but their contract says $72
 | 4 | `send_customer_email` | `send-email` | Write-external — irreversible once delivered |
 
 Steps 1–3 are internal operations. The CRM status change is a state mutation, but its blast radius is contained — it affects an internal record that a human can revert. Step 4 is different: once the email is sent, it cannot be unsent. In the [action-control taxonomy](/blog/ai-agent-action-control-hard-limits-side-effects), internal notes and CRM updates fall at tier 2 (write-local, reversible with effort) while outbound email is tier 3 (write-external, irreversible). The risk difference is not about cost — all four actions cost the same in model terms. It is about what happens if the action should not have been taken.
-
-The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real.
 
 ## Without Cycles: all actions execute
 
@@ -56,7 +54,7 @@ When the agent runs without Cycles, every step completes with a green checkmark:
 ╰──────────────────────────────────────────────╯
 ```
 
-The agent did exactly what it was told. That is the problem. No approval gate existed, so the email went out unchecked. In production, this means a customer receives a potentially premature or incorrect message — and you find out after the fact.
+The agent did exactly what it was told. That is the problem. No authorization gate existed, so the email went out unchecked. In production, this means a customer receives a potentially premature or incorrect message — and you find out after the fact.
 
 ## With Cycles: the email is blocked
 
@@ -84,7 +82,7 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✗ send_customer_email   [send-email]         │
 │    POST /v1/reservations → 409 BUDGET_EXCEEDED│
-│    Email NOT sent — escalated to human.       │
+│    Email blocked — not approved for autonomous use.│
 ╰──────────────────────────────────────────────╯
 
 ╭──────────── Result — GUARDED ────────────────╮
@@ -94,7 +92,7 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 ╰──────────────────────────────────────────────╯
 ```
 
-The `send_customer_email` function never executed. Not "rolled back." Not "logged and flagged for review." The function body never ran. The Cycles server returned `409 BUDGET_EXCEEDED` on the reservation attempt, the `@cycles` decorator raised `BudgetExceededError`, and the agent caught the exception and reported: *"Email NOT sent — escalated to human for approval."*
+The `send_customer_email` function never executed. Not "rolled back." Not "logged and flagged for review." The function body never ran. The Cycles server returned `409 BUDGET_EXCEEDED` on the reservation attempt, the `@cycles` decorator raised `BudgetExceededError`, and the agent caught the exception and reported: *"Email blocked — not approved for autonomous execution. Escalated to human review."*
 
 ## The code change
 
@@ -136,10 +134,10 @@ def send_customer_email(case_id, to, subject, body):
 try:
     send_customer_email(case_id, to, subject, body)
 except BudgetExceededError:
-    # email not sent — escalated to human
+    # email blocked — not approved for autonomous execution
 ```
 
-Three decorators. One except. Only approved actions execute. The tool functions themselves are unchanged — the same `append_internal_note`, `update_crm_status`, and `send_customer_email` implementations from `tools.py` are called inside each wrapper.
+Three decorators. One except. The next unapproved action never executes. The tool functions themselves are unchanged — the same `append_internal_note`, `update_crm_status`, and `send_customer_email` implementations from `tools.py` are called inside each wrapper.
 
 ## How toolset scoping works
 
@@ -212,6 +210,3 @@ For the conceptual foundation behind this demo:
 To add Cycles to your own application:
 - [End-to-End Tutorial](https://runcycles.io/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes
 - [Adding Cycles to an Existing App](https://runcycles.io/how-to/adding-cycles-to-an-existing-application) — incremental adoption guide
-
-Protocol and SDKs:
-- [Protocol](https://github.com/runcycles/cycles-protocol) · [Python](https://pypi.org/project/runcycles/) · [TypeScript](https://www.npmjs.com/package/runcycles) · [Java](https://github.com/runcycles/cycles-client-java)
