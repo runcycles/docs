@@ -1,6 +1,6 @@
 ---
 title: Blog
-description: "Engineering insights on AI agent cost management, budget enforcement patterns, and best practices for autonomous agent spend control — from the Cycles team."
+description: "Engineering insights, product updates, and best practices for AI agent runtime authority, exposure, and cost control — from the Cycles team."
 sidebar: false
 ---
 

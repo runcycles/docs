@@ -51,12 +51,36 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Cycles vs Guardrails AI](https://runcycles.io/concepts/cycles-vs-guardrails-ai): Runtime authority vs content safety — different problems, complementary solutions
 - [Cycles vs Provider Spending Caps](https://runcycles.io/concepts/cycles-vs-provider-spending-caps): Why platform limits are not enough for per-run budget control
 - [Cycles vs Custom Token Counters](https://runcycles.io/concepts/cycles-vs-custom-token-counters): Build vs buy for agent budget control
+- [Exposure](https://runcycles.io/concepts/exposure-why-rate-limits-leave-agents-unbounded): Why rate limits leave agents with unbounded exposure and how reserve-commit bounds it
+- [Action Authority](https://runcycles.io/concepts/action-authority-controlling-what-agents-do): Controlling what agents do, not just what they spend
+
+## Demos
+
+- [Runaway Agent Demo](https://runcycles.io/demos/): Budget enforcement stops a cost runaway — agent auto-terminates at $1.00 instead of burning ~$6 unchecked
+- [Action Authority Demo](https://runcycles.io/demos/): Toolset-scoped budgets allow internal actions but block a customer email before execution
 
 ## Blog
 
+- [What Is Runtime Authority for AI Agents?](https://runcycles.io/blog/what-is-runtime-authority-for-ai-agents): Runtime authority is the pre-execution control layer that decides whether an agent's next action should proceed
+- [AI Agent Action Control: Hard Limits on Side Effects](https://runcycles.io/blog/ai-agent-action-control-hard-limits-side-effects): Why controlling what agents do matters more than controlling what they spend
+- [Action Authority Demo: Blocking a Customer Email](https://runcycles.io/blog/action-authority-demo-support-agent-walkthrough): Walkthrough of the action authority demo with three decorators and one exception
+- [Runtime Authority vs Guardrails vs Observability](https://runcycles.io/blog/runtime-authority-vs-guardrails-vs-observability): What each solves, where each falls short, and why autonomous systems need all three
+- [The True Cost of Uncontrolled AI Agents](https://runcycles.io/blog/true-cost-of-uncontrolled-agents): Real-world costs and failure modes when agents run without budget limits
 - [How Much Do AI Agents Actually Cost?](https://runcycles.io/blog/how-much-do-ai-agents-cost): Cost breakdown by provider and use case
 - [AI Agent Cost Management: The Complete Guide](https://runcycles.io/blog/ai-agent-cost-management-guide): Maturity model from monitoring to enforcement
 - [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](https://runcycles.io/blog/ai-agent-failures-budget-controls-prevent): Concrete failure scenarios with dollar amounts
+- [AI Agent Budget Control: Enforce Hard Spend Limits](https://runcycles.io/blog/ai-agent-budget-control-enforce-hard-spend-limits): Why cost control must happen before execution and how reserve-commit enforces it
+- [AI Agent Budget Patterns: A Practical Guide](https://runcycles.io/blog/agent-budget-patterns-visual-guide): Tenant isolation, workflow caps, run-level limits, and graceful degradation
+- [AI Agent Unit Economics: Cost and Margin Analysis](https://runcycles.io/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin): Cost per conversation, cost per user, and margin analysis
+- [Budget Limits for Claude Code, Cursor, and Windsurf via MCP](https://runcycles.io/blog/claude-code-cursor-windsurf-budget-limits-mcp): Config-only enforcement via MCP, zero code changes
+- [Cycles vs LLM Proxies and Observability Tools](https://runcycles.io/blog/cycles-vs-llm-proxies-and-observability-tools): Where budget enforcement fits relative to proxies and observability
+- [LangGraph Budget Control for Durable Execution](https://runcycles.io/blog/langgraph-budget-control-durable-execution-retries-fan-out): Per-run and per-node spend limits for durable execution
+- [OpenAI API Budget Limits: Per-User and Per-Tenant](https://runcycles.io/blog/openai-api-budget-limits-per-user-per-run-per-tenant): Per-user, per-run, and per-tenant limits before every API call
+- [Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI](https://runcycles.io/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk): Per-agent budget boundaries in multi-agent frameworks
+- [Multi-Tenant AI Cost Control](https://runcycles.io/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation): Per-tenant budgets and hierarchical limits
+- [Manifest vs Cycles: Routing vs Runtime Authority](https://runcycles.io/blog/manifest-vs-cycles-routing-vs-runtime-authority): Different layers, different problems — model routing vs execution authority
+- [Budget Wrapper vs Runtime Authority](https://runcycles.io/blog/vibe-coding-budget-wrapper-vs-budget-authority): Why a vibe-coded wrapper is not the same as runtime authority
+- [Introducing the Cycles Blog](https://runcycles.io/blog/introducing-cycles-blog): Engineering insights, product updates, and best practices for runtime authority
 
 ## Integration Guides
 

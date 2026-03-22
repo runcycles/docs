@@ -9,9 +9,21 @@ Definitions of key terms and concepts used throughout the Cycles documentation.
 
 ## Core Concepts
 
+### Runtime Authority
+
+The umbrella control layer that governs autonomous agent execution. Runtime authority covers both **budget authority** (how much the agent spends) and **action authority** (what the agent does). It is enforced before work begins, not observed after the fact. See [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) and [Runtime Authority vs Guardrails vs Observability](/blog/runtime-authority-vs-guardrails-vs-observability).
+
 ### Budget Authority
 
 The role Cycles plays in an autonomous system: authorizing or denying execution based on whether sufficient budget is available. Unlike billing or observability, budget authority is enforced **before** work begins. See [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) for how this differs from adjacent categories.
+
+### Action Authority
+
+The subset of [runtime authority](#runtime-authority) that governs what actions an agent is permitted to take — independent of cost. While budget authority controls spend, action authority controls side effects: emails sent, deployments triggered, records modified. Cycles enforces action authority through toolset-scoped budgets denominated in [RISK_POINTS](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points). See the [Action Authority Demo](/demos/) and [AI Agent Action Control](/blog/ai-agent-action-control-hard-limits-side-effects).
+
+### Exposure
+
+The cumulative cost, risk, or side effects an autonomous system can create before it is stopped. An agent with a $5 budget but no pre-execution enforcement has unbounded exposure — every action executes before any limit is checked. Cycles bounds exposure through the [reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles): budget is reserved before work begins, capping the maximum possible damage. See [Exposure Estimation](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles).
 
 ### Reservation
 
