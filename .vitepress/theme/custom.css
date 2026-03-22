@@ -661,6 +661,8 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 4px;
+    mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
   }
 
   .blog-tags::-webkit-scrollbar {
