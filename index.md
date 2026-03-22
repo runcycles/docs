@@ -6,8 +6,8 @@ hero:
   tagline: >-
     Keep agents within approved spend, risk, and action limits. Multi-language, Open protocol, Apache 2.0.
   image:
-    light: /runcycles-hero.svg?v=2
-    dark: /runcycles-hero-dark.svg?v=2
+    light: /runcycles-hero.svg?v=3
+    dark: /runcycles-hero-dark.svg?v=3
     alt: Cycles hero image
   actions:
     - theme: brand

@@ -1,3 +1,5 @@
+/* ══ Brand & Theme Variables ══ */
+
 /* Fix H1 DOM concatenation — VitePress renders name and text as adjacent
    spans with no whitespace, causing search engines to read "CyclesA budget…" */
 .VPHero .name::after {
@@ -29,6 +31,8 @@
   background-color: #008a74 !important;
 }
 
+/* ══ Hero Image ══ */
+
 /* Hero image — remove VitePress card decoration */
 .VPHero .image-bg {
   display: none;
@@ -40,16 +44,16 @@
   border: none !important;
 }
 
-/* Enlarge hero image — double specificity to beat VitePress scoped styles */
+/* Enlarge hero image — !important needed to beat VitePress scoped styles */
 .VPHero .image-container .VPImage.image-src {
-  max-width: 280px !important;
-  max-height: 280px !important;
+  --hero-size: 280px;
+  max-width: var(--hero-size) !important;
+  max-height: var(--hero-size) !important;
 }
 
 @media (min-width: 640px) {
   .VPHero .image-container .VPImage.image-src {
-    max-width: 420px !important;
-    max-height: 420px !important;
+    --hero-size: 420px;
   }
 }
 
@@ -59,12 +63,11 @@
   }
 
   .VPHero .image-container .VPImage.image-src {
-    max-width: 500px !important;
-    max-height: 500px !important;
+    --hero-size: 500px;
   }
 }
 
-/* ── Blog index ── */
+/* ══ Blog Index ══ */
 .blog-index {
   max-width: 740px;
   margin: 0 auto;
@@ -354,7 +357,7 @@
   font-style: italic;
 }
 
-/* ── Blog post header ── */
+/* ══ Blog Post ══ */
 .blog-post-header {
   margin-bottom: 24px;
 }
@@ -412,7 +415,7 @@
   flex-shrink: 0;
 }
 
-/* ── Blog dark mode fixes ── */
+/* ══ Dark Mode Overrides ══ */
 .dark .blog-tags button {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.12);
@@ -458,7 +461,7 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* ── Blog pagination ── */
+/* ══ Blog Pagination & Navigation ══ */
 .blog-pagination {
   display: flex;
   align-items: center;
@@ -495,7 +498,7 @@
   color: var(--vp-c-text-3);
 }
 
-/* ── Blog post nav (prev/next) ── */
+/* ── Prev/next nav ── */
 .blog-post-nav {
   display: flex;
   gap: 16px;
@@ -586,7 +589,7 @@
   margin-top: 4px;
 }
 
-/* ── Light mode enhancements ── */
+/* ══ Light Mode Overrides ══ */
 :root:not(.dark) .blog-tags button {
   background: #f6f6f7;
   border-color: #e2e2e3;
@@ -624,7 +627,7 @@
   border: 1px solid #e2e2e3;
 }
 
-/* ── Focus styles (keyboard accessibility) ── */
+/* ══ Accessibility ══ */
 .blog-tags button:focus-visible,
 .blog-pagination button:focus-visible,
 .blog-rss-link:focus-visible,
@@ -642,7 +645,7 @@
   border-radius: 4px;
 }
 
-/* ── Reduced motion ── */
+/* ── Reduced motion ──  */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -654,7 +657,7 @@
   }
 }
 
-/* ── Mobile responsive ── */
+/* ══ Responsive ══ */
 @media (max-width: 640px) {
   .blog-card {
     padding: 16px 0;
