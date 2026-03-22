@@ -228,6 +228,7 @@ For most teams running autonomous agents, the missing layer is runtime authority
 
 ## Next steps
 
+- [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational explainer for runtime authority as a concept
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution budget decisions
 - [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — full capability matrix across rate limiters, observability, provider caps, in-app counters, and job schedulers
 - [Cycles vs Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps) — why monthly limits and delayed enforcement create blind spots

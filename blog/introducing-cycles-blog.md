@@ -29,6 +29,7 @@ Our docs cover the _how_. The blog covers the _why_ — the thinking behind desi
 
 Start with the posts that match where you are today:
 
+- **[What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents)** — the foundational explainer for the core concept behind Cycles
 - **[The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents)** — the failure modes and real costs of running agents without budget limits
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — per-token pricing across providers with real-world cost scenarios
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — a maturity model from no controls to hard enforcement

@@ -3,7 +3,7 @@ title: "What Is Runtime Authority for AI Agents?"
 date: 2026-03-22
 author: Cycles Team
 tags: [runtime-authority, agents, concepts, guide]
-description: "Runtime authority is the pre-execution control layer that decides whether an AI agent's next action should proceed, under what limits, and with what consequences. This post explains what it means, why it matters, and how it differs from observability, proxies, and rate limits."
+description: "Runtime authority is the pre-execution control layer that decides whether an AI agent's next action should proceed. Learn what it means, why it matters, and how it differs from observability and rate limits."
 blog: true
 sidebar: false
 featured: true
@@ -17,13 +17,11 @@ The control problem is no longer just what the model says. It is what the system
 
 <!-- more -->
 
-That shift — from generating text to taking action — changes the architecture of control. In a simple request-response system, the blast radius of a bad response is a bad response. In an agentic system, the blast radius includes money spent, emails sent, records modified, APIs called, and downstream systems triggered.
-
-Once an agent can act, someone needs to decide whether the next action should proceed.
+In a request-response system, the blast radius of a bad output is a bad output. In an agentic system, the blast radius includes money spent, emails sent, records modified, APIs called, and downstream systems triggered.
 
 That is what runtime authority is for.
 
-## Defining runtime authority
+## What runtime authority is
 
 Runtime authority is the layer that makes pre-execution decisions over agent behavior: whether an action is allowed, under what limits, in which scope, and with what consequences if a limit is reached.
 
@@ -45,29 +43,25 @@ The key properties of a runtime authority are:
 - **Concurrency-safe.** Correct even when multiple agents share the same budget and act simultaneously.
 - **Reconciled.** Estimated cost is reserved before execution; actual cost is committed after. The difference is released.
 
-## Why this matters once agents use tools
+## Why runtime authority matters for tool-using agents
 
-In a traditional LLM integration, the interaction is bounded. A user sends a prompt. The model returns a response. Cost is predictable: input tokens plus output tokens, one round trip.
-
-Agents break that model.
-
-A single user request can trigger a chain of actions: the model reasons about the task, calls a tool, inspects the result, decides to call another tool, retries on failure, fans out into parallel subtasks, and loops until the output meets some quality bar. Each step costs tokens. Some steps cost money through external APIs. Some steps have irreversible side effects.
+In a traditional LLM call, cost is predictable: input tokens plus output tokens, one round trip. Agents break that model. A single user request can trigger chains of model calls, tool invocations, retries, and fan-out — each with its own cost and side effects.
 
 Four things make agent costs fundamentally harder to predict and control:
 
-**Loops.** An agent iterating on a coding task might call the model 50 times. Or 500. The number depends on the difficulty of the problem, the quality of intermediate results, and the stopping criteria — none of which are known in advance.
+**Loops.** An agent iterating on a task might call the model 50 times or 500. The count depends on problem difficulty and stopping criteria — neither known in advance.
 
-**Retries.** When a tool call fails, most agent frameworks retry automatically. Each retry is a new model call with a new cost. Silent retries are especially dangerous because nothing in the application logs them as unusual.
+**Retries.** When a tool call fails, most frameworks retry automatically. Each retry is a new model call with a new cost. Silent retries are especially dangerous because nothing logs them as unusual.
 
-**Fan-out.** A high-level task like "process these 200 documents" can expand into 200 independent subtasks, each with its own model calls and tool invocations. The total cost is the sum of all branches — and branches can themselves branch.
+**Fan-out.** A task like "process these 200 documents" expands into 200 independent subtasks, each with its own model calls and tool invocations. Branches can themselves branch.
 
-**Tool invocations.** Agents do not only consume tokens. They call APIs, query databases, send messages, and trigger external systems. These actions may have their own costs, rate limits, and irreversibility. A model call that costs $0.03 in tokens might trigger a tool call that costs $2.00 — or sends an email that cannot be unsent.
+**Tool invocations.** Agents do not only consume tokens. They call APIs, send messages, and trigger external systems. A model call that costs $0.03 in tokens might trigger a tool call that costs $2.00 — or sends an email that cannot be unsent.
 
 Without runtime authority, the only way to discover that an agent has exceeded its intended budget is to look at the bill afterward.
 
 That is observability. It is valuable. But it is not control.
 
-## Three layers, three questions
+## The three-layer model: routing, visibility, authority
 
 Most teams building on LLMs assemble a stack that addresses three concerns. Each answers a different question at a different point in the execution lifecycle.
 
@@ -83,11 +77,9 @@ Authority — the pre-execution enforcement decision — is the layer most teams
 
 It is also the only layer that can **prevent** overspend and uncontrolled side effects rather than **report** them.
 
-These three layers are not alternatives. They compose. A routing layer decides which model. An observability layer records what happened. An authority layer decides whether it should happen at all. Remove any one and a gap appears.
+These three layers compose — they are not alternatives. Remove any one and a gap appears.
 
 ## What runtime authority is not
-
-The concept is often confused with adjacent categories. Those confusions lead to the wrong expectations and the wrong architecture.
 
 **Runtime authority is not observability.**
 Observability tells you what happened. Authority decides what is allowed to happen. A dashboard that shows you Monday's $2,800 weekend spike is valuable for the post-mortem. It did not stop the agent at call number 50, when the damage was still $30.
@@ -106,9 +98,7 @@ A counter incremented after each call is a checker, not an authority. Under conc
 
 ## The reserve/commit lifecycle
 
-The mechanism that makes runtime authority work in practice is the reserve/commit lifecycle.
-
-Instead of tracking spend after the fact, a runtime authority reserves budget before execution begins and commits the actual cost after execution completes.
+The mechanism behind runtime authority is the reserve/commit lifecycle. Instead of tracking spend after the fact, budget is reserved before execution and actual cost is committed after.
 
 1. **Reserve** — before work starts, the agent declares an estimated cost. The authority checks all applicable scopes (tenant, workflow, run) atomically and either reserves the budget or denies the request.
 2. **Execute** — work proceeds only if the reservation succeeded. The reserved amount is held against the budget, visible to all concurrent actors.
@@ -122,17 +112,15 @@ This lifecycle solves the problems that simple counters cannot:
 - **Partial failure.** If work fails halfway, the uncommitted portion is released — not lost.
 - **Uncertainty.** You rarely know the exact cost of a model call before it happens. Reserve/commit handles the gap between estimated and actual cost cleanly.
 
-The lifecycle also enables **hierarchical scopes**. A single reservation can check multiple levels — organization, tenant, workspace, workflow, run — in one atomic operation. If any scope is exhausted, the reservation is denied. This means per-tenant limits, per-workflow caps, and per-run budgets all compose without custom enforcement logic in the application.
+The lifecycle also enables **hierarchical scopes**. A single reservation checks multiple levels — organization, tenant, workspace, workflow, run — in one atomic operation. If any scope is exhausted, the reservation is denied. Per-tenant limits, per-workflow caps, and per-run budgets compose without custom enforcement logic in the application.
 
-## How Cycles approaches this
+## How Cycles approaches runtime authority
 
 Cycles treats agent control as a runtime decision system over spend, risk, and actions — not as an after-the-fact reporting problem.
 
-The core idea is straightforward: before an agent takes its next action, Cycles answers whether that action is allowed, under what constraints, and what happens if the budget is not sufficient.
+Before an agent takes its next action, Cycles answers whether that action is allowed, under what constraints, and what happens if the budget is not sufficient. That decision is made by a [protocol](/protocol/api-reference-for-the-cycles-protocol) — not by a proxy, not by application code, not by a dashboard with alerts. The protocol defines the reserve/commit lifecycle, hierarchical scopes, three-way decisions, and idempotency guarantees that make runtime authority operational.
 
-That decision is made by a protocol — not by a proxy, not by application code, not by a dashboard with alerts. The [Cycles protocol](/protocol/api-reference-for-the-cycles-protocol) defines the reserve/commit lifecycle, hierarchical scopes, three-way decisions, and idempotency guarantees that make runtime authority operational.
-
-Because it is protocol-based, Cycles works across frameworks, languages, and providers. The authority does not care whether the agent is built with LangGraph, CrewAI, a custom loop, or a coding agent like Claude Code. It cares whether the next action is within budget.
+Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not care whether the agent is built with LangGraph, CrewAI, a custom loop, or a coding agent like Claude Code. It cares whether the next action is within budget.
 
 ## Next steps
 
