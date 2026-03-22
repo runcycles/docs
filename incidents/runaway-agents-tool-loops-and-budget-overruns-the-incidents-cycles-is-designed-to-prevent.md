@@ -348,7 +348,7 @@ That is a different operating model.
 
 ## See it in action: the runaway agent demo
 
-The [cycles-runaway-demo](https://github.com/runcycles/cycles-runaway-demo) repository demonstrates exactly this failure mode with a runnable example.
+The [Runaway Agent Demo](/demos/) demonstrates exactly this failure mode with a runnable example. No LLM API key required.
 
 The scenario: a customer support bot drafts a response, evaluates its quality, and refines it in a loop until the quality score exceeds 8.0. The bug is that the quality evaluator never returns above 6.9. Without a budget boundary, the agent loops indefinitely.
 
@@ -358,16 +358,6 @@ The demo runs the same agent twice:
 2. **With Cycles (budget: $1.00)** — the agent hits the budget ceiling after ~100 calls. The Cycles server returns `409 BUDGET_EXCEEDED`, the `@cycles` decorator raises `BudgetExceededError`, and the agent stops cleanly.
 
 The entire integration diff between the unguarded and guarded versions is three `@cycles` decorators and one `except BudgetExceededError` block.
-
-To run it locally:
-
-```bash
-git clone https://github.com/runcycles/cycles-runaway-demo
-cd cycles-runaway-demo
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r agent/requirements.txt
-./demo.sh
-```
 
 ## Why this matters now
 
@@ -420,8 +410,7 @@ to:
 
 To explore the Cycles stack:
 
-- Try the [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) — see the failure mode and the fix in action
-- Try the [Action Authority Demo](https://github.com/runcycles/cycles-agent-action-authority-demo) — see how Cycles blocks unauthorized side effects before they execute
+- Try the [Demos](/demos/) — runaway agent (cost control) and action authority (action blocking) scenarios
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)

@@ -9,7 +9,7 @@ Each demo runs locally with Docker. No LLM API keys required — all tools and m
 
 ## Runaway Agent Demo
 
-A support agent with a quality-loop bug burns ~$6 in 30 seconds without Cycles. With Cycles it stops cleanly at $1.00.
+A support agent with a quality-loop bug burns ~$6 in 30 seconds without Cycles — auto-terminated only because the demo enforces a safety timeout. In production, there would be no timeout. With Cycles, the agent stops cleanly at $1.00.
 
 **What it shows:** Budget enforcement stops a cost runaway before damage accumulates.
 
