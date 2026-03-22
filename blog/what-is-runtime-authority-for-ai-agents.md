@@ -21,7 +21,7 @@ In a request-response system, the blast radius of a bad output is a bad output. 
 
 That is what runtime authority is for.
 
-Runtime authority is not only about spend. It is about whether an autonomous system is allowed to consume resources, take actions, or create exposure at all.
+Runtime authority governs whether an agent may consume resources, take actions, or create exposure — before the next step executes.
 
 ## What runtime authority is
 
@@ -63,7 +63,7 @@ Without runtime authority, you discover overspend, unintended side effects, and 
 
 That is observability. It is valuable. But it is not control.
 
-## The three-layer model: routing, visibility, authority
+## The three-layer agent stack: routing, visibility, authority
 
 Most teams building on LLMs assemble a stack that addresses three concerns. Each answers a different question at a different point in the execution lifecycle.
 
@@ -71,7 +71,7 @@ Most teams building on LLMs assemble a stack that addresses three concerns. Each
 |---|---|---|---|
 | **Routing** | *Which* model handles this? | Before execution (model selection) | LiteLLM, Portkey, Manifest |
 | **Visibility** | *What* happened? | After execution (logging, tracing) | Helicone, Langfuse, LangSmith |
-| **Authority** | *Should* this happen at all? | Before execution (permission, limits, and policy) | Cycles |
+| **Authority** | *Should* this happen at all? | Before execution (permission, limits, and policy check) | Cycles |
 
 Routing is well-understood. Visibility is well-understood.
 
