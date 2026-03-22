@@ -29,17 +29,10 @@ Rate limiters control velocity — requests per second. They do not control tota
 
 ## See it in action
 
-The [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo) shows this failure mode — and Cycles preventing it — in under 60 seconds. No LLM API key required.
+The [Demos](/demos/) page has self-contained scenarios you can run in 60 seconds — no LLM API key required:
 
-```bash
-git clone https://github.com/runcycles/cycles-runaway-demo
-cd cycles-runaway-demo
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r agent/requirements.txt
-./demo.sh # [!code focus]
-```
-
-Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 seconds. With Cycles it stops cleanly at $1.00.
+- **Runaway Agent Demo** — same agent, same bug, two outcomes: without Cycles the agent burns ~$6 before being force-killed. With Cycles it stops cleanly at $1.00.
+- **Action Authority Demo** — a support agent handles a billing dispute in four steps. Cycles allows internal actions but blocks the customer email before it executes.
 
 ## How Cycles solves it
 

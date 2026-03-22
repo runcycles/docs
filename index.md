@@ -17,8 +17,8 @@ hero:
       text: "End-to-End Tutorial"
       link: "/quickstart/end-to-end-tutorial"
     - theme: alt
-      text: "View Demo on GitHub"
-      link: "https://github.com/runcycles/cycles-runaway-demo"
+      text: "View Demos"
+      link: "/demos/"
 features:
   - icon:
       src: /icons/rocket.svg
