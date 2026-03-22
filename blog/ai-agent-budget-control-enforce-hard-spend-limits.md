@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Budget Control: How to Enforce Hard Spend Limits Before Execution
+# AI Agent Budget Control: Enforce Hard Spend Limits
 
 A development team sets a $50 budget for a coding agent running overnight. The agent hits an ambiguous error, retries with increasingly verbose prompts, fans out across three sub-agents to "research the problem," and loops for four hours. By morning the bill is $2,300.
 
