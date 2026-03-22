@@ -272,6 +272,11 @@ onMounted(async () => {
   color: var(--vp-c-text-1);
 }
 
+.tab:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -2px;
+}
+
 .tab.active {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
@@ -306,6 +311,11 @@ onMounted(async () => {
 .copy-btn:hover {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
+}
+
+.copy-btn:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
 }
 
 .code-block :deep(pre) {

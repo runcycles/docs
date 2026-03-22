@@ -92,6 +92,12 @@ onUnmounted(() => { if (scriptEl) scriptEl.remove() })
   color: var(--vp-c-brand-1);
 }
 
+.breadcrumb a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .separator {
   color: var(--vp-c-text-3);
   opacity: 0.5;

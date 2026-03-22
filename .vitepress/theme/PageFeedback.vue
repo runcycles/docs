@@ -122,4 +122,10 @@ function vote(value) {
 .feedback-issue-link:hover {
   text-decoration: underline;
 }
+
+.feedback-issue-link:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 </style>
