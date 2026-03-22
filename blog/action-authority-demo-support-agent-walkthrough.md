@@ -34,24 +34,24 @@ Steps 1–3 are internal operations. The CRM status change is a state mutation, 
 When the agent runs without Cycles, every step completes with a green checkmark:
 
 ```
-╭──────────── Support Case #4782 ─────────────╮
-│ Customer:  Acme Corp (jane@acme.com)         │
-│ Subject:   Invoice shows $847, contract $720 │
-│ Agent:     support-bot                       │
-│ Mode:      UNGUARDED                         │
-╰──────────────────────────────────────────────╯
+╭──────────── Support Case #4782 ───────────────╮
+│ Customer:  Acme Corp (jane@acme.com)          │
+│ Subject:   Invoice shows $847, contract $720  │
+│ Agent:     support-bot                        │
+│ Mode:      UNGUARDED                          │
+╰───────────────────────────────────────────────╯
 
-╭──────────── Action Log ──────────────────────╮
+╭──────────── Action Log ───────────────────────╮
 │  ✓ read_case                                  │
 │  ✓ append_internal_note  [internal-notes]     │
 │  ✓ update_crm_status     [crm-updates]        │
 │  ✓ send_customer_email   [send-email]         │
-╰──────────────────────────────────────────────╯
+╰───────────────────────────────────────────────╯
 
-╭──────────── Result — UNGUARDED ──────────────╮
+╭──────────── Result — UNGUARDED ───────────────╮
 │ All actions executed — including the email.   │
 │ 4 actions approved · 0 actions blocked        │
-╰──────────────────────────────────────────────╯
+╰───────────────────────────────────────────────╯
 ```
 
 The agent did exactly what it was told. That is the problem. No authorization gate existed, so the email went out unchecked. In production, this means a customer receives a potentially premature or incorrect message — and you find out after the fact.
@@ -61,14 +61,14 @@ The agent did exactly what it was told. That is the problem. No authorization ga
 Same agent, same tools, same workflow. The only difference is that each tool call now passes through the Cycles server before execution. The first three steps still succeed. The fourth does not:
 
 ```
-╭──────────── Support Case #4782 ─────────────╮
-│ Customer:  Acme Corp (jane@acme.com)         │
-│ Subject:   Invoice shows $847, contract $720 │
-│ Agent:     support-bot                       │
-│ Mode:      GUARDED                           │
-╰──────────────────────────────────────────────╯
+╭──────────── Support Case #4782 ───────────────╮
+│ Customer:  Acme Corp (jane@acme.com)          │
+│ Subject:   Invoice shows $847, contract $720  │
+│ Agent:     support-bot                        │
+│ Mode:      GUARDED                            │
+╰───────────────────────────────────────────────╯
 
-╭──────────── Action Log ──────────────────────╮
+╭──────────── Action Log ───────────────────────╮
 │  ✓ read_case                                  │
 │    Loaded case #4782 — Acme Corp              │
 │                                               │
@@ -82,14 +82,14 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✗ send_customer_email   [send-email]         │
 │    POST /v1/reservations → 409 BUDGET_EXCEEDED│
-│    Email blocked — not approved for autonomous use.│
-╰──────────────────────────────────────────────╯
+│    Email blocked — not approved autonomously. │
+╰───────────────────────────────────────────────╯
 
-╭──────────── Result — GUARDED ────────────────╮
+╭──────────── Result — GUARDED ─────────────────╮
 │ Cycles blocked the customer email before it   │
 │ was sent.                                     │
 │ 3 actions approved · 1 action blocked         │
-╰──────────────────────────────────────────────╯
+╰───────────────────────────────────────────────╯
 ```
 
 The `send_customer_email` function never executed. Not "rolled back." Not "logged and flagged for review." The function body never ran. The Cycles server returned `409 BUDGET_EXCEEDED` on the reservation attempt, the `@cycles` decorator raised `BudgetExceededError`, and the agent caught the exception and reported: *"Email blocked — not approved for autonomous execution. Escalated to human review."*
