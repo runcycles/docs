@@ -5,6 +5,7 @@ import { data as posts } from '../../blog/posts.data'
 
 const selectedTag = ref(null)
 const tagsOpen = ref(false)
+const startHereOpen = ref(false)
 const page = ref(1)
 const perPage = 10
 
@@ -72,6 +73,7 @@ onMounted(() => {
           Filter by tag<span v-if="selectedTag" class="blog-tags-active-indicator">: {{ selectedTag }}</span>
           <span class="blog-tags-arrow" :class="{ open: tagsOpen }">▸</span>
         </button>
+        <button v-if="selectedTag" class="blog-tags-clear" @click="selectTag(null)" aria-label="Clear tag filter">✕</button>
         <div class="blog-tags" v-show="tagsOpen" v-if="allTags.length" role="group" aria-label="Filter by tag">
           <button
             :class="{ active: !selectedTag }"
@@ -92,31 +94,22 @@ onMounted(() => {
       </a>
     </div>
 
-    <section v-if="!selectedTag" class="blog-start-here blog-start-here-static">
-      <h3 class="blog-start-here-heading">Start Here</h3>
-      <p class="blog-start-here-desc">New to Cycles? Read these posts in order to understand runtime authority from the ground up.</p>
-      <ol class="blog-start-here-list">
-        <li><a href="/blog/what-is-runtime-authority-for-ai-agents">What Is Runtime Authority for AI Agents?</a></li>
-        <li><a href="/blog/true-cost-of-uncontrolled-agents">The True Cost of Uncontrolled AI Agents</a></li>
-        <li><a href="/blog/how-much-do-ai-agents-cost">How Much Do AI Agents Actually Cost?</a></li>
-        <li><a href="/blog/ai-agent-cost-management-guide">AI Agent Cost Management: The Complete Guide</a></li>
-        <li><a href="/blog/ai-agent-budget-control-enforce-hard-spend-limits">AI Agent Budget Control: Enforce Hard Spend Limits</a></li>
-      </ol>
-      <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
+    <section v-if="!selectedTag" class="blog-start-here">
+      <button class="blog-start-here-toggle" @click="startHereOpen = !startHereOpen" :aria-expanded="startHereOpen">
+        Start Here <span class="blog-tags-arrow" :class="{ open: startHereOpen }">▸</span>
+      </button>
+      <div v-show="startHereOpen">
+        <p class="blog-start-here-desc">New to Cycles? Read these posts in order to understand runtime authority from the ground up.</p>
+        <ol class="blog-start-here-list">
+          <li><a href="/blog/what-is-runtime-authority-for-ai-agents">What Is Runtime Authority for AI Agents?</a></li>
+          <li><a href="/blog/true-cost-of-uncontrolled-agents">The True Cost of Uncontrolled AI Agents</a></li>
+          <li><a href="/blog/how-much-do-ai-agents-cost">How Much Do AI Agents Actually Cost?</a></li>
+          <li><a href="/blog/ai-agent-cost-management-guide">AI Agent Cost Management: The Complete Guide</a></li>
+          <li><a href="/blog/ai-agent-budget-control-enforce-hard-spend-limits">AI Agent Budget Control: Enforce Hard Spend Limits</a></li>
+        </ol>
+        <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
+      </div>
     </section>
-
-    <details v-if="!selectedTag" class="blog-start-here blog-start-here-collapsible">
-      <summary class="blog-start-here-heading">Start Here</summary>
-      <p class="blog-start-here-desc">New to Cycles? Read these posts in order to understand runtime authority from the ground up.</p>
-      <ol class="blog-start-here-list">
-        <li><a href="/blog/what-is-runtime-authority-for-ai-agents">What Is Runtime Authority for AI Agents?</a></li>
-        <li><a href="/blog/true-cost-of-uncontrolled-agents">The True Cost of Uncontrolled AI Agents</a></li>
-        <li><a href="/blog/how-much-do-ai-agents-cost">How Much Do AI Agents Actually Cost?</a></li>
-        <li><a href="/blog/ai-agent-cost-management-guide">AI Agent Cost Management: The Complete Guide</a></li>
-        <li><a href="/blog/ai-agent-budget-control-enforce-hard-spend-limits">AI Agent Budget Control: Enforce Hard Spend Limits</a></li>
-      </ol>
-      <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
-    </details>
 
     <article v-for="(post, i) in paginatedPosts" :key="post.url" class="blog-card">
       <div class="blog-card-content">
@@ -132,7 +125,7 @@ onMounted(() => {
         </div>
         <p class="blog-description">{{ post.description }}</p>
         <div class="blog-card-tags" v-if="post.tags.length">
-          <span v-for="tag in post.tags" :key="tag" class="blog-tag">{{ tag }}</span>
+          <button v-for="tag in post.tags" :key="tag" class="blog-tag blog-tag-clickable" @click="selectTag(tag)">{{ tag }}</button>
         </div>
       </div>
       <img v-if="post.image" :src="post.image" :alt="post.title" class="blog-card-thumb" loading="lazy" />

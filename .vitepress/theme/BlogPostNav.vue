@@ -64,5 +64,7 @@ function formatDate(dateStr) {
         </a>
       </div>
     </section>
+
+    <a href="/blog/" class="blog-back-link blog-back-link-footer">&larr; Back to all posts</a>
   </div>
 </template>
