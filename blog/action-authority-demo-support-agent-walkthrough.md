@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Action Authority: Block Unauthorized Emails and Side Effects Before Execution"
+title: "AI Agent Action Authority: A Support Agent Demo"
 date: 2026-03-22
 author: Cycles Team
 tags: [action-authority, demo, agents, runtime-authority, walkthrough, action-control, side-effects]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Action Authority: Block Unauthorized Emails and Side Effects Before Execution
+# AI Agent Action Authority: A Support Agent Demo
 
 A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has no provisioned budget. The email function never runs. The customer never receives an unauthorized message.
 
@@ -24,10 +24,10 @@ Customer case #4782: Acme Corp's invoice shows $847, but their contract says $72
 |:----:|------|---------|------------|
 | 1 | `read_case` | *(local)* | Read-only — no state change |
 | 2 | `append_internal_note` | `internal-notes` | Write-local — internal log entry |
-| 3 | `update_crm_status` | `crm-updates` | Mutation — changes case state |
+| 3 | `update_crm_status` | `crm-updates` | Write-local — internal state change, reversible |
 | 4 | `send_customer_email` | `send-email` | Write-external — irreversible once delivered |
 
-Steps 1–3 are internal operations. Step 4 is the consequential one: once the email is sent, it cannot be unsent. In the [action-control taxonomy](/blog/ai-agent-action-control-hard-limits-side-effects), internal notes fall at tier 2 (write-local, reversible) and outbound email at tier 3 (write-external, irreversible). The risk difference is not about cost — all four actions cost the same in model terms. It is about what happens if the action should not have been taken.
+Steps 1–3 are internal operations. The CRM status change is a state mutation, but its blast radius is contained — it affects an internal record that a human can revert. Step 4 is different: once the email is sent, it cannot be unsent. In the [action-control taxonomy](/blog/ai-agent-action-control-hard-limits-side-effects), internal notes and CRM updates fall at tier 2 (write-local, reversible with effort) while outbound email is tier 3 (write-external, irreversible). The risk difference is not about cost — all four actions cost the same in model terms. It is about what happens if the action should not have been taken.
 
 The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real.
 
@@ -134,7 +134,7 @@ def send_customer_email(case_id, to, subject, body):
 
 # --- Catch the budget exception ---
 try:
-    send_customer_email(...)
+    send_customer_email(case_id, email, subject, body)
 except BudgetExceededError:
     # email not sent — escalated to human
 ```
@@ -163,11 +163,13 @@ The provisioning script creates $1.00 budgets at every level of the hierarchy �
 ```bash
 # Toolset budgets — ONLY for approved actions
 for TOOLSET in "internal-notes" "crm-updates"; do
-  SCOPE="tenant:$TENANT_ID/.../agent:support-bot/toolset:$TOOLSET"
+  SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:$TOOLSET"
   curl -X POST "$ADMIN_URL/budgets" \
-    -d '{"scope": "'$SCOPE'", "allocated": {"amount": 100000000}}'
+    -H "Content-Type: application/json" \
+    -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
+         \"allocated\": {\"amount\": 100000000, \"unit\": \"USD_MICROCENTS\"}}"
 done
-# NOTE: No budget for toolset:send-email → 409 on any reservation
+# No budget for toolset:send-email — Cycles returns 409 on any reservation attempt
 ```
 
 When the `@cycles` decorator tries to reserve budget for `toolset:send-email`, the server walks the hierarchy, finds no budget at the toolset level, and returns `409 BUDGET_EXCEEDED`. The decorator raises the exception. The action never runs.
@@ -176,15 +178,13 @@ This is the operational model: **approving or revoking an agent action = adding 
 
 ## Why not just use an allowlist?
 
-Static tool allowlists are the most common alternative. They work for simple cases, but they break down in several ways that matter:
+In this demo, a static allowlist that includes `send-email` would have let the email through. An API key for the email service would have let the email through. Both are all-or-nothing: the agent either has the capability or it doesn't, and that decision was made at deploy time — not at runtime.
 
-**Allowlists can't adapt at runtime.** A hardcoded list of approved tools requires a code change and redeployment to modify. If you need to temporarily revoke a tool — say, during an incident when you don't want any automated emails going out — you're waiting on a deploy.
+The gap is between "can" and "should." The agent *can* send emails — the tool exists, the credentials work. But that does not mean this specific run *should* send this specific email right now. An allowlist encodes the first judgment. It cannot encode the second.
 
-**API keys grant blanket access.** If the agent has an API key for the email service, it can send emails. Period. The key doesn't know whether this particular run should be allowed to send, or whether the email content was reviewed, or whether the agent is in a loop.
+Cycles fills that gap by making a per-action decision before execution. In the demo, the `send-email` toolset has no budget, so the reservation is denied. But the control is operational, not structural — add a budget and the agent can send emails on the next run, without a code change or redeployment. Remove the budget during an incident and all automated emails stop immediately.
 
-**Role-based permissions don't distinguish "can" from "should."** An agent with the `email-sender` role *can* send emails. But that does not mean every run *should* send emails. The role is a static capability. The runtime decision — should this action proceed right now, in this context — is what's missing.
-
-Cycles makes that decision per-action, per-run, before execution. This is what [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) means in practice: not a static permission check, but a live enforcement point that can allow, constrain, or deny each consequential action as it happens.
+This is what [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) means in practice: not a static permission check, but a live enforcement point that can allow, constrain, or deny each consequential action as it happens.
 
 ## Run it yourself
 
@@ -202,7 +202,7 @@ The script starts the Cycles stack (Redis + server + admin), provisions the tena
 
 ## What's next
 
-This demo shows action authority for a single agent with three tools. The concept extends to any number of agents, tools, and scoping levels.
+This demo shows action authority for a single agent with three tools. The same mechanism works with multiple agents sharing a budget, risk-point caps instead of dollar budgets, or progressive capability narrowing as budget runs low.
 
 For the conceptual foundation behind this demo:
 - [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — the taxonomy of consequential actions and why budget authority alone is not enough
