@@ -25,7 +25,7 @@ That is what runtime authority is for.
 
 Runtime authority is the layer that makes pre-execution decisions over agent behavior: whether an action is allowed, under what limits, in which scope, and with what consequences if a limit is reached.
 
-It is not a dashboard. It is not a log. It is not a soft guardrail embedded in application code.
+It is not a dashboard. It is not a log. It is not a counter incremented after the fact.
 
 It is an enforcement point that sits in the execution path and can make one of three decisions before the next model call, tool invocation, or side effect happens:
 
@@ -82,10 +82,10 @@ These three layers compose — they are not alternatives. Remove any one and a g
 ## What runtime authority is not
 
 **Runtime authority is not observability.**
-Observability tells you what happened. Authority decides what is allowed to happen. A dashboard that shows you Monday's $2,800 weekend spike is valuable for the post-mortem. It did not stop the agent at call number 50, when the damage was still $30.
+Observability tells you what happened. Authority decides what is allowed to happen. A dashboard that shows you Monday's $2,800 weekend spike is valuable for the post-mortem. It did not stop the agent at call number 50, when the damage was still $30. See [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) for the full maturity curve.
 
 **Runtime authority is not rate limiting.**
-Rate limiting controls velocity — how fast a system can act. Authority controls total bounded exposure — how much a system is allowed to consume in aggregate. An agent can stay perfectly within its requests-per-second limit and still burn through its entire budget over time.
+Rate limiting controls velocity — how fast a system can act. Authority controls [total bounded exposure](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) — how much a system is allowed to consume in aggregate. An agent can stay perfectly within its requests-per-second limit and still burn through its entire budget over time.
 
 **Runtime authority is not billing.**
 Billing is retrospective: what to charge, what invoice to generate. Authority is pre-execution: whether this action may proceed given the remaining budget. The two work together, but they answer different questions at different times.
@@ -94,16 +94,18 @@ Billing is retrospective: what to charge, what invoice to generate. Authority is
 An orchestrator decides what should happen next — task sequencing, dependencies, fan-out. Authority decides whether the next thing is allowed to happen at all. One manages workflow. The other manages permission.
 
 **Runtime authority is not a soft guardrail in application code.**
-A counter incremented after each call is a checker, not an authority. Under concurrency, two agents can both read the same counter, both decide they have room, and both proceed — exceeding the budget without either one seeing the violation. A real authority makes atomic decisions: this budget is now reserved, and no concurrent actor can also claim it.
+A counter incremented after each call is a [checker, not an authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority). Under concurrency, two agents can both read the same counter, both decide they have room, and both proceed — exceeding the budget without either one seeing the violation. A real authority makes atomic decisions: this budget is now reserved, and no concurrent actor can also claim it.
 
 ## The reserve/commit lifecycle
 
-The mechanism behind runtime authority is the reserve/commit lifecycle. Instead of tracking spend after the fact, budget is reserved before execution and actual cost is committed after.
+The mechanism behind runtime authority is the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles). Instead of tracking spend after the fact, budget is reserved before execution and actual cost is committed after.
 
 1. **Reserve** — before work starts, the agent declares an estimated cost. The authority checks all applicable scopes (tenant, workflow, run) atomically and either reserves the budget or denies the request.
 2. **Execute** — work proceeds only if the reservation succeeded. The reserved amount is held against the budget, visible to all concurrent actors.
 3. **Commit** — after work completes, the agent reports the actual cost. If actual cost was lower than the estimate, the unused remainder is released automatically.
 4. **Release** — if work is canceled before completion, the reservation is explicitly released.
+
+Consider a document-processing agent with a $50 budget per run. Before calling the model, the agent reserves $0.15. The authority checks: the run has $50 allocated, $12.40 committed so far, $0.60 held in other active reservations — $37.00 available. The reservation succeeds. The model call completes and uses $0.09 in actual tokens. The agent commits $0.09; the remaining $0.06 is released back to the budget. If a second agent is running concurrently for the same tenant, it sees the $0.15 held — not available — and cannot double-claim it.
 
 This lifecycle solves the problems that simple counters cannot:
 
