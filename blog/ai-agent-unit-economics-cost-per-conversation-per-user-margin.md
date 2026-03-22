@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Unit Economics: Cost Per Conversation, Cost Per User, and Margin Analysis"
-date: 2026-03-23
+date: 2026-03-22
 author: Cycles Team
 tags: [unit-economics, costs, enterprise, margins, best-practices]
 description: "Model AI agent costs as business metrics — cost per conversation, cost per user, margin analysis — and use budget enforcement to bound variance."
