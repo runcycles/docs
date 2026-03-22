@@ -60,8 +60,8 @@ onMounted(() => {
   if (tagParam && allTags.value.includes(tagParam)) {
     selectedTag.value = tagParam
   }
-  if (window.innerWidth <= 640) {
-    document.querySelector('.blog-tags-details')?.removeAttribute('open')
+  if (window.innerWidth > 640) {
+    document.querySelector('.blog-tags-details')?.setAttribute('open', '')
   }
 })
 </script>
@@ -69,7 +69,7 @@ onMounted(() => {
 <template>
   <div class="blog-index">
     <div class="blog-tags-row">
-      <details class="blog-tags-details" open>
+      <details class="blog-tags-details">
         <summary class="blog-tags-summary">
           Filter by tag<span v-if="selectedTag" class="blog-tags-active-indicator">: {{ selectedTag }}</span>
         </summary>
