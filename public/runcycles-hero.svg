@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 480" width="620" height="480">
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      .flow-dot, .glow-animated { display: none; }
+    }
+  </style>
   <defs>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#00000025"/>
@@ -52,18 +57,63 @@
   <text x="74" y="392" font-size="10" fill="#8E8E93" font-family="-apple-system,system-ui,sans-serif">tool.db_delete</text>
 
   <!-- Curved flow lines to gate -->
-  <path d="M146 100 C180 100, 200 170, 240 200" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
-  <path d="M146 240 C190 240, 210 240, 240 240" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
-  <path d="M146 380 C180 380, 200 310, 240 280" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path id="path-a" d="M146 100 C180 100, 200 170, 240 200" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path id="path-b" d="M146 240 C190 240, 210 240, 240 240" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path id="path-c" d="M146 380 C180 380, 200 310, 240 280" fill="none" stroke="#AEAEB2" stroke-width="2" marker-end="url(#arr-gray)"/>
 
-  <!-- Glow rings -->
-  <circle cx="300" cy="240" r="86" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.22"/>
-  <circle cx="300" cy="240" r="98" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.12"/>
-  <circle cx="300" cy="240" r="110" fill="none" stroke="#00C9A7" stroke-width="0.5" opacity="0.06"/>
+  <!-- Flow dot A -->
+  <circle r="3.5" fill="#AEAEB2" opacity="0" class="flow-dot">
+    <animateMotion dur="8s" repeatCount="indefinite" keyPoints="0;0;1;1;1" keyTimes="0;0.01;0.25;0.375;1" calcMode="linear">
+      <mpath href="#path-a"/>
+    </animateMotion>
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0;0;0.9;0.9;0;0" keyTimes="0;0.01;0.06;0.3;0.375;1"/>
+  </circle>
+
+  <!-- Flow dot B -->
+  <circle r="3.5" fill="#AEAEB2" opacity="0" class="flow-dot">
+    <animateMotion dur="8s" repeatCount="indefinite" keyPoints="0;0;1;1;1" keyTimes="0;0.05;0.3;0.425;1" calcMode="linear">
+      <mpath href="#path-b"/>
+    </animateMotion>
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0;0;0.9;0.9;0;0" keyTimes="0;0.05;0.1;0.35;0.425;1"/>
+  </circle>
+
+  <!-- Flow dot C -->
+  <circle r="3.5" fill="#AEAEB2" opacity="0" class="flow-dot">
+    <animateMotion dur="8s" repeatCount="indefinite" keyPoints="0;0;1;1;1" keyTimes="0;0.1;0.35;0.475;1" calcMode="linear">
+      <mpath href="#path-c"/>
+    </animateMotion>
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0;0;0.9;0.9;0;0" keyTimes="0;0.1;0.15;0.4;0.475;1"/>
+  </circle>
+
+  <!-- Glow rings (animated) -->
+  <circle cx="300" cy="240" r="86" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.22" class="glow-animated">
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0.22;0.22;0.40;0.22;0.22" keyTimes="0;0.3;0.45;0.6;1"/>
+    <animate attributeName="r" dur="8s" repeatCount="indefinite"
+      values="86;86;89;86;86" keyTimes="0;0.3;0.45;0.6;1"/>
+  </circle>
+  <circle cx="300" cy="240" r="98" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.12" class="glow-animated">
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0.12;0.12;0.25;0.12;0.12" keyTimes="0;0.35;0.5;0.65;1"/>
+    <animate attributeName="r" dur="8s" repeatCount="indefinite"
+      values="98;98;102;98;98" keyTimes="0;0.35;0.5;0.65;1"/>
+  </circle>
+  <circle cx="300" cy="240" r="110" fill="none" stroke="#00C9A7" stroke-width="0.5" opacity="0.06" class="glow-animated">
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0.06;0.06;0.14;0.06;0.06" keyTimes="0;0.4;0.55;0.7;1"/>
+    <animate attributeName="r" dur="8s" repeatCount="indefinite"
+      values="110;110;114;110;110" keyTimes="0;0.4;0.55;0.7;1"/>
+  </circle>
 
   <!-- Shield shape — enforcement gate -->
   <path d="M300 166 L348 184 L348 244 Q348 280 300 300 Q252 280 252 244 L252 184 Z"
-        fill="#E8FAF6" stroke="#00C9A7" stroke-width="2.5" filter="url(#shadow-lg)"/>
+        fill="#E8FAF6" stroke="#00C9A7" stroke-width="2.5" filter="url(#shadow-lg)">
+    <animate attributeName="stroke-width" dur="8s" repeatCount="indefinite"
+      values="2.5;2.5;3.5;2.5;2.5" keyTimes="0;0.35;0.5;0.65;1"/>
+  </path>
 
   <!-- Shield inner glow arc -->
   <path d="M300 174 L340 190 L340 242 Q340 272 300 290 Q260 272 260 242 L260 190 Z"
@@ -82,11 +132,23 @@
   <rect x="232" y="346" width="136" height="32" rx="8" fill="#EAEAEF" filter="url(#shadow)"/>
   <text x="244" y="366" font-size="10" font-weight="700" fill="#48484A" font-family="-apple-system,system-ui,sans-serif">BUDGET</text>
   <rect x="290" y="360" width="60" height="6" rx="3" fill="#D8D8DD"/>
-  <rect x="290" y="360" width="45" height="6" rx="3" fill="#00C9A7"/>
+  <rect x="290" y="360" width="45" height="6" rx="3" fill="#00C9A7">
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="1;1;0.7;1;1" keyTimes="0;0.625;0.75;0.875;1"/>
+  </rect>
   <text x="355" y="367" font-size="10" fill="#48484A" font-family="-apple-system,system-ui,sans-serif" font-weight="600">75%</text>
 
   <!-- Arrow to ALLOWED -->
-  <path d="M350 210 C380 195, 420 160, 452 145" fill="none" stroke="#00C9A7" stroke-width="2" marker-end="url(#arr-teal)"/>
+  <path id="path-allowed" d="M350 210 C380 195, 420 160, 452 145" fill="none" stroke="#00C9A7" stroke-width="2" marker-end="url(#arr-teal)"/>
+
+  <!-- Allowed flow dot -->
+  <circle r="3.5" fill="#00C9A7" opacity="0" class="flow-dot">
+    <animateMotion dur="8s" repeatCount="indefinite" keyPoints="0;0;1;1;1" keyTimes="0;0.5;0.7;0.8;1" calcMode="linear">
+      <mpath href="#path-allowed"/>
+    </animateMotion>
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0;0;0.9;0.9;0;0" keyTimes="0;0.5;0.55;0.75;0.8;1"/>
+  </circle>
 
   <!-- ALLOWED card -->
   <rect x="454" y="96" width="148" height="64" rx="12" fill="#D4F5ED" filter="url(#shadow)"/>
@@ -96,7 +158,16 @@
   <text x="474" y="150" font-size="11" fill="#3C3C43" font-family="-apple-system,system-ui,sans-serif">&#x2713; proceed</text>
 
   <!-- Arrow to BLOCKED -->
-  <path d="M350 272 C380 287, 420 320, 452 335" fill="none" stroke="#FF453A" stroke-width="2" marker-end="url(#arr-red)"/>
+  <path id="path-blocked" d="M350 272 C380 287, 420 320, 452 335" fill="none" stroke="#FF453A" stroke-width="2" marker-end="url(#arr-red)"/>
+
+  <!-- Blocked flow dot -->
+  <circle r="3.5" fill="#FF453A" opacity="0" class="flow-dot">
+    <animateMotion dur="8s" repeatCount="indefinite" keyPoints="0;0;1;1;1" keyTimes="0;0.55;0.75;0.85;1" calcMode="linear">
+      <mpath href="#path-blocked"/>
+    </animateMotion>
+    <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
+      values="0;0;0.9;0.9;0;0" keyTimes="0;0.55;0.6;0.8;0.85;1"/>
+  </circle>
 
   <!-- BLOCKED card -->
   <rect x="454" y="320" width="148" height="64" rx="12" fill="#FFE5E2" filter="url(#shadow)"/>
