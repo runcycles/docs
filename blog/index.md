@@ -6,6 +6,6 @@ sidebar: false
 
 # The Cycles Blog
 
-Engineering insights, product updates, and best practices for AI agent cost control and runtime authority.
+Engineering insights, product updates, and best practices for AI agent runtime authority, exposure, and cost control.
 
 <BlogIndex />
