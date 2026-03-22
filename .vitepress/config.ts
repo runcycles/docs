@@ -196,6 +196,8 @@ export default defineConfig({
             { text: 'Idempotency, Retries and Concurrency', link: '/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes' },
             { text: 'From Observability to Enforcement', link: '/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority' },
             { text: 'Coding Agents Need Runtime Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
+            { text: 'Exposure', link: '/concepts/exposure-why-rate-limits-leave-agents-unbounded' },
+            { text: 'Action Authority', link: '/concepts/action-authority-controlling-what-agents-do' },
             { text: 'Why Agents Do Not Replace Cycles', link: '/concepts/why-coding-agents-do-not-replace-cycles' },
             {
               text: 'Comparisons',

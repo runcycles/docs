@@ -31,7 +31,7 @@ features:
       src: /icons/info-circle.svg
       alt: Concepts icon
     title: "Concepts"
-    details: "Understand why rate limits fail for agents, what Cycles actually solves, and how teams evolve from dashboards to runtime authority."
+    details: "Understand why rate limits fail for agents, what exposure means for autonomous systems, and how teams evolve from dashboards to runtime authority."
     link: /concepts/why-rate-limits-are-not-enough-for-autonomous-systems
     linkText: Learn more
   - icon:

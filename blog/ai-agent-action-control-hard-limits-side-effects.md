@@ -66,7 +66,7 @@ For the full reserve-commit lifecycle, see [How Reserve-Commit Works in Cycles](
 
 ## RISK_POINTS — Budgeting What Money Cannot Measure
 
-Dollar budgets are the wrong unit for action control. The opening scenario makes this clear: 200 emails cost $1.40 in model spend. A per-run budget of $100, $50, even $5 would not have stopped a single email. The risk was not monetary. It was reputational, operational, and ultimately commercial — $50,000 in lost pipeline from a $1.40 agent run.
+Dollar budgets are the wrong unit for action authority. The opening scenario makes this clear: 200 emails cost $1.40 in model spend. A per-run budget of $100, $50, even $5 would not have stopped a single email. The risk was not monetary. It was reputational, operational, and ultimately commercial — $50,000 in lost pipeline from a $1.40 agent run.
 
 Cycles supports a **RISK_POINTS** unit specifically for this problem. Instead of denominating budgets in dollars or tokens, teams assign point values to each action class based on blast radius. A workflow gets a fixed risk-point budget, and every consequential action deducts from it.
 
@@ -117,7 +117,7 @@ With a 100-point risk budget per run, the server applies progressive narrowing:
 | 80–100% | ALLOW_WITH_CAPS | `tool_allowlist: ["read_file", "search"]` | Read-only mode |
 | 100% | DENY | — | No further actions |
 
-The agent degrades gracefully instead of hard-stopping. It can still complete useful work — reading files, running searches, generating summaries — while the most dangerous capabilities are removed from its reach. This is the "disable" degradation strategy applied to action control rather than cost control.
+The agent degrades gracefully instead of hard-stopping. It can still complete useful work — reading files, running searches, generating summaries — while the most dangerous capabilities are removed from its reach. This is the "disable" degradation strategy applied to action authority rather than cost control.
 
 For the three-way decision model (ALLOW, ALLOW_WITH_CAPS, DENY) and how caps flow through the system, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For the full set of degradation strategies, see [Degradation Paths in Cycles](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
