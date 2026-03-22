@@ -108,7 +108,7 @@ export default defineConfig({
         }
       }
     },
-    logo: { src: '/runcycles-logo-64.png', alt: 'Cycles' },
+    logo: { src: '/runcycles-logo.svg', alt: 'Cycles' },
     externalLinkIcon: true,
     editLink: {
       pattern: 'https://github.com/runcycles/docs/edit/main/:path',
