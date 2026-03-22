@@ -206,7 +206,7 @@ If you're estimating costs for a new agent deployment or trying to understand an
 - [Common Budget Patterns](/how-to/common-budget-patterns) covers the most effective ways to structure budgets across the scenarios described above
 - [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the maturity model from monitoring to hard enforcement
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — how the reserve-commit pattern works
-- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios with dollar-amount breakdowns
+- [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios with dollar-amount breakdowns
 - The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) walks through setting up Cycles with a working agent in under 30 minutes
 
 The cheapest agent incident is the one that never happens. Start by knowing your numbers. Then put a system in place to enforce them.

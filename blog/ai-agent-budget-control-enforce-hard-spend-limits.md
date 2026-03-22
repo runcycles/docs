@@ -94,7 +94,7 @@ These are not hypothetical scenarios. They are patterns that show up in any team
 - **Sub-agent fan-out**: an orchestrator spawns 15 research sub-agents, each making 50+ model calls — $1,500 total. With scoped budgets, the orchestrator's budget caps the sum of all sub-agent spend.
 - **Concurrent race**: two workers both check "budget remaining: $10" and both proceed — $20 spent on a $10 budget. Atomic reservations eliminate this: one worker gets the reservation, the other is denied.
 
-For detailed breakdowns with full cost math, see [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent).
+For detailed breakdowns with full cost math, see [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent).
 
 ## What to Measure Once You Have Enforcement
 

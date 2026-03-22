@@ -131,6 +131,6 @@ Token pricing is an engineering metric. Cost per conversation is a business KPI.
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — raw provider pricing and per-scenario cost breakdowns
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the five-tier maturity model from monitoring to hard enforcement
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets and chargeback models
-- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — what happens when variance is unbounded
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — what happens when variance is unbounded
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern for pre-execution enforcement
 - **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — why dashboards cannot prevent the overspend

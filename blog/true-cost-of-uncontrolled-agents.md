@@ -111,7 +111,7 @@ The cost of building budget controls is small. The cost of not having them compo
 
 ## Next Steps
 
-- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — detailed breakdowns with dollar math for each failure mode
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — detailed breakdowns with dollar math for each failure mode
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the maturity model from no controls to hard enforcement
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — how the reserve-commit pattern stops overspend before it happens
 - **[Common Budget Patterns](/how-to/common-budget-patterns)** — practical recipes for structuring agent budgets

@@ -182,7 +182,7 @@ The research pipeline from the opening scenario would have stopped at $25 per to
 
 - **[LangGraph Budget Control for Durable Execution, Retries, and Fan-Out](/blog/langgraph-budget-control-durable-execution-retries-fan-out)** — budget enforcement for graph-based fan-out (the parallel counterpart to delegation chains)
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern that powers per-agent enforcement
-- **[5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
-- **[You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a per-agent counter is not the same as a runtime authority
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
+- **[Budget Wrapper vs Runtime Authority for AI Agents](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a per-agent counter is not the same as a runtime authority
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — raw provider pricing behind the cost math in this post
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets for teams running multi-agent systems in shared platforms

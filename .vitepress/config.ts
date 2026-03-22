@@ -371,6 +371,7 @@ export default defineConfig({
         ['meta', { property: 'og:description', content: pageData.frontmatter.description }],
         ['meta', { property: 'og:url', content: canonicalUrl }],
         ['meta', { property: 'og:image', content: ogImage }],
+        ['meta', { property: 'og:image:alt', content: pageData.frontmatter.title }],
         ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
         ['meta', { name: 'twitter:title', content: pageData.frontmatter.title }],
         ['meta', { name: 'twitter:description', content: pageData.frontmatter.description }],
