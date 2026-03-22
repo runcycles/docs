@@ -43,9 +43,9 @@ Observability gives teams visibility into agent behavior — traces, cost breakd
 
 It is also, by definition, retrospective.
 
-A dashboard shows that Tuesday's agent run cost $1,900 and sent 340 duplicate notifications. That is valuable for the post-mortem. It did not stop the agent at call number 50, when the damage was still $1.50 and one email.
+A dashboard shows that Tuesday's agent run cost $1,900, sent 340 duplicate notifications, and overwrote 12 CRM records with stale data. That is valuable for the post-mortem. It did not stop the agent at call number 50, when the damage was still $1.50, one email, and zero corrupted records.
 
-An alert helps — but even fast alerts create an enforcement gap. An agent making 100 calls per minute accumulates real cost in the minutes between alert and human response. Over a weekend, the gap becomes a chasm. See the [full latency analysis](/blog/cycles-vs-llm-proxies-and-observability-tools#where-observability-stops) for the math.
+Alerts shorten reaction time. They do not create pre-execution control. An agent making 100 calls per minute accumulates real damage in the minutes between alert and human response. Over a weekend, the gap becomes a chasm. See the [full latency analysis](/blog/cycles-vs-llm-proxies-and-observability-tools#where-observability-stops) for the math.
 
 The fundamental mismatch: observability assumes a human will review and act. Autonomous agents do not wait for humans.
 
@@ -118,15 +118,13 @@ Remove any one layer and a gap opens. Remove observability and you enforce blind
 
 Cycles is the runtime authority layer. It treats agent control as [runtime permissioning](/blog/what-is-runtime-authority-for-ai-agents#how-cycles-approaches-runtime-authority) over spend, risk, and actions — not as an after-the-fact reporting problem.
 
-Before an agent takes its next action, Cycles answers whether that action is allowed, under what constraints, and what happens if limits are reached. That decision is made by a [protocol](/protocol/api-reference-for-the-cycles-protocol) — not by a proxy, not by application code, not by a dashboard with alerts.
+Before the next action executes, Cycles decides whether it is allowed, under what constraints, or not at all. That decision is made by a [protocol](/protocol/api-reference-for-the-cycles-protocol) — not by a proxy, not by application code, not by a dashboard with alerts.
 
 Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not replace your observability platform or your content guardrails. It fills the layer between them that most teams are missing.
 
 ## Next steps
 
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
-- [Cycles vs Guardrails AI](/concepts/cycles-vs-guardrails-ai) — product-level comparison with the Guardrails AI content safety framework
-- [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — where budget enforcement fits alongside LiteLLM, Portkey, Helicone, and Langfuse
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions
 - [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) — deeper exploration of category boundaries
 - [You Can Vibe Code a Budget Wrapper](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why a DIY counter is a checker, not an authority
