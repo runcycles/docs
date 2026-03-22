@@ -14,15 +14,17 @@ A team builds a research pipeline using CrewAI with three agents: a Planner that
 
 In production, a batch of 40 topics kicks off overnight. The Researcher's delegation is non-deterministic — some topics trigger zero Deep Analyst calls, others trigger four. One topic causes all 5 sub-questions to delegate to the Deep Analyst, each triggering its own tool loop with retries. That single topic costs $89.
 
-| Layer | Calls per topic (expected) | Calls per topic (worst case) | Multiplier |
-|---|---|---|---|
-| Planner | 2 | 2 | 1× |
-| Researcher (5 sub-questions) | 40-60 | 40-60 | 1× |
-| Deep Analyst (0-2 delegations) | 0-30 | 75 (5 × 15 calls) | 2.5× |
-| Retries across all agents | 5% overhead | 40% overhead on Deep Analyst | 1.4× |
-| **Total** | **~50-95 calls** | **~190 calls** | **~3.5×** |
+| Layer | Calls (expected) | Calls (worst case) | Cost (expected) | Cost (worst case) |
+|---|---|---|---|---|
+| Planner | 2 | 2 | $0.30 | $0.30 |
+| Researcher (5 sub-questions) | 40-60 | 40-60 | $2.50 | $2.50 |
+| Deep Analyst (0-2 delegations) | 0-30 | 75 (5 × 15) | $0.70 | $47.00 |
+| Retries (growing context) | ~5 | ~55 | — | $39.00 |
+| **Total** | **~50-95** | **~190** | **$3.50** | **$89.00** |
 
-The 40-topic batch: $1,740 instead of the projected $140. The provider dashboard shows the total. It does not show which agent in the delegation chain caused the blowout, or that delegation depth was the problem.
+The Deep Analyst's cost is not linear in call count — each retry sends a longer context window, so later calls cost 3-5× more than early ones. That is why 190 calls cost $89, not $7.
+
+The 40-topic batch: $1,740 instead of the projected $140. Most topics cost $15-30 because production topics are more complex than the development test set. The provider dashboard shows the total. It does not show which agent in the delegation chain caused the blowout, or that delegation depth was the problem.
 
 <!-- more -->
 
@@ -119,22 +121,26 @@ researcher_llm = make_agent_llm("researcher") # bounded by researcher's budget
 analyst_llm = make_agent_llm("deep-analyst")   # bounded by analyst's budget
 ```
 
-For AutoGen, wrap the reply function with a budget check:
+For AutoGen, attach the handler to each agent's underlying model:
 
 ```python
-def budget_guarded_reply(agent_name: str, original_reply_func):
-    handler = CyclesBudgetHandler(
-        client=client,
-        subject=Subject(
-            tenant="acme",
-            workflow="research-pipeline",
-            agent=agent_name,
-        ),
-    )
-    def guarded(recipient, messages, sender, config):
-        # Handler fires on every LLM call within the reply
-        return original_reply_func(recipient, messages, sender, config)
-    return guarded
+from autogen import ConversableAgent
+
+# Each agent gets a budget-scoped LLM
+researcher = ConversableAgent(
+    name="researcher",
+    llm_config={
+        "model": "gpt-4o",
+        "callbacks": [CyclesBudgetHandler(
+            client=client,
+            subject=Subject(
+                tenant="acme",
+                workflow="research-pipeline",
+                agent="researcher",
+            ),
+        )],
+    },
+)
 ```
 
 For the OpenAI Agents SDK, intercept each `handoff()` boundary:
@@ -160,7 +166,7 @@ For the full callback handler implementation, see [Integrating Cycles with LangC
 
 ## What Happens Without Per-Agent Budgets
 
-The difference is the difference between debugging a $1,740 bill and preventing it.
+The difference between debugging a $1,740 bill and preventing it.
 
 | Scenario | Without per-agent budget | With Cycles |
 |---|---|---|

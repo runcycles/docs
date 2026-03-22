@@ -51,6 +51,8 @@ If you price at 3× average cost — a standard SaaS margin target — you need 
 
 **User behavior is unpredictable.** Some users send one message per conversation. Others send 40-message threads. Some users open 5 conversations per month. Others open 200. The variance in user behavior compounds the variance in per-conversation cost.
 
+To illustrate, consider a generic AI feature with $4.00 average cost per user:
+
 | Pricing at | Avg cost/user | Price/user | Margin (tight distribution, CV=0.5) | Margin (heavy-tail, CV=3.0) |
 |---|---|---|---|---|
 | 2× average cost | $4.00 | $8.00 | 65% | -15% |
@@ -98,7 +100,7 @@ You cannot control variance at the pricing layer. You must control it at the exe
 
 Three enforcement strategies, each mapped to margin impact:
 
-**Per-conversation cap.** Set a $2.00 hard limit per conversation. Conversations that would have cost $3.80 (P90) or $18.00 (P99) are capped. The agent degrades gracefully — shorter responses, cheaper model fallback, or an explicit "I've reached my limit for this conversation, please start a new one" message. The tail is cut.
+**Per-conversation cap.** Set a $2.00 hard limit per conversation. Conversations that would have cost $0.45 (P90) pass through unaffected, but the $3.80 outliers (P99) are capped. The agent degrades gracefully — shorter responses, cheaper model fallback, or an explicit "I've reached my limit for this conversation, please start a new one" message. The tail is cut.
 
 **Per-user monthly cap.** Set a $15.00/month ceiling per user — matching the price point. Users who would have cost $80/month are bounded. The feature becomes profitable for every user, by definition. This is the same pattern used in [multi-tenant AI cost control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) for per-tenant isolation.
 
