@@ -28,7 +28,7 @@ One-shot agents have a simple cost model: one pass through the workflow, one bil
 
 Durable graph agents — whether built on LangGraph, Temporal, or Restate — break this model. Runs checkpoint, pause, resume, retry, and branch. The cost of a single logical run is not "one pass." It is the sum of every attempt, across every checkpoint, across every branch.
 
-Three properties of durable execution change how budget exposure works:
+Three properties of durable execution change how bounded exposure works:
 
 **Checkpoints create replay surfaces.** When a graph resumes from a checkpoint, it can re-execute nodes that already consumed tokens and triggered side effects. If the budget system does not know which nodes already ran, it cannot prevent double-charging.
 
@@ -82,7 +82,7 @@ This failure mode is unique to durable execution. One-shot agents don't survive 
 
 The [reserve-commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-limits) already solves the core problem of pre-execution budget enforcement. For durable graph execution, the same pattern applies — but scoped to the graph's structure:
 
-**Run-level budget.** A total ceiling for the entire graph execution, including all retries and fan-outs. This is the outer bound. No combination of retries, replays, or parallel branches can exceed it.
+**Run-level budget.** A hard limit for the entire graph execution, including all retries and fan-outs. No combination of retries, replays, or parallel branches can exceed it.
 
 **Node-level reservation.** Before each node executes, reserve the estimated cost from the run budget. The reservation is atomic — if the budget is insufficient, the node does not start. The run receives a clear budget-exhausted signal instead of silently proceeding.
 
@@ -105,7 +105,7 @@ The [reserve-commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-
 
 ## What This Looks Like in Practice
 
-Cycles integrates with LangChain and LangGraph through a [custom callback handler](/how-to/integrating-cycles-with-langchain) that wraps every LLM call with a reservation. The handler creates a reservation on `on_llm_start`, commits on `on_llm_end`, and releases on `on_llm_error`:
+Cycles — a runtime authority for autonomous agents — integrates with LangChain and LangGraph through a [custom callback handler](/how-to/integrating-cycles-with-langchain) that wraps every LLM call with a reservation. The handler creates a reservation on `on_llm_start`, commits on `on_llm_end`, and releases on `on_llm_error`:
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -161,7 +161,7 @@ The difference is not subtle. It is the difference between a cost surprise and a
 | Process crash mid-node | Reservation leaked, budget permanently reduced | Uncommitted reservation auto-released on retry |
 | Overnight batch of 500 graph runs | No per-run limit, total cost unknown until morning | Each run bounded, batch total = sum of run budgets |
 
-The insurance claim processor from the opening scenario would have stopped at $180. The retry replays would have been idempotent — committed nodes would not re-charge. The fan-out branches would have received sub-budgets. The run-level ceiling would have prevented any single execution from exceeding its allocation.
+The insurance claim processor from the opening scenario would have stopped at $180 — enforcement before the action, not observation after. The retry replays would have been idempotent — committed nodes would not re-charge. The fan-out branches would have received sub-budgets. The run-level hard limit would have prevented any single execution from exceeding its allocation.
 
 ## Next Steps
 
