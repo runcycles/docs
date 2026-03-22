@@ -3,6 +3,6 @@
   <g transform="translate(256,256) scale(0.85) translate(-256,-256)">
     <path d="M 323.6 111.0 A 160 160 0 1 1 188.4 111.0" fill="none" stroke="#FFFFFF" stroke-width="60" stroke-linecap="round"/>
     <line x1="232" y1="96" x2="280" y2="96" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round"/>
-    <path d="M 291 256 L 237 222 L 237 290 Z" fill="#FFFFFF"/>
+    <polyline points="220,262 248,290 300,228" fill="none" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
