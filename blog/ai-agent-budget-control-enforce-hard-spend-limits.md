@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Budget Control: Enforce Hard Spend Limits"
-date: 2026-03-20
+date: 2026-03-17
 author: Cycles Team
 tags: [budgets, agents, engineering, best-practices]
 description: "Why AI agent cost control must happen before execution — not after — and how the reserve-commit pattern enforces hard spend limits at runtime."

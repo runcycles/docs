@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs LLM Proxies and Observability Tools: Where Budget Enforcement Fits"
-date: 2026-03-20
+date: 2026-03-17
 author: Cycles Team
 tags: [architecture, comparisons, best-practices]
 description: "LLM proxies route calls. Observability tools trace them. Neither enforces budget before execution. See where Cycles fits."

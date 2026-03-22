@@ -1,6 +1,6 @@
 ---
 title: "Manifest vs Cycles: Routing vs Runtime Authority"
-date: 2026-03-21
+date: 2026-03-18
 author: Cycles Team
 tags: [comparisons, architecture, agents]
 description: "Manifest optimizes which model handles a request. Cycles decides whether the request is allowed to execute at all. Different layers, different problems."
