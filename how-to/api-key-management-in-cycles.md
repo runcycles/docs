@@ -1,6 +1,6 @@
 ---
 title: "API Key Management in Cycles"
-description: "Learn how to create, manage, and rotate API keys in Cycles, including tenant isolation and key lifecycle states."
+description: "Create, manage, and rotate API keys in Cycles with tenant isolation, key lifecycle states, and best practices for production key rotation."
 ---
 
 # API Key Management in Cycles

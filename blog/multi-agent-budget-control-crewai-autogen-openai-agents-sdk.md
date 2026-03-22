@@ -178,7 +178,7 @@ The difference between debugging a $1,740 bill and preventing it.
 
 The research pipeline from the opening scenario would have stopped at $25 per topic. The Deep Analyst's tool loop would have hit its $2.00 sub-budget after ~15 calls instead of running to 75+. The overnight batch of 40 topics would have cost at most $1,000 — bounded exposure instead of an open-ended bill.
 
-## Next Steps
+## Next steps
 
 - **[LangGraph Budget Control for Durable Execution, Retries, and Fan-Out](/blog/langgraph-budget-control-durable-execution-retries-fan-out)** — budget enforcement for graph-based fan-out (the parallel counterpart to delegation chains)
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern that powers per-agent enforcement

@@ -1,6 +1,6 @@
 ---
 title: "Authentication, Tenancy, and API Keys in Cycles"
-description: "How Cycles authenticates API requests and scopes all budget operations to tenants using API keys."
+description: "How Cycles authenticates API requests and scopes all budget operations to tenants using API keys. Covers key creation, tenant isolation, and the security model."
 ---
 
 # Authentication, Tenancy, and API Keys in Cycles

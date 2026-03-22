@@ -1,6 +1,6 @@
 ---
 title: "Reservation TTL, Grace Period, and Extend in Cycles"
-description: "How reservation time-to-live, grace periods, and the extend operation prevent phantom budget consumption in Cycles."
+description: "How reservation time-to-live, grace periods, and the extend operation prevent phantom budget consumption in Cycles. Configure TTL and handle long-running tasks."
 ---
 
 # Reservation TTL, Grace Period, and Extend in Cycles

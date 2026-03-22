@@ -1,6 +1,6 @@
 ---
 title: "Demos"
-description: "Self-contained demos showing Cycles in action. No LLM API key required."
+description: "Self-contained demos showing Cycles budget enforcement and action authority in action. Run locally with Docker — no LLM API key required."
 ---
 
 # Demos

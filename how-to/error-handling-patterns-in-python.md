@@ -1,6 +1,6 @@
 ---
 title: "Error Handling Patterns in Python"
-description: "Practical patterns for handling Cycles errors in Python using the @cycles decorator and the programmatic CyclesClient."
+description: "Practical patterns for handling Cycles errors in Python using the @cycles decorator and the programmatic CyclesClient. Covers retries, fallbacks, and logging."
 ---
 
 # Error Handling Patterns in Python

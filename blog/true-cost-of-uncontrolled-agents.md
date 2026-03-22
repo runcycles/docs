@@ -109,7 +109,7 @@ Uncontrolled agents are not a hypothetical risk. They are a recurring, measurabl
 
 The cost of building budget controls is small. The cost of not having them compounds with every agent you deploy.
 
-## Next Steps
+## Next steps
 
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — detailed breakdowns with dollar math for each failure mode
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the maturity model from no controls to hard enforcement

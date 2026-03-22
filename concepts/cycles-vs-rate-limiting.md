@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Rate Limiting: Why Velocity Controls Fail for AI Agents"
-description: "Rate limiters control request velocity but cannot govern total spend. See how Cycles adds cost-aware, pre-execution runtime authority where rate limits fall short."
+description: "Rate limiters control request velocity but cannot govern total spend. See how Cycles adds cost-aware runtime authority where rate limits fall short."
 ---
 
 # Cycles vs Rate Limiting: Why Velocity Controls Fail for AI Agents

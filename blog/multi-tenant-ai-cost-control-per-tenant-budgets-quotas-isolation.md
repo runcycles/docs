@@ -3,7 +3,7 @@ title: "Multi-Tenant AI Cost Control: Budgets and Isolation"
 date: 2026-03-16
 author: Cycles Team
 tags: [multi-tenant, budgets, architecture, costs]
-description: "One customer's runaway agent can degrade service for every tenant. Enforce per-tenant budgets and hierarchical limits."
+description: "One customer's runaway agent can degrade service for every tenant. Enforce per-tenant budgets, hierarchical limits, and scope-level isolation with Cycles."
 blog: true
 sidebar: false
 ---
@@ -158,7 +158,7 @@ You do not need the full hierarchy on day one. The proven path for multi-tenant 
 
 For teams introducing enforcement to an existing system, [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) lets you log what would be denied without actually blocking anything — giving you real data to size budgets before flipping to hard enforcement.
 
-## Next Steps
+## Next steps
 
 - **[How to Model Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles)** — detailed guide to designing your scope hierarchy
 - **[Scope Derivation](/protocol/how-scope-derivation-works-in-cycles)** — how hierarchical budget paths are built from subject fields

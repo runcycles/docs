@@ -1,6 +1,6 @@
 ---
 title: "Client Configuration Reference for the Cycles Spring Boot Starter"
-description: "Complete reference for all configuration properties in the Cycles Spring Boot Starter client library."
+description: "Complete reference for all configuration properties in the Cycles Spring Boot Starter client library, including environment-specific profiles."
 ---
 
 # Client Configuration Reference for the Cycles Spring Boot Starter

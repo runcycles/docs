@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with OpenAI"
-description: "Guard OpenAI API calls with Cycles budget reservations for cost-controlled, caps-aware chat completions."
+description: "Guard OpenAI API calls with Cycles budget reservations for cost-controlled, caps-aware chat completions. Includes Python and TypeScript examples."
 ---
 
 # Integrating Cycles with OpenAI

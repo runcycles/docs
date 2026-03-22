@@ -1,6 +1,6 @@
 ---
 title: "Server Configuration Reference for Cycles"
-description: "Complete reference for all Cycles server configuration properties, including server, Redis, and Spring Boot settings."
+description: "Complete reference for all Cycles server and admin server configuration properties, including Redis, expiry, logging, and Spring Boot actuator settings."
 ---
 
 # Server Configuration Reference for Cycles

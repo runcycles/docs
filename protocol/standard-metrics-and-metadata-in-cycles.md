@@ -1,6 +1,6 @@
 ---
 title: "Standard Metrics and Metadata in Cycles"
-description: "Attach execution metrics and custom metadata to commits and events in Cycles for debugging and analytics."
+description: "Attach execution metrics and custom metadata to commits and events in Cycles for debugging, analytics, and cost attribution across scopes."
 ---
 
 # Standard Metrics and Metadata in Cycles

@@ -1,6 +1,6 @@
 ---
 title: "Error Codes and Error Handling in Cycles"
-description: "Reference for all Cycles error codes and structured error responses, with guidance on handling each failure condition."
+description: "Reference for all Cycles error codes and structured error responses, with guidance on handling each failure condition in client applications."
 ---
 
 # Error Codes and Error Handling in Cycles

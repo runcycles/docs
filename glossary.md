@@ -1,6 +1,6 @@
 ---
 title: "Glossary"
-description: "Definitions of key terms and concepts used throughout the Cycles documentation."
+description: "Definitions of key terms and concepts used throughout the Cycles documentation, including budgets, scopes, reservations, and protocol terminology."
 ---
 
 # Glossary

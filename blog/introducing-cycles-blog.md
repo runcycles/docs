@@ -25,7 +25,7 @@ We're excited to launch the Cycles blog — a space for engineering deep-dives, 
 
 Our docs cover the _how_. The blog covers the _why_ — the thinking behind design decisions, the incidents that shaped the protocol, and the patterns we see across teams adopting runtime authority.
 
-## Next Steps
+## Next steps
 
 Start with the posts that match where you are today:
 

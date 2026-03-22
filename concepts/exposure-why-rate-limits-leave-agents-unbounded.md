@@ -42,7 +42,7 @@ This applies to both financial exposure (USD, tokens) and operational exposure (
 
 For practical strategies on sizing reservations and estimating exposure before execution, see [Exposure Estimation](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles).
 
-## See also
+## Next steps
 
 - [Glossary: Exposure](/glossary#exposure) — formal definition
 - [Runaway Agents and Tool Loops](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — what unbounded exposure looks like in practice

@@ -198,7 +198,7 @@ Agent costs are a function of call patterns, not just token prices. A 10% change
 
 [Cycles](/) provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent degrades gracefully.
 
-## Next Steps
+## Next steps
 
 If you're estimating costs for a new agent deployment or trying to understand an existing one:
 

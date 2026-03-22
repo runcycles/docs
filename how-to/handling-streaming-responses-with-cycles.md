@@ -1,6 +1,6 @@
 ---
 title: "Handling Streaming Responses with Cycles"
-description: "Learn the reserve, stream, and commit pattern for managing budget reservations with streaming LLM responses in Cycles."
+description: "The reserve, stream, and commit pattern for managing budget reservations with streaming LLM responses. Includes TTL extension for long-running streams."
 ---
 
 # Handling Streaming Responses with Cycles

@@ -187,7 +187,7 @@ The MCP-based approach is structurally different. The runtime authority is an ex
 
 For the extended argument about why the gap between a wrapper and an authority is larger than it looks, see [Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority).
 
-## Next Steps
+## Next steps
 
 - **[Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server)** — per-host configuration for Claude Desktop, Claude Code, Cursor, and Windsurf
 - **[Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp)** — advanced patterns: preflight decisions, graceful degradation, long-running operations, fire-and-forget events

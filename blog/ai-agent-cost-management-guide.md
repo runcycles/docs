@@ -222,7 +222,7 @@ For teams moving from Tier 0 or 1 to Tier 4, the recommended path:
 
 This process takes 4-8 weeks for most teams. The shadow mode step is critical — it prevents enforcement from breaking production workflows on day one.
 
-## Next Steps
+## Next steps
 
 The progression from no controls to hard enforcement is predictable. The question isn't whether you'll need Tier 4 — it's whether you get there before or after an expensive incident.
 

@@ -1,6 +1,6 @@
 ---
 title: "Monitoring and Alerting"
-description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment."
+description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment. Covers balances, reservations, and budget exhaustion."
 ---
 
 # Monitoring and Alerting

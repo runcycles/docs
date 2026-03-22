@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with AWS Bedrock"
-description: "Add budget governance to AWS Bedrock model invocations using the runcycles TypeScript client."
+description: "Add budget governance to AWS Bedrock model invocations using the runcycles TypeScript client. Reserve before each call, commit actual token usage after."
 ---
 
 # Integrating Cycles with AWS Bedrock

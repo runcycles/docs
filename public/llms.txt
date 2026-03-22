@@ -17,6 +17,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Choose a First Rollout](https://runcycles.io/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails): Decide between tenant budgets, run budgets, or model call guardrails
 - [Architecture Overview](https://runcycles.io/quickstart/architecture-overview-how-cycles-fits-together): How the Cycles components fit together
 - [Deploy the Full Stack](https://runcycles.io/quickstart/deploying-the-full-cycles-stack): Docker-based deployment guide
+- [MCP Server](https://runcycles.io/quickstart/getting-started-with-the-mcp-server): Add budget enforcement to AI coding tools via the Model Context Protocol
 - [Self-Hosting the Server](https://runcycles.io/quickstart/self-hosting-the-cycles-server): Run the Cycles server in your own infrastructure
 
 ## Protocol Reference
@@ -95,6 +96,8 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Express](https://runcycles.io/how-to/integrating-cycles-with-express): Middleware for Express.js
 - [FastAPI](https://runcycles.io/how-to/integrating-cycles-with-fastapi): Middleware for FastAPI
 - [OpenClaw](https://runcycles.io/how-to/integrating-cycles-with-openclaw): Budget enforcement for OpenClaw agents
+- [MCP](https://runcycles.io/how-to/integrating-cycles-with-mcp): Budget enforcement via Model Context Protocol
+- [LangChain Agent](https://runcycles.io/how-to/how-to-add-budget-control-to-a-langchain-agent): Per-run budget limits for LangChain AgentExecutor
 
 ## How-To Guides
 
@@ -114,6 +117,9 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Programmatic Client Usage](https://runcycles.io/how-to/using-the-cycles-client-programmatically): Direct CyclesClient API usage
 - [API Key Management](https://runcycles.io/how-to/api-key-management-in-cycles): Create, manage, and rotate API keys with tenant isolation
 - [Custom Field Resolvers](https://runcycles.io/how-to/custom-field-resolvers-in-cycles): Dynamically resolve Subject fields at runtime in Spring Boot
+- [Tenant Creation and Management](https://runcycles.io/how-to/tenant-creation-and-management-in-cycles): Create, list, suspend, close, and organize tenants with hierarchical structures
+- [Understanding Tenants, Scopes, and Budgets](https://runcycles.io/how-to/understanding-tenants-scopes-and-budgets-in-cycles): How tenants, scopes, and budgets fit together in a multi-tenant deployment
+- [Ecosystem](https://runcycles.io/how-to/ecosystem): Community tools and third-party integrations
 
 ## Configuration
 
@@ -152,3 +158,13 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Python Client](https://github.com/runcycles/cycles-python-client): Python SDK (runcycles on PyPI)
 - [TypeScript Client](https://github.com/runcycles/cycles-typescript-client): TypeScript SDK (runcycles on npm)
 - [Spring Boot Starter](https://github.com/runcycles/cycles-spring-boot-starter): Spring Boot integration
+
+## Community
+
+- [Built with Cycles Badges](https://runcycles.io/community/badges): Add a "Built with Cycles" badge to your project README or documentation
+
+## Reference
+
+- [Glossary](https://runcycles.io/glossary): Definitions of key terms and concepts used throughout the Cycles documentation
+- [Comparisons](https://runcycles.io/concepts/comparisons): How Cycles differs from rate limiters, provider caps, observability tools, and token counters
+- [Changelog](https://runcycles.io/changelog): Release history and version notes for the Cycles Protocol and reference implementations

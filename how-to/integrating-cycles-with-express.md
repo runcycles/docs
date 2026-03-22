@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with Express"
-description: "Add budget governance to an Express.js application using reusable middleware and inline patterns with Cycles."
+description: "Add budget governance to an Express.js application using reusable middleware and inline reserve-commit patterns with the Cycles TypeScript client."
 ---
 
 # Integrating Cycles with Express

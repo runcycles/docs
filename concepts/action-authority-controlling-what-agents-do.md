@@ -1,6 +1,6 @@
 ---
 title: "Action Authority: Controlling What Agents Do"
-description: "Action authority is the dimension of runtime authority that governs what actions an agent can take — independent of cost. Toolset-scoped budgets denominated in risk points enforce hard limits on side effects."
+description: "Action authority governs what actions an agent can take, independent of cost. Toolset-scoped budgets with risk points enforce hard limits on side effects."
 ---
 
 # Action Authority: Controlling What Agents Do
@@ -48,7 +48,7 @@ Action authority does not require killing the agent. As risk-point budget decrea
 
 This is the "disable" degradation strategy applied to action authority rather than cost control. See [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
-## See also
+## Next steps
 
 - [Glossary: Action Authority](/glossary#action-authority) — formal definition
 - [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — deep dive on the problem and solution

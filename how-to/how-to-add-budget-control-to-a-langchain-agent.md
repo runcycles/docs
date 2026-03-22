@@ -1,6 +1,6 @@
 ---
 title: "How to Add Budget Control to a LangChain Agent"
-description: "Wrap a LangChain AgentExecutor with per-run budget limits using Cycles reservations — without rewriting agent logic."
+description: "Wrap a LangChain AgentExecutor with per-run budget limits using Cycles reservations — without rewriting agent logic. Python examples with the @cycles decorator."
 ---
 
 # How to Add Budget Control to a LangChain Agent

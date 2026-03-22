@@ -1,6 +1,6 @@
 ---
 title: "How Reserve → Commit Works in Cycles"
-description: "Understand the reserve-then-commit lifecycle in Cycles that enforces budget limits before work begins, not after."
+description: "Understand the reserve-then-commit lifecycle in Cycles that enforces budget limits before work begins, not after. Covers reserve, commit, and release operations."
 ---
 
 # How Reserve → Commit Works in Cycles

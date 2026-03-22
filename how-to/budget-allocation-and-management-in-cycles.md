@@ -1,6 +1,6 @@
 ---
 title: "Budget Allocation and Management in Cycles"
-description: "Learn how budget allocation works in Cycles, how to set up scope-level budgets, and how to manage them over time."
+description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, reset for billing periods, and manage hierarchical budget structures."
 ---
 
 # Budget Allocation and Management in Cycles
