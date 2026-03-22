@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Action Control: Hard Limits on Side Effects"
-date: 2026-03-21
+date: 2026-03-19
 author: Cycles Team
 tags: [action-control, risk, agents, engineering, best-practices]
 description: "Why controlling what AI agents DO matters more than controlling what they spend — and how to enforce hard limits on emails, deploys, and file writes."

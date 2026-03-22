@@ -1,6 +1,6 @@
 ---
 title: "Budget Limits for Claude Code, Cursor, and Windsurf via MCP"
-date: 2026-03-21
+date: 2026-03-19
 author: Cycles Team
 tags: [mcp, claude-code, cursor, windsurf, budgets, agents]
 description: "Add hard budget limits to Claude Code, Cursor, and Windsurf sessions — config-only enforcement via MCP, zero code changes."

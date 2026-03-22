@@ -1,6 +1,6 @@
 ---
 title: "OpenAI API Budget Limits: Per-User and Per-Tenant"
-date: 2026-03-21
+date: 2026-03-18
 author: Cycles Team
 tags: [openai, budgets, agents, per-user, per-tenant]
 description: "OpenAI org-level spending caps are too coarse for agents. Enforce per-user, per-run, and per-tenant limits before every API call."

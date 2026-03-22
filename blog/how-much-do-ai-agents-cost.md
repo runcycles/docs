@@ -1,6 +1,6 @@
 ---
 title: "How Much Do AI Agents Actually Cost?"
-date: 2026-03-15
+date: 2026-03-13
 author: Cycles Team
 tags: [costs, agents, guide]
 description: "AI agent cost breakdown across OpenAI, Anthropic, Google, and AWS Bedrock — with real-world scenarios for support bots, coding agents, and data pipelines."

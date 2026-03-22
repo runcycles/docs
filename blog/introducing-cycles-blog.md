@@ -1,6 +1,6 @@
 ---
 title: "Introducing the Cycles Blog"
-date: 2026-03-14
+date: 2026-03-13
 author: Cycles Team
 tags: [announcement]
 description: "We're launching our blog to share engineering insights, product updates, and best practices for runtime authority in autonomous systems."

@@ -1,6 +1,6 @@
 ---
 title: "The True Cost of Uncontrolled AI Agents"
-date: 2026-03-16
+date: 2026-03-14
 author: Cycles Team
 tags: [costs, agents, incidents, best-practices]
 description: "What happens when AI agents run without budget limits? Real-world costs, failure modes, and why pre-execution runtime authority is the missing layer."

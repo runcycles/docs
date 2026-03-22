@@ -1,6 +1,6 @@
 ---
 title: "Runtime Authority vs Guardrails vs Observability"
-date: 2026-03-22
+date: 2026-03-20
 author: Albert Mavashev
 tags: [runtime-authority, guardrails, observability, comparisons, concepts]
 description: "Runtime authority, guardrails, and observability each solve a different part of the agent control problem. This post explains what each does, where each falls short, and why autonomous systems need all three."
