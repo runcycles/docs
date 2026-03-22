@@ -1,5 +1,5 @@
 ---
-title: "LangGraph Budget Control: Bounding Durable Execution, Retries, and Fan-Out"
+title: "LangGraph Budget Control for Durable Execution, Retries, and Fan-Out"
 date: 2026-03-22
 author: Cycles Team
 tags: [langgraph, budgets, engineering, durable-execution, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# LangGraph Budget Control: Bounding Durable Execution, Retries, and Fan-Out
+# LangGraph Budget Control for Durable Execution, Retries, and Fan-Out
 
 A team builds an insurance claim processor in LangGraph. The graph has six nodes — classify, extract, validate, enrich, review, decide — with checkpointing enabled so runs can pause and resume. It works well in development.
 
@@ -62,6 +62,8 @@ LangGraph supports retry policies at multiple levels: individual tool calls, nod
 
 A graph with 3 retries per node and 3 retries per graph can produce up to 9 executions of a single node. Add an SDK-level retry on transient HTTP errors (another 3×), and you are looking at 27 executions of a node you expected to run once. At $0.45 per node execution, a $0.45 step becomes a $12.15 step.
 
+These three retry layers operate at different levels of the stack. SDK retries replay a single HTTP call — transparent to the node, cost = one LLM call per attempt. Node retries re-execute the node function, which may contain multiple LLM calls and tool invocations — cost = the full node body per attempt. Graph-level retries resume from a checkpoint and re-enter the node from persisted state, replaying everything above. Each layer compounds the cost of the layers below it.
+
 This is the same geometric multiplication pattern behind the [retry storm failure that cost $1,800 in 12 minutes](/blog/ai-agent-failures-budget-controls-prevent). Durable execution does not prevent retry storms — it makes them more likely, because the framework is designed to keep trying.
 
 ### 3. Fan-out branches racing for shared budget
@@ -105,9 +107,11 @@ The [reserve-commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-
 
 ## What This Looks Like in Practice
 
-Cycles — a runtime authority for autonomous agents — integrates with LangChain and LangGraph through a [custom callback handler](/how-to/integrating-cycles-with-langchain) that wraps every LLM call with a reservation. The handler creates a reservation on `on_llm_start`, commits on `on_llm_end`, and releases on `on_llm_error`:
+Cycles — a runtime authority for autonomous agents — integrates with LangGraph through a [LangChain callback handler](/how-to/integrating-cycles-with-langchain) on the model. The handler fires on every LLM call inside every node: it creates a reservation on `on_llm_start`, commits actual cost on `on_llm_end`, and releases on `on_llm_error`. The reservation boundary sits at the model call, not at the graph edge — so a node that makes three LLM calls gets three reservations.
 
 ```python
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_openai import ChatOpenAI
 from runcycles import CyclesClient, CyclesConfig, Subject
 from budget_handler import CyclesBudgetHandler  # see integration guide
@@ -123,15 +127,34 @@ handler = CyclesBudgetHandler(
     ),
 )
 
+# The handler attaches to the model, not the graph.
+# Every LLM call inside any node gets a pre-execution budget check.
 llm = ChatOpenAI(model="gpt-4o", callbacks=[handler])
+
+def classify(state: dict) -> dict:
+    # ← on_llm_start fires here: reservation created
+    result = llm.invoke(state["messages"])
+    # ← on_llm_end fires here: actual cost committed
+    return {"messages": [result]}
+
+graph = StateGraph(dict)
+graph.add_node("classify", classify)
+graph.add_node("extract", extract)
+graph.add_node("enrich", enrich)
+graph.add_edge(START, "classify")
+graph.add_edge("classify", "extract")
+graph.add_edge("extract", "enrich")
+graph.add_edge("enrich", END)
+
+app = graph.compile(checkpointer=MemorySaver())
 ```
 
-Every LLM call the graph makes — across nodes, retries, and fan-out branches — gets a pre-execution budget check. The handler tracks reservations by LangChain's `run_id`, so concurrent calls within parallel branches are handled correctly.
+When LangGraph resumes from a checkpoint and re-enters a node, the handler treats it like any other LLM call — the reservation fires again. Idempotency keys on commits (run ID + node ID + attempt number) prevent double-charging: a retried node creates a new reservation, while a replayed-from-checkpoint node that already committed is recognized as settled.
 
-For fan-out, each sub-graph uses a scoped subject with its own budget allocation:
+For fan-out, each parallel review node gets its own model instance with a budget-scoped handler:
 
 ```python
-# Parent carves sub-budgets for parallel branches
+# Each review node gets its own budget-scoped handler
 for branch in ["liability", "medical", "property", "general"]:
     branch_handler = CyclesBudgetHandler(
         client=client,
@@ -141,11 +164,17 @@ for branch in ["liability", "medical", "property", "general"]:
             agent=f"review-{branch}",
         ),
     )
-    # Each branch is budget-bounded independently
-    run_branch(state, callbacks=[branch_handler])
+    branch_llm = ChatOpenAI(model="gpt-4o", callbacks=[branch_handler])
+
+    def make_review_node(model):
+        def review(state: dict) -> dict:
+            return {"messages": [model.invoke(state["messages"])]}
+        return review
+
+    graph.add_node(f"review_{branch}", make_review_node(branch_llm))
 ```
 
-Idempotency keys on reservations and commits ensure that replayed nodes do not double-charge. The key includes the run ID, node ID, and attempt number — so a retried node creates a new reservation, while a replayed-from-checkpoint node recognizes the existing commit.
+Each parallel node's LLM calls are budget-bounded independently. The scoped `Subject` per branch means Cycles tracks spend separately — no shared-pool race condition.
 
 For the full callback handler implementation and runnable examples, see [Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain).
 
