@@ -179,7 +179,7 @@ Beyond caps, four degradation strategies apply to OpenAI workloads:
 
 For the full degradation strategy guide, see [Degradation Paths: Deny, Downgrade, Disable, or Defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). For the protocol reference, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles).
 
-## Next Steps
+## Next steps
 
 - **[Integrating Cycles with OpenAI](/how-to/integrating-cycles-with-openai)** — production integration with the `@cycles` decorator, `tiktoken`, and caps handling
 - **[Common Budget Patterns](/how-to/common-budget-patterns)** — full recipes for per-user, per-run, per-tenant, and model-tier budgets

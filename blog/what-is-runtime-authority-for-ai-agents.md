@@ -129,7 +129,7 @@ Before an agent takes its next action, Cycles answers whether that action is all
 
 Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not care whether the agent is built with LangGraph, CrewAI, a custom loop, or a coding agent like Claude Code. It cares whether the next action is permitted.
 
-## Next Steps
+## Next steps
 
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — where budget enforcement fits in a production LLM stack
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution budget decisions

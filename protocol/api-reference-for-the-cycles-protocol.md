@@ -710,7 +710,7 @@ All write operations require idempotency via the `idempotency_key` field in the 
 
 Idempotency is scoped per (effective tenant, endpoint, idempotency_key).
 
-## Next Steps
+## Next steps
 
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — detailed error code reference
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deploy your own instance

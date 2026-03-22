@@ -338,7 +338,7 @@ def generate_summary(document: str) -> str:
 
 It's better to have 3 well-instrumented call paths than 30 poorly-estimated ones. Start with the calls that matter most.
 
-## Next Steps
+## Next steps
 
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — full guide to safe rollout
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model

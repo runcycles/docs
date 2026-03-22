@@ -272,7 +272,7 @@ If you're unsure where to begin:
 
 The most important step isn't picking the perfect pattern — it's having _any_ budget boundary in the execution path. You can always refine the structure later. You can't un-spend money that an uncontrolled agent already burned.
 
-## Next Steps
+## Next steps
 
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — how the reserve-commit pattern makes these patterns enforceable at runtime
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — deep dive on tenant isolation, quotas, and hierarchical budgets for SaaS platforms

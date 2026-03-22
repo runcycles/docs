@@ -73,7 +73,7 @@ All integrations follow the same protocol:
 
 See [Using the Cycles Client Programmatically](/how-to/using-the-cycles-client-programmatically) for the full client API reference.
 
-## Next Steps
+## Next steps
 
 - [Adding Cycles to an Existing Application](/how-to/adding-cycles-to-an-existing-application) — step-by-step guide for your first integration
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation

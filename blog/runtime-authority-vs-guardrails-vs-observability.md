@@ -122,7 +122,7 @@ Before the next action executes, Cycles decides whether it is allowed, under wha
 
 Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not replace your observability platform or your content guardrails. It fills the layer between them that most teams are missing.
 
-## Next Steps
+## Next steps
 
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions

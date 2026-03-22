@@ -158,7 +158,7 @@ You do not need the full hierarchy on day one. The proven path for multi-tenant 
 
 For teams introducing enforcement to an existing system, [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) lets you log what would be denied without actually blocking anything — giving you real data to size budgets before flipping to hard enforcement.
 
-## Next Steps
+## Next steps
 
 - **[How to Model Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles)** — detailed guide to designing your scope hierarchy
 - **[Scope Derivation](/protocol/how-scope-derivation-works-in-cycles)** — how hierarchical budget paths are built from subject fields

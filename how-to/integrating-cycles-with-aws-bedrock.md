@@ -164,7 +164,7 @@ Bedrock streams usage metadata in specific event types:
 
 Track both to calculate accurate actual cost for the commit.
 
-## Next Steps
+## Next steps
 
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation

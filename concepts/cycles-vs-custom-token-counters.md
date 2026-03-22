@@ -228,7 +228,7 @@ The question is not whether you can build it yourself. You can.
 
 The question is whether budget accounting is where your team should be spending its engineering time.
 
-## Next Steps
+## Next steps
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)

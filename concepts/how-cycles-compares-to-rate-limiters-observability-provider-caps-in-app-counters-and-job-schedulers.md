@@ -396,7 +396,7 @@ Consider adding Cycles to your stack when:
 
 If none of these apply yet, start with [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) to see what enforcement would look like on your current traffic.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

@@ -135,7 +135,7 @@ Those are infrastructure concerns. They belong in a control layer that is:
 
 That is the problem Cycles exists to solve.
 
-## Next Steps
+## Next steps
 
 To learn more:
 

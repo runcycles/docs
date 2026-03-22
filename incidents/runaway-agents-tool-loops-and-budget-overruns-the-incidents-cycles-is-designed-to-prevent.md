@@ -406,7 +406,7 @@ to:
 
 - enforcing bounded execution intentionally
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

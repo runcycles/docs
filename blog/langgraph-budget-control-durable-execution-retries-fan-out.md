@@ -192,7 +192,7 @@ The difference is not subtle. It is the difference between a cost surprise and a
 
 The insurance claim processor from the opening scenario would have stopped at $180 — enforcement before the action, not observation after. The retry replays would have been idempotent — committed nodes would not re-charge. The fan-out branches would have received sub-budgets. The run-level hard limit would have prevented any single execution from exceeding its allocation.
 
-## Next Steps
+## Next steps
 
 - **[Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain)** — full callback handler implementation for LangChain and LangGraph
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern in depth

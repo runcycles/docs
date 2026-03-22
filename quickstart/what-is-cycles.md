@@ -155,7 +155,7 @@ Pick the quickstart that matches your environment:
 Follow the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — it walks you from zero to a working budget-guarded app in 10 minutes.
 :::
 
-## Next Steps
+## Next steps
 
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how components interact

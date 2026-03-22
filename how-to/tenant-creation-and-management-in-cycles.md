@@ -730,7 +730,7 @@ You tried to create a tenant with a `tenant_id` that already exists but with a d
 
 **Closing tenants prematurely.** Use `SUSPENDED` for temporary blocks. Only use `CLOSED` when the tenant is being permanently decommissioned.
 
-## Next Steps
+## Next steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together
 - [API Key Management](/how-to/api-key-management-in-cycles) — create and rotate API keys for your tenants

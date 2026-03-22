@@ -318,7 +318,7 @@ They need a runtime model that can:
 
 That is what Cycles provides.
 
-## Next Steps
+## Next steps
 
 To see where this model is defined and implemented:
 

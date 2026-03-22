@@ -644,7 +644,7 @@ If you're already using the Cycles TypeScript client directly (see [Programmatic
 
 The plugin is the recommended approach for OpenClaw users — it requires zero custom code and covers the full lifecycle automatically.
 
-## Next Steps
+## Next steps
 
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — strategies beyond simple model downgrade
 - [Estimate Exposure Before Execution](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles) — how to set `toolBaseCosts` effectively

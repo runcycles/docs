@@ -169,7 +169,7 @@ The server includes 3 prompts that agents can invoke for guided workflows:
 | `CYCLES_MOCK` | — | Set to `"true"` to use mock mode (no server needed) |
 | `PORT` | `3000` | HTTP port when using `--transport http` |
 
-## Next Steps
+## Next steps
 
 - **[Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp)** — advanced patterns: preflight decisions, graceful degradation, long-running operations, fire-and-forget events
 - **[Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together)** — how the MCP server fits into the full Cycles stack

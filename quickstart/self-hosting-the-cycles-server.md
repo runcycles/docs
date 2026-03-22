@@ -244,7 +244,7 @@ If the server is configured correctly, you will receive a JSON response with a `
 
 If you get `BUDGET_EXCEEDED`, you need to create a budget via the admin server first. If you get `UNAUTHORIZED`, verify your API key was created correctly. See the [full stack deployment guide](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
 
-## Next Steps
+## Next steps
 
 - [API Reference](/api/) — interactive endpoint documentation
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all configuration properties

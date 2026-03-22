@@ -158,7 +158,7 @@ It is:
 
 If the answer is no, that is exactly why Cycles exists.
 
-## Next Steps
+## Next steps
 
 - **[What is Cycles?](/quickstart/what-is-cycles)** — start here if you are new to Cycles
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — see the reserve/commit lifecycle in action

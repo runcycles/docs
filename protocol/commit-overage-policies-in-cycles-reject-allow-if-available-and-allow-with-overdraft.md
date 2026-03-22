@@ -194,7 +194,7 @@ The three commit overage policies give teams control over the tradeoff between b
 
 Most systems benefit from using different policies for different action classes: REJECT for well-estimated actions, ALLOW_IF_AVAILABLE for variable ones, and ALLOW_WITH_OVERDRAFT for must-record side effects.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

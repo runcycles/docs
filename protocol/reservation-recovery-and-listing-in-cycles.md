@@ -182,7 +182,7 @@ The reservation listing and detail endpoints provide operational visibility and 
 
 These endpoints are optional in v0, but essential for production operations where client crashes, network issues, and budget investigations are a reality.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

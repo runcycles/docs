@@ -300,7 +300,7 @@ Multiple Cycles server instances can run behind a load balancer. All state is in
 
 Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directly via HTTP — the client libraries are convenience layers, not a requirement. MCP-compatible agents (Claude Desktop, Claude Code, Cursor, Windsurf) can use the Cycles MCP Server for a zero-code integration path.
 
-## Next Steps
+## Next steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — zero to working deployment with all components

@@ -45,7 +45,7 @@ They are not the same product category. In some stacks they may be complementary
 
 ---
 
-## Next Steps
+## Next steps
 
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)
 - [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion)

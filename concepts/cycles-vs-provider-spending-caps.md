@@ -208,7 +208,7 @@ Provider caps become your fire alarm. Cycles becomes your thermostat.
 
 One prevents catastrophe. The other maintains comfortable operating conditions.
 
-## Next Steps
+## Next steps
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)

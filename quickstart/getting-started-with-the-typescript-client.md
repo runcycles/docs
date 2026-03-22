@@ -519,7 +519,7 @@ For each `withCycles`-guarded function call:
 9. Heartbeat is stopped
 10. If function threw: reservation is released instead of committed
 
-## Next Steps
+## Next steps
 
 - [TypeScript Client Configuration Reference](/configuration/typescript-client-configuration-reference) — all config options and environment variables
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — exception hierarchy, Express/Next.js patterns

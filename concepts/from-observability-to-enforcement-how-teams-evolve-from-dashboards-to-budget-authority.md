@@ -432,7 +432,7 @@ That is the move from dashboards to runtime authority.
 
 That is the move Cycles is built to support.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

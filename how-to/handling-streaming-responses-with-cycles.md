@@ -239,7 +239,7 @@ For streaming, a good estimate is `max_tokens × output_price`, since output tok
 
 See [`examples/streaming_usage.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/streaming_usage.py) for a complete, runnable script.
 
-## Next Steps
+## Next steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling failures during streaming
 - [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) — configuring timeouts for long-running streams

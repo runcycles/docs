@@ -188,7 +188,7 @@ export function Chat() {
 }
 ```
 
-## Next Steps
+## Next steps
 
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model

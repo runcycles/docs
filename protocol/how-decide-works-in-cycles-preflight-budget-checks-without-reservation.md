@@ -142,7 +142,7 @@ It helps systems:
 
 It is advisory, not binding. For guaranteed budget holds, use reservations.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

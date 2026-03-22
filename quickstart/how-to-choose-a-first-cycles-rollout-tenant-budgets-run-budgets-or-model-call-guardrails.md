@@ -420,7 +420,7 @@ Start with the scope that most directly addresses your current incident or press
 
 That is how Cycles becomes adoptable, useful, and operationally credible.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

@@ -123,7 +123,7 @@ You do not need to enforce budgets everywhere on day one. The proven path:
 
 For a detailed shadow mode guide, see [Shadow Mode: How to Roll Out Budget Enforcement Without Breaking Production](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production). For help choosing where to start, see [How to Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails).
 
-## Next Steps
+## Next steps
 
 - **[What is Cycles?](/quickstart/what-is-cycles)** — the runtime that implements the reserve-commit enforcement pattern
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the full reserve → execute → commit lifecycle hands-on

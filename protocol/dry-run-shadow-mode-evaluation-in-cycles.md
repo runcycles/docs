@@ -184,7 +184,7 @@ Use dry run for shadow mode rollouts, policy testing, and building confidence in
 
 For quick feasibility checks without full reservation evaluation, use the decide endpoint instead.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

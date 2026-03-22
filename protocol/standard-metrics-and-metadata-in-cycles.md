@@ -251,7 +251,7 @@ Standard metrics and metadata enrich budget operations with execution context:
 
 These fields are optional but recommended. They turn budget accounting from raw cost numbers into actionable operational data.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

@@ -264,7 +264,7 @@ Every property can be set via environment variables using Spring Boot's relaxed 
 | `cycles.http.connect-timeout` | `CYCLES_HTTP_CONNECT_TIMEOUT` |
 | `cycles.retry.max-attempts` | `CYCLES_RETRY_MAX_ATTEMPTS` |
 
-## Next Steps
+## Next steps
 
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — quick start guide
 - [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax

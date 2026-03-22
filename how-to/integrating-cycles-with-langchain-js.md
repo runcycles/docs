@@ -282,7 +282,7 @@ Each agent draws from its own budget allocation. If the executor exhausts its bu
 - **Streaming uses a different pattern.** Use `reserveForStream` with its automatic heartbeat instead of the callback handler.
 - **Works with any LangChain.js model.** Attach the handler to `ChatOpenAI`, `ChatAnthropic`, or any other model via `callbacks: [handler]`.
 
-## Next Steps
+## Next steps
 
 - [Integrating Cycles with LangChain (Python)](/how-to/integrating-cycles-with-langchain) — the Python version of this guide
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail

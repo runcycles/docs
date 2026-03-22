@@ -205,7 +205,7 @@ app.post(
 );
 ```
 
-## Next Steps
+## Next steps
 
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use middleware vs inline
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model

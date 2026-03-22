@@ -192,7 +192,7 @@ Scope derivation transforms Subject fields into a hierarchical set of budget bou
 
 Understanding scope derivation is essential for designing effective budget policy in Cycles.
 
-## Next Steps
+## Next steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how the three building blocks fit together
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — create budgets at each scope level

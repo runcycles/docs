@@ -199,7 +199,7 @@ pip install -r agent/requirements.txt
 
 The script starts the Cycles stack (Redis + server + admin), provisions the tenant and toolset budgets, then runs both modes back to back. First run pulls ~200MB in Docker images; subsequent runs start in seconds. Stop with `./teardown.sh`.
 
-## Next Steps
+## Next steps
 
 This demo shows action authority for a single agent with three tools. The same mechanism works with multiple agents sharing a budget, risk-point caps instead of dollar budgets, or progressive capability narrowing as budget runs low.
 

@@ -156,7 +156,7 @@ The teams that get the most out of coding agents will not be the ones that simpl
 
 They will be the ones that pair machine-speed execution with explicit runtime control and deliberate budget judgment.
 
-## Next Steps
+## Next steps
 
 To learn more:
 

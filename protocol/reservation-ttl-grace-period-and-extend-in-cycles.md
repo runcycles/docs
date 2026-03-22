@@ -220,7 +220,7 @@ The recommended pattern for most systems:
 
 This keeps budget locked only while work is actively running, and recovers quickly when clients crash.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

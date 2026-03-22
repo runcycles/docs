@@ -155,7 +155,7 @@ For every agent workflow your team builds, ask two questions:
 
 Teams that implement both dimensions have runtime authority. Teams that implement only dollar budgets have half of it — and the half they are missing is where agents do the most damage.
 
-## Next Steps
+## Next steps
 
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the companion post covering budget authority in depth
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — failure scenarios with full cost math

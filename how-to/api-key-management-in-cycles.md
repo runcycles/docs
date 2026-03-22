@@ -190,7 +190,7 @@ Track which keys are making requests. If a key is compromised, revoke it immedia
 | `UNAUTHORIZED` | 401 | Missing `X-Cycles-API-Key` header, or key is invalid/revoked/expired |
 | `FORBIDDEN` | 403 | Key is valid but `subject.tenant` does not match the key's tenant |
 
-## Next Steps
+## Next steps
 
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and manage the tenants that API keys belong to
 - [Authentication and Tenancy](/protocol/authentication-tenancy-and-api-keys-in-cycles) — deeper dive into the auth model

@@ -524,7 +524,7 @@ API keys enforce **tenant isolation** — an API key for tenant A cannot operate
 
 No. Parent and child scopes are independent ledgers. A reservation at `tenant:acme-corp/workspace:prod/app:chatbot` charges all three scopes independently. The parent scope does not "roll up" child charges — it is charged directly as part of the atomic reservation.
 
-## Next Steps
+## Next steps
 
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and manage tenants via the Admin API
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — fund and adjust budgets at each scope level

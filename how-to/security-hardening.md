@@ -234,7 +234,7 @@ cycles-server:
 - [ ] Key rotation schedule established
 - [ ] Dangerous Redis commands disabled
 
-## Next Steps
+## Next steps
 
 - [Production Operations Guide](/how-to/production-operations-guide) — deployment and infrastructure
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — metrics and alerting

@@ -373,7 +373,7 @@ That is why the best way to think about Cycles is not as a dashboard, a proxy, o
 
 It is a **runtime authority for autonomous agents**.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

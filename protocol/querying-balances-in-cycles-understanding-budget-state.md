@@ -249,7 +249,7 @@ This data powers dashboards, monitoring, alerting, automated degradation, and ca
 
 For real-time budget enforcement, use reservations. For understanding budget state, use balances.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

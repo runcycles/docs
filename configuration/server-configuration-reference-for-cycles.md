@@ -242,7 +242,7 @@ The admin server exposes powerful management operations. In production:
 - Use a strong, randomly generated `ADMIN_API_KEY`
 - Consider disabling Swagger UI (`springdoc.swagger-ui.enabled=false`)
 
-## Next Steps
+## Next steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — end-to-end deployment guide
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deployment guide

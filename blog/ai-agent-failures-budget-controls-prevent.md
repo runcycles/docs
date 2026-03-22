@@ -273,7 +273,7 @@ The total across these five scenarios: **$30,100 in preventable spend** (countin
 
 The pattern is simple. Budget enforcement is a pre-execution check. It asks one question before every LLM call: "Is there budget remaining for this?" If yes, proceed. If no, stop. Every failure in this post would have been caught by that single question.
 
-## Next Steps
+## Next steps
 
 If these failure modes look familiar — or if you'd rather prevent them than experience them:
 

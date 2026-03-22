@@ -253,7 +253,7 @@ With this pattern in place:
 - **Automatic reconciliation** — committing less than the reserved amount releases the difference back to the pool
 - **Crash safety** — if the agent crashes before committing, the reservation expires automatically and budget is released
 
-## Next Steps
+## Next steps
 
 - [Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain) — per-LLM-call callback handler pattern
 - [Reserve / Commit Lifecycle](/protocol/how-reserve-commit-works-in-cycles) — protocol deep-dive

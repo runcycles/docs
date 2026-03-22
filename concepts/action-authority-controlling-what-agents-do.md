@@ -48,7 +48,7 @@ Action authority does not require killing the agent. As risk-point budget decrea
 
 This is the "disable" degradation strategy applied to action authority rather than cost control. See [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
-## Next Steps
+## Next steps
 
 - [Glossary: Action Authority](/glossary#action-authority) — formal definition
 - [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — deep dive on the problem and solution

@@ -330,7 +330,7 @@ This pattern appears in:
 
 4. **Avoid fire-and-forget patterns.** If you spawn agents without awaiting their reservations, you lose the ability to react to denials. Always handle the reservation result before proceeding.
 
-## Next Steps
+## Next steps
 
 - [Idempotency, Retries and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) — how Cycles handles concurrency
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — hierarchical budget enforcement

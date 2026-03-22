@@ -259,7 +259,7 @@ Budget allocation in Cycles:
 - Requires explicit allocation at every scope level you want to control
 - Supports flat, hierarchical, per-run, per-agent, and custom dimension patterns
 
-## Next Steps
+## Next steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before allocating budgets

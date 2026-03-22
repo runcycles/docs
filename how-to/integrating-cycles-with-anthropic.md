@@ -202,7 +202,7 @@ Adjust these constants for the model you use:
 
 See [`examples/anthropic_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/anthropic_integration.py) for a complete, runnable script.
 
-## Next Steps
+## Next steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming

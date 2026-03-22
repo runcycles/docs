@@ -258,7 +258,7 @@ Cycles provides 12 specific error codes that tell the client exactly what went w
 
 Handling these codes correctly is the difference between a fragile integration and a production-grade one.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

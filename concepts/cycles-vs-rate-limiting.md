@@ -196,7 +196,7 @@ Cycles answers **how much?**
 
 Production systems need both answers.
 
-## Next Steps
+## Next steps
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)

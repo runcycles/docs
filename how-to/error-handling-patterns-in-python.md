@@ -291,7 +291,7 @@ Use `e.is_retryable()` to check programmatically — it returns `True` for `INTE
 7. **Handle `RESERVATION_EXPIRED`** by recording usage as an event if the work already completed
 8. **Register a global exception handler** in web frameworks for consistent API error responses
 
-## Next Steps
+## Next steps
 
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — decorator and client setup
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference

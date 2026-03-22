@@ -376,7 +376,7 @@ These are not implementation details.
 
 They are the difference between “tracking usage” and **governing execution under real production conditions**.
 
-## Next Steps
+## Next steps
 
 To explore the Cycles stack:
 

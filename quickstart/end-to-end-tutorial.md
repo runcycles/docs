@@ -387,7 +387,7 @@ You'll see `"error": "BUDGET_EXCEEDED"` — the call was blocked *before* any mo
 docker compose down -v
 ```
 
-## Next Steps
+## Next steps
 
 - [Demos](/demos/) — see Cycles in action with the runaway agent and action authority scenarios
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
