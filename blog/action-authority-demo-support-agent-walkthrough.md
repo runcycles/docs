@@ -3,7 +3,7 @@ title: "AI Agent Action Authority: A Support Agent Demo"
 date: 2026-03-22
 author: Cycles Team
 tags: [action-authority, demo, agents, runtime-authority, walkthrough, action-control, side-effects]
-description: "A support agent has access to CRM, notes, and email — but should every run be allowed to send? This demo walkthrough shows how Cycles blocks a customer email before execution while allowing internal actions to proceed. Three decorators, one exception, zero unauthorized side effects."
+description: "A support agent can use CRM, notes, and email — but should every run send? Cycles blocks the customer email before execution. Three decorators, one exception."
 blog: true
 sidebar: false
 ---
@@ -134,7 +134,7 @@ def send_customer_email(case_id, to, subject, body):
 
 # --- Catch the budget exception ---
 try:
-    send_customer_email(case_id, email, subject, body)
+    send_customer_email(case_id, to, subject, body)
 except BudgetExceededError:
     # email not sent — escalated to human
 ```
@@ -166,6 +166,7 @@ for TOOLSET in "internal-notes" "crm-updates"; do
   SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:$TOOLSET"
   curl -X POST "$ADMIN_URL/budgets" \
     -H "Content-Type: application/json" \
+    -H "X-Cycles-API-Key: $API_KEY" \
     -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
          \"allocated\": {\"amount\": 100000000, \"unit\": \"USD_MICROCENTS\"}}"
 done
