@@ -1,5 +1,5 @@
 ---
-title: "You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Runtime Authority"
+title: "Budget Wrapper vs Runtime Authority for AI Agents"
 date: 2026-03-20
 author: Cycles Team
 tags: [architecture, agents, budgets, engineering]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# You Can Vibe Code a Budget Wrapper. You Probably Do Not Want to Own a Runtime Authority
+# Budget Wrapper vs Runtime Authority for AI Agents
 
 A common reaction to Cycles is:
 

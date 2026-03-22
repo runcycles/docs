@@ -361,11 +361,16 @@ export default defineConfig({
     ])
 
     if (pageData.frontmatter.blog) {
+      const ogImage = pageData.frontmatter.image
+        ? `https://runcycles.io${pageData.frontmatter.image}`
+        : 'https://runcycles.io/runcycles-og.png'
+
       pageData.frontmatter.head.push(
         ['meta', { property: 'og:type', content: 'article' }],
         ['meta', { property: 'og:title', content: pageData.frontmatter.title }],
         ['meta', { property: 'og:description', content: pageData.frontmatter.description }],
         ['meta', { property: 'og:url', content: canonicalUrl }],
+        ['meta', { property: 'og:image', content: ogImage }],
         ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
         ['meta', { name: 'twitter:title', content: pageData.frontmatter.title }],
         ['meta', { name: 'twitter:description', content: pageData.frontmatter.description }],
@@ -375,6 +380,7 @@ export default defineConfig({
           "headline": pageData.frontmatter.title,
           "description": pageData.frontmatter.description,
           "datePublished": pageData.frontmatter.date,
+          "image": ogImage,
           "author": {
             "@type": "Organization",
             "name": pageData.frontmatter.author || "Cycles Team"

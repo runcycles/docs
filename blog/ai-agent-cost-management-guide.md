@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Cost Management: The Complete Guide for Engineering Teams"
+title: "AI Agent Cost Management: The Complete Guide"
 date: 2026-03-18
 author: Cycles Team
 tags: [costs, engineering, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Cost Management: The Complete Guide for Engineering Teams
+# AI Agent Cost Management: The Complete Guide
 
 An infrastructure team we work with had monitoring in place. Good monitoring. They had dashboards showing real-time spend per model, per tenant, per workflow. They had daily cost reports emailed to engineering leads. They caught their first overspend incident within 4 hours and considered it a success. Then the second incident happened — a retry storm on a Friday evening that burned through $1,800 in 12 minutes. The dashboard showed it clearly. The alert fired on time. The on-call engineer saw it within 15 minutes. But by then, the money was already spent. That's when they realized: monitoring tells you what happened. It doesn't stop it from happening.
 

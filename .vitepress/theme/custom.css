@@ -164,7 +164,24 @@
   color: var(--vp-c-brand-1);
 }
 
-.blog-start-here-list a:focus-visible {
+.blog-start-here-cta {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--vp-c-text-3);
+}
+
+.blog-start-here-cta a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.blog-start-here-cta a:hover {
+  text-decoration: underline;
+}
+
+.blog-start-here-list a:focus-visible,
+.blog-card h2 a:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 2px;
   border-radius: 4px;

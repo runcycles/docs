@@ -1,5 +1,5 @@
 ---
-title: "5 Real-World AI Agent Failures That Budget Controls Would Have Prevented"
+title: "5 AI Agent Failures Budget Controls Would Prevent"
 date: 2026-03-17
 author: Cycles Team
 tags: [incidents, costs, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# 5 Real-World AI Agent Failures That Budget Controls Would Have Prevented
+# 5 AI Agent Failures Budget Controls Would Prevent
 
 Every team running AI agents in production has at least one horror story. The details vary — a runaway loop, a retry storm, a weekend deployment nobody was watching — but the punchline is always the same: a surprising number on an invoice and a postmortem that concludes with "we need better controls." We've collected these stories from teams across the industry, and five patterns come up again and again. Each one is preventable. Each one keeps happening because the same architectural gap — no pre-execution budget check — exists in most agent systems.
 

@@ -1,5 +1,5 @@
 ---
-title: "How Much Do AI Agents Actually Cost? A Breakdown by Provider and Use Case"
+title: "How Much Do AI Agents Actually Cost?"
 date: 2026-03-15
 author: Cycles Team
 tags: [costs, agents, guide]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# How Much Do AI Agents Actually Cost? A Breakdown by Provider and Use Case
+# How Much Do AI Agents Actually Cost?
 
 A team we talked to recently launched their first production agent — a customer support bot running on GPT-4o. They estimated $800/month based on their prototype traffic. The first invoice came in at $4,200. The model pricing was exactly what they expected. The number of calls was not. Their agent averaged 11 LLM calls per conversation, not the 3 they'd assumed. Context windows grew with each turn. Retries on tool failures doubled the call count on bad days. The per-token price was never the problem. The per-agent price was.
 

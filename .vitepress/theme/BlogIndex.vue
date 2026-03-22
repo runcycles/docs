@@ -95,6 +95,7 @@ onMounted(() => {
         <li><a href="/blog/ai-agent-cost-management-guide">AI Agent Cost Management: The Complete Guide</a></li>
         <li><a href="/blog/ai-agent-budget-control-enforce-hard-spend-limits">AI Agent Budget Control: Enforce Hard Spend Limits</a></li>
       </ol>
+      <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
     </section>
 
     <article v-for="(post, i) in paginatedPosts" :key="post.url" class="blog-card">

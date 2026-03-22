@@ -1,5 +1,5 @@
 ---
-title: "Multi-Agent Budget Control for CrewAI, AutoGen, and OpenAI Agents SDK"
+title: "Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI"
 date: 2026-03-22
 author: Cycles Team
 tags: [multi-agent, crewai, autogen, openai, budgets, engineering, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# Multi-Agent Budget Control for CrewAI, AutoGen, and OpenAI Agents SDK
+# Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI
 
 A team builds a research pipeline using CrewAI with three agents: a Planner that breaks topics into sub-questions, a Researcher that investigates each one, and a Writer that synthesizes the results. The Planner delegates 5 sub-questions per topic to the Researcher. For complex sub-questions, the Researcher delegates down to a Deep Analyst agent that makes 15 LLM calls per investigation. In development, one topic costs ~$3.50.
 

@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Unit Economics: Cost Per Conversation, Cost Per User, and Margin Analysis"
+title: "AI Agent Unit Economics: Cost and Margin Analysis"
 date: 2026-03-22
 author: Cycles Team
 tags: [unit-economics, costs, enterprise, margins, best-practices]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Unit Economics: Cost Per Conversation, Cost Per User, and Margin Analysis
+# AI Agent Unit Economics: Cost and Margin Analysis
 
 A B2B SaaS company adds an AI copilot to their customer support product. They price the feature at $15/user/month and estimate $3/user/month in LLM costs based on their pilot: 20 conversations per user per month, 6 turns per conversation, GPT-4o at ~$0.15 per conversation. Gross margin target: 80%.
 

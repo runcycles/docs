@@ -4,8 +4,8 @@ description: "Engineering insights on AI agent cost management, budget enforceme
 sidebar: false
 ---
 
-# Blog
+# The Cycles Blog
 
-Latest news, engineering insights, and updates from the Cycles team.
+Engineering insights, product updates, and best practices for AI agent cost control and runtime authority.
 
 <BlogIndex />
