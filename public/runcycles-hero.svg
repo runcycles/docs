@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 480" width="620" height="480">
+  <title>CYCLES enforcement flow</title>
+  <desc>Three AI agents submit actions through the CYCLES budget gate. Allowed actions proceed; blocked actions are rejected when budget is exceeded.</desc>
   <style>
     @media (prefers-reduced-motion: reduce) {
-      .flow-dot, .glow-animated { display: none; }
+      .flow-dot { display: none; }
     }
   </style>
   <defs>
@@ -154,7 +156,7 @@
 
   <!-- Lock icon inside shield -->
   <rect x="288" y="220" width="24" height="18" rx="4" fill="#00C9A7"/>
-  <g class="flow-dot">
+  <g>
     <path d="M294 220 L294 213 Q294 204 300 204 Q306 204 306 213 L306 220" fill="none" stroke="#00885F" stroke-width="3" stroke-linecap="round"/>
     <animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite"
       values="0 0;0 0;0 -4;0 0;0 0" keyTimes="0;0.48;0.52;0.60;1"/>
@@ -230,12 +232,12 @@
   </circle>
 
   <!-- BLOCKED card (with shake on arrival) -->
-  <g class="flow-dot">
+  <g>
     <animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite"
       values="0 0;0 0;-3 0;3 0;-2 0;0 0;0 0" keyTimes="0;0.75;0.77;0.79;0.81;0.83;1"/>
     <rect x="454" y="320" width="148" height="64" rx="12" fill="#FFE5E2" filter="url(#shadow)"/>
     <!-- BLOCKED flash on arrival -->
-    <rect x="454" y="320" width="148" height="64" rx="12" fill="#FF453A" opacity="0">
+    <rect x="454" y="320" width="148" height="64" rx="12" fill="#FF453A" opacity="0" class="flow-dot">
       <animate attributeName="opacity" dur="8s" repeatCount="indefinite"
         values="0;0;0.3;0;0" keyTimes="0;0.75;0.79;0.85;1"/>
     </rect>
