@@ -85,7 +85,7 @@ onMounted(() => {
       </a>
     </div>
 
-    <section v-if="!selectedTag" class="blog-start-here">
+    <section v-if="!selectedTag" class="blog-start-here blog-start-here-static">
       <h3 class="blog-start-here-heading">Start Here</h3>
       <p class="blog-start-here-desc">New to Cycles? Read these posts in order to understand runtime authority from the ground up.</p>
       <ol class="blog-start-here-list">
@@ -97,6 +97,19 @@ onMounted(() => {
       </ol>
       <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
     </section>
+
+    <details v-if="!selectedTag" class="blog-start-here blog-start-here-collapsible">
+      <summary class="blog-start-here-heading">Start Here</summary>
+      <p class="blog-start-here-desc">New to Cycles? Read these posts in order to understand runtime authority from the ground up.</p>
+      <ol class="blog-start-here-list">
+        <li><a href="/blog/what-is-runtime-authority-for-ai-agents">What Is Runtime Authority for AI Agents?</a></li>
+        <li><a href="/blog/true-cost-of-uncontrolled-agents">The True Cost of Uncontrolled AI Agents</a></li>
+        <li><a href="/blog/how-much-do-ai-agents-cost">How Much Do AI Agents Actually Cost?</a></li>
+        <li><a href="/blog/ai-agent-cost-management-guide">AI Agent Cost Management: The Complete Guide</a></li>
+        <li><a href="/blog/ai-agent-budget-control-enforce-hard-spend-limits">AI Agent Budget Control: Enforce Hard Spend Limits</a></li>
+      </ol>
+      <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
+    </details>
 
     <article v-for="(post, i) in paginatedPosts" :key="post.url" class="blog-card">
       <div class="blog-card-content">
