@@ -41,6 +41,8 @@ pip install -r agent/requirements.txt
 
 Same agent. Same bug. Two outcomes: without Cycles the agent burns ~$6 in 30 seconds. With Cycles it stops cleanly at $1.00.
 
+See all demos — including action authority and future scenarios — on the [Demos](/demos/) page.
+
 ## How Cycles solves it
 
 Cycles enforces a budget decision before agent actions execute — LLM calls, tool invocations, API requests. Every action follows a **[Reserve-Commit lifecycle](/glossary#reservation)**:
