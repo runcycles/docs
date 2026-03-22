@@ -473,7 +473,7 @@ From there, real usage data can make estimates better over time.
 
 That is how reservation becomes operationally useful instead of theoretically perfect.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

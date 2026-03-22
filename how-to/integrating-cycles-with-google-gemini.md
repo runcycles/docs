@@ -136,7 +136,7 @@ The Gemini SDK provides token usage through `response.usageMetadata`:
 
 For streaming, access this from the aggregated response after the stream completes: `const aggregated = await streamResult.response`.
 
-## Next steps
+## Next Steps
 
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation

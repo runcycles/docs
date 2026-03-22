@@ -208,7 +208,7 @@ Guardrails AI solves the content problem. Cycles solves the cost problem. Togeth
 
 Neither tool is optional if you care about both.
 
-## Next steps
+## Next Steps
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)

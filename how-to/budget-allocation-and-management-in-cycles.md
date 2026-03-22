@@ -1,6 +1,6 @@
 ---
 title: "Budget Allocation and Management in Cycles"
-description: "Learn how budget allocation works in Cycles, how to set up scope-level budgets, and how to manage them over time."
+description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, reset for billing periods, and manage hierarchical budget structures."
 ---
 
 # Budget Allocation and Management in Cycles
@@ -259,7 +259,7 @@ Budget allocation in Cycles:
 - Requires explicit allocation at every scope level you want to control
 - Supports flat, hierarchical, per-run, per-agent, and custom dimension patterns
 
-## Next steps
+## Next Steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before allocating budgets

@@ -345,7 +345,7 @@ For more testing patterns, see [Testing with Cycles](/how-to/testing-with-cycles
 4. **Create budgets at all hierarchy levels.** Any scope that appears in a subject needs a budget.
 5. **Use shadow mode when adding new scope levels.** Verify the new scopes match before enforcing.
 
-## Next steps
+## Next Steps
 
 - [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) — how Cycles builds scope paths from subject fields
 - [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — creating and funding budgets

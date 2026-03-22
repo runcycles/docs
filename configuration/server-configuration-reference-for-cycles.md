@@ -1,6 +1,6 @@
 ---
 title: "Server Configuration Reference for Cycles"
-description: "Complete reference for all Cycles server configuration properties, including server, Redis, and Spring Boot settings."
+description: "Complete reference for all Cycles server and admin server configuration properties, including Redis, expiry, logging, and Spring Boot actuator settings."
 ---
 
 # Server Configuration Reference for Cycles
@@ -242,7 +242,7 @@ The admin server exposes powerful management operations. In production:
 - Use a strong, randomly generated `ADMIN_API_KEY`
 - Consider disabling Swagger UI (`springdoc.swagger-ui.enabled=false`)
 
-## Next steps
+## Next Steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — end-to-end deployment guide
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deployment guide

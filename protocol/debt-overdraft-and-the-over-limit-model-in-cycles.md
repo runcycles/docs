@@ -172,7 +172,7 @@ The key mechanisms:
 
 This gives teams accurate ledger state, bounded risk, and a clear path to resolution.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

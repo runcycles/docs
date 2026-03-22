@@ -194,7 +194,7 @@ Your estimation strategy should match your [overage policy](/protocol/commit-ove
 | **ALLOW_IF_AVAILABLE** | Reserve your best estimate. If actual exceeds reserved, the delta is deducted from remaining budget. |
 | **ALLOW_WITH_OVERDRAFT** | Reserve normally. Overage is allowed up to the overdraft limit. Best for SLA-critical operations. |
 
-## Next steps
+## Next Steps
 
 - [Estimate Exposure Before Execution](/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles) — detailed strategy guide for improving estimation over time
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — how USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS work

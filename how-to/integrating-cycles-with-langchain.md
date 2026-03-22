@@ -231,7 +231,7 @@ executor_handler = CyclesBudgetHandler(
 
 See [`examples/langchain_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/langchain_integration.py) for a complete, runnable script.
 
-## Next steps
+## Next Steps
 
 - [Budget Control for LangChain Agents](/how-to/how-to-add-budget-control-to-a-langchain-agent) — advanced LangChain budget patterns
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python

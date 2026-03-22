@@ -279,7 +279,7 @@ Or use the Spring Boot JSON logging starter for full structured output.
 3. Restart the Cycles Server if Redis connection pool is exhausted
 4. Active reservations with remaining TTL are preserved in Redis and will resume when connectivity returns
 
-## Next steps
+## Next Steps
 
 - [Security Hardening](/how-to/security-hardening) — Redis AUTH, TLS, key rotation
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — metrics and alerting setup

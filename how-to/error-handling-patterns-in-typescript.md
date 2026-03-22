@@ -280,7 +280,7 @@ try {
 }
 ```
 
-## Next steps
+## Next Steps
 
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns across all languages
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference

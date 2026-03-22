@@ -1,6 +1,6 @@
 ---
 title: "Authentication, Tenancy, and API Keys in Cycles"
-description: "How Cycles authenticates API requests and scopes all budget operations to tenants using API keys."
+description: "How Cycles authenticates API requests and scopes all budget operations to tenants using API keys. Covers key creation, tenant isolation, and the security model."
 ---
 
 # Authentication, Tenancy, and API Keys in Cycles
@@ -147,7 +147,7 @@ The server derives an effective tenant from the key and enforces tenant isolatio
 
 This ensures that budget governance is always tenant-isolated, even in shared deployments.
 
-## Next steps
+## Next Steps
 
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create, configure, and manage tenants via the Admin API
 - [API Key Management](/how-to/api-key-management-in-cycles) — create and rotate tenant-scoped API keys

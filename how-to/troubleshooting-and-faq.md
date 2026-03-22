@@ -391,7 +391,7 @@ For deeper incident analysis, the Incident Patterns section documents common pro
 - **[Concurrent Agent Overspend](/incidents/concurrent-agent-overspend)** — race conditions where multiple agents collectively exceed a shared budget
 - **[Scope Misconfiguration](/incidents/scope-misconfiguration-and-budget-leaks)** — budget leaks caused by incorrect scope hierarchies
 
-## Next steps
+## Next Steps
 
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — complete error code reference
 - [Testing with Cycles](/how-to/testing-with-cycles) — testing strategies and fixtures

@@ -171,7 +171,7 @@ async def get_budget(tenant_id: str, request: Request):
 
 See [`examples/fastapi_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/fastapi_integration.py) for a complete, runnable server.
 
-## Next steps
+## Next Steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming

@@ -1,6 +1,6 @@
 ---
 title: "Standard Metrics and Metadata in Cycles"
-description: "Attach execution metrics and custom metadata to commits and events in Cycles for debugging and analytics."
+description: "Attach execution metrics and custom metadata to commits and events in Cycles for debugging, analytics, and cost attribution across scopes."
 ---
 
 # Standard Metrics and Metadata in Cycles
@@ -251,7 +251,7 @@ Standard metrics and metadata enrich budget operations with execution context:
 
 These fields are optional but recommended. They turn budget accounting from raw cost numbers into actionable operational data.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

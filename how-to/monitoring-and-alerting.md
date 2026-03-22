@@ -1,6 +1,6 @@
 ---
 title: "Monitoring and Alerting"
-description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment."
+description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment. Covers balances, reservations, and budget exhaustion."
 ---
 
 # Monitoring and Alerting
@@ -210,7 +210,7 @@ docker compose logs -f cycles-server | grep "ERROR"
 
 For structured logging, pipe to your log aggregation system (ELK, Datadog, CloudWatch) and create alerts on log patterns.
 
-## Next steps
+## Next Steps
 
 - [Production Operations Guide](/how-to/production-operations-guide) — deployment and infrastructure
 - [Security Hardening](/how-to/security-hardening) — securing the deployment

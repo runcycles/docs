@@ -244,7 +244,7 @@ async def agent_loop(task: str):
         client.commit_reservation(...)
 ```
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code runtime authority for Claude / Cursor / Windsurf
 - [Getting Started with Python](/quickstart/getting-started-with-the-python-client)

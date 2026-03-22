@@ -166,7 +166,7 @@ config = CyclesConfig(
 )
 ```
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — quick start guide
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — exception handling patterns

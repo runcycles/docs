@@ -179,7 +179,7 @@ The key difference: reservations authorize work before it happens. Events record
 
 Both are part of a complete Cycles deployment.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

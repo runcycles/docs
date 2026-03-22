@@ -1,6 +1,6 @@
 ---
 title: "Querying Balances in Cycles: Understanding Budget State"
-description: "Query current budget state in Cycles to see allocations, reservations, spend, and remaining balance for any scope."
+description: "Query current budget state in Cycles to see allocations, reservations, spend, and remaining balance for any scope. Includes filtering and response format."
 ---
 
 # Querying Balances in Cycles: Understanding Budget State
@@ -249,7 +249,7 @@ This data powers dashboards, monitoring, alerting, automated degradation, and ca
 
 For real-time budget enforcement, use reservations. For understanding budget state, use balances.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

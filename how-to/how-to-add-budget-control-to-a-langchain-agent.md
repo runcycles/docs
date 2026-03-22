@@ -1,6 +1,6 @@
 ---
 title: "How to Add Budget Control to a LangChain Agent"
-description: "Wrap a LangChain AgentExecutor with per-run budget limits using Cycles reservations — without rewriting agent logic."
+description: "Wrap a LangChain AgentExecutor with per-run budget limits using Cycles reservations — without rewriting agent logic. Python examples with the @cycles decorator."
 ---
 
 # How to Add Budget Control to a LangChain Agent
@@ -253,7 +253,7 @@ With this pattern in place:
 - **Automatic reconciliation** — committing less than the reserved amount releases the difference back to the pool
 - **Crash safety** — if the agent crashes before committing, the reservation expires automatically and budget is released
 
-## Next steps
+## Next Steps
 
 - [Integrating Cycles with LangChain](/how-to/integrating-cycles-with-langchain) — per-LLM-call callback handler pattern
 - [Reserve / Commit Lifecycle](/protocol/how-reserve-commit-works-in-cycles) — protocol deep-dive

@@ -268,7 +268,7 @@ That means introducing a system that can:
 
 That is the problem Cycles exists to solve.
 
-## Next steps
+## Next Steps
 
 To learn more:
 

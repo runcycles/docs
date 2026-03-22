@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with Express"
-description: "Add budget governance to an Express.js application using reusable middleware and inline patterns with Cycles."
+description: "Add budget governance to an Express.js application using reusable middleware and inline reserve-commit patterns with the Cycles TypeScript client."
 ---
 
 # Integrating Cycles with Express
@@ -205,7 +205,7 @@ app.post(
 );
 ```
 
-## Next steps
+## Next Steps
 
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use middleware vs inline
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model

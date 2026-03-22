@@ -1,6 +1,6 @@
 ---
 title: "Client Configuration Reference for the Cycles Spring Boot Starter"
-description: "Complete reference for all configuration properties in the Cycles Spring Boot Starter client library."
+description: "Complete reference for all configuration properties in the Cycles Spring Boot Starter client library, including environment-specific profiles."
 ---
 
 # Client Configuration Reference for the Cycles Spring Boot Starter
@@ -264,7 +264,7 @@ Every property can be set via environment variables using Spring Boot's relaxed 
 | `cycles.http.connect-timeout` | `CYCLES_HTTP_CONNECT_TIMEOUT` |
 | `cycles.retry.max-attempts` | `CYCLES_RETRY_MAX_ATTEMPTS` |
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — quick start guide
 - [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) — expression syntax

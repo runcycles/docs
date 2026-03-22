@@ -198,7 +198,7 @@ Choosing the right unit depends on whether the primary concern is cost, capacity
 
 All amounts within a reservation lifecycle and within a balance must use the same unit.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

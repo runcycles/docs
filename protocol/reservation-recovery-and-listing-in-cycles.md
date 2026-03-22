@@ -1,6 +1,6 @@
 ---
 title: "Reservation Recovery and Listing in Cycles"
-description: "How to list, filter, and recover reservations in Cycles when clients crash or lose reservation IDs."
+description: "How to list, filter, and recover reservations in Cycles when clients crash or lose reservation IDs. Includes query parameters and recovery strategies."
 ---
 
 # Reservation Recovery and Listing in Cycles
@@ -182,7 +182,7 @@ The reservation listing and detail endpoints provide operational visibility and 
 
 These endpoints are optional in v0, but essential for production operations where client crashes, network issues, and budget investigations are a reality.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

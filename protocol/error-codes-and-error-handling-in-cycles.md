@@ -1,6 +1,6 @@
 ---
 title: "Error Codes and Error Handling in Cycles"
-description: "Reference for all Cycles error codes and structured error responses, with guidance on handling each failure condition."
+description: "Reference for all Cycles error codes and structured error responses, with guidance on handling each failure condition in client applications."
 ---
 
 # Error Codes and Error Handling in Cycles
@@ -258,7 +258,7 @@ Cycles provides 12 specific error codes that tell the client exactly what went w
 
 Handling these codes correctly is the difference between a fragile integration and a production-grade one.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

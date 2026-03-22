@@ -1,6 +1,6 @@
 ---
 title: "Coding Agents Need Runtime Authority"
-description: "Why coding agents need runtime authority — the missing control layer between autonomous execution and spending limits."
+description: "Why coding agents need runtime authority — the missing control layer between autonomous execution and spending limits. Covers Claude Code, Cursor, and Windsurf."
 ---
 
 # Coding Agents Need Runtime Authority
@@ -135,7 +135,7 @@ Those are infrastructure concerns. They belong in a control layer that is:
 
 That is the problem Cycles exists to solve.
 
-## Next steps
+## Next Steps
 
 To learn more:
 

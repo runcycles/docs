@@ -379,7 +379,7 @@ For each `@cycles`-decorated function call:
 9. Heartbeat is cancelled
 10. If function raised: reservation is released instead of committed
 
-## Next steps
+## Next Steps
 
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python-specific exception hierarchy and patterns
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns

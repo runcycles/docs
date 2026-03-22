@@ -1,6 +1,6 @@
 ---
 title: "Changelog"
-description: "Release history and version notes for the Cycles Protocol and reference implementations."
+description: "Release history and version notes for the Cycles Protocol, server, admin API, Python client, TypeScript client, and Spring Boot starter."
 ---
 
 # Changelog

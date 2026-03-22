@@ -203,7 +203,7 @@ This creates a smoother degradation curve between full execution and hard denial
 
 That is how budget pressure becomes a signal for adjustment, not just a gate.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

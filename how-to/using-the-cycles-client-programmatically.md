@@ -644,7 +644,7 @@ async with AsyncCyclesClient(config) as client:
 | Recording events without reservations | Programmatic `CyclesClient` |
 | Fine-grained error handling per step | Programmatic `CyclesClient` |
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — TypeScript HOF and streaming adapter setup
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — Python decorator and client setup

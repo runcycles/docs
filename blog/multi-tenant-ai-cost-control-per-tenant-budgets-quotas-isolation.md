@@ -3,7 +3,7 @@ title: "Multi-Tenant AI Cost Control: Budgets and Isolation"
 date: 2026-03-16
 author: Cycles Team
 tags: [multi-tenant, budgets, architecture, costs]
-description: "One customer's runaway agent can degrade service for every tenant. Enforce per-tenant budgets and hierarchical limits."
+description: "One customer's runaway agent can degrade service for every tenant. Enforce per-tenant budgets, hierarchical limits, and scope-level isolation with Cycles."
 blog: true
 sidebar: false
 ---

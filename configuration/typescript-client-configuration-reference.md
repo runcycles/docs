@@ -179,7 +179,7 @@ const config = new CyclesConfig({
 });
 ```
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — quick start guide
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — error handling patterns

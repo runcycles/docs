@@ -306,7 +306,7 @@ class RetryCircuitBreaker:
             )
 ```
 
-## Next steps
+## Next Steps
 
 - [Idempotency, Retries and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) — how Cycles handles retries safely
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — understanding IDEMPOTENCY_MISMATCH

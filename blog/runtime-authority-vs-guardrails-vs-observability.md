@@ -3,7 +3,7 @@ title: "Runtime Authority vs Guardrails vs Observability"
 date: 2026-03-20
 author: Albert Mavashev
 tags: [runtime-authority, guardrails, observability, comparisons, concepts]
-description: "Runtime authority, guardrails, and observability each solve a different part of the agent control problem. This post explains what each does, where each falls short, and why autonomous systems need all three."
+description: "Runtime authority, guardrails, and observability solve different agent control problems. Learn what each does, where each falls short, and why you need all three."
 blog: true
 sidebar: false
 featured: true
@@ -122,7 +122,7 @@ Before the next action executes, Cycles decides whether it is allowed, under wha
 
 Because it is protocol-based, Cycles works across frameworks, languages, and providers. It does not replace your observability platform or your content guardrails. It fills the layer between them that most teams are missing.
 
-## Next steps
+## Next Steps
 
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions

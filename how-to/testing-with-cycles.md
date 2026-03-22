@@ -699,7 +699,7 @@ describe("reserveForStream", () => {
 - **Python-specific**: use `pytest-httpx` for sync and `respx` for async HTTP mocking
 - **TypeScript-specific**: mock `fetch` globally with Vitest's `vi.stubGlobal()` or use `msw` (Mock Service Worker) for more realistic HTTP mocking
 
-## Next steps
+## Next Steps
 
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — TypeScript exception handling patterns
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception handling patterns

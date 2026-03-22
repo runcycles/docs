@@ -428,7 +428,7 @@ These degradation paths help teams move from brittle enforcement to intentional 
 
 That is how runtime authority becomes usable in production.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

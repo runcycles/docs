@@ -274,7 +274,7 @@ See [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in
 - **Heartbeat long operations.** Use `cycles_extend` for operations that may exceed the reservation TTL.
 - **Tag for observability.** Use `action.tags` and `metrics.custom` to add context for debugging and auditing.
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — setup guide for each AI host
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the MCP server fits into the Cycles stack

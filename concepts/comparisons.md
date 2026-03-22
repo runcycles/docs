@@ -44,7 +44,7 @@ Teams evaluating Cycles usually already have some controls in place. This page h
 
 For a deep dive across all five alternative categories with capability matrices, see **[How Cycles Compares to Rate Limiters, Observability, Provider Caps, In-App Counters, and Job Schedulers](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers)**.
 
-## Related reading
+## Next Steps
 
 - **[What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion)** — Cycles is not billing, not rate limiting, not orchestration. Clearing up category confusion.
 - **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — how teams evolve from dashboards to runtime authority.

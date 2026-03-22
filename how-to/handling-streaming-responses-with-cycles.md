@@ -1,6 +1,6 @@
 ---
 title: "Handling Streaming Responses with Cycles"
-description: "Learn the reserve, stream, and commit pattern for managing budget reservations with streaming LLM responses in Cycles."
+description: "The reserve, stream, and commit pattern for managing budget reservations with streaming LLM responses. Includes TTL extension for long-running streams."
 ---
 
 # Handling Streaming Responses with Cycles
@@ -239,7 +239,7 @@ For streaming, a good estimate is `max_tokens × output_price`, since output tok
 
 See [`examples/streaming_usage.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/streaming_usage.py) for a complete, runnable script.
 
-## Next steps
+## Next Steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling failures during streaming
 - [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) — configuring timeouts for long-running streams

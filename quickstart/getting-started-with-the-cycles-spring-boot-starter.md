@@ -461,7 +461,7 @@ The Cycles Spring Boot Starter turns budget enforcement into a single annotation
 
 This gives Spring applications production-grade budget enforcement with minimal code changes.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

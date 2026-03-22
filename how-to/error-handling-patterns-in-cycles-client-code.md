@@ -607,7 +607,7 @@ In Python and TypeScript, use `e.is_retryable()` / `e.isRetryable()` to check pr
 7. **Handle `RESERVATION_EXPIRED`** by recording usage as an event if the work already completed
 8. **Register a global exception handler** in web frameworks for consistent API error responses
 
-## Next steps
+## Next Steps
 
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — TypeScript exception hierarchy, Express/Next.js patterns
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python exception hierarchy, transport errors, and FastAPI patterns

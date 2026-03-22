@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with AWS Bedrock"
-description: "Add budget governance to AWS Bedrock model invocations using the runcycles TypeScript client."
+description: "Add budget governance to AWS Bedrock model invocations using the runcycles TypeScript client. Reserve before each call, commit actual token usage after."
 ---
 
 # Integrating Cycles with AWS Bedrock
@@ -164,7 +164,7 @@ Bedrock streams usage metadata in specific event types:
 
 Track both to calculate accurate actual cost for the commit.
 
-## Next steps
+## Next Steps
 
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation

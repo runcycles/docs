@@ -373,7 +373,7 @@ By using shadow mode, teams can:
 
 That is how you roll out runtime authority safely.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

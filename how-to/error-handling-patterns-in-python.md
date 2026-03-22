@@ -1,6 +1,6 @@
 ---
 title: "Error Handling Patterns in Python"
-description: "Practical patterns for handling Cycles errors in Python using the @cycles decorator and the programmatic CyclesClient."
+description: "Practical patterns for handling Cycles errors in Python using the @cycles decorator and the programmatic CyclesClient. Covers retries, fallbacks, and logging."
 ---
 
 # Error Handling Patterns in Python
@@ -291,7 +291,7 @@ Use `e.is_retryable()` to check programmatically — it returns `True` for `INTE
 7. **Handle `RESERVATION_EXPIRED`** by recording usage as an event if the work already completed
 8. **Register a global exception handler** in web frameworks for consistent API error responses
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the Python Client](/quickstart/getting-started-with-the-python-client) — decorator and client setup
 - [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) — protocol error code reference

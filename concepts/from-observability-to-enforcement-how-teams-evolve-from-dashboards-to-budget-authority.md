@@ -1,6 +1,6 @@
 ---
 title: "From Observability to Enforcement: How Teams Evolve from Dashboards to Runtime Authority"
-description: "Explore how teams progress from dashboards and alerts to runtime budget enforcement as autonomous systems mature."
+description: "How teams progress from dashboards and alerts to runtime budget enforcement as autonomous systems mature. A four-stage maturity model for agent governance."
 ---
 
 # From Observability to Enforcement: How Teams Evolve from Dashboards to Runtime Authority
@@ -432,7 +432,7 @@ That is the move from dashboards to runtime authority.
 
 That is the move Cycles is built to support.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

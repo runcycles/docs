@@ -351,7 +351,7 @@ Cycles makes that possible by introducing a deterministic runtime pattern:
 
 That is how Spring AI systems move from useful prototypes to governed production runtimes.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

@@ -637,7 +637,7 @@ Ensure Redis 7+ is running and accessible at the configured host:port. Test with
 redis-cli -h $REDIS_HOST -p $REDIS_PORT ping
 ```
 
-## Next steps
+## Next Steps
 
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the components interact in detail
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all server configuration properties

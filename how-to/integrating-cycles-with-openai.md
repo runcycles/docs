@@ -1,6 +1,6 @@
 ---
 title: "Integrating Cycles with OpenAI"
-description: "Guard OpenAI API calls with Cycles budget reservations for cost-controlled, caps-aware chat completions."
+description: "Guard OpenAI API calls with Cycles budget reservations for cost-controlled, caps-aware chat completions. Includes Python and TypeScript examples."
 ---
 
 # Integrating Cycles with OpenAI
@@ -182,7 +182,7 @@ ctx.metrics = CyclesMetrics(
 
 See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/openai_integration.py) for a complete, runnable script.
 
-## Next steps
+## Next Steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming

@@ -405,7 +405,7 @@ Cycles is most useful when these scopes are treated as complementary layers of g
 
 That is how teams move from simple usage caps to real autonomous execution control.
 
-## Next steps
+## Next Steps
 
 - [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles) — how tenants, scopes, and budgets work together as a unified model
 - [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles) — create and configure tenants before setting up budgets

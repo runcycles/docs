@@ -250,7 +250,7 @@ The demo application includes a complete working field resolver:
 
 The resolver is used automatically by all `@Cycles`-annotated methods in the demo when no tenant is specified in the annotation or `application.yml` configuration.
 
-## Next steps
+## Next Steps
 
 - [Python Client Configuration](/configuration/python-client-configuration-reference) — Python config properties and resolution order
 - [Spring Client Configuration](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — Spring Boot config properties and resolution order

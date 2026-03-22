@@ -1,6 +1,6 @@
 ---
 title: "How Decide Works in Cycles: Preflight Budget Checks Without Reservation"
-description: "Use the Cycles decide endpoint to perform read-only preflight budget checks without creating a reservation."
+description: "Use the Cycles decide endpoint to perform read-only preflight budget checks without creating a reservation. Ideal for UI gating and capability checks."
 ---
 
 # How Decide Works in Cycles: Preflight Budget Checks Without Reservation
@@ -142,7 +142,7 @@ It helps systems:
 
 It is advisory, not binding. For guaranteed budget holds, use reservations.
 
-## Next steps
+## Next Steps
 
 To explore the Cycles stack:
 

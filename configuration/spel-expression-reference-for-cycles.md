@@ -265,7 +265,7 @@ You used `#paramName` but did not compile with `-parameters`. Use `#p0` index-ba
 
 Check for typos in method names, property paths, or operator usage. SpEL follows Java-like syntax but uses `#` for variables.
 
-## Next steps
+## Next Steps
 
 - [Getting Started with the Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — annotation usage
 - [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — all configuration properties
