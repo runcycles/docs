@@ -121,36 +121,33 @@
 }
 
 /* ── Blog tags collapsible ── */
-.blog-tags-details {
+.blog-tags-collapsible {
   flex: 1;
   min-width: 0;
 }
 
-.blog-tags-details summary {
+.blog-tags-toggle {
   cursor: pointer;
-  list-style: none;
+  background: none;
+  border: none;
+  padding: 0;
   font-size: 14px;
   font-weight: 500;
   color: var(--vp-c-text-2);
 }
 
-.blog-tags-details summary::-webkit-details-marker {
-  display: none;
-}
-
-.blog-tags-details summary::after {
-  content: '▸';
+.blog-tags-arrow {
   margin-left: 6px;
   font-size: 12px;
   transition: transform 0.2s;
   display: inline-block;
 }
 
-.blog-tags-details[open] summary::after {
+.blog-tags-arrow.open {
   transform: rotate(90deg);
 }
 
-.blog-tags-details[open] .blog-tags {
+.blog-tags-collapsible .blog-tags {
   margin-top: 12px;
 }
 

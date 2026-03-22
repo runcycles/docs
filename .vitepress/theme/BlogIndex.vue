@@ -4,6 +4,7 @@ import { Rss } from 'lucide-vue-next'
 import { data as posts } from '../../blog/posts.data'
 
 const selectedTag = ref(null)
+const tagsOpen = ref(false)
 const page = ref(1)
 const perPage = 10
 
@@ -60,20 +61,18 @@ onMounted(() => {
   if (tagParam && allTags.value.includes(tagParam)) {
     selectedTag.value = tagParam
   }
-  if (window.innerWidth > 640) {
-    document.querySelector('.blog-tags-details')?.setAttribute('open', '')
-  }
 })
 </script>
 
 <template>
   <div class="blog-index">
     <div class="blog-tags-row">
-      <details class="blog-tags-details">
-        <summary class="blog-tags-summary">
+      <div class="blog-tags-collapsible">
+        <button class="blog-tags-toggle" @click="tagsOpen = !tagsOpen" :aria-expanded="tagsOpen">
           Filter by tag<span v-if="selectedTag" class="blog-tags-active-indicator">: {{ selectedTag }}</span>
-        </summary>
-        <div class="blog-tags" v-if="allTags.length" role="group" aria-label="Filter by tag">
+          <span class="blog-tags-arrow" :class="{ open: tagsOpen }">▸</span>
+        </button>
+        <div class="blog-tags" v-show="tagsOpen" v-if="allTags.length" role="group" aria-label="Filter by tag">
           <button
             :class="{ active: !selectedTag }"
             :aria-pressed="!selectedTag"
@@ -86,7 +85,7 @@ onMounted(() => {
             @click="selectTag(tag)"
           >{{ tag }} ({{ tagCounts[tag] }})</button>
         </div>
-      </details>
+      </div>
       <a href="/feed.xml" class="blog-rss-link" aria-label="Subscribe via RSS">
         <Rss :size="14" style="margin-right:4px" />
         RSS
