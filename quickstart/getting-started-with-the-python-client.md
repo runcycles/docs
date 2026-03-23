@@ -364,6 +364,33 @@ except BudgetExceededError: # [!code focus]
     print("Budget exhausted — using fallback")
 ```
 
+## Nested `@cycles` calls
+
+Calling a `@cycles`-decorated function from inside another `@cycles`-decorated function is allowed — it will not raise an error. However, each decorator creates an **independent reservation** that deducts budget separately:
+
+```python
+@cycles(estimate=100, action_name="inner")
+def inner_call():
+    return "done"
+
+@cycles(estimate=500, action_name="outer")
+def outer_call():
+    return inner_call()  # creates a SECOND reservation — 600 total deducted, not 500
+```
+
+This means nested decorators **double-count budget**. The outer reservation already covers the full estimated cost of the operation, so an inner reservation deducts additional budget from the same pool.
+
+**Recommended pattern:** Place `@cycles` at the outermost entry point only. Inner functions should be plain functions without their own guard:
+
+```python
+def inner_call():  # no @cycles — called within a guarded operation
+    return "done"
+
+@cycles(estimate=500, action_name="outer")
+def outer_call():
+    return inner_call()  # single reservation — 500 total
+```
+
 ## Lifecycle summary
 
 For each `@cycles`-decorated function call:

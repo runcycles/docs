@@ -419,11 +419,128 @@ try {
 }
 ```
 
+## Self-invocation (internal method calls)
+
+Spring's proxy-based AOP **does not intercept internal method calls** within the same class. If a method calls another method in the same bean using `this.method()`, the call bypasses the proxy and the `@Cycles` aspect never fires.
+
+```java
+// BROKEN — @Cycles is silently ignored on internal calls
+@Service
+public class MyService {
+
+    public String handleRequest(String input) {
+        return guardedCall(input);  // calls this.guardedCall() — bypasses proxy
+    }
+
+    @Cycles("#input.length() * 10")
+    public String guardedCall(String input) {
+        return "Processed: " + input;  // @Cycles never activates
+    }
+}
+```
+
+### Workaround 1: Extract to a separate bean (recommended)
+
+Move the `@Cycles`-annotated method into its own `@Service` and inject it:
+
+```java
+@Service
+public class GuardedService {
+
+    @Cycles("#input.length() * 10")
+    public String guardedCall(String input) {
+        return "Processed: " + input;  // @Cycles works — called through proxy
+    }
+}
+
+@Service
+public class MyService {
+
+    @Autowired
+    private GuardedService guardedService;
+
+    public String handleRequest(String input) {
+        return guardedService.guardedCall(input);
+    }
+}
+```
+
+### Workaround 2: Self-inject the proxy
+
+If extracting a bean is impractical, inject the proxy of your own class using `@Lazy`:
+
+```java
+@Service
+public class MyService {
+
+    @Lazy
+    @Autowired
+    private MyService self;
+
+    public String handleRequest(String input) {
+        return self.guardedCall(input);  // calls through proxy — @Cycles works
+    }
+
+    @Cycles("#input.length() * 10")
+    public String guardedCall(String input) {
+        return "Processed: " + input;
+    }
+}
+```
+
+::: tip Startup warning
+The starter logs a `WARN` at startup when it detects a bean where some methods have `@Cycles` and others do not, since this pattern is susceptible to self-invocation issues. The warning is informational — it does not block startup.
+:::
+
 ## Nesting prevention
 
-The starter does not allow nested `@Cycles` annotations. If method A is annotated with `@Cycles` and calls method B which is also annotated, an `IllegalStateException` is thrown.
+Calling a `@Cycles`-annotated method from inside another `@Cycles`-annotated method — even across different beans — throws an `IllegalStateException`. This is intentional:
 
-This prevents double-reservation and ensures each budget lifecycle is clear and isolated.
+- **Double-counting:** The outer reservation already reserves budget for the full operation. An inner reservation would deduct additional budget from the same pool.
+- **Protocol design:** The Cycles Protocol v0 has no concept of parent/child reservations. Each reservation is independent and atomic.
+
+```java
+// BROKEN — throws IllegalStateException("Nested @Cycles not supported")
+@Service
+public class Orchestrator {
+
+    @Autowired private LlmService llmService;
+
+    @Cycles("#tokens * 10")
+    public String orchestrate(int tokens) {
+        return llmService.generate("hello", tokens);  // throws!
+    }
+}
+
+@Service
+public class LlmService {
+
+    @Cycles("#tokens * 5")  // ← second @Cycles while outer is active
+    public String generate(String prompt, int tokens) { ... }
+}
+```
+
+**Correct pattern:** Place `@Cycles` at the outermost entry point only. Inner services should be plain methods:
+
+```java
+@Service
+public class Orchestrator {
+
+    @Autowired private LlmService llmService;
+
+    @Cycles("#tokens * 10")
+    public String orchestrate(int tokens) {
+        return llmService.generate("hello", tokens);  // works
+    }
+}
+
+@Service
+public class LlmService {
+
+    // No @Cycles here — called from within an already-guarded operation
+    public String generate(String prompt, int tokens) { ... }
+}
+```
 
 ## Commit retry
 
