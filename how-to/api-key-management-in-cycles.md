@@ -130,6 +130,10 @@ curl -X DELETE http://localhost:7979/v1/admin/api-keys/key_abc123 \
 
 Revocation is immediate. Any in-flight requests using the revoked key will fail on their next call to the Cycles server. Active reservations created with the revoked key remain valid until they expire or are committed/released.
 
+::: tip Revocation, not deletion
+The `DELETE` endpoint performs a **status transition** (ACTIVE → REVOKED), not a hard delete. The key record is retained so that audit logs referencing the key remain resolvable. This is consistent with the lifecycle model used across Cycles — see the equivalent notes on [tenant closure](/how-to/tenant-creation-and-management-in-cycles#closed) and [budget decommissioning](/how-to/budget-allocation-and-management-in-cycles#resetting-budgets).
+:::
+
 ## Key rotation
 
 To rotate an API key without downtime:
