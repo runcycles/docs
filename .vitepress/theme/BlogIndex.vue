@@ -116,7 +116,7 @@ onMounted(() => {
         <h2>
           <a :href="post.url">{{ post.title }}</a>
           <span v-if="post.featured" class="blog-featured-badge">FEATURED</span>
-          <span v-else-if="isNew(post.date)" class="blog-new-badge">NEW</span>
+          <span v-if="isNew(post.date)" class="blog-new-badge">NEW</span>
         </h2>
         <div class="blog-meta">
           <time class="blog-date" :datetime="post.date">{{ formatDate(post.date) }}</time>
