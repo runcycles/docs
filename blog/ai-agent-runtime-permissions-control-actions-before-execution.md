@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Runtime Permissions: Control What Agents Do Before They Do It"
+title: "AI Agent Runtime Permissions: Control Actions Before Execution"
 date: 2026-03-23
 author: Cycles Team
 tags: [runtime-authority, action-authority, action-control, agents, side-effects, permissions, engineering]
@@ -8,7 +8,7 @@ blog: true
 sidebar: false
 ---
 
-# AI Agent Runtime Permissions: Control What Agents Do Before They Do It
+# AI Agent Runtime Permissions: Control Actions Before Execution
 
 A team ships an autonomous support agent. It reads tickets, queries a knowledge base, drafts replies, and sends emails. In staging it handles 50 tickets without incident. On day three in production, a customer submits a ticket in a language the model handles poorly. The agent misinterprets the request, drafts a refund confirmation for a billing dispute, and sends it — along with 47 follow-up emails to related accounts offering refunds nobody requested.
 
@@ -18,7 +18,7 @@ No budget was exceeded. No rate limit was hit. The problem was not spend — it 
 
 <!-- more -->
 
-This is the action problem. Agents are not chatbots that produce text. They are systems that take actions — and every action that changes state outside the agent's own context is a commitment that cannot be revoked by adjusting a dashboard threshold after the fact.
+This is the action problem — and it is why AI agent permissions matter more than most teams realize. Agents are not chatbots that produce text. They are systems that take actions — and every action that changes state outside the agent's own context is a commitment that cannot be revoked by adjusting a dashboard threshold after the fact.
 
 The question is not "how much did it cost?" It is "should it have been allowed to do that?"
 
@@ -60,9 +60,9 @@ Teams already have controls. The problem is that none of them govern what an age
 | Observability | Visibility and audit | After execution | No — reports, does not enforce |
 | **Runtime permissions** | **Action authorization** | **Before each action** | **Yes** |
 
-The gap is clear. No existing control layer makes a pre-execution decision about whether a specific action should proceed given the current runtime context — how many actions have already been taken, which tools have already been used, and what the cumulative exposure looks like right now.
+The gap is clear. No existing layer provides AI agent action control at the moment it matters — before execution. None of these controls make a pre-execution decision about whether a specific action should proceed given the current runtime context: how many actions have already been taken, which tools have already been used, and what the cumulative exposure looks like right now.
 
-## Runtime permissions: the missing layer
+## Runtime permissions: the missing layer for AI agent action control
 
 Runtime permissions are pre-execution decisions about whether an agent may invoke a specific tool or take a specific action, made at the moment of execution based on current state.
 
@@ -161,7 +161,7 @@ Design-time controls answer "can this agent ever send emails?" Runtime controls 
 
 Only runtime controls can distinguish the agent's 1st email from its 50th. Only runtime controls can adapt as the agent acts. And only runtime controls can make a decision that changes based on cumulative exposure rather than static policy.
 
-An agent that was correctly configured at design time — with the right tools, the right prompt, the right model — can still produce a catastrophic outcome at runtime when conditions diverge from expectations. The opening scenario is exactly this: a correctly configured agent operating on unexpected input, with no runtime authority to constrain its actions when they became inappropriate.
+An agent that was correctly configured at design time — with the right tools, the right prompt, the right model — can still produce a catastrophic outcome at runtime when conditions diverge from expectations. This is why AI agent permissions must be enforced at runtime, not just at deploy time. The opening scenario is exactly this: a correctly configured agent operating on unexpected input, with no runtime authority to constrain its actions when they became inappropriate.
 
 ## Practical patterns
 
