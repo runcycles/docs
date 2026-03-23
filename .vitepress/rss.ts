@@ -13,7 +13,7 @@ export async function generateFeed(config: SiteConfig) {
     link: `${SITE_URL}/blog/`,
     language: 'en',
     favicon: `${SITE_URL}/runcycles-favicon.ico`,
-    copyright: `Copyright 2024-present RunCycles.io`,
+    copyright: `Copyright 2025-present RunCycles.io`,
     updated: new Date(),
   })
 
