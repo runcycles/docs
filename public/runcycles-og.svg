@@ -39,12 +39,12 @@
   <!-- ══ LEFT PANEL ══ -->
 
   <!-- Logo mark -->
-  <g transform="translate(120, 102) scale(0.10625) translate(-256, -256)">
-    <path d="M 323.6 111.0 A 160 160 0 1 1 188.4 111.0"
-          fill="none" stroke="#00C9A7" stroke-width="60" stroke-linecap="round" filter="url(#og-glow)"/>
+  <g transform="translate(120, 102) scale(0.125) translate(-256, -256)">
+    <path d="M 338.2 79.7 A 194.6 194.6 0 1 1 173.8 79.7"
+          fill="none" stroke="#00C9A7" stroke-width="73" stroke-linecap="round" filter="url(#og-glow)"/>
     <path fill-rule="evenodd" fill="#1D9E75"
-      d="M 256,151 L 346.9,203.5 L 346.9,308.5 L 256,361 L 165.1,308.5 L 165.1,203.5 Z
-         M 314,256 A 58,58 0 1 1 198,256 A 58,58 0 1 1 314,256 Z"/>
+      d="M 256,128.3 L 366.5,192.2 L 366.5,319.8 L 256,383.7 L 145.5,319.8 L 145.5,192.2 Z
+         M 326.5,256 A 70.5,70.5 0 1 1 185.5,256 A 70.5,70.5 0 1 1 326.5,256 Z"/>
   </g>
 
   <!-- Product name -->
