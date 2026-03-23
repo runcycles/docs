@@ -257,6 +257,16 @@ The most common cause is **self-invocation**: calling a `@Cycles` method from an
 
 ## FAQ
 
+### Why can't I delete tenants or budgets?
+
+By design. Cycles uses **status-based lifecycle management** instead of hard deletion for most objects. Tenants, budgets, and reservations are referenced across the system (audit logs, API keys, committed transactions). Deleting them would orphan those records and break audit trails.
+
+Instead, use the cleanup mechanism for each object type:
+
+- **Tenants:** `PATCH status → CLOSED` — blocks all operations, retains data. See [Tenant Lifecycle](/how-to/tenant-creation-and-management-in-cycles#tenant-status-lifecycle).
+- **Budgets:** `POST fund` with `RESET` to zero — prevents new reservations, retains ledger history. See [Resetting Budgets](/how-to/budget-allocation-and-management-in-cycles#resetting-budgets).
+- **API Keys:** `DELETE` revokes the key (ACTIVE → REVOKED) but retains the record. See [Revoking API Keys](/how-to/api-key-management-in-cycles#revoking-api-keys).
+
 ### Can I use Cycles without Docker?
 
 Yes. Run Redis 7+ natively, build the server JARs with Maven, and start them with `java -jar`. See [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) Option C.

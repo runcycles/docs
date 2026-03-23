@@ -266,6 +266,14 @@ curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
 Closing a tenant is irreversible. If you need a temporary block, use SUSPENDED instead.
 :::
 
+::: info Why tenants cannot be deleted
+The admin API intentionally has no `DELETE /v1/admin/tenants/{tenant_id}` endpoint. Tenants are referenced by ID throughout the system — budgets, API keys, reservations, and audit logs all carry a `tenant_id`. Hard deletion would orphan these records and break audit trails.
+
+`CLOSED` achieves the same operational goal: all operations are blocked and no new resources can be created. The difference is that the tenant record and all associated data remain queryable for reporting, compliance, and debugging.
+
+**Cleaning up test tenants:** Use a naming convention like `test-*` or `demo-*` and batch-close them when done. The data footprint of a closed tenant is minimal.
+:::
+
 ### Invalid transitions
 
 The server rejects invalid status transitions with `400 INVALID_REQUEST`:

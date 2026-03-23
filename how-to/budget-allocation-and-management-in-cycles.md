@@ -196,6 +196,12 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/
 
 `RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Release any active reservations first to avoid unexpected budget pressure.
 
+::: info Why budgets cannot be deleted
+The admin API has no delete endpoint for budgets. A budget ledger is the permanent audit record for all spend within a scope — committed reservations reference it, and historical balances are derived from it. Deleting a ledger would create orphaned transactions and break spend reporting.
+
+To decommission a budget: `RESET` its allocation to zero (or `DEBIT` the remaining balance). No new reservations will be approved against a zero-balance scope. The ledger stays in the system for historical queries but has no operational cost.
+:::
+
 ### Funding after overdraft
 
 If a scope has accumulated debt through `ALLOW_WITH_OVERDRAFT` commits, repay it:
