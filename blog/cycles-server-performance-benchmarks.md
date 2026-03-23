@@ -1,16 +1,20 @@
 ---
-title: "Cycles Server Performance: Benchmarks, Scaling, and What to Expect"
+title: "AI Agent Budget Enforcement Latency: Cycles Server Performance Benchmarks"
 date: 2026-03-23
 author: Cycles Team
-tags: [engineering, performance, benchmarks, scaling]
-description: "Published latency and throughput numbers for every Cycles Protocol operation. How much overhead does budget enforcement actually add to your agent calls?"
+tags: [engineering, performance, benchmarks, scaling, latency, throughput, redis]
+description: "How much latency does AI agent budget enforcement add? Published p50/p95/p99 latency and throughput benchmarks for every Cycles Protocol operation — reserve, commit, release, extend, decide, and event — with concurrent scaling to 2,400+ ops/sec."
 blog: true
 sidebar: false
+head:
+  - - meta
+    - name: keywords
+      content: ai agent performance, budget enforcement latency, cycles protocol benchmarks, redis lua performance, agent cost control overhead, reserve commit latency, ai agent throughput, cycles server scaling
 ---
 
-# Cycles Server Performance: Benchmarks, Scaling, and What to Expect
+# AI Agent Budget Enforcement Latency: Cycles Server Performance Benchmarks
 
-The first question teams ask when evaluating Cycles: **how much latency does this add?** Budget enforcement sits in the critical path of every agent action. If it's slow, agents are slow. If it doesn't scale, your system doesn't scale.
+The first question teams ask when evaluating runtime budget enforcement for AI agents: **how much latency does this add?** Budget enforcement sits in the critical path of every agent action. If it's slow, agents are slow. If it doesn't scale, your system doesn't scale.
 
 We benchmarked every protocol operation end-to-end and under concurrent load. Here are the numbers.
 
@@ -88,7 +92,7 @@ API key validation uses BCrypt, which is intentionally slow (~100ms). We cache v
 
 ### Redis: EVALSHA + atomic Lua
 
-All mutations are atomic Lua scripts executed via `EVALSHA` (sends a 40-byte hash instead of the full script). No multi-step Redis transactions, no optimistic locking, no retries. One network round-trip, one atomic execution.
+All mutations are atomic Lua scripts executed via `EVALSHA` (sends a 40-character SHA1 hash instead of the full script text). No multi-step Redis transactions, no optimistic locking, no retries. One network round-trip, one atomic execution.
 
 ### Balance snapshots: zero extra round-trips
 
@@ -116,9 +120,27 @@ Source: [`CyclesProtocolBenchmarkTest`](https://github.com/runcycles/cycles-serv
 
 ## The bottom line
 
-Budget enforcement with Cycles adds **5-7ms per operation** in the typical case. A full reserve-commit lifecycle adds **~15ms** to an LLM call that takes seconds. At 32 concurrent threads, the server sustains **2,400+ complete lifecycles per second** with zero errors.
+Budget enforcement with Cycles adds **5-8ms per operation** in the typical case. A full reserve-commit lifecycle adds **~15ms** to an LLM call that takes seconds. At 32 concurrent threads, the server sustains **2,400+ complete lifecycles per second** with zero errors.
 
 The overhead is small enough that you shouldn't notice it. And if you don't enforce budgets, the cost of a single runaway agent will be orders of magnitude larger than any latency you saved.
+
+## FAQ
+
+### How much latency does Cycles add to LLM calls?
+
+A full reserve-commit lifecycle adds ~15ms (p50) to your agent's LLM call. Since most LLM API calls take 500ms-30s, budget enforcement adds less than 3% overhead in the worst case and is effectively invisible in practice.
+
+### Does Cycles scale horizontally?
+
+The Cycles server is stateless — all state lives in Redis. You can run multiple server instances behind a load balancer. Redis itself can be scaled with Redis Cluster for sharding across multiple nodes. Our benchmarks show a single instance handling 2,400+ complete lifecycles per second.
+
+### What happens if the Cycles server is slow or unavailable?
+
+The protocol is designed for the [reserve-commit pattern](/concepts/reserve-commit). If a reserve call is slow, the agent waits before making the LLM call (fail-safe). If the server is unavailable, the reserve fails and the agent doesn't proceed — preventing uncontrolled spend. Commits and events can be retried with idempotency keys.
+
+### How does this compare to LLM proxy approaches?
+
+LLM proxies add latency on every token streamed. Cycles operates at the action level — one reserve before the call, one commit after — so latency scales with the number of agent actions, not the number of tokens. For a 10,000-token completion, a proxy adds overhead to every chunk; Cycles adds two 5-7ms calls total.
 
 ---
 
