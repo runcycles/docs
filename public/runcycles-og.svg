@@ -39,10 +39,13 @@
   <!-- ══ LEFT PANEL ══ -->
 
   <!-- Logo mark -->
-  <circle cx="120" cy="102" r="32" fill="none" stroke="#00C9A7" stroke-width="1" opacity="0.12"/>
-  <path d="M 138 72 A 32 32 0 1 1 102 72" fill="none" stroke="#00C9A7" stroke-width="10" stroke-linecap="round" filter="url(#og-glow)"/>
-  <line x1="108" y1="67" x2="132" y2="67" stroke="#00C9A7" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M 133 102 L 113 91 L 113 113 Z" fill="#00C9A7"/>
+  <g transform="translate(120, 102) scale(0.125) translate(-256, -256)">
+    <path d="M 338.2 79.7 A 194.6 194.6 0 1 1 173.8 79.7"
+          fill="none" stroke="#00C9A7" stroke-width="73" stroke-linecap="round" filter="url(#og-glow)"/>
+    <path fill-rule="evenodd" fill="#1D9E75"
+      d="M 256,128.3 L 366.5,192.2 L 366.5,319.8 L 256,383.7 L 145.5,319.8 L 145.5,192.2 Z
+         M 326.5,256 A 70.5,70.5 0 1 1 185.5,256 A 70.5,70.5 0 1 1 326.5,256 Z"/>
+  </g>
 
   <!-- Product name -->
   <text x="172" y="115" font-size="42" font-weight="700" fill="#FFFFFF"

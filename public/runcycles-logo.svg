@@ -1,16 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <title>Cycles</title>
-  <circle cx="256" cy="256" r="256" fill="#1a1a2e"/>
   <path
     d="M 338.2 79.7 A 194.6 194.6 0 1 1 173.8 79.7"
     fill="none"
-    stroke="#FFFFFF"
+    stroke="#00C9A7"
     stroke-width="73"
     stroke-linecap="round"
   />
   <path
     fill-rule="evenodd"
-    fill="#FFFFFF"
+    fill="#1D9E75"
     d="M 256,128.3
        L 366.5,192.2
        L 366.5,319.8
