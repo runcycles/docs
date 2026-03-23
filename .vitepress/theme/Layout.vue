@@ -7,6 +7,7 @@ import BlogPost from './BlogPost.vue'
 import BlogPostNav from './BlogPostNav.vue'
 import PageFeedback from './PageFeedback.vue'
 import Breadcrumb from './Breadcrumb.vue'
+import MobileThemeToggle from './MobileThemeToggle.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
@@ -27,6 +28,9 @@ const { frontmatter } = useData()
     <template #doc-after>
       <BlogPostNav />
       <PageFeedback />
+    </template>
+    <template #layout-bottom>
+      <MobileThemeToggle />
     </template>
   </Layout>
 </template>

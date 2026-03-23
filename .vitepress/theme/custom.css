@@ -718,3 +718,38 @@
     display: none;
   }
 }
+
+/* ── Mobile theme toggle ── */
+.mobile-theme-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 16px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  backdrop-filter: blur(8px);
+  color: var(--vp-c-text-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: background 0.25s, box-shadow 0.25s;
+}
+
+.mobile-theme-toggle:hover {
+  background: var(--vp-c-bg-mute);
+}
+
+.mobile-theme-toggle:active {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 960px) {
+  .mobile-theme-toggle {
+    display: none;
+  }
+}
