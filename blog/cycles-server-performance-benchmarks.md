@@ -108,7 +108,7 @@ Our benchmarks run as JUnit integration tests against a real Redis instance (Tes
 
 ```bash
 # Run benchmarks (requires Docker)
-mvn test -Dgroups=benchmark
+mvn test -Pbenchmark
 
 # Run everything except benchmarks (default build)
 mvn verify
