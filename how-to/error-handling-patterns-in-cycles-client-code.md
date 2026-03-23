@@ -606,6 +606,7 @@ In Python and TypeScript, use `e.is_retryable()` / `e.isRetryable()` to check pr
 6. **Never swallow errors silently** — at minimum, log them
 7. **Handle `RESERVATION_EXPIRED`** by recording usage as an event if the work already completed
 8. **Register a global exception handler** in web frameworks for consistent API error responses
+9. **Avoid nested budget guards** — Spring throws `IllegalStateException`; TypeScript/Python silently double-count. Place `@Cycles` / `withCycles` / `@cycles` at the outermost call site only (see [Troubleshooting](/how-to/troubleshooting-and-faq#spring-boot-illegalstateexception-nested-cycles))
 
 ## Next steps
 
