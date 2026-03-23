@@ -232,8 +232,28 @@ try {
 
 1. Is `cycles-client-java-spring` on the classpath?
 2. Is the `cycles.base-url` property set in `application.yml`?
-3. Is the method being called through the Spring proxy? (Direct `this.method()` calls bypass AOP.)
+3. Is the method being called through the Spring proxy? (Direct `this.method()` calls bypass AOP — see below.)
 4. Is the class a Spring-managed bean (`@Service`, `@Component`, etc.)?
+
+The most common cause is **self-invocation**: calling a `@Cycles` method from another method in the same class using `this.method()`. Spring's proxy-based AOP cannot intercept these internal calls. The starter logs a `WARN` at startup when it detects beans susceptible to this pattern.
+
+**Fix:** Extract the `@Cycles` method into a separate `@Service`, or self-inject the proxy with `@Lazy @Autowired`. See [Self-Invocation](/quickstart/getting-started-with-the-cycles-spring-boot-starter#self-invocation-internal-method-calls) for full workarounds.
+
+### Spring Boot: IllegalStateException — nested @Cycles
+
+**Symptom:** `IllegalStateException("Nested @Cycles not supported")` thrown at runtime.
+
+**Cause:** A `@Cycles`-annotated method called another `@Cycles`-annotated method (even across different beans). The starter prevents this because each reservation is independent — nesting would double-count budget.
+
+**Fix:** Place `@Cycles` at the outermost entry point only. Remove `@Cycles` from inner methods that are called within an already-guarded operation. See [Nesting Prevention](/quickstart/getting-started-with-the-cycles-spring-boot-starter#nesting-prevention) for details.
+
+### TypeScript / Python: nested budget guards double-counting
+
+**Symptom:** Budget is consumed faster than expected when using nested `withCycles` (TypeScript) or `@cycles` (Python) calls.
+
+**Cause:** Unlike Spring, the TypeScript and Python clients do not block nested calls — each guard silently creates an independent reservation. If an outer guard reserves 500 and an inner guard reserves 100, **600 total** is deducted from the budget, not 500.
+
+**Fix:** Place the budget guard at the outermost entry point only. Inner functions should be plain functions without their own guard. See the nesting sections in the [TypeScript](/quickstart/getting-started-with-the-typescript-client#nested-withcycles-calls) and [Python](/quickstart/getting-started-with-the-python-client#nested-cycles-calls) quickstart guides.
 
 ## FAQ
 

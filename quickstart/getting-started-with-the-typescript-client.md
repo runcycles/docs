@@ -504,6 +504,29 @@ try {
 }
 ```
 
+## Nested `withCycles` calls
+
+Calling a `withCycles`-wrapped function from inside another `withCycles`-wrapped function is allowed — it will not throw an error. However, each wrapper creates an **independent reservation** that deducts budget separately:
+
+```typescript
+const inner = withCycles({ estimate: 100, actionName: "inner" }, async () => "done");
+const outer = withCycles({ estimate: 500, actionName: "outer" }, async () => {
+  return await inner(); // creates a SECOND reservation — 600 total deducted, not 500
+});
+```
+
+This means nested guards **double-count budget**. The outer reservation already covers the full estimated cost of the operation, so an inner reservation deducts additional budget from the same pool.
+
+**Recommended pattern:** Place `withCycles` at the outermost entry point only. Inner functions should be plain async functions without their own guard:
+
+```typescript
+const inner = async () => "done"; // no withCycles — called within a guarded operation
+
+const outer = withCycles({ estimate: 500, actionName: "outer" }, async () => {
+  return await inner(); // single reservation — 500 total
+});
+```
+
 ## Lifecycle summary
 
 For each `withCycles`-guarded function call:
