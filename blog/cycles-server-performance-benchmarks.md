@@ -136,7 +136,7 @@ The Cycles server is stateless — all state lives in Redis. You can run multipl
 
 ### What happens if the Cycles server is slow or unavailable?
 
-The protocol is designed for the [reserve-commit pattern](/concepts/reserve-commit). If a reserve call is slow, the agent waits before making the LLM call (fail-safe). If the server is unavailable, the reserve fails and the agent doesn't proceed — preventing uncontrolled spend. Commits and events can be retried with idempotency keys.
+The protocol is designed for the [reserve-commit pattern](/protocol/how-reserve-commit-works-in-cycles). If a reserve call is slow, the agent waits before making the LLM call (fail-safe). If the server is unavailable, the reserve fails and the agent doesn't proceed — preventing uncontrolled spend. Commits and events can be retried with idempotency keys.
 
 ### How does this compare to LLM proxy approaches?
 
@@ -144,4 +144,4 @@ LLM proxies add latency on every token streamed. Cycles operates at the action l
 
 ---
 
-*Questions about performance in your specific deployment? [Join the community](/community) or check the [self-hosting guide](/configuration/self-hosting).*
+*Questions about performance in your specific deployment? Check the [server configuration reference](/configuration/server-configuration-reference-for-cycles).*
