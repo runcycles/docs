@@ -1,7 +1,7 @@
 ---
 title: "AI Agent Runtime Permissions: Control Actions Before Execution"
 date: 2026-03-23
-author: Cycles Team
+author: Albert Mavashev
 tags: [runtime-authority, action-authority, action-control, agents, side-effects, permissions, engineering]
 description: "Agents don't just cost money — they take actions. Learn why runtime permissions are the missing layer for controlling what AI agents can do in production."
 blog: true
