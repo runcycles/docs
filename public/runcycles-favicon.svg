@@ -2,7 +2,17 @@
   <circle cx="256" cy="256" r="256" fill="#1a1a2e"/>
   <g transform="translate(256,256) scale(0.85) translate(-256,-256)">
     <path d="M 323.6 111.0 A 160 160 0 1 1 188.4 111.0" fill="none" stroke="#FFFFFF" stroke-width="60" stroke-linecap="round"/>
-    <line x1="232" y1="96" x2="280" y2="96" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round"/>
-    <polyline points="220,262 248,290 300,228" fill="none" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    <path fill-rule="evenodd" fill="#FFFFFF"
+      d="M 256,151
+         L 346.9,203.5
+         L 346.9,308.5
+         L 256,361
+         L 165.1,308.5
+         L 165.1,203.5
+         Z
+         M 314,256
+         A 58,58 0 1 1 198,256
+         A 58,58 0 1 1 314,256
+         Z"/>
   </g>
 </svg>
