@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "devDependencies": {
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "to-ico": "^1.1.5",
     "vitepress": "^1.6.3"
   },
   "scripts": {
