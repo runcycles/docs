@@ -129,8 +129,6 @@ curl -s -X POST http://localhost:7979/v1/auth/validate \
 | Extend | `reservations:extend` |
 | List reservations | `reservations:list` |
 | Balances | `balances:read` |
-| Decide | `decide` |
-| Events | `events:create` |
 
 **Fix:** Create a new API key with the required permissions, or update the existing key's permissions.
 

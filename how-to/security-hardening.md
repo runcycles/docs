@@ -138,8 +138,7 @@ Only grant the permissions each component needs:
 |---|---|
 | Application (runtime) | `reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `balances:read` |
 | Monitoring service | `balances:read`, `reservations:list` |
-| Batch processor | `reservations:create`, `reservations:commit`, `events:create` |
-| Preflight checker | `decide` |
+| Batch processor | `reservations:create`, `reservations:commit` |
 
 Don't give application keys full permissions when they only need a subset.
 
