@@ -45,7 +45,7 @@ def poll_budgets():
         params={"tenant": "acme-corp"},
         headers={"X-Cycles-API-Key": API_KEY},
     )
-    for balance in response.json():
+    for balance in response.json()["balances"]:
         allocated = balance["allocated"]
         if allocated > 0:
             utilization = (balance["spent"] + balance["reserved"]) / allocated
