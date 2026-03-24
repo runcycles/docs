@@ -72,7 +72,7 @@ const client = new CyclesClient(config);
 ```python [Python]
 from runcycles import (
     CyclesClient, ReservationCreateRequest,
-    Subject, Action, Amount, Unit, CommitOveragePolicy,
+    Subject, Action, Amount, Unit,
 )
 
 with CyclesClient(config) as client:
@@ -82,7 +82,6 @@ with CyclesClient(config) as client:
         action=Action(kind="llm.completion", name="gpt-4o"),
         estimate=Amount(unit=Unit.USD_MICROCENTS, amount=5000),
         ttl_ms=60_000,
-        overage_policy=CommitOveragePolicy.REJECT,
     ))
 
     if not response.is_success:
@@ -107,7 +106,6 @@ ReservationCreateRequest request = ReservationCreateRequest.builder()
     .action(new Action("llm.completion", "gpt-4o", null))
     .estimate(new Amount(Unit.USD_MICROCENTS, 5000L))
     .ttlMs(60000L)
-    .overagePolicy(CommitOveragePolicy.REJECT)
     .build();
 
 CyclesResponse<Map<String, Object>> response = cyclesClient.createReservation(request);
@@ -134,7 +132,6 @@ const response = await client.createReservation({
   action: { kind: "llm.completion", name: "gpt-4o" },
   estimate: { unit: Unit.USD_MICROCENTS, amount: 5000 },
   ttl_ms: 60_000,
-  overage_policy: "REJECT",
 });
 
 if (!response.isSuccess) {

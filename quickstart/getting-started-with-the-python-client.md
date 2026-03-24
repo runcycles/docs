@@ -125,7 +125,7 @@ def chat(prompt: str) -> str:
 | `unit` | `USD_MICROCENTS` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
 | `ttl_ms` | `60000` | Reservation TTL in milliseconds. |
 | `grace_period_ms` | `None` | Grace period after TTL expiry. |
-| `overage_policy` | `"REJECT"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
+| `overage_policy` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dry_run` | `False` | If `True`, evaluate without persisting. Function does not execute. |
 | `tenant` | `None` | Subject tenant override. |
 | `workspace` | `None` | Subject workspace override. |

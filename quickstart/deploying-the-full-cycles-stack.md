@@ -400,7 +400,7 @@ RESERVE_RESPONSE=$(curl -s -X POST http://localhost:7878/v1/reservations \
     "action": { "kind": "llm.completion", "name": "openai:gpt-4o" },
     "estimate": { "amount": 500000, "unit": "USD_MICROCENTS" },
     "ttl_ms": 30000,
-    "overage_policy": "REJECT"
+    "overage_policy": "ALLOW_IF_AVAILABLE"
   }')
 
 echo "$RESERVE_RESPONSE" | jq .
