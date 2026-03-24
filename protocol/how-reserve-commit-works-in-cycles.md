@@ -91,6 +91,10 @@ If the actual amount is lower than the reserved amount, the unused portion is re
 
 If work is canceled or fails before any usage occurs, the runtime releases the reservation explicitly, returning the full reserved amount to the budget pool.
 
+::: tip SDK behavior
+All official Cycles SDKs — Spring [`@Cycles`](https://github.com/runcycles/cycles-spring-boot-starter), TypeScript [`withCycles`](https://github.com/runcycles/cycles-client-typescript), and Python [`@cycles`](https://github.com/runcycles/cycles-client-python) — implement this lifecycle automatically: commit on success, release on any exception, and retry on transient commit failures. See each SDK's README for the complete budget-outcome-by-scenario table.
+:::
+
 ## A simple example
 
 Suppose an agent wants to run a tool-assisted task and estimates it may consume 100 units.
