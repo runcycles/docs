@@ -478,9 +478,7 @@ API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
       "reservations:release",
       "reservations:extend",
       "reservations:list",
-      "balances:read",
-      "decide",
-      "events:create"
+      "balances:read"
     ]
   }' | jq -r '.key_secret')
 

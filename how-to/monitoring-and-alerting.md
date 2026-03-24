@@ -30,7 +30,7 @@ utilization = (spent + reserved) / allocated × 100%
 ```bash
 # Get all balances for a tenant
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.[] | {scope, allocated, remaining, spent, reserved, debt}'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[] | {scope, allocated, remaining, spent, reserved, debt}'
 ```
 
 Build a polling monitor that queries balances and pushes to your metrics system:

@@ -167,11 +167,11 @@ Compare the scopes that have budget with the scopes appearing in reservation act
 ```bash
 # Budget scopes
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.[].scope'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[].scope'
 
 # Active reservations show which scopes are being used
 curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=ACTIVE" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.[].subject'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.reservations[].subject'
 ```
 
 If reservations are hitting scopes that don't appear in your budget list, you have a configuration gap.
