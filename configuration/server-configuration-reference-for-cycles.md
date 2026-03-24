@@ -200,6 +200,8 @@ The admin server uses two authentication schemes:
 | `X-Admin-API-Key` | `ADMIN_API_KEY` | System-level operations (tenant CRUD, API key management, audit logs) |
 | `X-Cycles-API-Key` | — | Tenant-scoped operations (budget ledgers, policies, reservations) |
 
+For the full endpoint-to-header mapping with required permissions, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
+
 ### Admin server full configuration example
 
 ```properties

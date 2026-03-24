@@ -134,12 +134,43 @@ The management plane for Cycles. It runs as a separate Spring Boot 3.5 service o
 | `cycles-admin-service-data` | Redis repositories, key service |
 | `cycles-admin-service-model` | Shared domain models and DTOs |
 
-**Authentication:** The admin server uses two auth schemes:
+**Authentication:** The admin server uses two auth schemes depending on the endpoint. The split reflects a bootstrap ordering: `X-Admin-API-Key` handles operations that must exist *before* any tenant-scoped key (tenants, keys, audit), while `X-Cycles-API-Key` handles everything else (budgets, policies, runtime).
 
-| Header | Purpose |
-|---|---|
-| `X-Admin-API-Key` | System administration (tenant/key management, audit) |
-| `X-Cycles-API-Key` | Tenant-scoped operations (budgets, policies, reservations) |
+#### `X-Admin-API-Key` — bootstrap / system administration
+
+Set via the `ADMIN_API_KEY` environment variable. Not scoped to any tenant.
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/v1/admin/tenants/*` | POST, GET, PATCH | Create, list, update, suspend tenants |
+| `/v1/admin/api-keys/*` | POST, GET, DELETE | Create, list, revoke API keys |
+| `/v1/auth/validate` | POST | Validate an API key |
+| `/v1/admin/audit/logs` | GET | Query audit logs |
+
+#### `X-Cycles-API-Key` — tenant-scoped operations
+
+Requires a key created via the admin API with the appropriate [permissions](/how-to/api-key-management-in-cycles#available-permissions).
+
+| Endpoint | Method | Required Permission |
+|---|---|---|
+| `/v1/admin/budgets` | POST, PATCH | `admin:write` |
+| `/v1/admin/budgets` | GET | `admin:read` |
+| `/v1/admin/budgets/fund` | POST | `admin:write` |
+| `/v1/admin/policies` | POST, PATCH | `admin:write` |
+| `/v1/admin/policies` | GET | `admin:read` |
+| `/v1/balances` | GET | `balances:read` |
+| `/v1/reservations` | GET | `reservations:list` |
+| `/v1/reservations` | POST | `reservations:create` |
+| `/v1/reservations/{id}/commit` | POST | `reservations:commit` |
+| `/v1/reservations/{id}/release` | POST | `reservations:release` |
+| `/v1/reservations/{id}/extend` | POST | `reservations:extend` |
+| `/v1/decide` | POST | *(valid key only)* |
+| `/v1/events` | POST | *(valid key only)* |
+
+::: tip Which header do I use?
+If the endpoint manages **identity** (tenants, API keys, audit) → `X-Admin-API-Key`.
+If the endpoint manages **money** (budgets, policies) or **runtime** (reservations, balances) → `X-Cycles-API-Key`.
+:::
 
 **Why a separate server:**
 
