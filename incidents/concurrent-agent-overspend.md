@@ -164,7 +164,7 @@ Compare spent against allocated to find scopes that exceeded their budget:
 # Find scopes where spent exceeds allocated (overrun already happened)
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
   -H "X-Cycles-API-Key: $API_KEY" \
-  | jq '.[] | select(.spent > .allocated) | {scope, allocated, spent, overshoot: (.spent - .allocated)}'
+  | jq '.balances[] | select(.spent > .allocated) | {scope, allocated, spent, overshoot: (.spent - .allocated)}'
 ```
 
 ## Monitoring

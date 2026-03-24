@@ -127,7 +127,7 @@ API_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "my-app",
     "name": "tutorial-key",
-    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read","decide","events:create"]
+    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","reservations:list","balances:read","admin:write"]
   }' | jq -r '.key_secret')
 
 echo "Your API key: $API_KEY"
@@ -344,7 +344,7 @@ After running your app, check the balance again:
 
 ```bash
 curl -s "http://localhost:7878/v1/balances?tenant=my-app" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.[] | {scope, remaining, spent, reserved}'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[] | {scope, remaining, spent, reserved}'
 ```
 
 You'll see `spent` has increased by the actual usage from your LLM call, and `remaining` has decreased.

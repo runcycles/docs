@@ -130,7 +130,7 @@ curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=ACTIVE" \
 
 # Check balance to see reserved vs spent
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.[] | {scope, allocated, spent, reserved, remaining}'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[] | {scope, allocated, spent, reserved, remaining}'
 ```
 
 If `reserved` is growing much faster than `spent`, many reservations are being created without committing — a hallmark of retry loops.

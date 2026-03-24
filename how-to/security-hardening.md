@@ -119,7 +119,7 @@ NEW_KEY=$(curl -s -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "acme-corp",
     "name": "prod-key-v2",
-    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","balances:read","decide","events:create"]
+    "permissions": ["reservations:create","reservations:commit","reservations:release","reservations:extend","balances:read"]
   }' | jq -r '.key_secret')
 
 # 2. Update application config (deploy with new key)
