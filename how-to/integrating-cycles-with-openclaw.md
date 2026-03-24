@@ -276,7 +276,7 @@ Configure reservation behavior per-tool or globally:
         "toolReservationTtls": {
           "code_execution": 120000
         },
-        "overagePolicy": "REJECT",
+        "overagePolicy": "ALLOW_IF_AVAILABLE",
         "toolOveragePolicies": {
           "web_search": "ALLOW_IF_AVAILABLE"
         }

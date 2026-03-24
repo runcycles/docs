@@ -74,12 +74,13 @@ This is different from RESERVATION_EXPIRED — a 404 means the reservation was n
 
 Budget is insufficient for the requested operation.
 
-This appears in four contexts:
+This appears in three contexts:
 
 1. **Reservation:** the scope does not have enough remaining budget for the estimate
 2. **Commit with REJECT policy:** actual exceeds reserved
-3. **Commit with ALLOW_IF_AVAILABLE policy:** remaining budget cannot cover the delta
-4. **Event with REJECT or ALLOW_IF_AVAILABLE:** insufficient budget for the event amount
+3. **Event with REJECT policy:** insufficient budget for the event amount
+
+Note: commits with ALLOW_IF_AVAILABLE never return 409. Instead, the charge is capped to the available remaining budget.
 
 **What to do:** depends on context:
 
@@ -179,7 +180,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 
 | Error | HTTP | Meaning |
 |---|---|---|
-| BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
+| BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT only) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
@@ -216,7 +217,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 
 | Error | HTTP | Meaning |
 |---|---|---|
-| BUDGET_EXCEEDED | 409 | Insufficient budget (REJECT or ALLOW_IF_AVAILABLE) |
+| BUDGET_EXCEEDED | 409 | Insufficient budget (REJECT only) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | UNIT_MISMATCH | 400 | Unit not supported for scope |
 | INVALID_REQUEST | 400 | Malformed request |

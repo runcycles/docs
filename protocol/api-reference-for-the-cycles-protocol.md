@@ -275,7 +275,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/commit \
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
-| 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
+| 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT only) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
@@ -694,7 +694,7 @@ curl -X POST http://localhost:7878/v1/events \
 | 400 | `UNIT_MISMATCH` | Unit not supported for scope |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT or ALLOW_IF_AVAILABLE) |
+| 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT only) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
