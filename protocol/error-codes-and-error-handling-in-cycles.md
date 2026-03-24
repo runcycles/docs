@@ -29,7 +29,7 @@ Every error response follows the same structure:
 
 ## The error codes
 
-Cycles defines 12 error codes, each with a specific HTTP status code and meaning.
+Cycles defines 15 error codes, each with a specific HTTP status code and meaning.
 
 ### INVALID_REQUEST (400)
 
@@ -88,6 +88,18 @@ Note: commits with ALLOW_IF_AVAILABLE never return 409. Instead, the charge is c
 - for commits: the work already happened — consider switching to ALLOW_IF_AVAILABLE or ALLOW_WITH_OVERDRAFT
 - for events: adjust the amount or change the overage policy
 
+### BUDGET_FROZEN (409)
+
+The budget scope has been frozen by an operator. Operations that would modify the budget (reserve, commit, event) are rejected while the scope is frozen.
+
+**What to do:** wait for the operator to unfreeze the budget, or escalate. Not retryable until the freeze is lifted.
+
+### BUDGET_CLOSED (409)
+
+The budget scope has been permanently closed. No further budget operations are allowed against this scope.
+
+**What to do:** create a new budget scope or contact the operator. Not retryable against this scope.
+
 ### RESERVATION_EXPIRED (410)
 
 The reservation's TTL plus grace period has elapsed.
@@ -145,6 +157,12 @@ Even if the scope has not exceeded its overdraft limit, any debt blocks new rese
 
 Note: when `is_over_limit=true`, the server returns `OVERDRAFT_LIMIT_EXCEEDED` instead of `DEBT_OUTSTANDING`, even if debt > 0. `OVERDRAFT_LIMIT_EXCEEDED` takes precedence.
 
+### MAX_EXTENSIONS_EXCEEDED (409)
+
+The tenant's `max_reservation_extensions` limit has been reached for this reservation. No further extensions are allowed.
+
+**What to do:** commit or release the reservation. If more time is needed, create a new reservation after committing the current one.
+
 ### INTERNAL_ERROR (500)
 
 An unexpected server error occurred.
@@ -158,6 +176,8 @@ An unexpected server error occurred.
 | Error | HTTP | Meaning |
 |---|---|---|
 | BUDGET_EXCEEDED | 409 | Insufficient budget |
+| BUDGET_FROZEN | 409 | Budget scope is frozen |
+| BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
 | DEBT_OUTSTANDING | 409 | Scope has unresolved debt |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
@@ -181,6 +201,8 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | Error | HTTP | Meaning |
 |---|---|---|
 | BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT only) |
+| BUDGET_FROZEN | 409 | Budget scope is frozen |
+| BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
@@ -208,6 +230,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | INVALID_REQUEST | 400 | Missing or invalid fields |
 | RESERVATION_EXPIRED | 410 | Past TTL (no grace period for extend) |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
+| MAX_EXTENSIONS_EXCEEDED | 409 | Tenant max_reservation_extensions limit reached |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | NOT_FOUND | 404 | Reservation never existed |
 | UNAUTHORIZED | 401 | Invalid API key |
@@ -218,6 +241,8 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | Error | HTTP | Meaning |
 |---|---|---|
 | BUDGET_EXCEEDED | 409 | Insufficient budget (REJECT only) |
+| BUDGET_FROZEN | 409 | Budget scope is frozen |
+| BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | UNIT_MISMATCH | 400 | Unit not supported for scope |
 | INVALID_REQUEST | 400 | Malformed request |
@@ -247,13 +272,13 @@ Log the request_id when handling errors.
 
 ## Summary
 
-Cycles provides 12 specific error codes that tell the client exactly what went wrong:
+Cycles provides 15 specific error codes that tell the client exactly what went wrong:
 
 - **400** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH)
 - **401** for authentication failures (UNAUTHORIZED)
 - **403** for authorization failures (FORBIDDEN)
 - **404** for missing reservations (NOT_FOUND)
-- **409** for budget and state conflicts (BUDGET_EXCEEDED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH)
+- **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
 - **410** for expired reservations (RESERVATION_EXPIRED)
 - **500** for server errors (INTERNAL_ERROR)
 

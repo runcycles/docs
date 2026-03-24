@@ -90,6 +90,7 @@ On success, the response includes:
 
 - `status: APPLIED`
 - `event_id` — a unique identifier for the event
+- `charged` — the amount actually applied (optional; present when `ALLOW_IF_AVAILABLE` caps the charge to remaining budget, so the client can see the effective charge)
 - `balances` — updated balance state for affected scopes
 
 ## Overage policies on events

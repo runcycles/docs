@@ -154,7 +154,7 @@ Events (`POST /v1/events`) also support all three overage policies with the same
 Since events do not have a preceding reservation, the "overage" is simply whether the event amount exceeds available budget for the scope.
 
 - REJECT: event is rejected if budget is insufficient
-- ALLOW_IF_AVAILABLE: event is applied if budget can cover it
+- ALLOW_IF_AVAILABLE: event is applied if budget can cover it; if the amount exceeds remaining budget, the charge is capped and the response includes a `charged` field showing the effective amount
 - ALLOW_WITH_OVERDRAFT: event is applied with debt if necessary
 
 ## Overage policies and concurrency

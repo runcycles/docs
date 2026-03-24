@@ -14,6 +14,8 @@ Release history for the Cycles Protocol and reference implementations.
 - `ALLOW_IF_AVAILABLE` commits now always succeed: when remaining budget can't cover the full overage delta, the charge is capped to estimate + available remaining and `is_over_limit` is set to block future reservations
 - `is_over_limit` extended to also cover capped `ALLOW_IF_AVAILABLE` commits
 - `CommitResponse.charged` may now be less than `actual` when overage is capped
+- `EventCreateResponse` now includes optional `charged` field (present when `ALLOW_IF_AVAILABLE` caps the charge to remaining budget)
+- Three new error codes: `BUDGET_FROZEN` (409), `BUDGET_CLOSED` (409), `MAX_EXTENSIONS_EXCEEDED` (409) — error code count increased from 12 to 15
 
 **Server:**
 - Updated commit Lua script with capped-delta logic for `ALLOW_IF_AVAILABLE`
