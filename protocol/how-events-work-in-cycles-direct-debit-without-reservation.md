@@ -96,17 +96,17 @@ On success, the response includes:
 
 Events support the same three overage policies as commits:
 
-### REJECT (default)
+### REJECT
 
 If the actual amount exceeds the available budget, the event is rejected with `409 BUDGET_EXCEEDED`.
 
-REJECT is the default when neither the request nor the tenant's `default_commit_overage_policy` specifies a policy. It prevents any accounting that would put the scope into negative remaining.
+REJECT prevents any accounting that would put the scope into negative remaining.
 
-### ALLOW_IF_AVAILABLE
+### ALLOW_IF_AVAILABLE (default)
 
-If sufficient budget remains across all affected scopes, the full actual amount is applied atomically. If any scope has insufficient remaining, the entire event is rejected with `409 BUDGET_EXCEEDED`.
+If sufficient budget remains across all affected scopes, the full actual amount is applied atomically. If any scope has insufficient remaining, the charge is capped to available budget and `is_over_limit` is set on affected scopes.
 
-This is useful when the system should apply the charge only if fully covered, but not create debt.
+ALLOW_IF_AVAILABLE is the default when neither the request nor the tenant's `default_commit_overage_policy` specifies a policy. It never creates debt and never rejects an event.
 
 ### ALLOW_WITH_OVERDRAFT
 

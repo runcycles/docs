@@ -41,7 +41,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.23.3
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.24.0
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -51,7 +51,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.23.3
+    image: ghcr.io/runcycles/cycles-server:0.1.24.0
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -196,7 +196,7 @@ services:
       retries: 5
 
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.23.3
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.24.0
     ports:
       - "7979:7979"
     environment:
@@ -209,7 +209,7 @@ services:
         condition: service_healthy
 
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.23.3
+    image: ghcr.io/runcycles/cycles-server:0.1.24.0
     ports:
       - "7878:7878"
     environment:
@@ -231,7 +231,7 @@ docker compose up -d
 ```
 
 ::: tip Version pinning
-The examples above pin version `0.1.23.3`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
+The examples above pin version `0.1.24.0`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
 :::
 
 Verify all services are healthy:
@@ -286,7 +286,7 @@ Build and start the admin server:
 cd cycles-server-admin/cycles-admin-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD= ADMIN_API_KEY=admin-bootstrap-key \
-  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.23.3.jar
+  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.24.0.jar
 ```
 
 In a second terminal, build and start the cycles server:
@@ -295,7 +295,7 @@ In a second terminal, build and start the cycles server:
 cd cycles-server/cycles-protocol-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 \
-  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.23.3.jar
+  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.24.0.jar
 ```
 
 ## Step 2: Create a tenant

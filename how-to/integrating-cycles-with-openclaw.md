@@ -287,8 +287,8 @@ Configure reservation behavior per-tool or globally:
 ```
 
 Overage policies control what happens when a reservation exceeds the remaining budget:
-- `REJECT` — deny the reservation (default)
-- `ALLOW_IF_AVAILABLE` — allow up to the remaining balance
+- `ALLOW_IF_AVAILABLE` — allow up to the remaining balance (default)
+- `REJECT` — deny the reservation
 - `ALLOW_WITH_OVERDRAFT` — allow and create a debt
 
 ## Retry on denied reservations

@@ -29,13 +29,13 @@ When a reservation or event is created, the server resolves the overage policy i
 
 1. **Request-level** `overage_policy` — if the client specifies one, it is used
 2. **Tenant default** `default_commit_overage_policy` — if the tenant has one configured via the Admin API
-3. **Hardcoded fallback** — `REJECT`
+3. **Hardcoded fallback** — `ALLOW_IF_AVAILABLE`
 
-This means tenant administrators can set an org-wide default (e.g. `ALLOW_IF_AVAILABLE`) and individual requests can still override it.
+This means tenant administrators can set an org-wide default (e.g. `REJECT`) and individual requests can still override it.
 
-## REJECT (default)
+## REJECT
 
-REJECT is the default overage policy when neither the request nor the tenant configuration specifies one. Tenant administrators can change the default for all reservations and events in their tenant by setting `default_commit_overage_policy` via the Admin API.
+REJECT is the strictest overage policy. Tenant administrators can set it as the default for all reservations and events in their tenant by setting `default_commit_overage_policy` via the Admin API.
 
 REJECT is the simplest and strictest policy.
 
@@ -62,13 +62,15 @@ This is why the spec recommends adding a 10–20% buffer to estimates when using
 - Add estimation buffers to avoid frequent rejections
 - Monitor how often commits are rejected — high rejection rates signal estimation problems
 
-## ALLOW_IF_AVAILABLE
+## ALLOW_IF_AVAILABLE (default)
 
-ALLOW_IF_AVAILABLE checks whether remaining budget across all affected scopes can cover the delta between actual and reserved.
+ALLOW_IF_AVAILABLE is the default overage policy when neither the request nor the tenant configuration specifies one. It ensures commits always succeed — the action already happened, so the ledger must reflect it as accurately as possible.
 
-If yes: the commit succeeds and the delta is charged atomically.
+The server checks whether remaining budget across all affected scopes can cover the full delta between actual and reserved.
 
-If no: the commit is rejected with `409 BUDGET_EXCEEDED`.
+If yes: the commit succeeds and the full delta is charged atomically.
+
+If no: the commit still succeeds, but the delta is **capped** to the minimum available remaining across all affected scopes (floor 0). The charge is `estimate + capped_delta`. Scopes where the full delta could not be covered are marked `is_over_limit=true`, blocking future reservations until reconciled.
 
 ### When ALLOW_IF_AVAILABLE is right
 
@@ -76,24 +78,19 @@ If no: the commit is rejected with `409 BUDGET_EXCEEDED`.
 - strict estimation is difficult
 - the system should never create debt
 - budget accuracy matters but some flexibility is acceptable
+- commits should never be rejected after the action has happened
 
 ### How it works
 
-Suppose a reservation held 100 units and actual usage was 130 units.
+**Full delta available:** Suppose a reservation held 100 units and actual usage was 130 units. The delta is 30 units. The server checks whether all affected scopes have at least 30 units of remaining budget. If yes: commit succeeds, 130 is charged.
 
-The delta is 30 units.
+**Capped delta:** Suppose budget remaining is 200, estimate is 200, actual is 201. The delta is 1 unit. After reservation, remaining is 0. The server caps the delta to 0 (nothing available). Charge is `200 + 0 = 200`. The scope is marked `is_over_limit=true`, blocking future reservations. Budget after: remaining=0, spent includes 200, no debt.
 
-The server checks whether all affected scopes have at least 30 units of remaining budget (beyond what is already reserved).
+### The key properties
 
-If yes: commit succeeds, 130 is charged, the reservation's remaining 0 is released (since actual > reserved, nothing is left to release, but the delta is covered by remaining budget).
+ALLOW_IF_AVAILABLE never creates debt. It never rejects a commit. It charges the maximum amount possible without creating debt, and blocks future reservations when the full overage could not be covered.
 
-If no: commit is rejected.
-
-### The key property
-
-ALLOW_IF_AVAILABLE never creates debt. The budget either supports the overage or it does not.
-
-This makes it a good middle ground between strict rejection and overdraft.
+This makes it a safe default — work is always accounted for, and the system self-limits when budget is exhausted.
 
 ## ALLOW_WITH_OVERDRAFT
 
@@ -189,7 +186,7 @@ For actions where the work has already happened (external API calls, side-effect
 The three commit overage policies give teams control over the tradeoff between budget strictness and ledger accuracy:
 
 - **REJECT** — strictest, may create unaccounted gaps
-- **ALLOW_IF_AVAILABLE** — flexible, no debt, atomic
+- **ALLOW_IF_AVAILABLE** (default) — flexible, no debt, always commits, caps overage to available
 - **ALLOW_WITH_OVERDRAFT** — most accurate, creates debt, requires reconciliation
 
 Most systems benefit from using different policies for different action classes: REJECT for well-estimated actions, ALLOW_IF_AVAILABLE for variable ones, and ALLOW_WITH_OVERDRAFT for must-record side effects.

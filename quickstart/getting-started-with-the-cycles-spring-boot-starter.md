@@ -332,7 +332,7 @@ Default TTL is 60 seconds. The starter automatically sends heartbeat extensions 
 @Cycles(value = "1000", overagePolicy = "ALLOW_IF_AVAILABLE")
 ```
 
-Options: `REJECT` (default), `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT`.
+Options: `ALLOW_IF_AVAILABLE` (default), `REJECT`, `ALLOW_WITH_OVERDRAFT`.
 
 ### Dry run (shadow mode)
 

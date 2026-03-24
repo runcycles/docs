@@ -7,7 +7,26 @@ description: "Release history and version notes for the Cycles Protocol, server,
 
 Release history for the Cycles Protocol and reference implementations.
 
-## v0.1.23 — March 2026 (Current)
+## v0.1.24 — March 2026 (Current)
+
+**Protocol (breaking):**
+- Default overage policy changed from `REJECT` to `ALLOW_IF_AVAILABLE`
+- `ALLOW_IF_AVAILABLE` commits now always succeed: when remaining budget can't cover the full overage delta, the charge is capped to estimate + available remaining and `is_over_limit` is set to block future reservations
+- `is_over_limit` extended to also cover capped `ALLOW_IF_AVAILABLE` commits
+- `CommitResponse.charged` may now be less than `actual` when overage is capped
+
+**Server:**
+- Updated commit Lua script with capped-delta logic for `ALLOW_IF_AVAILABLE`
+- Updated default fallback in reservation and commit paths from `REJECT` to `ALLOW_IF_AVAILABLE`
+
+**Admin Server:**
+- Default tenant `default_commit_overage_policy` changed from `REJECT` to `ALLOW_IF_AVAILABLE`
+- New endpoint: `PATCH /v1/admin/budgets/{scope}/{unit}` — update `overdraft_limit`, `commit_overage_policy`, and `metadata` on existing budgets with atomic `is_over_limit` recalculation
+- New endpoint: `PATCH /v1/admin/policies/{policy_id}` — update all mutable policy fields (name, description, priority, caps, overage policy, TTL override, rate limits, effective dates, status)
+- Tenant update extended with `default_reservation_ttl_ms`, `max_reservation_ttl_ms`, and `max_reservation_extensions` — reservation TTL is now configurable per-tenant
+- Budget metadata support on create and update
+
+## v0.1.23 — March 2026
 
 **Protocol:**
 - Complete OpenAPI 3.1.0 specification

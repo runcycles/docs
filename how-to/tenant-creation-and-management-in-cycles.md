@@ -183,6 +183,9 @@ You can update:
 - `status` — transition between ACTIVE, SUSPENDED, and CLOSED (see lifecycle below)
 - `metadata` — key-value pairs (replaces the full metadata object)
 - `default_commit_overage_policy` — the default overage policy for all scopes
+- `default_reservation_ttl_ms` — default TTL for reservations (1,000–86,400,000 ms)
+- `max_reservation_ttl_ms` — maximum allowed TTL (1,000–86,400,000 ms)
+- `max_reservation_extensions` — maximum TTL extensions per reservation (0+)
 
 Fields not included in the `PATCH` request are left unchanged.
 
@@ -283,23 +286,16 @@ The server rejects invalid status transitions with `400 INVALID_REQUEST`:
 
 ## Configuring tenant defaults
 
-Each tenant has configuration that governs how reservations behave. The `default_commit_overage_policy` can be set at creation or updated via `PATCH`. The remaining properties are server-level defaults that apply to all tenants.
+Each tenant has configuration that governs how reservations behave. These properties can be set at creation or updated via `PATCH`.
 
 ### Settable per tenant
 
 | Property | Default | Description |
 |---|---|---|
-| `default_commit_overage_policy` | `REJECT` | What happens when actual spend exceeds the reserved amount. Set via create or update. |
-
-### Server-level defaults
-
-These defaults apply to all tenants and are configured at the server level, not per-tenant:
-
-| Property | Default | Description |
-|---|---|---|
-| `default_reservation_ttl_ms` | `60000` (60s) | Default time-to-live for reservations when not specified per-request |
+| `default_commit_overage_policy` | `ALLOW_IF_AVAILABLE` | What happens when actual spend exceeds the reserved amount |
+| `default_reservation_ttl_ms` | `60000` (60s) | Default TTL when a reservation request does not specify `ttl_ms` |
 | `max_reservation_ttl_ms` | `3600000` (1h) | Maximum allowed TTL; requests exceeding this are capped |
-| `max_reservation_extensions` | `10` | Maximum TTL extensions per reservation |
+| `max_reservation_extensions` | `10` | Maximum TTL extensions per reservation (prevents zombie reservations) |
 | `reservation_expiry_policy` | `AUTO_RELEASE` | How expired reservations are handled |
 
 ### Commit overage policies
@@ -340,6 +336,19 @@ For most deployments, `AUTO_RELEASE` is the safest default — it prevents zombi
 - **`max_reservation_ttl_ms`** caps the maximum TTL any reservation can request. This prevents callers from holding budget indefinitely. Requests that specify a `ttl_ms` exceeding this value are silently capped.
 
 - **`max_reservation_extensions`** limits how many times a reservation's TTL can be extended. This prevents zombie reservations from being extended forever. A value of 10 is generous for most use cases.
+
+Configure TTL settings per tenant:
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "default_reservation_ttl_ms": 120000,
+    "max_reservation_ttl_ms": 7200000,
+    "max_reservation_extensions": 5
+  }' | jq .
+```
 
 ## Hierarchical tenants
 
@@ -656,7 +665,7 @@ Pick a standard set of metadata keys and use them across all tenants. This makes
 
 ### Set overage policy at the tenant level
 
-The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. Start with `REJECT` (the default) — it is the safest option. Only switch to `ALLOW_IF_AVAILABLE` or `ALLOW_WITH_OVERDRAFT` when you understand the debt implications.
+The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. The default is `ALLOW_IF_AVAILABLE`, which caps charges to available budget and never creates debt. Switch to `REJECT` for hard stops, or `ALLOW_WITH_OVERDRAFT` when exact accounting with debt is needed.
 
 Override the policy per-budget-ledger or per-reservation for specific scopes that need different behavior.
 
