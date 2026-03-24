@@ -10,7 +10,7 @@ sidebar: false
 
 # AI Agent Action Authority: Blocking a Customer Email Before Execution
 
-A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has no provisioned budget. The email function never runs. The customer never receives an unauthorized message.
+A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has a zero-dollar budget. The email function never runs. The customer never receives an unauthorized message.
 
 The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real. This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
@@ -43,13 +43,22 @@ When the agent runs without Cycles, every step completes with a green checkmark:
 
 ╭──────────── Action Log ───────────────────────╮
 │  ✓ read_case                                  │
+│    Loaded case #4782 — Acme Corp              │
+│                                               │
 │  ✓ append_internal_note  [internal-notes]     │
+│    Billing discrepancy: $847 invoiced vs $720 │
+│    contract. Investigating.                   │
+│                                               │
 │  ✓ update_crm_status     [crm-updates]        │
+│    Status: Open → Investigating               │
+│                                               │
 │  ✓ send_customer_email   [send-email]         │
+│    Email sent to jane@acme.com                │
 ╰───────────────────────────────────────────────╯
 
 ╭──────────── Result — UNGUARDED ───────────────╮
-│ All actions executed — including the email.   │
+│ All actions executed — including the customer │
+│ email.                                        │
 │ 4 actions approved · 0 actions blocked        │
 ╰───────────────────────────────────────────────╯
 ```
@@ -74,7 +83,8 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✓ append_internal_note  [internal-notes]     │
 │    POST /v1/reservations → 200 ALLOW          │
-│    Billing discrepancy: $847 vs $720          │
+│    Billing discrepancy: $847 invoiced vs $720 │
+│    contract. Investigating.                   │
 │                                               │
 │  ✓ update_crm_status     [crm-updates]        │
 │    POST /v1/reservations → 200 ALLOW          │
@@ -82,7 +92,8 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✗ send_customer_email   [send-email]         │
 │    POST /v1/reservations → 409 BUDGET_EXCEEDED│
-│    Email blocked — not approved autonomously. │
+│    Email blocked — not approved for autonomous│
+│    execution. Escalated to human review.      │
 ╰───────────────────────────────────────────────╯
 
 ╭──────────── Result — GUARDED ─────────────────╮
@@ -96,7 +107,7 @@ The `send_customer_email` function never executed. Not "rolled back." Not "logge
 
 ## The code change
 
-The diff between `unguarded.py` and `guarded.py` is exactly this:
+The diff between `unguarded.py` and `guarded.py` is:
 
 ```python
 # --- Import the SDK ---
@@ -110,6 +121,9 @@ config = CyclesConfig(
     base_url=os.environ["CYCLES_BASE_URL"],
     api_key=os.environ["CYCLES_API_KEY"],
     tenant=os.environ["CYCLES_TENANT"],
+    workspace="default",
+    app="default",
+    workflow="default",
     agent="support-bot",
 )
 set_default_client(CyclesClient(config))
@@ -153,13 +167,13 @@ tenant:demo-tenant
          └─ agent:support-bot
             ├─ toolset:internal-notes   → $1.00 budget ✓
             ├─ toolset:crm-updates      → $1.00 budget ✓
-            └─ toolset:send-email       → no budget     ✗
+            └─ toolset:send-email       → $0 budget     ✗
 ```
 
-The provisioning script creates $1.00 budgets at every level of the hierarchy — tenant, workspace, app, workflow, agent — and then creates toolset-level budgets **only** for approved actions:
+The provisioning script creates $1.00 budgets at every level of the hierarchy — tenant, workspace, app, workflow, agent — and then creates toolset-level budgets. Approved actions get $1.00; blocked actions get $0:
 
 ```bash
-# Toolset budgets — ONLY for approved actions
+# Toolset budgets — approved actions get $1.00
 for TOOLSET in "internal-notes" "crm-updates"; do
   SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:$TOOLSET"
   curl -X POST "$ADMIN_URL/budgets" \
@@ -168,12 +182,19 @@ for TOOLSET in "internal-notes" "crm-updates"; do
     -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
          \"allocated\": {\"amount\": 100000000, \"unit\": \"USD_MICROCENTS\"}}"
 done
-# No budget for toolset:send-email — Cycles returns 409 on any reservation attempt
+
+# send-email: $0 budget — Cycles returns 409 on any reservation attempt
+SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:send-email"
+curl -X POST "$ADMIN_URL/budgets" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
+       \"allocated\": {\"amount\": 0, \"unit\": \"USD_MICROCENTS\"}}"
 ```
 
-When the `@cycles` decorator tries to reserve budget for `toolset:send-email`, the server walks the hierarchy, finds no budget at the toolset level, and returns `409 BUDGET_EXCEEDED`. The decorator raises the exception. The action never runs.
+When the `@cycles` decorator tries to reserve budget for `toolset:send-email`, the server walks the hierarchy, finds a $0 budget at the toolset level, and returns `409 BUDGET_EXCEEDED`. The decorator raises the exception. The action never runs.
 
-This is the operational model: **approving or revoking an agent action = adding or removing a budget**. Want the agent to send emails? Add a budget for `toolset:send-email`. Want to revoke it? Remove the budget. No code changes. No redeployment. No new API keys.
+This is the operational model: **approving or revoking an agent action = setting a budget**. Want the agent to send emails? Set a budget for `toolset:send-email`. Want to revoke it? Set the budget to zero. No code changes. No redeployment. No new API keys.
 
 ## Why not just use an allowlist?
 
