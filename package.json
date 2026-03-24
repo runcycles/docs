@@ -16,7 +16,7 @@
   "dependencies": {
     "feed": "^5.2.0",
     "shiki": "^4.0.2",
-    "vitepress-openapi": "^0.1.17",
+    "vitepress-openapi": "^0.1.19",
     "yaml": "^2.8.2"
   }
 }
