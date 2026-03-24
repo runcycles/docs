@@ -10,7 +10,7 @@ sidebar: false
 
 # AI Agent Action Authority: Blocking a Customer Email Before Execution
 
-A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has no provisioned budget. The email function never runs. The customer never receives an unauthorized message.
+A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has a zero-dollar budget. The email function never runs. The customer never receives an unauthorized message.
 
 The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real. This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
@@ -43,13 +43,22 @@ When the agent runs without Cycles, every step completes with a green checkmark:
 
 ╭──────────── Action Log ───────────────────────╮
 │  ✓ read_case                                  │
+│    Loaded case #4782 — Acme Corp              │
+│                                               │
 │  ✓ append_internal_note  [internal-notes]     │
+│    Billing discrepancy: $847 invoiced vs $720 │
+│    contract. Investigating.                   │
+│                                               │
 │  ✓ update_crm_status     [crm-updates]        │
+│    Status: Open → Investigating               │
+│                                               │
 │  ✓ send_customer_email   [send-email]         │
+│    Email sent to jane@acme.com                │
 ╰───────────────────────────────────────────────╯
 
 ╭──────────── Result — UNGUARDED ───────────────╮
-│ All actions executed — including the email.   │
+│ All actions executed — including the customer │
+│ email.                                        │
 │ 4 actions approved · 0 actions blocked        │
 ╰───────────────────────────────────────────────╯
 ```
@@ -74,7 +83,8 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✓ append_internal_note  [internal-notes]     │
 │    POST /v1/reservations → 200 ALLOW          │
-│    Billing discrepancy: $847 vs $720          │
+│    Billing discrepancy: $847 invoiced vs $720 │
+│    contract. Investigating.                   │
 │                                               │
 │  ✓ update_crm_status     [crm-updates]        │
 │    POST /v1/reservations → 200 ALLOW          │
@@ -82,7 +92,8 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 │                                               │
 │  ✗ send_customer_email   [send-email]         │
 │    POST /v1/reservations → 409 BUDGET_EXCEEDED│
-│    Email blocked — not approved autonomously. │
+│    Email blocked — not approved for autonomous│
+│    execution. Escalated to human review.      │
 ╰───────────────────────────────────────────────╯
 
 ╭──────────── Result — GUARDED ─────────────────╮
@@ -96,7 +107,7 @@ The `send_customer_email` function never executed. Not "rolled back." Not "logge
 
 ## The code change
 
-The diff between `unguarded.py` and `guarded.py` is exactly this:
+The diff between `unguarded.py` and `guarded.py` is:
 
 ```python
 # --- Import the SDK ---
@@ -110,6 +121,9 @@ config = CyclesConfig(
     base_url=os.environ["CYCLES_BASE_URL"],
     api_key=os.environ["CYCLES_API_KEY"],
     tenant=os.environ["CYCLES_TENANT"],
+    workspace="default",
+    app="default",
+    workflow="default",
     agent="support-bot",
 )
 set_default_client(CyclesClient(config))
