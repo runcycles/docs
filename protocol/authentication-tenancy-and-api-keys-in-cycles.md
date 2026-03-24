@@ -101,6 +101,44 @@ It is useful for:
 
 This header is optional in v0 implementations.
 
+## API key permissions
+
+API keys can carry granular permissions that restrict which operations they can perform. The available permissions are:
+
+| Permission | Operations |
+|---|---|
+| `reservations:create` | Create reservations |
+| `reservations:commit` | Commit reservations |
+| `reservations:release` | Release reservations |
+| `reservations:extend` | Extend reservations |
+| `reservations:list` | List and get reservations |
+| `balances:read` | Query balances |
+| `admin:read` | List budgets and policies |
+| `admin:write` | Create, update, and fund budgets; create and update policies |
+
+Default permissions for tenant keys are `[reservations:*, balances:read]`. Admin keys typically have `[admin:*, reservations:*, balances:*]`.
+
+If a request requires a permission the API key does not have, the server returns `403 INSUFFICIENT_PERMISSIONS`.
+
+## Scope filter
+
+API keys can optionally be restricted to specific scopes using a **scope filter**.
+
+A scope filter is an array of scope segment patterns:
+
+```json
+"scope_filter": ["workspace:eng", "agent:*"]
+```
+
+When a scope filter is set on an API key:
+
+- operations are only permitted on scopes containing a matching segment
+- `"workspace:eng"` matches scopes like `tenant:acme/workspace:eng/agent:bot1` (exact segment match)
+- `"agent:*"` matches any scope containing an agent segment (wildcard match)
+- if no filter entry matches the requested scope, the server returns `403 FORBIDDEN`
+
+When scope filter is empty or not set, the key has unrestricted access within its tenant.
+
 ## Practical implications
 
 ### One API key per tenant (typical)

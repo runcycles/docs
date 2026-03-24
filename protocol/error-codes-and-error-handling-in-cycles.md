@@ -104,7 +104,7 @@ The budget scope has been permanently closed. No further budget operations are a
 
 The reservation's TTL plus grace period has elapsed.
 
-The reservation has been finalized as EXPIRED and its budget has been returned to the pool.
+The reservation has been finalized as EXPIRED and its budget has been returned to the pool. This error applies to **mutating operations** (commit, release, extend) — not GET. The GET endpoint always returns `200` with the reservation detail including `"status": "EXPIRED"`, so clients can inspect expired reservations for debugging and recovery.
 
 **What to do:** create a new reservation if the work still needs to proceed. If the work already completed, the usage may need to be recorded as an event instead.
 
