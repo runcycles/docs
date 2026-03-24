@@ -90,6 +90,17 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:pro
   }'
 ```
 
+::: warning URL-encoding scopes in URL paths
+When a scope contains `/` (any workspace, app, agent, or workflow scope), you must URL-encode the `/` as `%2F` in the URL path. This applies to all endpoints where the scope appears in the URL — fund (`POST .../budgets/{scope}/{unit}/fund`), patch (`PATCH .../budgets/{scope}/{unit}`), and others.
+
+| Context | Format | Example |
+|---------|--------|---------|
+| JSON request body (`POST /v1/admin/budgets`) | Raw `/` | `"scope": "tenant:acme/workspace:production"` |
+| URL path (`fund`, `patch`, etc.) | `%2F` | `/budgets/tenant:acme%2Fworkspace:production/USD_MICROCENTS/fund` |
+
+If you use a raw `/` in the URL path, the server interprets it as a path separator and the request will fail with a 404.
+:::
+
 ::: info Note
 Tenants and API keys must be created first using the admin key (`X-Admin-API-Key`). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
 :::
