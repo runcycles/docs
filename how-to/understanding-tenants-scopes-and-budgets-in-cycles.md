@@ -347,7 +347,8 @@ This returns balances at every scope under the tenant, showing `allocated`, `spe
 At the start of a new billing period, reset budgets to their allocation:
 
 ```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+# Reset tenant-level budget
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
@@ -356,12 +357,9 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
     "idempotency_key": "reset-april-2026",
     "reason": "Monthly budget reset"
   }' | jq .
-```
 
-For workspace-level scopes, URL-encode the `/` as `%2F` in the path:
-
-```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp%2Fworkspace:prod/USD_MICROCENTS/fund" \
+# Reset workspace-level budget
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{

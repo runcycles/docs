@@ -61,7 +61,7 @@ curl -X POST http://localhost:7979/v1/admin/budgets \
   }'
 
 # Fund the budget
-curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -80,7 +80,7 @@ curl -X POST http://localhost:7979/v1/admin/budgets \
     "allocated": { "amount": 500000, "unit": "USD_MICROCENTS" }
   }'
 
-curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:production/USD_MICROCENTS/fund" \
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme/workspace:production&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -89,17 +89,6 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:pro
     "idempotency_key": "fund-acme-prod-001"
   }'
 ```
-
-::: warning URL-encoding scopes in URL paths
-When a scope contains `/` (any workspace, app, agent, or workflow scope), you must URL-encode the `/` as `%2F` in the URL path. This applies to all endpoints where the scope appears in the URL — fund (`POST .../budgets/{scope}/{unit}/fund`), patch (`PATCH .../budgets/{scope}/{unit}`), and others.
-
-| Context | Format | Example |
-|---------|--------|---------|
-| JSON request body (`POST /v1/admin/budgets`) | Raw `/` | `"scope": "tenant:acme/workspace:production"` |
-| URL path (`fund`, `patch`, etc.) | `%2F` | `/budgets/tenant:acme%2Fworkspace:production/USD_MICROCENTS/fund` |
-
-If you use a raw `/` in the URL path, the server interprets it as a path separator and the request will fail with a 404.
-:::
 
 ::: info Note
 Tenants and API keys must be created first using the admin key (`X-Admin-API-Key`). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the complete bootstrap sequence.
@@ -181,10 +170,10 @@ tenant:acme/dimensions:cost_center=marketing   → allocated: 200,000
 
 ## Updating budget configuration
 
-Use `PATCH /v1/admin/budgets/{scope}/{unit}` to update mutable budget properties without re-creating the ledger:
+Use `PATCH /v1/admin/budgets?scope={scope}&unit={unit}` to update mutable budget properties without re-creating the ledger:
 
 ```bash
-curl -s -X PATCH "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS" \
+curl -s -X PATCH "http://localhost:7979/v1/admin/budgets?scope=tenant:acme&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -217,7 +206,7 @@ Decrease the `allocated` value. If the new value is less than `spent + reserved`
 To reset a scope for a new billing period, use the `RESET` funding operation:
 
 ```bash
-curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -241,7 +230,7 @@ To decommission a budget: `RESET` its allocation to zero (or `DEBIT` the remaini
 If a scope has accumulated debt through `ALLOW_WITH_OVERDRAFT` commits, repay it:
 
 ```bash
-curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS/fund" \
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{

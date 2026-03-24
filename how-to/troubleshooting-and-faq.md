@@ -70,7 +70,7 @@ The `remaining` field shows available budget after accounting for active reserva
 **Fix:** Repay the debt:
 
 ```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
@@ -284,7 +284,7 @@ Yes. Each application uses its own tenant (or its own workspace within a tenant)
 Use the RESET funding operation:
 
 ```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001"}' | jq .
@@ -365,14 +365,14 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 
 ### Fund endpoint returns 404 for workspace budget
 
-**Symptom:** `POST /v1/admin/budgets/tenant:acme/workspace:prod/USD_MICROCENTS/fund` returns `404 NOT_FOUND` even though the budget exists.
+**Symptom:** Funding a workspace budget returns `404 NOT_FOUND`.
 
-**Cause:** The `/` between `tenant:acme` and `workspace:prod` is interpreted as a URL path separator. The server sees `scope=tenant:acme`, `unit=workspace:prod` — neither matches the expected route parameters.
+**Cause:** You may be using the old path-based endpoint format. The fund and patch endpoints accept `scope` and `unit` as **query parameters**, not path variables.
 
-**Fix:** URL-encode the `/` as `%2F` in the scope:
+**Fix:** Use query parameters:
 
 ```bash
-curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:prod/USD_MICROCENTS/fund" \
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme/workspace:prod&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -381,7 +381,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:pro
   }'
 ```
 
-This applies to all endpoints where the scope is in the URL path (fund, patch). Scopes in JSON request bodies (e.g., `POST /v1/admin/budgets`) do **not** need encoding.
+The same pattern applies to the patch endpoint: `PATCH /v1/admin/budgets?scope=...&unit=...`.
 
 ### Tenant creation returns 409
 
