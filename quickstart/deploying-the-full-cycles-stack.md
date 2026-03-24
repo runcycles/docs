@@ -302,6 +302,10 @@ REDIS_HOST=localhost REDIS_PORT=6379 \
 
 Every budget and API key belongs to a tenant. Create one using the admin API.
 
+::: info Two authentication headers
+The next steps use two different headers. **`X-Admin-API-Key`** is the static bootstrap secret you set in docker-compose (`ADMIN_API_KEY`) — it's used here to create tenants and API keys. **`X-Cycles-API-Key`** is the tenant-scoped key you'll create in Step 3 — it's used for budget operations and runtime calls. For the full mapping of which endpoints use which header, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
+:::
+
 ::: tip
 This step creates a single tenant for the quickstart. For the full tenant lifecycle — listing, updating, suspending, hierarchical tenants, and more — see [Tenant Creation and Management](/how-to/tenant-creation-and-management-in-cycles).
 :::

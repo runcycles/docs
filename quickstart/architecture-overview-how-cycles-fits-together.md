@@ -172,6 +172,16 @@ If the endpoint manages **identity** (tenants, API keys, audit) → `X-Admin-API
 If the endpoint manages **money** (budgets, policies) or **runtime** (reservations, balances) → `X-Cycles-API-Key`.
 :::
 
+#### Key provisioning
+
+The two headers represent different keys with different lifecycles:
+
+1. **`X-Admin-API-Key`** is a static secret you choose at deploy time. Set it as the `ADMIN_API_KEY` environment variable when starting the admin server. There is no API to create or rotate it — you manage it like any infrastructure secret (secrets manager, env vars, etc.).
+
+2. **`X-Cycles-API-Key`** keys are created dynamically via `POST /v1/admin/api-keys` (authenticated with the admin key). Each key is scoped to one tenant and carries explicit permissions. The key secret (e.g., `cyc_live_abc123...`) is returned once at creation time.
+
+**Bootstrap order:** deploy server with admin key → create tenant → create API key → use API key for budgets and runtime operations. See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the step-by-step walkthrough.
+
 **Why a separate server:**
 
 Separating the management plane from the runtime enforcement plane lets you:
