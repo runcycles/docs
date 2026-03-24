@@ -498,8 +498,6 @@ curl -s http://localhost:7878/v1/reservations/res-abc-123 \
 | 404 | `NOT_FOUND` | Reservation does not exist |
 | 410 | `RESERVATION_EXPIRED` | Reservation has expired |
 
-Note: the spec defines 410 for expired reservations on GET. The reference implementation returns `200` with `"status": "EXPIRED"` in the response body instead, so clients can inspect reservation details for debugging and recovery. Both approaches are valid — check your server's behavior.
-
 ---
 
 ## POST /v1/decide

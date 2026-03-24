@@ -171,8 +171,6 @@ This recovery pattern depends on the client generating and persisting idempotenc
 - `404 NOT_FOUND` — reservation never existed
 - `410 RESERVATION_EXPIRED` — reservation has expired
 
-Note: the spec defines 410 for expired reservations on GET. However, the reference implementation returns `200` with `"status": "EXPIRED"` in the response body, so clients can inspect reservation details for debugging and recovery. Implementations may choose either behavior.
-
 ## Summary
 
 The reservation listing and detail endpoints provide operational visibility and recovery capabilities:
