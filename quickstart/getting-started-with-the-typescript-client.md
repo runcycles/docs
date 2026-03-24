@@ -139,7 +139,7 @@ const chat = withCycles(
 | `unit` | `"USD_MICROCENTS"` | Budget unit: `"USD_MICROCENTS"`, `"TOKENS"`, `"CREDITS"`, `"RISK_POINTS"`. |
 | `ttlMs` | `60000` | Reservation TTL in milliseconds (range: 1000–86400000). |
 | `gracePeriodMs` | `undefined` | Grace period after TTL expiry (range: 0–60000). |
-| `overagePolicy` | `"REJECT"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
+| `overagePolicy` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dryRun` | `false` | If `true`, evaluate without persisting. Function does not execute. |
 | `tenant` | `undefined` | Subject tenant override. |
 | `workspace` | `undefined` | Subject workspace override. |

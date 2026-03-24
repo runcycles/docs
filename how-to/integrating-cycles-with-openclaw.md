@@ -572,7 +572,7 @@ You should see log lines like:
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `reservationTtlMs` | number | `60000` | Default reservation TTL (ms) |
-| `overagePolicy` | string | `REJECT` | Default overage policy (`REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT`) |
+| `overagePolicy` | string | `ALLOW_IF_AVAILABLE` | Default overage policy (`REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT`) |
 | `snapshotCacheTtlMs` | number | `5000` | Budget snapshot cache TTL (ms) |
 
 ### Low-budget strategies
