@@ -113,7 +113,7 @@ Reserve budget before executing work.
 | `estimate` | Amount | Yes | Estimated cost |
 | `ttl_ms` | integer | No | Reservation TTL in ms (default: tenant `default_reservation_ttl_ms` or 60000, range: 1000–86400000, capped to tenant `max_reservation_ttl_ms`) |
 | `grace_period_ms` | integer | No | Grace period after TTL for late commits (default: 5000, range: 0–60000) |
-| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `REJECT`) |
+| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `ALLOW_IF_AVAILABLE`) |
 | `dry_run` | boolean | No | If true, evaluate without reserving (default: false) |
 | `metadata` | object | No | Arbitrary key-value metadata |
 
@@ -636,7 +636,7 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
 | `subject` | Subject | Yes | Budgeting scope |
 | `action` | Action | Yes | Action being recorded |
 | `actual` | Amount | Yes | Actual cost to record |
-| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `REJECT`) |
+| `overage_policy` | string | No | `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` (default: tenant `default_commit_overage_policy` or `ALLOW_IF_AVAILABLE`) |
 | `metrics` | object | No | Standard metrics |
 | `client_time_ms` | integer | No | Client-side timestamp |
 | `metadata` | object | No | Arbitrary metadata |

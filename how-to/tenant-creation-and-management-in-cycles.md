@@ -289,7 +289,7 @@ Each tenant has configuration that governs how reservations behave. The `default
 
 | Property | Default | Description |
 |---|---|---|
-| `default_commit_overage_policy` | `REJECT` | What happens when actual spend exceeds the reserved amount. Set via create or update. |
+| `default_commit_overage_policy` | `ALLOW_IF_AVAILABLE` | What happens when actual spend exceeds the reserved amount. Set via create or update. |
 
 ### Server-level defaults
 

@@ -21,7 +21,7 @@ That is what the debt and overdraft model provides.
 
 In a strict system, any overage is rejected. The commit fails.
 
-That is the default behavior in Cycles (overage policy `REJECT`).
+That is the behavior with overage policy `REJECT`. The default policy since v0.1.24 is `ALLOW_IF_AVAILABLE`, which caps the charge to available budget instead of rejecting.
 
 But sometimes the work has already happened. The model call returned. The tool executed. The side effect occurred.
 
