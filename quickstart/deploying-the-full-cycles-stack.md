@@ -370,7 +370,7 @@ This creates a budget ledger with $0.10 (10,000,000 microcents) available to spe
 To add more funds later (e.g., on a schedule or when a customer upgrades), use the fund endpoint:
 
 ```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
@@ -611,7 +611,7 @@ The server is not running. Check Docker containers (`docker compose ps`) or chec
 A scope has accumulated debt from `ALLOW_WITH_OVERDRAFT` commits. Repay the debt via the admin API:
 
 ```bash
-curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MICROCENTS/fund" \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
