@@ -656,7 +656,7 @@ Pick a standard set of metadata keys and use them across all tenants. This makes
 
 ### Set overage policy at the tenant level
 
-The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. Start with `REJECT` (the default) — it is the safest option. Only switch to `ALLOW_IF_AVAILABLE` or `ALLOW_WITH_OVERDRAFT` when you understand the debt implications.
+The `default_commit_overage_policy` establishes a baseline for all scopes under the tenant. The default is `ALLOW_IF_AVAILABLE`, which caps charges to available budget and never creates debt. Switch to `REJECT` for hard stops, or `ALLOW_WITH_OVERDRAFT` when exact accounting with debt is needed.
 
 Override the policy per-budget-ledger or per-reservation for specific scopes that need different behavior.
 

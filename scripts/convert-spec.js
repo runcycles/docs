@@ -29,6 +29,6 @@ convertSpec('cycles-protocol-v0.yaml', [
 // Admin API spec
 convertSpec('complete-budget-governance YAML', [
   process.env.ADMIN_SPEC_PATH,
-  resolve(__dirname, '../../cycles-server-admin/complete-budget-governance-v0.1.23.yaml'),  // local dev (sibling repo)
-  resolve(__dirname, '../cycles-server-admin/complete-budget-governance-v0.1.23.yaml'),     // CI (checked out into workspace)
+  resolve(__dirname, '../../cycles-server-admin/complete-budget-governance-v0.1.24.yaml'),  // local dev (sibling repo)
+  resolve(__dirname, '../cycles-server-admin/complete-budget-governance-v0.1.24.yaml'),     // CI (checked out into workspace)
 ], 'admin-openapi.json')
