@@ -46,17 +46,17 @@ def poll_budgets():
         headers={"X-Cycles-API-Key": API_KEY},
     )
     for balance in response.json()["balances"]:
-        allocated = balance["allocated"]
+        allocated = balance["allocated"]["amount"]
         if allocated > 0:
-            utilization = (balance["spent"] + balance["reserved"]) / allocated
+            utilization = (balance["spent"]["amount"] + balance["reserved"]["amount"]) / allocated
             push_metric(
                 name="cycles.budget.utilization",
                 value=utilization,
-                tags={"scope": balance["scope"], "unit": balance["unit"]},
+                tags={"scope": balance["scope"], "unit": balance["allocated"]["unit"]},
             )
             push_metric(
                 name="cycles.budget.remaining",
-                value=balance["remaining"],
+                value=balance["remaining"]["amount"],
                 tags={"scope": balance["scope"]},
             )
 

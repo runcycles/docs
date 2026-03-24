@@ -137,7 +137,7 @@ Check how many reservations are active simultaneously for the same scope:
 # Count active reservations per scope
 curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=ACTIVE" \
   -H "X-Cycles-API-Key: $API_KEY" \
-  | jq 'group_by(.scope) | map({scope: .[0].scope, count: length})'
+  | jq '.reservations | group_by(.scope_path) | map({scope_path: .[0].scope_path, count: length})'
 ```
 
 If a single scope has many active reservations simultaneously, you have high concurrency against that budget.
@@ -164,7 +164,7 @@ Compare spent against allocated to find scopes that exceeded their budget:
 # Find scopes where spent exceeds allocated (overrun already happened)
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
   -H "X-Cycles-API-Key: $API_KEY" \
-  | jq '.balances[] | select(.spent > .allocated) | {scope, allocated, spent, overshoot: (.spent - .allocated)}'
+  | jq '.balances[] | select(.spent.amount > .allocated.amount) | {scope, allocated, spent, overshoot: (.spent.amount - .allocated.amount)}'
 ```
 
 ## Monitoring
@@ -315,14 +315,16 @@ This pattern appears in:
    ```bash
    # Team-level cap
    curl -s -X POST "http://localhost:7979/v1/admin/budgets" \
-     -H "X-Admin-API-Key: admin-bootstrap-key" \
-     -d '{"scope": "tenant:acme-corp/workspace:prod", "allocated": 10000000}'
+     -H "Content-Type: application/json" \
+     -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+     -d '{"scope": "tenant:acme-corp/workspace:prod", "unit": "USD_MICROCENTS", "allocated": {"amount": 10000000, "unit": "USD_MICROCENTS"}}'
 
    # Per-agent budgets (sum exceeds team cap — that's fine)
    for agent in agent-a agent-b agent-c agent-d agent-e; do
      curl -s -X POST "http://localhost:7979/v1/admin/budgets" \
-       -H "X-Admin-API-Key: admin-bootstrap-key" \
-       -d "{\"scope\": \"tenant:acme-corp/workspace:prod/agent:${agent}\", \"allocated\": 5000000}"
+       -H "Content-Type: application/json" \
+       -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+       -d "{\"scope\": \"tenant:acme-corp/workspace:prod/agent:${agent}\", \"unit\": \"USD_MICROCENTS\", \"allocated\": {\"amount\": 5000000, \"unit\": \"USD_MICROCENTS\"}}"
    done
    ```
 

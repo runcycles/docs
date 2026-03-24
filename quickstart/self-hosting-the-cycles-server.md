@@ -124,7 +124,7 @@ cycles.expiry.interval-ms=5000
 
 # Logging
 logging.level.root=INFO
-logging.level.io.runcycles.protocol=DEBUG
+logging.level.io.runcycles.protocol=INFO
 
 # OpenAPI / Swagger UI
 springdoc.api-docs.path=/api-docs

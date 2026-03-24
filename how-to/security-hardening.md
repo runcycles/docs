@@ -172,7 +172,7 @@ The Admin Server records audit logs for administrative operations. Use these for
 Query audit logs:
 
 ```bash
-curl -s "http://localhost:7979/v1/admin/audit-logs?tenant_id=acme-corp&limit=50" \
+curl -s "http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=50" \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 

@@ -50,6 +50,21 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   }'
 ```
 
+### Available permissions
+
+| Permission | Grants |
+|---|---|
+| `reservations:create` | Create new reservations |
+| `reservations:commit` | Commit existing reservations |
+| `reservations:release` | Release existing reservations |
+| `reservations:extend` | Extend existing reservations |
+| `reservations:list` | List reservations |
+| `balances:read` | Query balance information |
+| `admin:read` | Read admin resources (budgets, policies) via the admin server |
+| `admin:write` | Modify admin resources (create/fund budgets, manage policies) via the admin server |
+
+A typical runtime key needs only `reservations:*` and `balances:read`. Add `admin:read` and/or `admin:write` if the key will also be used for budget management through the admin server (port 7979). See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#authentication) for details.
+
 Response:
 
 ```json
@@ -193,6 +208,7 @@ Track which keys are making requests. If a key is compromised, revoke it immedia
 |---|---|---|
 | `UNAUTHORIZED` | 401 | Missing `X-Cycles-API-Key` header, or key is invalid/revoked/expired |
 | `FORBIDDEN` | 403 | Key is valid but `subject.tenant` does not match the key's tenant |
+| `INSUFFICIENT_PERMISSIONS` | 403 | Key is valid but lacks the required permission for the endpoint (e.g., calling a budget endpoint without `admin:write`) |
 
 ## Next steps
 
