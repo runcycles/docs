@@ -358,6 +358,20 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp/USD_MIC
   }' | jq .
 ```
 
+For workspace-level scopes, URL-encode the `/` as `%2F` in the path:
+
+```bash
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme-corp%2Fworkspace:prod/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -d '{
+    "operation": "RESET",
+    "amount": {"amount": 8000000000, "unit": "USD_MICROCENTS"},
+    "idempotency_key": "reset-ws-prod-april-2026",
+    "reason": "Monthly workspace budget reset"
+  }' | jq .
+```
+
 Reset each scope independently — parent resets do not cascade to children.
 
 ### Evolving your scope structure

@@ -363,6 +363,26 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 2. **Wrong operation.** The `operation` field must be one of `ADD`, `SET`, `RESET`, or `REPAY_DEBT`. If you used `SET` with the same amount as the current balance, there is no visible change.
 3. **Check the response.** The fund endpoint returns the updated balance. Verify the response body confirms the change.
 
+### Fund endpoint returns 404 for workspace budget
+
+**Symptom:** `POST /v1/admin/budgets/tenant:acme/workspace:prod/USD_MICROCENTS/fund` returns `404 NOT_FOUND` even though the budget exists.
+
+**Cause:** The `/` between `tenant:acme` and `workspace:prod` is interpreted as a URL path separator. The server sees `scope=tenant:acme`, `unit=workspace:prod` — neither matches the expected route parameters.
+
+**Fix:** URL-encode the `/` as `%2F` in the scope:
+
+```bash
+curl -X POST "http://localhost:7979/v1/admin/budgets/tenant:acme%2Fworkspace:prod/USD_MICROCENTS/fund" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "CREDIT",
+    "amount": { "amount": 500000, "unit": "USD_MICROCENTS" }
+  }'
+```
+
+This applies to all endpoints where the scope is in the URL path (fund, patch). Scopes in JSON request bodies (e.g., `POST /v1/admin/budgets`) do **not** need encoding.
+
 ### Tenant creation returns 409
 
 **Symptom:** `POST /v1/admin/tenants` returns `409`.
