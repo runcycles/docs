@@ -111,6 +111,10 @@ echo "Cycles is running."
 
 ## Step 2: Create a tenant
 
+::: info Two authentication headers
+Steps 2-3 use `X-Admin-API-Key` — the static bootstrap secret set in docker-compose (`ADMIN_API_KEY`). Steps 4-5 switch to `X-Cycles-API-Key` — the tenant-scoped key created in Step 3. See [Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication) for why.
+:::
+
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/tenants \
   -H "Content-Type: application/json" \
