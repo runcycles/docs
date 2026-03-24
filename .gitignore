@@ -3,4 +3,5 @@ node_modules/
 .vitepress/cache/
 public/openapi.json
 public/admin-openapi.json
+public/cycles-protocol-v0.yaml
 public/llms-full.txt
