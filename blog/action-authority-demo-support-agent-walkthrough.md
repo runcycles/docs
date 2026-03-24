@@ -153,13 +153,13 @@ tenant:demo-tenant
          └─ agent:support-bot
             ├─ toolset:internal-notes   → $1.00 budget ✓
             ├─ toolset:crm-updates      → $1.00 budget ✓
-            └─ toolset:send-email       → no budget     ✗
+            └─ toolset:send-email       → $0 budget     ✗
 ```
 
-The provisioning script creates $1.00 budgets at every level of the hierarchy — tenant, workspace, app, workflow, agent — and then creates toolset-level budgets **only** for approved actions:
+The provisioning script creates $1.00 budgets at every level of the hierarchy — tenant, workspace, app, workflow, agent — and then creates toolset-level budgets. Approved actions get $1.00; blocked actions get $0:
 
 ```bash
-# Toolset budgets — ONLY for approved actions
+# Toolset budgets — approved actions get $1.00
 for TOOLSET in "internal-notes" "crm-updates"; do
   SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:$TOOLSET"
   curl -X POST "$ADMIN_URL/budgets" \
@@ -168,12 +168,19 @@ for TOOLSET in "internal-notes" "crm-updates"; do
     -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
          \"allocated\": {\"amount\": 100000000, \"unit\": \"USD_MICROCENTS\"}}"
 done
-# No budget for toolset:send-email — Cycles returns 409 on any reservation attempt
+
+# send-email: $0 budget — Cycles returns 409 on any reservation attempt
+SCOPE="tenant:$TENANT_ID/workspace:default/app:default/workflow:default/agent:support-bot/toolset:send-email"
+curl -X POST "$ADMIN_URL/budgets" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $API_KEY" \
+  -d "{\"scope\": \"$SCOPE\", \"unit\": \"USD_MICROCENTS\",
+       \"allocated\": {\"amount\": 0, \"unit\": \"USD_MICROCENTS\"}}"
 ```
 
-When the `@cycles` decorator tries to reserve budget for `toolset:send-email`, the server walks the hierarchy, finds no budget at the toolset level, and returns `409 BUDGET_EXCEEDED`. The decorator raises the exception. The action never runs.
+When the `@cycles` decorator tries to reserve budget for `toolset:send-email`, the server walks the hierarchy, finds a $0 budget at the toolset level, and returns `409 BUDGET_EXCEEDED`. The decorator raises the exception. The action never runs.
 
-This is the operational model: **approving or revoking an agent action = adding or removing a budget**. Want the agent to send emails? Add a budget for `toolset:send-email`. Want to revoke it? Remove the budget. No code changes. No redeployment. No new API keys.
+This is the operational model: **approving or revoking an agent action = setting a budget**. Want the agent to send emails? Set a budget for `toolset:send-email`. Want to revoke it? Set the budget to zero. No code changes. No redeployment. No new API keys.
 
 ## Why not just use an allowlist?
 
