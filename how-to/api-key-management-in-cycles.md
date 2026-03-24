@@ -63,7 +63,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `admin:read` | Read admin resources (budgets, policies) via the admin server |
 | `admin:write` | Modify admin resources (create/fund budgets, manage policies) via the admin server |
 
-A typical runtime key needs only `reservations:*` and `balances:read`. Add `admin:read` and/or `admin:write` if the key will also be used for budget management through the admin server (port 7979). See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#authentication) for details.
+A typical runtime key needs only `reservations:*` and `balances:read`. Add `admin:read` and/or `admin:write` if the key will also be used for budget management through the admin server (port 7979). For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
 
 Response:
 
