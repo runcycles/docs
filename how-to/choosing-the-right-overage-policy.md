@@ -56,13 +56,16 @@ def search(query: str) -> list:
 When importing usage from an external billing system, the work already happened. The budget ledger must reflect it regardless of remaining budget.
 
 ```python
+from runcycles import EventCreateRequest, Subject, Action, Amount
+
 # Recording usage from an external gateway
-client.create_event(
+client.create_event(EventCreateRequest(
+    idempotency_key="import-ext-001",
     subject=Subject(tenant="acme", app="gateway"),
     action=Action(kind="llm.completion", name="external:model"),
     actual=Amount(amount=usage_amount, unit="USD_MICROCENTS"),
     overage_policy="ALLOW_WITH_OVERDRAFT"
-)
+))
 ```
 
 ### Multi-step agent workflows
