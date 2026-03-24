@@ -9,11 +9,11 @@ Common issues when integrating and operating Cycles, with solutions.
 
 ## Reservation and budget issues
 
-### BUDGET_EXCEEDED on first reservation
+### NOT_FOUND on first reservation
 
-**Symptom:** The very first reservation attempt returns `409 BUDGET_EXCEEDED`.
+**Symptom:** The very first reservation attempt returns `404 NOT_FOUND`.
 
-**Cause:** No budget ledger exists for the scope. Creating a tenant does not automatically create a budget.
+**Cause:** No budget ledger exists for any derived scope. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
 
 **Fix:** Create a budget via the admin API:
 

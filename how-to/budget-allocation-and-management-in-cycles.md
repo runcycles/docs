@@ -123,9 +123,27 @@ A reservation for 10,000 against the chatbot scope must pass all three levels.
 
 ### Unallocated scopes
 
-If a scope has no budget allocated (allocated = 0), any reservation targeting it will be denied with `BUDGET_EXCEEDED`.
+If a scope has a budget ledger with zero allocation (`allocated = 0`), any reservation targeting it will be denied with `BUDGET_EXCEEDED` (409). The ledger exists but has no room.
 
-If a scope is not configured at all, the behavior depends on the server implementation. The reference server treats unconfigured scopes as having zero allocation.
+If a scope has no budget ledger at all, it is **skipped** during enforcement — it does not block the reservation. This is different from zero allocation: a missing ledger is ignored, a zero-allocation ledger is enforced.
+
+### How budget lookup works during reservations
+
+When the server processes a reservation, it derives scope paths from the subject (e.g., `tenant:acme`, `tenant:acme/workspace:prod`, `tenant:acme/workspace:prod/app:chatbot`) and checks each for a budget ledger:
+
+1. Scopes **with** a budget ledger are checked for sufficient funds
+2. Scopes **without** a budget ledger are skipped — they do not block the reservation
+3. If **no** derived scope has a budget ledger, the reservation is rejected with `NOT_FOUND` (404)
+4. If **any** budgeted scope has insufficient funds, the reservation is rejected with `BUDGET_EXCEEDED` (409)
+
+This means you only need budgets at the scope levels where you want enforcement. For example, if you only set a tenant-level budget, workspace and app scopes are skipped — the tenant budget is the only constraint.
+
+| Scenario | Result |
+|---|---|
+| Budget at tenant only, reservation targets tenant/workspace/app | Reserves against tenant budget; workspace and app skipped |
+| Budget at tenant and app, not workspace | Reserves against both; workspace skipped |
+| No budget at any scope | `NOT_FOUND` (404) |
+| Budget exists with zero allocation | `BUDGET_EXCEEDED` (409) |
 
 ## Common allocation patterns
 
