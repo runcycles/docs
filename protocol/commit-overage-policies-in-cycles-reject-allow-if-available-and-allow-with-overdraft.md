@@ -13,6 +13,23 @@ But if actual is more than reserved, the system has a decision to make.
 
 That is what commit overage policies control.
 
+## Quick reference: which policy to use
+
+| Policy | Best for | Commits rejected? | Creates debt? | Tradeoff |
+|---|---|---|---|---|
+| **REJECT** | Well-estimated actions where hard budget stops are acceptable | Yes, if actual > reserved | No | Strictest enforcement, but rejected commits leave unaccounted gaps |
+| **ALLOW_IF_AVAILABLE** (default) | Most workloads — variable-cost actions, LLM calls, tool invocations | Never | No | Always records usage, caps charge to available budget, blocks future reservations when exhausted |
+| **ALLOW_WITH_OVERDRAFT** | Must-record actions — external imports, side-effecting operations, SLA-critical work | Only if debt would exceed overdraft limit | Yes | Most accurate ledger, requires operator debt reconciliation |
+
+**Common patterns:**
+- **LLM completions with unpredictable token counts** → ALLOW_IF_AVAILABLE
+- **Tool calls with known fixed costs** → REJECT (with buffer) or ALLOW_IF_AVAILABLE
+- **External API usage imports** → ALLOW_WITH_OVERDRAFT (work already happened)
+- **Multi-tenant platform default** → ALLOW_IF_AVAILABLE (safe default, no debt)
+- **Strict per-agent budget caps** → REJECT (hard stop when budget is gone)
+
+For a scenario-driven guide, see [Choosing the Right Overage Policy](/how-to/choosing-the-right-overage-policy).
+
 ## The three policies
 
 Cycles defines three overage policies, set at reservation time (or on events):
