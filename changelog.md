@@ -21,6 +21,10 @@ Release history for the Cycles Protocol and reference implementations.
 
 **Admin Server:**
 - Default tenant `default_commit_overage_policy` changed from `REJECT` to `ALLOW_IF_AVAILABLE`
+- New endpoint: `PATCH /v1/admin/budgets/{scope}/{unit}` — update `overdraft_limit`, `commit_overage_policy`, and `metadata` on existing budgets with atomic `is_over_limit` recalculation
+- New endpoint: `PATCH /v1/admin/policies/{policy_id}` — update all mutable policy fields (name, description, priority, caps, overage policy, TTL override, rate limits, effective dates, status)
+- Tenant update extended with `default_reservation_ttl_ms`, `max_reservation_ttl_ms`, and `max_reservation_extensions` — reservation TTL is now configurable per-tenant
+- Budget metadata support on create and update
 
 ## v0.1.23 — March 2026
 

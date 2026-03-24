@@ -71,14 +71,14 @@ The Cycles Server is stateless. You can run multiple instances behind a load bal
 
 ```yaml
 cycles-server-1:
-  image: ghcr.io/runcycles/cycles-server:0.1.23
+  image: ghcr.io/runcycles/cycles-server:0.1.24
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
 
 cycles-server-2:
-  image: ghcr.io/runcycles/cycles-server:0.1.23
+  image: ghcr.io/runcycles/cycles-server:0.1.24
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
@@ -210,7 +210,7 @@ Since the Cycles Server is stateless, you can do rolling upgrades with zero down
 
 ### Version compatibility
 
-The Cycles protocol is versioned (`/v1`). Minor version upgrades (e.g., 0.1.22 → 0.1.23) are backward-compatible. Check the [changelog](/changelog) for breaking changes before major upgrades.
+The Cycles protocol is versioned (`/v1`). Minor version upgrades (e.g., 0.1.23 → 0.1.24) are backward-compatible. Check the [changelog](/changelog) for breaking changes before major upgrades.
 
 ### Rollback
 

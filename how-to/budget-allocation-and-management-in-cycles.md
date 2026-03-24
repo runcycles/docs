@@ -168,7 +168,30 @@ tenant:acme/dimensions:cost_center=engineering → allocated: 500,000
 tenant:acme/dimensions:cost_center=marketing   → allocated: 200,000
 ```
 
-## Adjusting budgets
+## Updating budget configuration
+
+Use `PATCH /v1/admin/budgets/{scope}/{unit}` to update mutable budget properties without re-creating the ledger:
+
+```bash
+curl -s -X PATCH "http://localhost:7979/v1/admin/budgets/tenant:acme/USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "overdraft_limit": { "amount": 500000, "unit": "USD_MICROCENTS" },
+    "commit_overage_policy": "ALLOW_WITH_OVERDRAFT",
+    "metadata": { "cost_center": "engineering" }
+  }' | jq .
+```
+
+You can update:
+
+- **`overdraft_limit`** — maximum allowed debt. When changed, `is_over_limit` is atomically recalculated.
+- **`commit_overage_policy`** — per-ledger overage policy override (`REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT`).
+- **`metadata`** — key-value pairs for external references (replaces the full metadata object).
+
+Fields not included in the request are left unchanged. Returns `404` if the budget does not exist, `403` for tenant mismatch, and `409` if the budget is `CLOSED`.
+
+## Adjusting budget allocation
 
 ### Increasing a budget
 
