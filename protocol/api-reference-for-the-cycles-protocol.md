@@ -193,6 +193,8 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget |
+| 409 | `BUDGET_FROZEN` | Budget is frozen |
+| 409 | `BUDGET_CLOSED` | Budget is closed |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Scope is over-limit |
 | 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
@@ -275,7 +277,7 @@ curl -X POST http://localhost:7878/v1/reservations/res-abc-123/commit \
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
-| 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT or ALLOW_IF_AVAILABLE) |
+| 409 | `BUDGET_EXCEEDED` | Actual exceeds budget (REJECT) |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | 409 | `RESERVATION_FINALIZED` | Already committed or released |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
@@ -647,6 +649,7 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
 {
   "status": "APPLIED",
   "event_id": "evt-abc-123",
+  "charged": { "amount": 1200, "unit": "USD_MICROCENTS" },
   "balances": [
     {
       "scope": "tenant:acme",
@@ -694,7 +697,9 @@ curl -X POST http://localhost:7878/v1/events \
 | 400 | `UNIT_MISMATCH` | Unit not supported for scope |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT or ALLOW_IF_AVAILABLE) |
+| 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT) |
+| 409 | `BUDGET_FROZEN` | Budget is frozen |
+| 409 | `BUDGET_CLOSED` | Budget is closed |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Debt would exceed limit |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
