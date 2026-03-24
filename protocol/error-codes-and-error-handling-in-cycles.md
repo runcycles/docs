@@ -64,11 +64,11 @@ Common causes:
 
 ### NOT_FOUND (404)
 
-The specified reservation does not exist.
+The requested resource does not exist. This error has two contexts:
 
-This is different from RESERVATION_EXPIRED — a 404 means the reservation was never created, while RESERVATION_EXPIRED means it existed but its TTL has passed.
+**Missing reservation:** The specified reservation ID does not exist. This is different from RESERVATION_EXPIRED — a 404 means the reservation was never created, while RESERVATION_EXPIRED means it existed but its TTL has passed. **What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
 
-**What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
+**Missing budget:** No budget ledger exists for any derived scope in the reservation subject. The server checks each scope level and skips those without a budget, but at least one must have a ledger. **What to do:** create a budget via `POST /v1/admin/budgets` for at least one scope in the hierarchy. See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#how-budget-lookup-works-during-reservations).
 
 ### BUDGET_EXCEEDED (409)
 
