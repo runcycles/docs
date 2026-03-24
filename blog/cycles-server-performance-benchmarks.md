@@ -36,27 +36,27 @@ HTTP request → Spring Boot routing → Auth filter (API key validation)
 
 | Operation           |  p50   |  p95   |  p99   |  min   |  max   |
 |---------------------|--------|--------|--------|--------|--------|
-| **Reserve**         |  5.6ms |  6.2ms |  6.6ms |  4.6ms |  6.9ms |
-| **Commit**          |  4.5ms |  5.8ms | 15.8ms |  2.9ms | 22.1ms |
-| **Release**         |  4.8ms |  5.5ms |  5.8ms |  3.5ms | 12.9ms |
-| **Extend**          |  7.3ms |  8.7ms |  9.6ms |  6.0ms | 17.0ms |
-| **Decide**          |  5.8ms |  6.9ms |  7.4ms |  4.5ms | 13.8ms |
-| **Event**           |  4.9ms |  5.6ms |  6.0ms |  3.9ms | 15.2ms |
+| **Reserve**         |  5.1ms |  6.1ms |  6.8ms |  4.1ms | 12.9ms |
+| **Commit**          |  4.3ms |  5.5ms | 12.1ms |  2.8ms | 24.1ms |
+| **Release**         |  4.4ms |  5.3ms |  5.8ms |  3.2ms |  6.2ms |
+| **Extend**          |  7.4ms |  9.1ms | 10.7ms |  5.9ms | 17.7ms |
+| **Decide**          |  5.4ms |  6.2ms |  6.7ms |  4.2ms |  6.9ms |
+| **Event**           |  4.6ms |  5.7ms |  6.4ms |  3.4ms |  8.3ms |
 
 ### What these numbers mean for your agents
 
-**The reserve-commit lifecycle** (the most common pattern) takes about **14ms end-to-end** — 5.6ms to reserve budget before the LLM call, 4.5ms to commit actual usage after:
+**The reserve-commit lifecycle** (the most common pattern) takes about **13ms end-to-end** — 5.1ms to reserve budget before the LLM call, 4.3ms to commit actual usage after:
 
 | Lifecycle           |  p50    |  p95    |  p99    |
 |---------------------|---------|---------|---------|
-| Reserve + Commit    |  14.3ms |  16.2ms |  18.0ms |
-| Reserve + Release   |  12.0ms |  15.1ms |  19.5ms |
+| Reserve + Commit    |  12.9ms |  15.6ms |  17.9ms |
+| Reserve + Release   |  10.4ms |  12.1ms |  13.9ms |
 
-For context, a typical LLM API call takes 500ms-30s depending on the model and token count. **Budget enforcement adds ~14ms to a multi-second operation** — less than the variance in your LLM provider's response time.
+For context, a typical LLM API call takes 500ms-30s depending on the model and token count. **Budget enforcement adds ~13ms to a multi-second operation** — less than the variance in your LLM provider's response time.
 
-If you just need a quick budget check without reserving (e.g., pre-flight check in a UI), **Decide** gives you a yes/no answer in ~6ms.
+If you just need a quick budget check without reserving (e.g., pre-flight check in a UI), **Decide** gives you a yes/no answer in ~5ms.
 
-**Events** (direct debit without reservation) are the fastest mutation at 4.9ms p50 — useful for logging post-hoc usage where you don't need the reserve-commit guarantee.
+**Events** (direct debit without reservation) are the fastest mutation at 4.6ms p50 — useful for logging post-hoc usage where you don't need the reserve-commit guarantee.
 
 ## Read-Path Latency
 
@@ -64,14 +64,14 @@ Read operations are the fastest — no Lua script overhead, just direct Redis ha
 
 | Operation              |  p50   |  p95   |  p99   |  min   |  max   |
 |------------------------|--------|--------|--------|--------|--------|
-| **GET reservation**    |  3.2ms |  4.3ms |  4.4ms |  1.9ms |  5.4ms |
-| **GET balances**       |  3.2ms |  4.1ms |  4.5ms |  1.7ms |  5.5ms |
-| **LIST reservations**  |  3.9ms |  4.7ms |  5.2ms |  2.3ms |  5.4ms |
-| **Decide (pipelined)** |  4.6ms |  5.6ms |  6.1ms |  3.4ms |  6.5ms |
+| **GET reservation**    |  2.5ms |  3.3ms |  3.7ms |  1.5ms |  9.2ms |
+| **GET balances**       |  2.8ms |  4.0ms |  4.6ms |  1.6ms |  4.8ms |
+| **LIST reservations**  |  3.2ms |  4.2ms |  4.6ms |  2.0ms |  5.3ms |
+| **Decide (pipelined)** |  4.6ms |  5.8ms |  6.5ms |  2.7ms |  7.7ms |
 
-Fetching a single reservation or checking balances takes just **3.2ms** — fast enough to call on every page load or agent step without concern. Listing reservations with filters adds less than 1ms more due to SCAN iteration.
+Fetching a single reservation or checking balances takes just **2.5-2.8ms** — fast enough to call on every page load or agent step without concern. Listing reservations with filters adds less than 1ms more due to SCAN iteration.
 
-The pipelined Decide path (4.6ms) is 20% faster than the write-path Decide (5.8ms) because the read pipeline batches all scope lookups into a single Redis round-trip instead of executing them inside a Lua script.
+The pipelined Decide path (4.6ms) is 15% faster than the write-path Decide (5.4ms) because the read pipeline batches all scope lookups into a single Redis round-trip instead of executing them inside a Lua script.
 
 ### Why Extend is slower
 
@@ -83,19 +83,19 @@ Single-threaded latency doesn't tell you how the system behaves when 32 agents h
 
 | Threads | Throughput  |  p50    |  p95    |  p99    |  max    | Errors |
 |---------|-------------|---------|---------|---------|---------|--------|
-|       8 |    777 op/s |  10.1ms |  12.2ms |  17.9ms |  28.2ms |      0 |
-|      16 |  1,096 op/s |  14.3ms |  19.7ms |  24.1ms |  52.0ms |      0 |
-|      32 |  2,434 op/s |  12.1ms |  20.1ms |  30.9ms |  68.7ms |      0 |
+|       8 |    799 op/s |   9.8ms |  11.9ms |  16.9ms |  30.9ms |      0 |
+|      16 |  1,147 op/s |  13.9ms |  19.1ms |  22.6ms |  32.1ms |      0 |
+|      32 |  2,555 op/s |  11.7ms |  18.9ms |  27.9ms |  51.0ms |      0 |
 
 ### Key observations
 
-**Near-linear scaling.** Throughput scales 3.1x when going from 8 to 32 threads (4x threads). The sub-linear factor is expected — Redis Lua scripts are serialized (single-threaded execution) and connection pool contention increases.
+**Near-linear scaling.** Throughput scales 3.2x when going from 8 to 32 threads (4x threads). The sub-linear factor is expected — Redis Lua scripts are serialized (single-threaded execution) and connection pool contention increases.
 
 **Zero errors under load.** No budget violations, no connection pool exhaustion, no timeouts at any concurrency level. The Redis connection pool (50 connections) has headroom even at 32 concurrent threads.
 
-**Tail latency grows predictably.** p99 goes from 17.9ms at 8 threads to 30.9ms at 32 threads. The 68.7ms max at 32 threads is likely a GC pause or connection pool wait — rare enough to not affect p99.
+**Tail latency grows predictably.** p99 goes from 16.9ms at 8 threads to 27.9ms at 32 threads. The 51.0ms max at 32 threads is likely a GC pause or connection pool wait — rare enough to not affect p99.
 
-**2,434 complete lifecycles per second** at 32 threads means each thread completes a full Reserve→Commit cycle (two HTTP calls, two Lua script executions, two auth checks) in ~13ms average.
+**2,555 complete lifecycles per second** at 32 threads means each thread completes a full Reserve→Commit cycle (two HTTP calls, two Lua script executions, two auth checks) in ~13ms average.
 
 ## What's in the critical path
 
@@ -135,7 +135,7 @@ Source: [`CyclesProtocolBenchmarkTest`](https://github.com/runcycles/cycles-serv
 
 ## The bottom line
 
-Budget enforcement with Cycles adds **4.5-7.3ms per write operation** and **3.2-4.6ms per read** in the typical case. A full reserve-commit lifecycle adds **~14ms** to an LLM call that takes seconds. At 32 concurrent threads, the server sustains **2,400+ complete lifecycles per second** with zero errors.
+Budget enforcement with Cycles adds **4.3-7.4ms per write operation** and **2.5-4.6ms per read** in the typical case. A full reserve-commit lifecycle adds **~13ms** to an LLM call that takes seconds. At 32 concurrent threads, the server sustains **2,500+ complete lifecycles per second** with zero errors.
 
 The overhead is small enough that you shouldn't notice it. And if you don't enforce budgets, the cost of a single runaway agent will be orders of magnitude larger than any latency you saved.
 
@@ -143,11 +143,11 @@ The overhead is small enough that you shouldn't notice it. And if you don't enfo
 
 ### How much latency does Cycles add to LLM calls?
 
-A full reserve-commit lifecycle adds ~14ms (p50) to your agent's LLM call. Since most LLM API calls take 500ms-30s, budget enforcement adds less than 3% overhead in the worst case and is effectively invisible in practice. Read-only queries (balance checks, reservation lookups) add just 3-4ms.
+A full reserve-commit lifecycle adds ~13ms (p50) to your agent's LLM call. Since most LLM API calls take 500ms-30s, budget enforcement adds less than 3% overhead in the worst case and is effectively invisible in practice. Read-only queries (balance checks, reservation lookups) add just 2.5-3ms.
 
 ### Does Cycles scale horizontally?
 
-The Cycles server is stateless — all state lives in Redis. You can run multiple server instances behind a load balancer. Redis itself can be scaled with Redis Cluster for sharding across multiple nodes. Our benchmarks show a single instance handling 2,400+ complete lifecycles per second.
+The Cycles server is stateless — all state lives in Redis. You can run multiple server instances behind a load balancer. Redis itself can be scaled with Redis Cluster for sharding across multiple nodes. Our benchmarks show a single instance handling 2,500+ complete lifecycles per second.
 
 ### What happens if the Cycles server is slow or unavailable?
 
