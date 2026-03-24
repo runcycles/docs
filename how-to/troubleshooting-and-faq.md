@@ -358,7 +358,7 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 **Checklist:**
 
 1. **Scope path mismatch.** The scope in the fund request must exactly match the budget scope. `tenant:acme-corp` is not the same as `tenant:acme-corp/workspace:prod`.
-2. **Wrong operation.** The `operation` field must be one of `ADD`, `SET`, `RESET`, or `REPAY_DEBT`. If you used `SET` with the same amount as the current balance, there is no visible change.
+2. **Wrong operation.** The `operation` field must be one of `CREDIT`, `DEBIT`, `RESET`, or `REPAY_DEBT`. If you used `RESET` with the same amount as the current allocation, there is no visible change.
 3. **Check the response.** The fund endpoint returns the updated balance. Verify the response body confirms the change.
 
 ### Fund endpoint returns 404 for workspace budget
@@ -397,7 +397,7 @@ The same pattern applies to the patch endpoint: `PATCH /v1/admin/budgets?scope=.
 
 **Fix:**
 
-- Increase the `ttl_seconds` when creating reservations. For LLM calls, 60-120 seconds is typical.
+- Increase the `ttl_ms` when creating reservations. For LLM calls, 60000-120000 ms is typical.
 - Use the SDK decorators (`@cycles` in Python, `withCycles` in TypeScript, `@Cycles` in Spring) which automatically extend TTL via heartbeat.
 - For raw HTTP: call `POST /v1/reservations/{id}/extend` periodically before the TTL expires.
 
