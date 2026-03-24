@@ -169,8 +169,9 @@ This recovery pattern depends on the client generating and persisting idempotenc
 - `401 UNAUTHORIZED` — invalid API key
 - `403 FORBIDDEN` — reservation owned by a different tenant
 - `404 NOT_FOUND` — reservation never existed
+- `410 RESERVATION_EXPIRED` — reservation has expired
 
-Note: GET always returns `200` for existing reservations regardless of lifecycle state. Expired reservations are returned with `"status": "EXPIRED"` in the response body. The `410 RESERVATION_EXPIRED` response applies only to mutating operations (commit, release, extend).
+Note: the spec defines 410 for expired reservations on GET. However, the reference implementation returns `200` with `"status": "EXPIRED"` in the response body, so clients can inspect reservation details for debugging and recovery. Implementations may choose either behavior.
 
 ## Summary
 

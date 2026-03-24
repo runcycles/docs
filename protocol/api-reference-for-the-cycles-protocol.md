@@ -496,8 +496,9 @@ curl -s http://localhost:7878/v1/reservations/res-abc-123 \
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Reservation owned by different tenant |
 | 404 | `NOT_FOUND` | Reservation does not exist |
+| 410 | `RESERVATION_EXPIRED` | Reservation has expired |
 
-GET always returns `200` for existing reservations regardless of lifecycle state. Expired reservations are returned with `"status": "EXPIRED"` in the response body — this allows clients to inspect reservation details for debugging and recovery. The `410 RESERVATION_EXPIRED` response applies only to mutating operations (commit, release, extend).
+Note: the spec defines 410 for expired reservations on GET. The reference implementation returns `200` with `"status": "EXPIRED"` in the response body instead, so clients can inspect reservation details for debugging and recovery. Both approaches are valid — check your server's behavior.
 
 ---
 

@@ -101,9 +101,9 @@ It is useful for:
 
 This header is optional in v0 implementations.
 
-## API key permissions
+## API key permissions (governance layer)
 
-API keys can carry granular permissions that restrict which operations they can perform. The available permissions are:
+When using the Cycles governance server (admin API), API keys can carry granular permissions that restrict which operations they can perform. The available permissions are:
 
 | Permission | Operations |
 |---|---|
@@ -120,7 +120,7 @@ Default permissions for tenant keys are `[reservations:*, balances:read]`. Admin
 
 If a request requires a permission the API key does not have, the server returns `403 INSUFFICIENT_PERMISSIONS`.
 
-## Scope filter
+## Scope filter (governance layer)
 
 API keys can optionally be restricted to specific scopes using a **scope filter**.
 
