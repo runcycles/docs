@@ -45,9 +45,18 @@ All three must pass for the reservation to succeed.
 
 Budget allocation is managed through the [Cycles Admin Server](https://github.com/runcycles/cycles-server-admin) API (port 7979 by default). The admin server and the runtime Cycles server share the same Redis instance.
 
+### Authentication
+
+Admin server endpoints accept two authentication methods:
+
+- **`X-Admin-API-Key`** — the bootstrap admin key set in `ADMIN_API_KEY`. Grants full access to all admin endpoints regardless of tenant. This is the simplest approach for infrastructure automation and bootstrapping.
+- **`X-Cycles-API-Key`** — a tenant-scoped API key with `admin:read` and/or `admin:write` permissions. Use this when you want tenant-isolated, least-privilege access to budget operations. Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error — you must explicitly include `admin:write` (for create/fund/update) or `admin:read` (for queries) when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
+
+The examples below use `X-Cycles-API-Key` with a key that has `admin:write` permission. Replace with `X-Admin-API-Key: $ADMIN_API_KEY` if you prefer the bootstrap approach.
+
 ### Using the Cycles Admin API
 
-Create budget ledgers and fund them via the admin API. Budget operations require a tenant-scoped API key (`X-Cycles-API-Key`):
+Create budget ledgers and fund them via the admin API:
 
 ```bash
 # Create a tenant budget ledger
