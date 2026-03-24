@@ -169,7 +169,7 @@ This recovery pattern depends on the client generating and persisting idempotenc
 - `401 UNAUTHORIZED` — invalid API key
 - `403 FORBIDDEN` — reservation owned by a different tenant
 - `404 NOT_FOUND` — reservation never existed
-- `410 RESERVATION_EXPIRED` — reservation existed but is expired (some servers may return this)
+- `410 RESERVATION_EXPIRED` — reservation has expired
 
 ## Summary
 
