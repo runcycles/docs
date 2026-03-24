@@ -126,11 +126,11 @@ Check the ratio of active reservations to recent commits. A healthy system commi
 ```bash
 # Count active reservations for a scope
 curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=ACTIVE" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq 'length'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.reservations | length'
 
 # Check balance to see reserved vs spent
 curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
-  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[] | {scope, allocated, spent, reserved, remaining}'
+  -H "X-Cycles-API-Key: $API_KEY" | jq '.balances[] | {scope, allocated: .allocated.amount, spent: .spent.amount, reserved: .reserved.amount, remaining: .remaining.amount}'
 ```
 
 If `reserved` is growing much faster than `spent`, many reservations are being created without committing — a hallmark of retry loops.
@@ -143,7 +143,7 @@ If you use the pattern `doc-{id}-attempt-{n}`, you can look for documents with h
 # List reservations and look for high attempt numbers
 curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&workflow=doc-processing" \
   -H "X-Cycles-API-Key: $API_KEY" \
-  | jq '[.[].idempotency_key | select(test("attempt-[5-9]|attempt-[0-9]{2,}"))]'
+  | jq '[.reservations[].idempotency_key | select(test("attempt-[5-9]|attempt-[0-9]{2,}"))]'
 ```
 
 Any result means at least one document hit 5+ retries.
