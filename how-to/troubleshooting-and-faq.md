@@ -20,7 +20,7 @@ Common issues when integrating and operating Cycles, with solutions.
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
@@ -72,7 +72,7 @@ The `remaining` field shows available budget after accounting for active reserva
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "REPAY_DEBT",
     "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
@@ -284,7 +284,7 @@ Use the RESET funding operation:
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001"}' | jq .
 ```
 
@@ -348,8 +348,8 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 **Common causes:**
 
 1. **Wrong port.** The admin API runs on port **7979**, not 7878. The protocol API (reservations, commits) runs on 7878.
-2. **Wrong header.** The admin API uses `X-Admin-API-Key`, not `X-Cycles-API-Key`. These are different keys.
-3. **Using a protocol API key.** Protocol keys (`cyc_live_...`) do not work on the admin API. Use the admin bootstrap key configured in the server.
+2. **Wrong header.** Budget and policy endpoints use `X-Cycles-API-Key` (a tenant-scoped API key with `admin:write` permission), not `X-Admin-API-Key`. The bootstrap admin key is only used for tenant management, API key management, and audit logs.
+3. **Missing admin permissions.** Default API keys lack `admin:write`. Create a key with `"permissions": ["admin:read", "admin:write"]` — see [API Key Management](/how-to/api-key-management-in-cycles#available-permissions).
 
 ### Budget fund operation has no effect
 

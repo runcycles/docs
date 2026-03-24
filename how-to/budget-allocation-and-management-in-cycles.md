@@ -47,12 +47,16 @@ Budget allocation is managed through the [Cycles Admin Server](https://github.co
 
 ### Authentication
 
-Admin server endpoints accept two authentication methods:
+Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate admin permissions:
 
-- **`X-Admin-API-Key`** — the bootstrap admin key set in `ADMIN_API_KEY`. Grants full access to all admin endpoints regardless of tenant. This is the simplest approach for infrastructure automation and bootstrapping.
-- **`X-Cycles-API-Key`** — a tenant-scoped API key with `admin:read` and/or `admin:write` permissions. Use this when you want tenant-isolated, least-privilege access to budget operations. Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error — you must explicitly include `admin:write` (for create/fund/update) or `admin:read` (for queries) when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
+- **`admin:write`** — required for creating budgets, funding, resetting, updating budgets, and managing policies
+- **`admin:read`** — required for querying budgets and policies
 
-The examples below use `X-Cycles-API-Key` with a key that has `admin:write` permission. Replace with `X-Admin-API-Key: $ADMIN_API_KEY` if you prefer the bootstrap approach.
+Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error on budget endpoints. You must explicitly include `admin:write` and/or `admin:read` when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
+
+::: warning X-Admin-API-Key vs X-Cycles-API-Key
+The bootstrap admin key (`X-Admin-API-Key`) is used for tenant management, API key management, and audit log access. It does **not** authenticate budget or policy endpoints — those require `X-Cycles-API-Key` with admin permissions.
+:::
 
 ### Using the Cycles Admin API
 

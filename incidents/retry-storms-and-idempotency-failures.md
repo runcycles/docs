@@ -220,11 +220,12 @@ Create a workflow-scoped budget for each document or task. All retries for that 
 ```bash
 # Create a per-document budget under the workflow scope
 curl -s -X POST "http://localhost:7979/v1/admin/budgets" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod/workflow:doc-processing",
-    "allocated": 10000000,
-    "window": "PT1H"
+    "unit": "USD_MICROCENTS",
+    "allocated": {"amount": 10000000, "unit": "USD_MICROCENTS"}
   }'
 ```
 
