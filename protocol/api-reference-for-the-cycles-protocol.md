@@ -651,7 +651,6 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
 {
   "status": "APPLIED",
   "event_id": "evt-abc-123",
-  "charged": { "amount": 1200, "unit": "USD_MICROCENTS" },
   "balances": [
     {
       "scope": "tenant:acme",
@@ -666,6 +665,12 @@ Record a direct debit event without a prior reservation. Used for post-hoc accou
     }
   ]
 }
+```
+
+When `overage_policy` is `ALLOW_IF_AVAILABLE` and the charge is capped to remaining budget, the response includes an additional `charged` field showing the effective amount applied:
+
+```json
+"charged": { "amount": 800, "unit": "USD_MICROCENTS" }
 ```
 
 ### Example
