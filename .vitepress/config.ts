@@ -329,6 +329,8 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'Production Operations', link: '/how-to/production-operations-guide' },
+            { text: 'Client Performance Tuning', link: '/how-to/client-performance-tuning' },
+            { text: 'Observability Setup', link: '/how-to/observability-setup' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Changelog', link: '/changelog' },
