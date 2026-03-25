@@ -177,7 +177,7 @@ try {
 
 ### DebtOutstandingError / DEBT_OUTSTANDING
 
-A scope has unpaid debt. New reservations are blocked until the debt is resolved.
+A scope has unpaid debt and no overdraft limit configured. New reservations are blocked until the debt is resolved or an overdraft limit is set.
 
 ::: code-group
 ```python [Python]

@@ -271,7 +271,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit
   }'
 ```
 
-While `debt > 0`, new reservations against that scope are blocked with `DEBT_OUTSTANDING`.
+While `debt > 0` and no `overdraft_limit` is configured, new reservations against that scope are blocked with `DEBT_OUTSTANDING`. When an `overdraft_limit > 0` is set, debt within the limit does not block new reservations.
 
 ## Monitoring budgets
 

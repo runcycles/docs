@@ -65,7 +65,7 @@ The `remaining` field shows available budget after accounting for active reserva
 
 **Symptom:** New reservations fail with `409 DEBT_OUTSTANDING` even though the budget was recently funded.
 
-**Cause:** A previous commit with `ALLOW_WITH_OVERDRAFT` created debt. Any outstanding debt blocks new reservations until repaid.
+**Cause:** A previous commit with `ALLOW_WITH_OVERDRAFT` created debt. When no `overdraft_limit` is configured (or it is 0), any outstanding debt blocks new reservations until repaid. If an `overdraft_limit > 0` is configured, debt within the limit does not block reservations.
 
 **Fix:** Repay the debt:
 

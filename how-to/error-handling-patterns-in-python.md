@@ -105,7 +105,7 @@ except BudgetExceededError:
 
 ### DebtOutstandingError
 
-A scope has unpaid debt. New reservations are blocked until the debt is resolved.
+A scope has unpaid debt and no overdraft limit configured. New reservations are blocked until the debt is resolved or an overdraft limit is set.
 
 ```python
 from runcycles import DebtOutstandingError

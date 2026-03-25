@@ -507,7 +507,7 @@ This shows the remaining and reserved amounts at every scope level — giving yo
 - **Set child scope budgets smaller than parent scope budgets.** A workspace budget of $80 under a tenant budget of $100 makes sense. A workspace budget of $150 under a tenant budget of $100 wastes allocation — the tenant scope will deny before the workspace budget is exhausted.
 - **Use idempotency keys on all funding operations.** This prevents double-funding from retries. Use meaningful keys like `fund-acme-march-2026` rather than random UUIDs.
 - **Reset budgets at billing period boundaries.** Use the `RESET` operation rather than accumulating `CREDIT` operations. This gives you a clean ledger each period.
-- **Monitor `is_over_limit` and `debt` proactively.** When `debt > 0`, new reservations are blocked with `DEBT_OUTSTANDING`. When `debt > overdraft_limit`, the scope enters over-limit state. Detect these early.
+- **Monitor `is_over_limit` and `debt` proactively.** When `debt > 0` and no `overdraft_limit` is configured, new reservations are blocked with `DEBT_OUTSTANDING`. When `debt > overdraft_limit`, the scope enters over-limit state (`OVERDRAFT_LIMIT_EXCEEDED`). Detect these early.
 - **`ALLOW_IF_AVAILABLE` is the default overage policy.** It caps charges to available budget and never creates debt. Switch to `REJECT` for hard stops, or `ALLOW_WITH_OVERDRAFT` when exact accounting with debt is needed. Overdraft creates blocking debt that must be explicitly repaid.
 
 ## Common questions

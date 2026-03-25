@@ -149,11 +149,11 @@ Appears in two contexts:
 
 ### DEBT_OUTSTANDING (409)
 
-A new reservation was attempted against a scope that has outstanding debt (debt > 0).
+A new reservation was attempted against a scope that has outstanding debt (debt > 0) and no overdraft limit configured (overdraft_limit is absent or 0).
 
-Even if the scope has not exceeded its overdraft limit, any debt blocks new reservations until it is repaid.
+When an `overdraft_limit > 0` is configured, debt within the limit does not block new reservations. Only scopes without an overdraft limit treat any debt as blocking.
 
-**What to do:** wait for debt to be repaid through budget funding. Retry with exponential backoff, or escalate to an operator.
+**What to do:** wait for debt to be repaid through budget funding, or configure an overdraft limit if debt within a limit is acceptable. Retry with exponential backoff, or escalate to an operator.
 
 Note: when `is_over_limit=true`, the server returns `OVERDRAFT_LIMIT_EXCEEDED` instead of `DEBT_OUTSTANDING`, even if debt > 0. `OVERDRAFT_LIMIT_EXCEEDED` takes precedence.
 
