@@ -3,20 +3,20 @@ title: "Zero Trust for AI Agents: Why Every Tool Call Needs a Policy Decision"
 date: 2026-03-25
 author: Cycles Team
 tags: [security, zero-trust, agents, MCP, OWASP, production, tool-calling, governance]
-description: "Microsoft, Cisco, and OWASP all converged on the same conclusion in March 2026: AI agents need zero trust enforcement at the tool-call layer. Here's what changed, what developers are building, and how runtime authority fits."
+description: "Microsoft, Cisco, and OWASP converged on one conclusion: AI agents need zero trust at the tool-call layer. What changed and how to enforce it."
 blog: true
 sidebar: false
 ---
 
 # Zero Trust for AI Agents: Why Every Tool Call Needs a Policy Decision
 
-In a single week in March 2026, Microsoft announced [Zero Trust for AI](https://www.microsoft.com/en-us/security/blog/2026/03/19/new-tools-and-guidance-announcing-zero-trust-for-ai/), Cisco shipped [Zero Trust Access for AI Agents](https://blogs.cisco.com/security/security-agentic-ai-how-cisco-brings-zero-trust-to-your-new-digital-workforce) at RSAC 2026, and the Cloud Security Alliance published its [Agentic Trust Framework](https://cloudsecurityalliance.org/blog/2026/02/02/the-agentic-trust-framework-zero-trust-governance-for-ai-agents). Meanwhile, on Hacker News, developers kept asking the same question: ["How are you enforcing permissions for AI agent tool calls in production?"](https://news.ycombinator.com/item?id=46740645)
+In a single week in March 2026, Microsoft announced [Zero Trust for AI](https://www.microsoft.com/en-us/security/blog/2026/03/19/new-tools-and-guidance-announcing-zero-trust-for-ai/), Cisco unveiled [Zero Trust Access for AI Agents](https://blogs.cisco.com/security/security-agentic-ai-how-cisco-brings-zero-trust-to-your-new-digital-workforce) at RSAC 2026, and the Cloud Security Alliance published its [Agentic Trust Framework](https://cloudsecurityalliance.org/blog/2026/02/02/the-agentic-trust-framework-zero-trust-governance-for-ai-agents). Meanwhile, on Hacker News, developers kept asking the same question: ["How are you enforcing permissions for AI agent tool calls in production?"](https://news.ycombinator.com/item?id=46740645)
 
 The industry and the community arrived at the same answer simultaneously: **every tool call an AI agent makes needs a policy decision before it executes.**
 
 <!-- more -->
 
-This isn't a theoretical shift. It's a response to what's happening in production right now. [88% of organizations reported AI agent security incidents](https://www.helpnetsecurity.com/2026/03/03/enterprise-ai-agent-security-2026/) in the past year. Only [14.4% of agents went to production with full security approval](https://blogs.cisco.com/security/the-agent-trust-gap-what-our-research-reveals-about-agentic-ai-security). And yet [80.9% of technical teams](https://blogs.cisco.com/security/the-agent-trust-gap-what-our-research-reveals-about-agentic-ai-security) have already pushed past planning into active testing or production.
+This isn't a theoretical shift. It's a response to what's happening in production right now. The [Gravitee State of AI Agent Security 2026 Report](https://www.gravitee.io/blog/state-of-ai-agent-security-2026-report-when-adoption-outpaces-control) — surveying 900 executives and practitioners — found that **88% of organizations reported confirmed or suspected AI agent security incidents** in the past year. Only **14.4% of agents went to production with full security or IT approval**. And yet **80.9% of technical teams** have already pushed past planning into active testing or production.
 
 The gap between deployment velocity and security governance is the defining risk of 2026. Zero trust is the architectural pattern that closes it.
 
@@ -36,7 +36,7 @@ Zero trust for agents means:
 
 Microsoft's new [Zero Trust for AI (ZT4AI)](https://www.microsoft.com/en-us/security/blog/2026/03/19/new-tools-and-guidance-announcing-zero-trust-for-ai/) framework makes this explicit: it extends zero trust to the full AI lifecycle, evaluating how organizations secure agent identities, protect data used by AI, monitor agent behavior, and govern AI in alignment with risk objectives.
 
-Cisco's approach at RSAC 2026 is even more concrete: new Duo IAM capabilities let organizations register agents, map them to accountable human owners, and enforce fine-grained, task-specific permissions — with all agent tool traffic routed through an MCP gateway.
+Cisco's approach at RSAC 2026 targets the same gap: new Duo IAM capabilities will let organizations register agents, map them to accountable human owners, and enforce fine-grained, task-specific permissions — with all agent tool traffic routed through an MCP gateway.
 
 ## Why This Matters Now: The OWASP Top 10 for Agentic Applications
 
@@ -160,8 +160,8 @@ The research for this post draws from discussions and reports published between 
 - [Cisco: Zero Trust Access for AI Agents (RSAC 2026)](https://blogs.cisco.com/security/security-agentic-ai-how-cisco-brings-zero-trust-to-your-new-digital-workforce) — March 2026
 - [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) — Updated 2026
 - [Cloud Security Alliance: Agentic Trust Framework](https://cloudsecurityalliance.org/blog/2026/02/02/the-agentic-trust-framework-zero-trust-governance-for-ai-agents) — February 2, 2026
-- [Cisco: The Agent Trust Gap](https://blogs.cisco.com/security/the-agent-trust-gap-what-our-research-reveals-about-agentic-ai-security) — Gravitee State of AI Agent Security 2026 data
-- [Help Net Security: AI Went from Assistant to Autonomous Actor](https://www.helpnetsecurity.com/2026/03/03/enterprise-ai-agent-security-2026/) — March 3, 2026
+- [Gravitee: State of AI Agent Security 2026 Report](https://www.gravitee.io/blog/state-of-ai-agent-security-2026-report-when-adoption-outpaces-control) — February 4, 2026 (900 executives and practitioners surveyed)
+- [Cisco: The Agent Trust Gap](https://blogs.cisco.com/security/the-agent-trust-gap-what-our-research-reveals-about-agentic-ai-security) — March 2026
 - [Hacker News: How Are You Enforcing Permissions for AI Agent Tool Calls?](https://news.ycombinator.com/item?id=46740645) — January 24, 2026
 - [Hacker News: Show HN: A Runtime Authorization Layer for AI Agents](https://news.ycombinator.com/item?id=47235484) — March 2026
 - [DEV Community: The Three Things Wrong with AI Agents in 2026](https://dev.to/deiu/the-three-things-wrong-with-ai-agents-in-2026-492m) — 2026
