@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { createHighlighter } from 'shiki'
+import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, vercelPath, openclawPath } from './FrameworkIcons'
 
 const activeTab = ref('python')
 const highlighted = ref({})
@@ -15,13 +16,13 @@ function copyCode() {
 }
 
 const tabs = [
-  { key: 'python', label: 'Python' },
-  { key: 'typescript', label: 'TypeScript' },
-  { key: 'java', label: 'Spring Boot' },
-  { key: 'mcp', label: 'MCP' },
-  { key: 'langchain', label: 'LangChain' },
-  { key: 'vercel', label: 'Vercel AI' },
-  { key: 'openclaw', label: 'OpenClaw' },
+  { key: 'python', label: 'Python', icon: pythonPath },
+  { key: 'typescript', label: 'TypeScript', icon: typescriptPath },
+  { key: 'java', label: 'Spring Boot', icon: springBootPath },
+  { key: 'mcp', label: 'MCP', icon: mcpPath },
+  { key: 'langchain', label: 'LangChain', icon: langchainPath },
+  { key: 'vercel', label: 'Vercel AI', icon: vercelPath },
+  { key: 'openclaw', label: 'OpenClaw', icon: openclawPath },
 ]
 
 const snippets = {
@@ -167,6 +168,9 @@ onMounted(async () => {
           :class="['tab', { active: activeTab === tab.key }]"
           @click="activeTab = tab.key"
         >
+          <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path :d="tab.icon" />
+          </svg>
           {{ tab.label }}
         </button>
       </div>
@@ -254,7 +258,10 @@ onMounted(async () => {
 }
 
 .tab {
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
   border: none;
   background: transparent;
   color: var(--vp-c-text-2);
@@ -266,6 +273,12 @@ onMounted(async () => {
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.2s;
   font-family: var(--vp-font-family-base);
+}
+
+.tab-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .tab:hover {
@@ -346,6 +359,10 @@ onMounted(async () => {
   .tab {
     padding: 8px 12px;
     font-size: 12px;
+  }
+
+  .tab-icon {
+    display: none;
   }
 
   .code-block {
