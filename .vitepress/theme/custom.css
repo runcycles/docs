@@ -47,6 +47,16 @@
     'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+/* Re-apply mono font — vitepress-openapi resets code/pre to a hardcoded
+   system stack; this rule restores JetBrains Mono via the VP variable.
+   Cascade order (custom.css loads last) ensures this wins. */
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--vp-font-family-mono);
+}
+
 /* ══ Brand & Theme Variables ══ */
 
 /* Fix H1 DOM concatenation — VitePress renders name and text as adjacent
