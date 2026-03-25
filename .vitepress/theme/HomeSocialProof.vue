@@ -24,8 +24,8 @@ const formatted = computed(() =>
   color: var(--vp-c-text-2);
   font-size: 14px;
   font-weight: 500;
-  padding: 16px 24px 24px;
-  margin: 0;
+  padding: 0 24px 24px;
+  margin: -40px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
