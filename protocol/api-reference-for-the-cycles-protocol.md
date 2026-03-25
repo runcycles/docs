@@ -192,6 +192,7 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 400 | `INVALID_REQUEST` | Missing or invalid fields |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
+| 404 | `NOT_FOUND` | No budget ledger exists for any derived scope |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |
@@ -522,10 +523,7 @@ Evaluate a budget decision without creating a reservation. Useful for preflight 
   "affected_scopes": [
     "tenant:acme",
     "tenant:acme/workspace:production"
-  ],
-  "caps": null,
-  "reason_code": null,
-  "retry_after_ms": null
+  ]
 }
 ```
 
@@ -701,6 +699,7 @@ curl -X POST http://localhost:7878/v1/events \
 | 400 | `UNIT_MISMATCH` | Unit not supported for scope |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
+| 404 | `NOT_FOUND` | No budget ledger exists for any derived scope |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT only) |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |
