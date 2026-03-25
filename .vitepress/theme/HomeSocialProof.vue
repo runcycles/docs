@@ -25,7 +25,7 @@ const formatted = computed(() =>
   font-size: 14px;
   font-weight: 500;
   padding: 0 24px 24px;
-  margin: -40px 0 0;
+  margin: -20px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
