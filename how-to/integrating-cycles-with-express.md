@@ -205,8 +205,13 @@ app.post(
 );
 ```
 
+## Streaming responses
+
+For SSE or streaming endpoints, use the programmatic `CyclesClient` with `reserveForStream` instead of the middleware pattern. The middleware commits when the response finishes, but streaming requires manual commit after the stream completes. See [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) for the full pattern.
+
 ## Next steps
 
+- [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming with `reserveForStream`
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use middleware vs inline
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript) — handling Cycles errors
