@@ -122,7 +122,7 @@ The management plane for Cycles. It runs as a separate Spring Boot 3.5 service o
 - Manages tenants (create, list, update, suspend, close)
 - Creates and revokes API keys with granular permissions
 - Creates budget ledgers and handles funding operations (credit, debit, reset, repay debt)
-- Defines policies (caps, rate limits, TTL overrides) matched by scope patterns
+- Defines policies (caps, rate limits, TTL overrides) matched by scope patterns — **stored for future runtime enforcement; not yet evaluated by the Cycles Server in v0**
 - Validates API keys (used by the Cycles Server for authentication)
 - Maintains an audit log of all administrative operations
 
