@@ -326,6 +326,7 @@ If all retries are exhausted or the client process crashes entirely, the reserva
 
 ## Next steps
 
+- [Client Performance Tuning](/how-to/client-performance-tuning) — timeout, retry, and connection pool optimization
 - [Security Hardening](/how-to/security-hardening) — Redis AUTH, TLS, key rotation
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — metrics and alerting setup
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all configuration properties
