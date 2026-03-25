@@ -47,6 +47,16 @@
     'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+/* ══ Nav Layout Stability ══ */
+
+/* Smooth the padding transition when VitePress applies .has-sidebar during
+   hydration, preventing a visible search box jump on page refresh. */
+@media (min-width: 960px) {
+  .VPNavBar .content {
+    transition: padding-left 0.15s ease;
+  }
+}
+
 /* ══ Brand & Theme Variables ══ */
 
 /* Fix H1 DOM concatenation — VitePress renders name and text as adjacent
