@@ -116,7 +116,7 @@ When using the Cycles governance server (admin API), API keys can carry granular
 | `admin:read` | List budgets and policies |
 | `admin:write` | Create, update, and fund budgets; create and update policies |
 
-Default permissions for tenant keys are `[reservations:*, balances:read]`. Admin keys typically have `[admin:*, reservations:*, balances:*]`.
+When `permissions` is omitted from the API key creation request, the server assigns a default set: `[reservations:create, reservations:commit, reservations:release, reservations:extend, reservations:list, balances:read]`. To include admin operations, explicitly add `admin:read` and/or `admin:write`.
 
 If a request requires a permission the API key does not have, the governance server returns `403` with error code `INSUFFICIENT_PERMISSIONS` (defined in the governance spec, not the protocol spec).
 
