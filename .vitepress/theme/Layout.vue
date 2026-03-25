@@ -1,5 +1,5 @@
 <script setup>
-import DefaultTheme from 'vitepress/theme'
+import DefaultTheme from 'vitepress/theme-without-fonts'
 import { useData } from 'vitepress'
 import NotFound from './NotFound.vue'
 import HomeCodeSnippet from './HomeCodeSnippet.vue'
