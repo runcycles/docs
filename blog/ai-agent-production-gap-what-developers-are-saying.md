@@ -67,7 +67,7 @@ A [widely-shared Towards Data Science article, "The Multi-Agent Trap,"](https://
 
 The community's proposed solutions tend toward better evaluation frameworks, which are necessary but insufficient. Evaluation tells you _after the run_ that something went wrong. What teams actually need is a way to cap exposure _during_ the run.
 
-**How runtime authority helps:** Cycles' [hierarchical scope model](/protocol/scopes) lets you set budgets at every level — per-tenant, per-workflow, per-agent, per-toolset. When a fan-out pattern spawns 8 sub-agents, all 8 draw from the parent scope's budget atomically. If sub-agent #6 would push total spend over the workflow budget, it's denied before making the call, not after. The [reserve-commit lifecycle](/protocol/reserve-commit-lifecycle) handles the concurrency: each sub-agent reserves its estimated cost, executes only if the reservation succeeds, and commits the actual cost afterward. Unused budget is released automatically.
+**How runtime authority helps:** Cycles' [hierarchical scope model](/protocol/how-scope-derivation-works-in-cycles) lets you set budgets at every level — per-tenant, per-workflow, per-agent, per-toolset. When a fan-out pattern spawns 8 sub-agents, all 8 draw from the parent scope's budget atomically. If sub-agent #6 would push total spend over the workflow budget, it's denied before making the call, not after. The [reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) handles the concurrency: each sub-agent reserves its estimated cost, executes only if the reservation succeeds, and commits the actual cost afterward. Unused budget is released automatically.
 
 ### 4. MCP Security and the Protocol Wars
 
@@ -83,7 +83,7 @@ The criticisms fall into three categories:
 
 Google's A2A (Agent-to-Agent) protocol and the new Linux Foundation Agentic AI Foundation (AAIF) — co-founded by OpenAI, Anthropic, Google, Microsoft, AWS, and Block — represent the industry's attempt to build standards. But even these initiatives focus on communication and interoperability, not enforcement.
 
-**Where Cycles fits:** Cycles' [MCP server integration](/quickstart/mcp-server) adds the missing enforcement layer _on top of_ MCP. Your agent still uses MCP to discover and call tools. But each tool call passes through a Cycles reservation check first. The agent gets 9 budget-aware tools (`cycles_reserve`, `cycles_commit`, `cycles_decide`, etc.) that wrap around its existing MCP tool calls. No code changes to the agent — one config change, and every tool call is budget-checked. [Action authority](/blog/ai-agent-runtime-permissions-control-actions-before-execution) adds the permission layer MCP lacks: RISK_POINTS let you score actions by severity (read-only = 1 point, database mutation = 25 points, deployment = 50 points) and enforce per-run limits on consequential actions.
+**Where Cycles fits:** Cycles' [MCP server integration](/quickstart/getting-started-with-the-mcp-server) adds the missing enforcement layer _on top of_ MCP. Your agent still uses MCP to discover and call tools. But each tool call passes through a Cycles reservation check first. The agent gets 9 budget-aware tools (`cycles_reserve`, `cycles_commit`, `cycles_decide`, etc.) that wrap around its existing MCP tool calls. No code changes to the agent — one config change, and every tool call is budget-checked. [Action authority](/blog/ai-agent-runtime-permissions-control-actions-before-execution) adds the permission layer MCP lacks: RISK_POINTS let you score actions by severity (read-only = 1 point, database mutation = 25 points, deployment = 50 points) and enforce per-run limits on consequential actions.
 
 ### 5. The "Demo to Production" Gap
 
@@ -107,7 +107,7 @@ The missing infrastructure is not more capable models. It's the operational laye
 - If the agent retries, does the budget account for the retry?
 - If a sub-agent fails mid-run, is the reserved budget released?
 
-Cycles provides concrete answers to each of these. [Per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) cap maximum cost. [Atomic reservations](/concepts/idempotency-and-concurrency) handle concurrent access. [Action authority tiers](/blog/ai-agent-action-control-hard-limits-side-effects) define what's allowed. [Idempotent commits](/protocol/idempotency) handle retries. The [reserve-commit lifecycle](/protocol/reserve-commit-lifecycle) handles partial failures with automatic release.
+Cycles provides concrete answers to each of these. [Per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) cap maximum cost. [Atomic reservations](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) handle concurrent access. [Action authority tiers](/blog/ai-agent-action-control-hard-limits-side-effects) define what's allowed. [Idempotent commits](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) handle retries. The [reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) handles partial failures with automatic release.
 
 ## What the Community Gets Right — And What's Still Missing
 
@@ -127,11 +127,11 @@ Runtime authority — an enforcement layer that evaluates budgets and permission
 
 If these problems sound familiar, there are a few ways to start:
 
-1. **[Shadow mode](/guides/shadow-mode)** — Run Cycles alongside your existing agents without blocking anything. See what _would_ have been denied. Understand your actual spend patterns before enforcing limits.
+1. **[Shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)** — Run Cycles alongside your existing agents without blocking anything. See what _would_ have been denied. Understand your actual spend patterns before enforcing limits.
 
-2. **[MCP server integration](/quickstart/mcp-server)** — If your agents already use MCP (Claude Desktop, Claude Code, Cursor, Windsurf), add Cycles with a single config change. Zero code modifications.
+2. **[MCP server integration](/quickstart/getting-started-with-the-mcp-server)** — If your agents already use MCP (Claude Desktop, Claude Code, Cursor, Windsurf), add Cycles with a single config change. Zero code modifications.
 
-3. **[The 60-second runaway agent demo](/demos/runaway-agent)** — See budget enforcement stop a runaway agent in real time. No setup required.
+3. **[The 60-second runaway agent demo](/demos/)** — See budget enforcement stop a runaway agent in real time. No setup required.
 
 4. **[Budget patterns visual guide](/blog/agent-budget-patterns-visual-guide)** — Six common patterns with code examples for the scenarios described in this post.
 
