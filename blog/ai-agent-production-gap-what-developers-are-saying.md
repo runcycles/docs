@@ -22,7 +22,7 @@ We spent the last few weeks reading through hundreds of discussions across Reddi
 
 This is the single most discussed pain point. The math is brutal and the community knows it.
 
-A [widely-shared analysis](https://medium.com/@klaushofenbitzer/token-cost-trap-why-your-ai-agents-roi-breaks-at-scale-and-how-to-fix-it-4e4a9f6f5b9a) on Medium — "Token Cost Trap: Why Your AI Agent's ROI Breaks at Scale" — walks through how a POC costing $500 in one month rocketed to $847K/month when deployed broadly. In February 2026, a data enrichment agent [misinterpreted an API error and ran 2.3 million API calls over a weekend, costing $47K](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/). The [LangChain 2026 State of AI Agents report](https://blog.langchain.dev/the-state-of-ai-agents-2026/) confirms this: agents make 3–10x more LLM calls than simple chatbots. A single request can trigger planning, tool selection, execution, verification, and response generation — each a separate billable API call.
+A [widely-shared analysis](https://medium.com/@klaushofenbitzer/token-cost-trap-why-your-ai-agents-roi-breaks-at-scale-and-how-to-fix-it-4e4a9f6f5b9a) on Medium — "Token Cost Trap: Why Your AI Agent's ROI Breaks at Scale" — walks through how a POC costing $500 in one month rocketed to $847K/month when deployed broadly. In February 2026, a data enrichment agent [misinterpreted an API error and ran 2.3 million API calls over a weekend, costing $47K](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/). The [LangChain 2026 State of AI Agents report](https://www.langchain.com/state-of-agent-engineering) confirms this: agents make 3–10x more LLM calls than simple chatbots. A single request can trigger planning, tool selection, execution, verification, and response generation — each a separate billable API call.
 
 The numbers developers are reporting:
 
@@ -41,7 +41,7 @@ On Hacker News, a [thread analyzing ICLR 2026 papers on multi-agent failures](ht
 
 A related but distinct frustration: teams have _excellent_ visibility into what their agents are doing and still can't prevent overspend or dangerous actions.
 
-The [LangChain report](https://blog.langchain.dev/the-state-of-ai-agents-2026/) found that 89% of organizations have implemented some form of observability for their agent systems. Platforms like Langfuse, LangSmith, Arize, and Helicone are widely adopted. And yet 32% of organizations still cite quality as their top barrier, and cost overruns remain the most common production incident.
+The [LangChain report](https://www.langchain.com/state-of-agent-engineering) found that 89% of organizations have implemented some form of observability for their agent systems. Platforms like Langfuse, LangSmith, Arize, and Helicone are widely adopted. And yet 32% of organizations still cite quality as their top barrier, and cost overruns remain the most common production incident.
 
 Why? Because observability tools are designed to _record_ what happened, not _control_ what happens next. They answer "what did the agent do?" but not "should the agent be allowed to do this?"
 
