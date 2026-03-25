@@ -187,9 +187,9 @@ Adjust these constants for the model you use:
 
 | Model | Input (microcents/token) | Output (microcents/token) |
 |-------|--------------------------|---------------------------|
-| Claude Haiku | 25 | 125 |
-| Claude Sonnet | 300 | 1,500 |
-| Claude Opus | 1,500 | 7,500 |
+| Claude Haiku 3.5 | 80 | 400 |
+| Claude Sonnet 4 | 300 | 1,500 |
+| Claude Opus 4 | 1,500 | 7,500 |
 
 ## Key points
 
