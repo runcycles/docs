@@ -329,6 +329,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'Production Operations', link: '/how-to/production-operations-guide' },
+            { text: 'Admin API Guide', link: '/admin-api/guide' },
             { text: 'Client Performance Tuning', link: '/how-to/client-performance-tuning' },
             { text: 'Observability Setup', link: '/how-to/observability-setup' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
