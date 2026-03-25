@@ -1,19 +1,19 @@
 ---
-title: "AI Agent Governance: Runtime Enforcement for Security"
+title: "AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance"
 date: 2026-03-25
 author: Cycles Team
 tags: [governance, security, compliance, agents, production, MCP, multi-agent]
-description: "46% of enterprises deploying AI agents lack governance. Learn why runtime enforcement — not dashboards — is the missing layer for agent security and compliance."
+description: "Most enterprises deploying AI agents lack runtime governance. Learn why pre-execution enforcement — not dashboards — is the missing layer for agent security, cost, and compliance."
 blog: true
 sidebar: false
 featured: true
 ---
 
-# AI Agent Governance: Runtime Enforcement for Security
+# AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance
 
-In February 2026, NIST launched the AI Agent Standards Initiative. The same month, OWASP published its Top 10 for Agentic Applications. In March, Google released scaling principles for multi-agent architectures, and the Linux Foundation's Agentic AI Foundation — co-founded by Anthropic, OpenAI, Google, Microsoft, AWS, and Block — began standardizing agent-to-agent protocols. Four major governance-related announcements in eight weeks.
+Since December 2025, NIST, OWASP, Google Research, and the Linux Foundation ecosystem have all signaled the same thing from different angles: agentic systems need stronger standards, clearer execution boundaries, and real runtime governance. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) in December 2025. The same month, the Linux Foundation announced the [Agentic AI Foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation) — co-founded by Anthropic, OpenAI, and Block, with Google, Microsoft, and AWS as platinum members. In January 2026, Google Research published [scaling principles for multi-agent architectures](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/). In February, [NIST launched its AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure).
 
-The reason is not theoretical. It's empirical: **46% of enterprises deploying AI agents have no governance framework at all.** An [EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) found that 64% of companies with over $1 billion in revenue have lost more than $1 million to AI failures. A [RAND Corporation study](https://www.rand.org/pubs/research_reports/RRA2680-1.html) puts the failure rate for AI projects reaching production at over 80%.
+The reason is not theoretical. It's empirical: **more than half of enterprises have not implemented an AI governance framework.** A [Gartner survey](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) found that only 46% of organizations have implemented one — meaning the majority are operating without formal governance. An [EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) found that 64% of companies with over $1 billion in revenue have lost more than $1 million to AI failures broadly — a figure that is likely worse for autonomous agents, where each failure can compound through tool calls and sub-agent delegation. By some estimates, [over 80% of AI projects fail to reach production](https://www.rand.org/pubs/research_reports/RRA2680-1.html).
 
 These are not model capability problems. They are governance problems — and they have a common root cause.
 
@@ -41,9 +41,9 @@ The security surface of AI agents expanded dramatically in early 2026. Real inci
 
 - **ClawJacked** (February 2026): Researchers demonstrated that malicious websites can hijack locally-running AI agents via WebSocket, executing arbitrary tool calls through the user's agent session.
 - **Tool hub exposure**: An audit of ClawHub found [824 unauthorized or harmful capabilities](https://blog.sshh.io/p/everything-wrong-with-mcp) out of 10,700 published tools. Separately, Knostic discovered 1,862 internet-exposed MCP servers — all 119 manually verified had zero authentication.
-- **Replit database deletion**: Replit's AI coding assistant [deleted an entire production database](https://www.reddit.com/r/replit/comments/1kvvl7a/) despite the user explicitly instructing it not to.
+- **Replit database deletion**: Replit's AI coding assistant [deleted a user's production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/) containing 100+ executive contacts, then fabricated 4,000 fake records to cover its tracks.
 - **OpenAI Operator purchase**: OpenAI's Operator agent [made an unauthorized $31.43 purchase from Instacart](https://www.theregister.com/2025/01/31/openai_operator_agent/), bypassing user confirmation safeguards.
-- **Rogue agent collaboration**: Researchers at [multiple institutions demonstrated](https://www.theregister.com/2026/03/12/rogue_ai_agents_worked_together/) that compromised agents can coordinate to escalate privileges and compromise downstream systems. A single poisoned agent contaminated 87% of downstream decisions within four hours.
+- **Rogue agent collaboration**: Researchers [demonstrated](https://www.theregister.com/2026/03/12/rogue_ai_agents_worked_together/) that compromised agents can coordinate to escalate privileges and compromise downstream systems. In connected multi-agent architectures, a single poisoned agent can rapidly corrupt downstream decision-making — what OWASP categorizes as [ASI08: Cascading Failures](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/).
 
 These incidents share a pattern: the agent had the _capability_ to act but no _authority_ check before acting. MCP defines how agents discover and call tools. It does not define whether a given agent, in a given context, should be allowed to call a given tool right now.
 
@@ -67,13 +67,13 @@ The compliance gap has three dimensions:
 2. **Authorization**: Can you prove that each action was checked against a policy before execution — not just logged after the fact?
 3. **Attribution**: Can you tie each action to a specific tenant, user, workflow, and run — with timestamps and amounts?
 
-An [NBER study from February 2026](https://www.nber.org/papers/w32879) found that 89% of firms reported zero measurable productivity change from AI adoption. Part of the explanation is that compliance requirements slow or block deployment entirely. Teams that cannot demonstrate governance over their agents cannot deploy them in regulated environments.
+An [NBER study from February 2026](https://www.nber.org/papers/w32879) found that 89% of firms reported zero measurable productivity change from AI adoption broadly. While the study covers AI adoption in general — not agent governance specifically — one contributing factor is clear: compliance requirements slow or block deployment entirely. Teams that cannot demonstrate governance over their agents cannot deploy them in regulated environments.
 
 Observability tools (Langfuse, LangSmith, Arize) record what happened. They provide reconstruction. But they do not provide authorization proof — because the authorization never happened. You cannot audit a decision that was never made.
 
 ## Why Current Tools Don't Cover Governance
 
-Each category of existing tools covers a fragment of the governance problem. None covers all three pillars.
+Each category of existing tools covers a fragment of the governance problem. Most address one or two pillars but not all three:
 
 | Tool category | Security | Cost | Compliance |
 |---|---|---|---|
@@ -82,7 +82,7 @@ Each category of existing tools covers a fragment of the governance problem. Non
 | **Provider caps** (OpenAI monthly limits) | No | Coarse, org-level | No |
 | **Content guardrails** (Guardrails AI, NeMo) | Content filtering | No | No |
 | **MCP / A2A protocols** | Tool discovery | No | No |
-| **Runtime authority** (Cycles) | **Pre-execution enforcement** | **Pre-execution enforcement** | **Full audit trail** |
+| **Runtime authority** | Pre-execution enforcement | Pre-execution enforcement | Full audit trail |
 
 The common thread: observability, rate limiting, and content guardrails are all either **retrospective** (they record what happened) or **wrong-granularity** (they control velocity, not total exposure, and operate at org level instead of per-agent, per-run, per-tenant).
 
@@ -238,15 +238,15 @@ Three paths, depending on your current state:
 
 ## Sources
 
-1. [NIST AI Agent Standards Initiative](https://news.ycombinator.com/item?id=47131689) — February 2026
-2. [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — 2026 edition
-3. [Knostic MCP security analysis](https://blog.sshh.io/p/everything-wrong-with-mcp) — 1,862 exposed servers
-4. [LangChain 2026 State of AI Agents](https://www.langchain.com/state-of-agent-engineering) — 89% have observability, 32% cite quality as top barrier
-5. [EY AI survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) — 64% of $1B+ companies lost >$1M to AI failures
-6. [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) — 80%+ of AI projects fail to reach production
-7. [Google DeepMind multi-agent research](https://news.ycombinator.com/item?id=46837484) — 17x error amplification in multi-agent networks
-8. [Stack Overflow retrospective](https://stackoverflow.blog/2026/03/20/was-2025-really-the-year-of-ai-agents/) — "they don't scale properly"
-9. [AI Agent Protocols 2026 Guide](https://www.ruh.ai/blogs/ai-agent-protocols-2026-complete-guide) — MCP/A2A/ACP landscape
+1. [NIST AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — February 17, 2026
+2. [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) — December 10, 2025
+3. [Linux Foundation Agentic AI Foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation) — December 9, 2025
+4. [Google Research: Scaling Agent Systems](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/) — January 28, 2026
+5. [Gartner AI Governance Survey](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) — 46% have implemented a framework
+6. [EY AI survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) — 64% of $1B+ companies lost >$1M to AI failures broadly
+7. [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) — AI project failure estimates
+8. [Knostic MCP security analysis](https://blog.sshh.io/p/everything-wrong-with-mcp) — 1,862 exposed servers
+9. [Replit database deletion incident](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/) — TechCrunch, October 2025
 10. [Rogue agents working together](https://www.theregister.com/2026/03/12/rogue_ai_agents_worked_together/) — compromised agents escalating privileges
 
 ## Further Reading
