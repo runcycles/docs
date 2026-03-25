@@ -70,6 +70,10 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
     "name": "Acme Corporation",
     "parent_tenant_id": "acme-group",
     "default_commit_overage_policy": "ALLOW_IF_AVAILABLE",
+    "default_reservation_ttl_ms": 120000,
+    "max_reservation_ttl_ms": 7200000,
+    "max_reservation_extensions": 5,
+    "reservation_expiry_policy": "AUTO_RELEASE",
     "metadata": {
       "billing_id": "cust_12345",
       "plan": "enterprise",
@@ -80,11 +84,15 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
 
 The accepted optional fields on creation are:
 
-| Field | Description |
-|---|---|
-| `parent_tenant_id` | Parent tenant for hierarchical relationships (see [Hierarchical tenants](#hierarchical-tenants)) |
-| `default_commit_overage_policy` | Default overage policy: `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
-| `metadata` | Key-value pairs for external references (up to 32 keys) |
+| Field | Default | Description |
+|---|---|---|
+| `parent_tenant_id` | — | Parent tenant for hierarchical relationships (see [Hierarchical tenants](#hierarchical-tenants)) |
+| `default_commit_overage_policy` | `ALLOW_IF_AVAILABLE` | Default overage policy: `REJECT`, `ALLOW_IF_AVAILABLE`, or `ALLOW_WITH_OVERDRAFT` |
+| `default_reservation_ttl_ms` | `60000` (60s) | Default TTL when a reservation request does not specify `ttl_ms` |
+| `max_reservation_ttl_ms` | `3600000` (1h) | Maximum allowed TTL; requests exceeding this are capped |
+| `max_reservation_extensions` | `10` | Maximum TTL extensions per reservation |
+| `reservation_expiry_policy` | `AUTO_RELEASE` | How expired reservations are handled: `AUTO_RELEASE`, `MANUAL_CLEANUP`, or `GRACE_ONLY` |
+| `metadata` | — | Key-value pairs for external references (up to 32 keys) |
 
 Each of these fields is covered in detail in the sections below.
 
