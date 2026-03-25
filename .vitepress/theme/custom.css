@@ -1,3 +1,18 @@
+/* ══ Typography ══ */
+
+/* Import Inter (body) and JetBrains Mono (code) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Override VitePress default font stacks */
+:root {
+  --vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono',
+    Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
 /* ══ Brand & Theme Variables ══ */
 
 /* Fix H1 DOM concatenation — VitePress renders name and text as adjacent
