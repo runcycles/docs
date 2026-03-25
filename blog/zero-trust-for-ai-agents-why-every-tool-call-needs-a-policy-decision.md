@@ -170,7 +170,7 @@ The research for this post draws from discussions and reports published between 
 ## Next Steps
 
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — The foundational concept behind pre-execution enforcement
-- [AI Agent Governance: Runtime Enforcement for Security](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance) — How governance maps to security, cost, and compliance
+- [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance) — How governance maps to security, cost, and compliance
 - [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability) — Why enforcement is a distinct layer
 - [AI Agent Runtime Permissions: Control Actions Before Execution](/blog/ai-agent-runtime-permissions-control-actions-before-execution) — The permissions model in detail
 - [Shadow Mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — Start with zero trust in observe-only mode

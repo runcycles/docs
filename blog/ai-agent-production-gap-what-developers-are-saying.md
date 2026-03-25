@@ -10,7 +10,7 @@ sidebar: false
 
 # The AI Agent Production Gap: What Developers Are Actually Saying
 
-A $50 proof-of-concept becomes an $847,000 monthly production bill. An agent that works 80% of the time in demos is, by the community's own measure, "an impressive demo and a useless production system." A single compromised agent poisons 87% of downstream decisions in four hours. These aren't hypotheticals — they're the numbers developers are sharing on Reddit, Hacker News, and in industry reports right now. And they all point to the same architectural gap.
+A $50 proof-of-concept becomes an $847,000 monthly production bill. An agent that works 80% of the time in demos is, by the community's own measure, "an impressive demo and a useless production system." A single compromised agent in a multi-agent network can rapidly corrupt downstream decision-making through what Google DeepMind measured as [17x error amplification](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/). These aren't hypotheticals — they're the numbers developers are sharing on Reddit, Hacker News, and in industry reports right now. And they all point to the same architectural gap.
 
 <!-- more -->
 
