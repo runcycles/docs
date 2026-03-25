@@ -3,6 +3,7 @@ import DefaultTheme from 'vitepress/theme-without-fonts'
 import { useData } from 'vitepress'
 import NotFound from './NotFound.vue'
 import HomeCodeSnippet from './HomeCodeSnippet.vue'
+import HomeSocialProof from './HomeSocialProof.vue'
 import BlogPost from './BlogPost.vue'
 import BlogPostNav from './BlogPostNav.vue'
 import PageFeedback from './PageFeedback.vue'
@@ -16,6 +17,7 @@ const { frontmatter } = useData()
 <template>
   <Layout>
     <template #home-features-before>
+      <HomeSocialProof v-if="frontmatter.layout === 'home'" />
       <HomeCodeSnippet v-if="frontmatter.layout === 'home'" />
     </template>
     <template #not-found>
