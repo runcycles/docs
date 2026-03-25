@@ -49,23 +49,11 @@
 
 /* ══ Nav Layout Stability ══ */
 
-/* VitePress bug: VPNavBar sets .has-sidebar via watchPostEffect which doesn't
-   run during SSR, causing a layout shift on hydration. Work around this by
-   detecting the sidebar element in the DOM with :has(), which works from first
-   paint since VPSidebar IS rendered in SSR output. */
+/* Smooth the padding transition when VitePress applies .has-sidebar during
+   hydration, preventing a visible search box jump on page refresh. */
 @media (min-width: 960px) {
-  .VPLayout:has(.VPSidebar) .VPNavBar .content {
-    position: relative;
-    z-index: 1;
-    padding-right: 32px;
-    padding-left: var(--vp-sidebar-width);
-  }
-}
-
-@media (min-width: 1440px) {
-  .VPLayout:has(.VPSidebar) .VPNavBar .content {
-    padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + 32px);
-    padding-left: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+  .VPNavBar .content {
+    transition: padding-left 0.15s ease;
   }
 }
 
