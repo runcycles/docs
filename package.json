@@ -14,8 +14,6 @@
     "dev": "npm run convert-spec && vitepress dev"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.2.8",
-    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "feed": "^5.2.0",
     "shiki": "^4.0.2",
     "vitepress-openapi": "^0.1.19",
