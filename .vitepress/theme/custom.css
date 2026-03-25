@@ -1,6 +1,8 @@
 /* ══ Typography ══ */
 
-/* Inter Variable — self-hosted, font-display: optional (no FOUT) */
+/* Inter Variable — self-hosted, font-display: optional to avoid late visible swap.
+   On cold loads over slow connections the browser may keep fallback fonts for that
+   navigation; on repeat visits the font is cached and loads within the ~100ms window. */
 @font-face {
   font-family: 'Inter Variable';
   font-style: normal;
