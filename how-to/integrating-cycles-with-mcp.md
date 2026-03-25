@@ -260,7 +260,7 @@ The server starts on port 3000 (configurable via `PORT` env var) with:
 | `BUDGET_EXCEEDED` | Not enough budget | Degrade to cheaper model or stop |
 | `RESERVATION_EXPIRED` | TTL elapsed before commit | Re-reserve if work is still needed |
 | `RESERVATION_FINALIZED` | Already committed or released | No action needed |
-| `DEBT_OUTSTANDING` | Scope has unpaid debt | Wait for admin to fund the budget |
+| `DEBT_OUTSTANDING` | Scope has unpaid debt (no overdraft limit) | Wait for admin to fund the budget or configure an overdraft limit |
 | `OVERDRAFT_LIMIT_EXCEEDED` | Over-limit state | Wait for admin to reconcile |
 
 See [Error Codes and Error Handling](/protocol/error-codes-and-error-handling-in-cycles) for the full reference.

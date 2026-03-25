@@ -179,7 +179,7 @@ An unexpected server error occurred.
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
-| DEBT_OUTSTANDING | 409 | Scope has unresolved debt |
+| DEBT_OUTSTANDING | 409 | Scope has unresolved debt (no overdraft limit configured) |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
