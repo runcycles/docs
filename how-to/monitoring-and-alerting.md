@@ -212,6 +212,7 @@ For structured logging, pipe to your log aggregation system (ELK, Datadog, Cloud
 
 ## Next steps
 
+- [Observability Setup](/how-to/observability-setup) — Prometheus, Grafana, and Datadog integration
 - [Production Operations Guide](/how-to/production-operations-guide) — deployment and infrastructure
 - [Security Hardening](/how-to/security-hardening) — securing the deployment
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all server settings
