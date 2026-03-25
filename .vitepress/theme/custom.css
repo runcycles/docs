@@ -54,7 +54,7 @@
    detecting the sidebar element in the DOM with :has(), which works from first
    paint since VPSidebar IS rendered in SSR output. */
 @media (min-width: 960px) {
-  .VPLayout:has(.VPSidebar) .VPNavBar .content {
+  .Layout:has(.VPSidebar) .VPNavBar .content {
     position: relative;
     z-index: 1;
     padding-right: 32px;
@@ -63,7 +63,7 @@
 }
 
 @media (min-width: 1440px) {
-  .VPLayout:has(.VPSidebar) .VPNavBar .content {
+  .Layout:has(.VPSidebar) .VPNavBar .content {
     padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + 32px);
     padding-left: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
   }
