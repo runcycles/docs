@@ -1,8 +1,6 @@
 /* ══ Typography ══ */
 
-/* Import Inter (body) and JetBrains Mono (code) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Fonts (Inter + JetBrains Mono) loaded via <head> in config.ts to avoid FOUT */
 
 /* Override VitePress default font stacks */
 :root {
