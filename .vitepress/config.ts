@@ -27,6 +27,9 @@ export default defineConfig({
   titleTemplate: ':title — Runtime authority for autonomous agents',
   srcExclude: ['**/README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+    ['link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap' }],
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/runcycles-favicon.svg' }],
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/runcycles-favicon.ico' }],
     ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/runcycles-logo-192.png' }],
