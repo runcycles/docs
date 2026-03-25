@@ -1,6 +1,6 @@
 ---
 title: "Zero Trust for AI Agents: Why Every Tool Call Needs a Policy Decision"
-date: 2026-03-25
+date: 2026-03-24
 author: Cycles Team
 tags: [security, zero-trust, agents, MCP, OWASP, production, tool-calling, governance]
 description: "Microsoft, Cisco, and OWASP converged on one conclusion: AI agents need zero trust at the tool-call layer. What changed and how to enforce it."
