@@ -149,11 +149,11 @@ Appears in two contexts:
 
 ### DEBT_OUTSTANDING (409)
 
-A new reservation was attempted against a scope that has outstanding debt (debt > 0).
+A new reservation was attempted against a scope that has outstanding debt (debt > 0) and no overdraft limit configured (overdraft_limit is absent or 0).
 
-Even if the scope has not exceeded its overdraft limit, any debt blocks new reservations until it is repaid.
+When an `overdraft_limit > 0` is configured, debt within the limit does not block new reservations. Only scopes without an overdraft limit treat any debt as blocking.
 
-**What to do:** wait for debt to be repaid through budget funding. Retry with exponential backoff, or escalate to an operator.
+**What to do:** wait for debt to be repaid through budget funding, or configure an overdraft limit if debt within a limit is acceptable. Retry with exponential backoff, or escalate to an operator.
 
 Note: when `is_over_limit=true`, the server returns `OVERDRAFT_LIMIT_EXCEEDED` instead of `DEBT_OUTSTANDING`, even if debt > 0. `OVERDRAFT_LIMIT_EXCEEDED` takes precedence.
 
@@ -179,7 +179,7 @@ An unexpected server error occurred.
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
-| DEBT_OUTSTANDING | 409 | Scope has unresolved debt |
+| DEBT_OUTSTANDING | 409 | Scope has unresolved debt (no overdraft limit configured) |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |

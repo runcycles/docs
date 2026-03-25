@@ -177,7 +177,7 @@ try {
 
 ### DebtOutstandingError / DEBT_OUTSTANDING
 
-A scope has unpaid debt. New reservations are blocked until the debt is resolved.
+A scope has unpaid debt and no overdraft limit configured. New reservations are blocked until the debt is resolved or an overdraft limit is set.
 
 ::: code-group
 ```python [Python]
@@ -581,7 +581,7 @@ if (response.isSuccess) {
 | Error | Retryable? | Action |
 |---|---|---|
 | `BUDGET_EXCEEDED` (409) | Maybe | Budget may free up after other reservations commit. Retry with backoff or degrade. |
-| `DEBT_OUTSTANDING` (409) | Wait | Requires operator to fund the scope. Retry after funding. |
+| `DEBT_OUTSTANDING` (409) | Wait | Requires operator to fund the scope or configure an overdraft limit. Retry after funding. |
 | `OVERDRAFT_LIMIT_EXCEEDED` (409) | Wait | Requires operator intervention. |
 | `RESERVATION_EXPIRED` (410) | No | Create a new reservation or record as event. |
 | `RESERVATION_FINALIZED` (409) | No | Reservation already settled. No action needed. |

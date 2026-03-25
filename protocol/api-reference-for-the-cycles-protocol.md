@@ -197,7 +197,7 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Scope is over-limit |
-| 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt |
+| 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt (no overdraft limit configured) |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
 ---

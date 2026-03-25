@@ -611,7 +611,7 @@ The server is not running. Check Docker containers (`docker compose ps`) or chec
 
 ### "DEBT_OUTSTANDING" on new reservations
 
-A scope has accumulated debt from `ALLOW_WITH_OVERDRAFT` commits. Repay the debt via the admin API:
+A scope has accumulated debt from `ALLOW_WITH_OVERDRAFT` commits and has no `overdraft_limit` configured (or it is 0). When an `overdraft_limit > 0` is set, debt within the limit does not block reservations. To resolve, either repay the debt or configure an overdraft limit. Repay via the admin API:
 
 ```bash
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \

@@ -117,7 +117,7 @@ These are different situations:
 
 **Over-limit block** (`OVERDRAFT_LIMIT_EXCEEDED`): debt has exceeded the overdraft limit. Future reservations are blocked until debt is repaid.
 
-**Outstanding debt block** (`DEBT_OUTSTANDING`): debt exists (even if below overdraft limit). New reservations are blocked because the scope has unresolved debt.
+**Outstanding debt block** (`DEBT_OUTSTANDING`): debt exists and no overdraft limit is configured (overdraft_limit is absent or 0). New reservations are blocked because the scope has unresolved debt with no overdraft tolerance. When an `overdraft_limit > 0` is set, debt within the limit does not block new reservations.
 
 Note: when `is_over_limit` is true, the server returns `OVERDRAFT_LIMIT_EXCEEDED` instead of `DEBT_OUTSTANDING`, even if debt > 0. The over-limit error takes precedence.
 

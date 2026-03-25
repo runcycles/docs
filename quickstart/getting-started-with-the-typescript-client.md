@@ -245,7 +245,7 @@ try {
 | `CyclesProtocolError` | Server returned a protocol-level error |
 | `BudgetExceededError` | Budget insufficient for the reservation |
 | `OverdraftLimitExceededError` | Debt exceeds the overdraft limit |
-| `DebtOutstandingError` | Outstanding debt blocks new reservations |
+| `DebtOutstandingError` | Outstanding debt blocks new reservations (when no overdraft limit configured) |
 | `ReservationExpiredError` | Operating on an expired reservation |
 | `ReservationFinalizedError` | Operating on an already-committed/released reservation |
 | `CyclesTransportError` | Network-level failure (connection, DNS, timeout) |

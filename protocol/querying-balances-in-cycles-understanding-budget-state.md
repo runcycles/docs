@@ -51,7 +51,7 @@ Overdraft consumption that occurred when insufficient budget was available.
 
 Debt is created only when the `ALLOW_WITH_OVERDRAFT` overage policy is used and budget is insufficient at commit time.
 
-When debt is present, new reservations are blocked until it is repaid.
+When debt is present and no overdraft limit is configured, new reservations are blocked until it is repaid. When an overdraft limit is set, debt within the limit does not block new reservations.
 
 ### overdraft_limit (Amount)
 
@@ -232,7 +232,7 @@ When a scope has debt, remaining can be negative:
 }
 ```
 
-This scope is in overdraft but not over-limit. It has $0.05 in debt within a $0.10 overdraft limit. New reservations are blocked (due to outstanding debt) until debt is repaid.
+This scope is in overdraft but not over-limit. It has $0.05 in debt within a $0.10 overdraft limit. Because the overdraft limit is configured, new reservations are still allowed as long as remaining budget covers the estimate.
 
 ## Summary
 
