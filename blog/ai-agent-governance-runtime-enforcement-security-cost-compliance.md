@@ -1,15 +1,15 @@
 ---
-title: "AI Agent Governance in 2026: Runtime Enforcement for Security, Cost, and Compliance"
+title: "AI Agent Governance: Runtime Enforcement for Security"
 date: 2026-03-25
 author: Cycles Team
 tags: [governance, security, compliance, agents, production, MCP, multi-agent]
-description: "46% of enterprises deploying AI agents lack governance frameworks. Learn why runtime enforcement — not dashboards — is the missing governance layer for agent security, cost control, and compliance."
+description: "46% of enterprises deploying AI agents lack governance. Learn why runtime enforcement — not dashboards — is the missing layer for agent security and compliance."
 blog: true
 sidebar: false
 featured: true
 ---
 
-# AI Agent Governance in 2026: Runtime Enforcement for Security, Cost, and Compliance
+# AI Agent Governance: Runtime Enforcement for Security
 
 In February 2026, NIST launched the AI Agent Standards Initiative. The same month, OWASP published its Top 10 for Agentic Applications. In March, Google released scaling principles for multi-agent architectures, and the Linux Foundation's Agentic AI Foundation — co-founded by Anthropic, OpenAI, Google, Microsoft, AWS, and Block — began standardizing agent-to-agent protocols. Four major governance-related announcements in eight weeks.
 
