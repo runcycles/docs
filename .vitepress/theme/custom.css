@@ -1,14 +1,14 @@
 /* ══ Typography ══ */
 
-/* Fonts (Inter + JetBrains Mono) loaded via <head> in config.ts to avoid FOUT */
+/* Fonts loaded via @fontsource-variable packages (self-hosted, no FOUT) */
 
 /* Override VitePress default font stacks */
 :root {
-  --vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+  --vp-font-family-base: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
-  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono',
-    Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --vp-font-family-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular,
+    'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 /* ══ Brand & Theme Variables ══ */
