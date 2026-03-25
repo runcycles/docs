@@ -120,6 +120,32 @@ config = CyclesConfig.from_env()
 
 A custom prefix can be passed: `CyclesConfig.from_env(prefix="MY_PREFIX_")`.
 
+## `@cycles` decorator parameters
+
+The `@cycles` decorator accepts parameters that control reservation behavior per-call. These are separate from the `CyclesConfig` connection settings above. For full documentation and examples, see [Getting Started with the Python Client — Decorator parameters](/quickstart/getting-started-with-the-python-client#decorator-parameters).
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `estimate` | `int \| Callable` | (required) | Estimated cost. Int constant or callable receiving the function's `*args, **kwargs`. |
+| `actual` | `int \| Callable \| None` | `None` | Actual cost. Int constant or callable receiving the return value. Defaults to estimate. |
+| `action_kind` | `str \| None` | `None` | Action category (e.g. `"llm.completion"`). |
+| `action_name` | `str \| None` | `None` | Action identifier (e.g. `"gpt-4"`). |
+| `action_tags` | `list[str] \| None` | `None` | Tags for filtering and reporting. |
+| `unit` | `Unit \| str` | `USD_MICROCENTS` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
+| `ttl_ms` | `int` | `60000` | Reservation TTL in milliseconds. |
+| `grace_period_ms` | `int \| None` | `None` | Grace period after TTL expiry in milliseconds. |
+| `overage_policy` | `str` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
+| `dry_run` | `bool` | `False` | If `True`, evaluate without persisting. Function does not execute. |
+| `tenant` | `str \| None` | `None` | Subject tenant override (takes precedence over config default). |
+| `workspace` | `str \| None` | `None` | Subject workspace override. |
+| `app` | `str \| None` | `None` | Subject app override. |
+| `workflow` | `str \| None` | `None` | Subject workflow override. |
+| `agent` | `str \| None` | `None` | Subject agent override. |
+| `toolset` | `str \| None` | `None` | Subject toolset override. |
+| `dimensions` | `dict[str, str] \| None` | `None` | Custom dimensions for the subject. |
+| `client` | `CyclesClient \| AsyncCyclesClient \| None` | `None` | Explicit client. Falls back to module-level default. |
+| `use_estimate_if_actual_not_provided` | `bool` | `True` | If `True` and `actual` is `None`, use estimate as actual at commit. |
+
 ## Setting a default client
 
 Instead of passing `client=` to every `@cycles` decorator, set a module-level default:
