@@ -20,7 +20,7 @@
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
-/* JetBrains Mono Variable — self-hosted, font-display: optional to avoid late visible swap */
+/* JetBrains Mono Variable — self-hosted, font-display: optional (no FOUT) */
 @font-face {
   font-family: 'JetBrains Mono Variable';
   font-style: normal;
@@ -45,16 +45,6 @@
     'Helvetica Neue', sans-serif;
   --vp-font-family-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular,
     'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-}
-
-/* ══ Nav Layout Stability ══ */
-
-/* Smooth the padding transition when VitePress applies .has-sidebar during
-   hydration, preventing a visible search box jump on page refresh. */
-@media (min-width: 960px) {
-  .VPNavBar .content {
-    transition: padding-left 0.15s ease;
-  }
 }
 
 /* ══ Brand & Theme Variables ══ */
