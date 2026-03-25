@@ -147,6 +147,10 @@ This atomically recalculates `is_over_limit` based on the new settings.
 
 ## Policy management
 
+::: warning v0 limitation
+In v0, policies are **stored but not yet enforced at runtime**. The protocol server (port 7878) does not evaluate admin-defined policies when processing reservations, commits, or events. Enforcement is planned for a future version. Today, the only policy-like behavior enforced at runtime is the `overage_policy` resolved from the request or the tenant's `default_commit_overage_policy`.
+:::
+
 ### Create a policy
 
 ```bash
