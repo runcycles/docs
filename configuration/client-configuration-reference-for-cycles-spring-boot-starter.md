@@ -78,6 +78,32 @@ Using `workspace = "staging"` on an annotation targets the $1,000 staging budget
 A reservation must pass budget checks at **all** affected scope levels. If you set `tenant` and `workspace`, the server checks remaining budget at both `tenant:acme` and `tenant:acme/workspace:staging`. If either scope is exhausted, the reservation is denied.
 :::
 
+## `@Cycles` annotation attributes
+
+The `@Cycles` annotation controls reservation behavior per-method. These are separate from the `application.yml` configuration above. For full documentation and examples, see [Getting Started with the Spring Boot Starter — Annotation attributes](/quickstart/getting-started-with-the-cycles-spring-boot-starter#annotation-attributes).
+
+| Attribute | Type | Default | Description |
+|---|---|---|---|
+| `value` | `String` | `""` | SpEL expression for estimated cost. Shorthand: `@Cycles("1000")`. Synonym for `estimate`. |
+| `estimate` | `String` | `""` | SpEL expression for estimated cost. Synonym for `value`. |
+| `actual` | `String` | `""` | SpEL expression for actual cost, evaluated after method returns. `#result` is bound to the return value. |
+| `actionKind` | `String` | `""` | Action category (e.g. `"llm.completion"`). Defaults to declaring class simple name if blank. |
+| `actionName` | `String` | `""` | Action identifier (e.g. `"gpt-4"`). Defaults to method name if blank. |
+| `actionTags` | `String[]` | `{}` | Tags for filtering and reporting (e.g. `{"prod", "customer-facing"}`). |
+| `unit` | `String` | `"USD_MICROCENTS"` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
+| `ttlMs` | `long` | `60000` | Reservation TTL in milliseconds (1,000–86,400,000). |
+| `gracePeriodMs` | `long` | `-1` | Grace period after TTL expiry in milliseconds (0–60,000). Use `-1` to omit. |
+| `overagePolicy` | `String` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
+| `dryRun` | `boolean` | `false` | Shadow-mode evaluation. If `true`, server evaluates without persisting; guarded method does NOT execute. |
+| `useEstimateIfActualNotProvided` | `boolean` | `true` | When `true` and `actual` is blank, use the estimate as actual at commit time. |
+| `tenant` | `String` | `""` | Subject tenant override (takes precedence over config and resolver). |
+| `workspace` | `String` | `""` | Subject workspace override. |
+| `app` | `String` | `""` | Subject app override. |
+| `workflow` | `String` | `""` | Subject workflow override. |
+| `agent` | `String` | `""` | Subject agent override. |
+| `toolset` | `String` | `""` | Subject toolset override. |
+| `dimensions` | `String[]` | `{}` | Custom dimensions as `"key=value"` pairs (e.g. `{"cost_center=engineering"}`). |
+
 ## HTTP configuration
 
 | Property | Type | Default | Description |

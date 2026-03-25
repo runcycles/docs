@@ -39,6 +39,25 @@ The response returns the full key (e.g. `cyc_live_abc123...`). **Save it — the
 Need the full setup? See [Deploy the Full Stack — Create an API key](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key). For rotation and lifecycle details, see [API Key Management](/how-to/api-key-management-in-cycles).
 :::
 
+## Verify your server is running
+
+Before writing any code, confirm the Cycles Server is reachable:
+
+```bash
+curl -sf http://localhost:7878/actuator/health | jq .
+```
+
+You should see `{"status":"UP"}`. If this fails, check that the server is running per [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack).
+
+::: info Two API key types
+Cycles uses two different authentication headers:
+
+- **`X-Admin-API-Key`** — used with the **Admin Server** (port 7979) to manage tenants, budgets, and API keys. This is the bootstrap secret (e.g. `admin-bootstrap-key`).
+- **`X-Cycles-API-Key`** — used with the **Cycles Server** (port 7878) for runtime operations (reservations, commits, balances). This is the tenant-scoped key starting with `cyc_live_...`.
+
+The `runcycles` client uses `X-Cycles-API-Key` automatically. You only need `X-Admin-API-Key` when calling the Admin Server directly (e.g. to create tenants or API keys).
+:::
+
 ## Installation
 
 ```bash

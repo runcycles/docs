@@ -5,6 +5,10 @@ description: "How Cycles handles commits that exceed the reserved amount using t
 
 # Commit Overage Policies in Cycles: REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT
 
+::: warning Version note
+In v0.1.24, the hardcoded fallback default changed from `REJECT` to `ALLOW_IF_AVAILABLE`. If you are running a server version prior to v0.1.24 and do not set an explicit overage policy on your requests or tenant configuration, the server defaults to `REJECT`. See the [changelog](/changelog) for details.
+:::
+
 When actual usage differs from the reserved estimate, the system needs a policy for what to do.
 
 If actual is less than reserved, the unused remainder is released automatically. That is straightforward.

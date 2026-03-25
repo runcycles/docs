@@ -269,6 +269,51 @@ Or use the Spring Boot JSON logging starter for full structured output.
 3. The expiry sweep should eventually clean these up. If it's not running, check the server logs.
 4. Investigate the client application — it may be failing to commit or release.
 
+### Commit failure after successful LLM call
+
+**Symptom:** An LLM call (or other side-effecting action) completes successfully, but the subsequent commit to Cycles fails. The work happened and incurred real cost, but the budget ledger does not reflect it.
+
+**Why this happens:**
+- Transient network error between client and Cycles Server
+- Cycles Server restart or Redis outage at commit time
+- Client process crash after the LLM call but before commit
+
+**What the retry engine does:**
+
+All three clients (Python, TypeScript, Spring Boot) include a commit retry engine enabled by default. When a commit fails with a transport error or 5xx response, the engine retries with exponential backoff (default: 5 attempts over ~30 seconds). This handles most transient failures automatically.
+
+**When retry is not enough:**
+
+If all retries are exhausted or the client process crashes entirely, the reservation remains in `ACTIVE` state until it expires (based on TTL + grace period). After expiry, the reserved budget is returned to the pool. The actual cost is unaccounted for — the budget appears more available than it really is.
+
+**Response:**
+1. **Check for expired reservations that were never committed:**
+   ```bash
+   curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=EXPIRED" \
+     -H "X-Cycles-API-Key: $API_KEY" | jq '.reservations[] | {reservation_id, scope_path, estimate: .estimate.amount, created_at, expired_at}'
+   ```
+2. **Reconcile using events:** For each expired reservation that represents real work, record the actual cost as a standalone event:
+   ```bash
+   curl -s -X POST http://localhost:7878/v1/events \
+     -H "Content-Type: application/json" \
+     -H "X-Cycles-API-Key: $API_KEY" \
+     -d '{
+       "idempotency_key": "reconcile-<reservation_id>",
+       "subject": { "tenant": "acme-corp" },
+       "action": { "kind": "reconciliation", "name": "commit-failure-recovery" },
+       "actual": { "unit": "USD_MICROCENTS", "amount": <actual_cost> },
+       "overage_policy": "ALLOW_WITH_OVERDRAFT",
+       "metadata": { "original_reservation_id": "<reservation_id>" }
+     }'
+   ```
+3. **Monitor commit failure rates.** A sustained increase in commit failures signals infrastructure issues. Track the ratio of committed vs. expired reservations.
+
+**Prevention:**
+- Keep retry enabled (default) with aggressive settings for critical workloads
+- Use `ALLOW_WITH_OVERDRAFT` overage policy for must-record actions so reconciliation events are always accepted
+- Ensure client processes have graceful shutdown hooks that commit or release active reservations
+- Set up alerts on the expired reservation count (see [Monitoring and Alerting](/how-to/monitoring-and-alerting))
+
 ### Redis connection loss
 
 **Symptom:** All reservation operations fail with 500 errors.

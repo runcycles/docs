@@ -124,6 +124,32 @@ const config = CyclesConfig.fromEnv();
 
 A custom prefix can be passed: `CyclesConfig.fromEnv("MY_PREFIX_")` reads `MY_PREFIX_BASE_URL`, `MY_PREFIX_API_KEY`, etc.
 
+## `withCycles` options
+
+The `withCycles` HOF accepts an options object that controls reservation behavior per-call. These are separate from the `CyclesConfig` connection settings above. For full documentation and examples, see [Getting Started with the TypeScript Client — withCycles parameters](/quickstart/getting-started-with-the-typescript-client#withcycles-parameters).
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `estimate` | `number \| Function` | (required) | Estimated cost. Number constant or function receiving the wrapped function's arguments. |
+| `actual` | `number \| Function \| undefined` | `undefined` | Actual cost. Number constant or function receiving the return value. Defaults to estimate. |
+| `actionKind` | `string` | `"unknown"` | Action category (e.g. `"llm.completion"`). |
+| `actionName` | `string` | `"unknown"` | Action identifier (e.g. `"gpt-4"`). |
+| `actionTags` | `string[] \| undefined` | `undefined` | Tags for filtering and reporting. |
+| `unit` | `string` | `"USD_MICROCENTS"` | Budget unit: `"USD_MICROCENTS"`, `"TOKENS"`, `"CREDITS"`, `"RISK_POINTS"`. |
+| `ttlMs` | `number` | `60000` | Reservation TTL in milliseconds (range: 1000–86400000). |
+| `gracePeriodMs` | `number \| undefined` | `undefined` | Grace period after TTL expiry (range: 0–60000). |
+| `overagePolicy` | `string` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
+| `dryRun` | `boolean` | `false` | If `true`, evaluate without persisting. Function does not execute. |
+| `tenant` | `string \| undefined` | `undefined` | Subject tenant override (takes precedence over config default). |
+| `workspace` | `string \| undefined` | `undefined` | Subject workspace override. |
+| `app` | `string \| undefined` | `undefined` | Subject app override. |
+| `workflow` | `string \| undefined` | `undefined` | Subject workflow override. |
+| `agent` | `string \| undefined` | `undefined` | Subject agent override. |
+| `toolset` | `string \| undefined` | `undefined` | Subject toolset override. |
+| `dimensions` | `Record<string, string> \| undefined` | `undefined` | Custom dimensions for the subject. |
+| `client` | `CyclesClient \| undefined` | `undefined` | Explicit client. Falls back to module-level default. |
+| `useEstimateIfActualNotProvided` | `boolean` | `true` | If `true` and `actual` is not set, use estimate as actual at commit. |
+
 ## Setting a default client
 
 Instead of passing `client` to every `withCycles` call, set a module-level default:

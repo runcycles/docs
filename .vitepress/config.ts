@@ -226,6 +226,7 @@ export default defineConfig({
               items: [
                 { text: 'Choosing the Right Overage Policy', link: '/how-to/choosing-the-right-overage-policy' },
                 { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
+                { text: 'Multi-Agent Shared Budgets', link: '/how-to/multi-agent-shared-workspace-budget-patterns' },
                 { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
                 { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
                 { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
