@@ -9,6 +9,10 @@ Release history for the Cycles Protocol and reference implementations.
 
 ## v0.1.24 — March 2026 (Current)
 
+::: danger Migration required — default overage policy changed
+The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVAILABLE`**. If you relied on `REJECT` as the implicit default, reservations and commits that previously failed will now succeed and may allow overspend. To preserve the previous behavior, explicitly set `overagePolicy = "REJECT"` on your decorators/annotations, or update tenant defaults via `PATCH /v1/admin/tenants/{id}` with `"default_commit_overage_policy": "REJECT"`.
+:::
+
 **Protocol (breaking):**
 - Default overage policy changed from `REJECT` to `ALLOW_IF_AVAILABLE`
 - `ALLOW_IF_AVAILABLE` commits now always succeed: when remaining budget can't cover the full overage delta, the charge is capped to estimate + available remaining and `is_over_limit` is set to block future reservations
@@ -69,6 +73,22 @@ Release history for the Cycles Protocol and reference implementations.
 - OpenAI, Anthropic, LangChain.js, Vercel AI SDK, AWS Bedrock, Google Gemini, Express (TypeScript)
 - Spring AI (Java)
 - OpenClaw agent framework (TypeScript)
+
+---
+
+## Version compatibility
+
+| SDK / Component | Version | Compatible server |
+|---|---|---|
+| `runcycles` (Python) | 0.2.0 | v0.1.23+, v0.1.24+ |
+| `runcycles` (TypeScript) | 0.2.0 | v0.1.23+, v0.1.24+ |
+| `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+ |
+| `@runcycles/mcp-server` | 0.2.0 | v0.1.23+, v0.1.24+ |
+| `@runcycles/openclaw-budget-guard` | 0.2.0 | v0.1.23+, v0.1.24+ |
+| Cycles Server | v0.1.24 | Protocol v0.1.24 |
+| Cycles Admin Server | v0.1.24 | Protocol v0.1.24 |
+
+All 0.2.0 SDKs are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24.
 
 ---
 

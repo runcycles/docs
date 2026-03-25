@@ -132,8 +132,8 @@ The `@cycles` decorator accepts parameters that control reservation behavior per
 | `action_name` | `str \| None` | `None` | Action identifier (e.g. `"gpt-4"`). |
 | `action_tags` | `list[str] \| None` | `None` | Tags for filtering and reporting. |
 | `unit` | `Unit \| str` | `USD_MICROCENTS` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
-| `ttl_ms` | `int` | `60000` | Reservation TTL in milliseconds. |
-| `grace_period_ms` | `int \| None` | `None` | Grace period after TTL expiry in milliseconds. |
+| `ttl_ms` | `int` | `60000` | Reservation TTL in milliseconds (range: 1,000–86,400,000). |
+| `grace_period_ms` | `int \| None` | `None` | Grace period after TTL expiry in milliseconds. When `None`, the server applies its default (5000ms). Valid range: 0–60,000. |
 | `overage_policy` | `str` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dry_run` | `bool` | `False` | If `True`, evaluate without persisting. Function does not execute. |
 | `tenant` | `str \| None` | `None` | Subject tenant override (takes precedence over config default). |

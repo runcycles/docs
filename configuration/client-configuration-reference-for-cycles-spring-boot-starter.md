@@ -92,7 +92,7 @@ The `@Cycles` annotation controls reservation behavior per-method. These are sep
 | `actionTags` | `String[]` | `{}` | Tags for filtering and reporting (e.g. `{"prod", "customer-facing"}`). |
 | `unit` | `String` | `"USD_MICROCENTS"` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
 | `ttlMs` | `long` | `60000` | Reservation TTL in milliseconds (1,000–86,400,000). |
-| `gracePeriodMs` | `long` | `-1` | Grace period after TTL expiry in milliseconds (0–60,000). Use `-1` to omit. |
+| `gracePeriodMs` | `long` | `-1` | Grace period after TTL expiry in milliseconds. When `-1`, the server applies its default (5000ms). Valid range: 0–60,000. |
 | `overagePolicy` | `String` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dryRun` | `boolean` | `false` | Shadow-mode evaluation. If `true`, server evaluates without persisting; guarded method does NOT execute. |
 | `useEstimateIfActualNotProvided` | `boolean` | `true` | When `true` and `actual` is blank, use the estimate as actual at commit time. |

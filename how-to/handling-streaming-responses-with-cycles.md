@@ -239,8 +239,14 @@ For streaming, a good estimate is `max_tokens × output_price`, since output tok
 
 See [`examples/streaming_usage.py`](https://github.com/runcycles/cycles-client-python/blob/main/examples/streaming_usage.py) for a complete, runnable script.
 
+## Java / Spring Boot
+
+The Spring Boot starter's `@Cycles` annotation does not support streaming responses. For streaming in Java, use the programmatic `CyclesClient` directly with the same reserve → stream → commit pattern shown above for Python. See the [Spring Boot Starter — Programmatic client](/quickstart/getting-started-with-the-cycles-spring-boot-starter#programmatic-cycleslient) section for `CyclesClient` usage.
+
 ## Next steps
 
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling failures during streaming
 - [Reservation TTL, Grace Period, and Extend](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) — configuring timeouts for long-running streams
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — estimating token costs for budget reservations
+- [Integrating Cycles with Express](/how-to/integrating-cycles-with-express) — Express.js streaming with `reserveForStream`
+- [Integrating Cycles with FastAPI](/how-to/integrating-cycles-with-fastapi) — FastAPI streaming with the programmatic client

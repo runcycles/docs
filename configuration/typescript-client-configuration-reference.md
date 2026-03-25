@@ -35,11 +35,11 @@ These fields set default values for the Subject used in `withCycles` calls. They
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `connectTimeout` | `number` | `2000` | Connection timeout in milliseconds |
-| `readTimeout` | `number` | `5000` | Read timeout in milliseconds |
+| `connectTimeout` | `number` | `2000` | Connection timeout in milliseconds. Summed with `readTimeout` (see note below). |
+| `readTimeout` | `number` | `5000` | Read timeout in milliseconds. Summed with `connectTimeout` (see note below). |
 
-::: info Note
-Node's built-in `fetch` does not distinguish connection timeout from read timeout. `connectTimeout` and `readTimeout` are summed into a single `AbortSignal.timeout()` value (default: 7000ms total) that caps the entire request duration.
+::: warning Timeout behavior
+Node's built-in `fetch` does not distinguish connection timeout from read timeout. `connectTimeout` and `readTimeout` are **summed into a single `AbortSignal.timeout()`** value (default: 2000 + 5000 = **7000ms total**) that caps the entire request duration. If you need a 5-second maximum, set values like `connectTimeout: 2000, readTimeout: 3000`.
 :::
 
 ### Retry configuration
@@ -137,7 +137,7 @@ The `withCycles` HOF accepts an options object that controls reservation behavio
 | `actionTags` | `string[] \| undefined` | `undefined` | Tags for filtering and reporting. |
 | `unit` | `string` | `"USD_MICROCENTS"` | Budget unit: `"USD_MICROCENTS"`, `"TOKENS"`, `"CREDITS"`, `"RISK_POINTS"`. |
 | `ttlMs` | `number` | `60000` | Reservation TTL in milliseconds (range: 1000–86400000). |
-| `gracePeriodMs` | `number \| undefined` | `undefined` | Grace period after TTL expiry (range: 0–60000). |
+| `gracePeriodMs` | `number \| undefined` | `undefined` | Grace period after TTL expiry in milliseconds. When `undefined`, the server applies its default (5000ms). Valid range: 0–60,000. |
 | `overagePolicy` | `string` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dryRun` | `boolean` | `false` | If `true`, evaluate without persisting. Function does not execute. |
 | `tenant` | `string \| undefined` | `undefined` | Subject tenant override (takes precedence over config default). |

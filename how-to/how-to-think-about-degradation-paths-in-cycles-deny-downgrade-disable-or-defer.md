@@ -428,13 +428,14 @@ These degradation paths help teams move from brittle enforcement to intentional 
 
 That is how runtime authority becomes usable in production.
 
+## See also
+
+- [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw) — automatic model downgrade, tool access control, and budget-aware prompt injection via the OpenClaw plugin
+- [Choosing the Right Overage Policy](/how-to/choosing-the-right-overage-policy) — how overage policies interact with degradation strategies
+- [Common Budget Patterns](/how-to/common-budget-patterns) — budget structures that support graceful degradation
+
 ## Next steps
 
-To explore the Cycles stack:
-
-- Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
-- Run the [Cycles Server](https://github.com/runcycles/cycles-server)
-- Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
-- Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)
-- Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
-- Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — implementing degradation in client code
+- [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — test degradation paths before enforcing
+- [Incident Patterns: Runaway Agents](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — real-world scenarios where degradation prevents damage

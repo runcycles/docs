@@ -143,7 +143,7 @@ def chat(prompt: str) -> str:
 | `action_tags` | `None` | List of tags for filtering/reporting. |
 | `unit` | `USD_MICROCENTS` | Budget unit: `USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`. |
 | `ttl_ms` | `60000` | Reservation TTL in milliseconds. |
-| `grace_period_ms` | `None` | Grace period after TTL expiry. |
+| `grace_period_ms` | `None` | Grace period after TTL expiry. When `None`, server default (5000ms) applies. |
 | `overage_policy` | `"ALLOW_IF_AVAILABLE"` | `"REJECT"`, `"ALLOW_IF_AVAILABLE"`, or `"ALLOW_WITH_OVERDRAFT"`. |
 | `dry_run` | `False` | If `True`, evaluate without persisting. Function does not execute. |
 | `tenant` | `None` | Subject tenant override. |

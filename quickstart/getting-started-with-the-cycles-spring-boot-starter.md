@@ -254,6 +254,22 @@ public String generate(int tokens) {
 
 The expression is evaluated before the method runs, using method parameters as variables.
 
+::: warning Compiler flag required for named parameters
+SpEL expressions that reference parameters by name (e.g., `#tokens`) require the `-parameters` javac compiler flag. Without it, you'll get a SpEL evaluation error at runtime. Add this to your `pom.xml`:
+
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <configuration>
+    <parameters>true</parameters>
+  </configuration>
+</plugin>
+```
+
+Alternatively, use positional references: `#p0`, `#p1`, etc. See the [SpEL Expression Reference](/configuration/spel-expression-reference-for-cycles) for details.
+:::
+
 ### Specifying actual usage
 
 By default, the estimate is used as the actual amount at commit time. To calculate actual usage from the return value:
