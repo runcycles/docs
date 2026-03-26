@@ -103,7 +103,7 @@ Same agent, same bug, same loop. The only difference is that each LLM call now p
 
 Call 101 never executed. Not "rolled back." Not "logged and alerted." The function body never ran. The `@cycles` decorator attempted to reserve $0.01 from the budget, the server found the balance exhausted, returned `409 BUDGET_EXCEEDED`, and the decorator raised `BudgetExceededError`. The agent caught the exception and stopped. Total spend: exactly $1.00.
 
-## The code change
+## The three-line code change
 
 The diff between `unguarded.py` and `guarded.py` is:
 
@@ -201,7 +201,7 @@ The gap between throughput control and cost control is where runaways live. Here
 
 The missing layer is pre-execution budget enforcement: a system that checks before each call whether the budget allows it, atomically decrements the balance, and denies the call if the budget is exhausted. This is what [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) means in practice — not a static configuration or a post-hoc alert, but a live enforcement point evaluated on every action. For a deeper look at how teams evolve from dashboards to hard enforcement, see [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority).
 
-## Run it yourself
+## Run the runaway agent demo
 
 Prerequisites: Docker Compose v2+, Python 3.10+, `curl`.
 
