@@ -1,7 +1,7 @@
 ---
 title: "MCP Tool Poisoning Has an 84% Success Rate — Why Your Agent Framework Can't Stop It"
 date: 2026-03-26
-author: Cycles Team
+author: Albert Mavashev
 tags: [security, MCP, tool-poisoning, agents, production, OWASP, runtime-authority, supply-chain]
 description: "Tool poisoning attacks succeed 84% of the time with auto-approval. 10,000+ MCP servers, 30+ CVEs in 60 days — and no enforcement layer. Here's the fix."
 blog: true
