@@ -7,8 +7,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'fs'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
 export interface InstallsData {
   total: number
@@ -17,7 +16,7 @@ export interface InstallsData {
 
 export declare const data: InstallsData
 
-const CACHE_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'installs-cache.json')
+const CACHE_PATH = resolve(process.cwd(), '.vitepress/theme/installs-cache.json')
 
 function readCache(): number {
   try {
@@ -100,6 +99,7 @@ export default {
     const fetched = npm + pypi + ghcr + maven
     const cached = readCache()
     const total = Math.max(fetched, cached)
+    console.log(`[installs] npm=${npm} pypi=${pypi} ghcr=${ghcr} maven=${maven} fetched=${fetched} cached=${cached} total=${total}`)
     if (total > cached) writeCache(total)
     return {
       total,
