@@ -204,7 +204,7 @@ Add the starter dependency and configure the connection in your project's `appli
 
 ```yaml
 cycles:
-  base-url: https://your-cycles-server.example.com
+  base-url: http://localhost:7878
   api-key: your-api-key
   tenant: acme
   workspace: production

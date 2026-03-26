@@ -92,7 +92,7 @@ import os
 from runcycles import CyclesConfig
 
 config = CyclesConfig(
-    base_url="https://cycles.example.com",
+    base_url="http://localhost:7878",
     api_key=os.environ["CYCLES_API_KEY"],
     tenant="acme",
 )
@@ -101,7 +101,7 @@ config = CyclesConfig(
 Or from environment variables:
 
 ```bash
-export CYCLES_BASE_URL=https://cycles.example.com
+export CYCLES_BASE_URL=http://localhost:7878
 export CYCLES_API_KEY=cyc_live_abc123...
 export CYCLES_TENANT=acme
 ```
@@ -117,7 +117,7 @@ Configure the key in your project's `application.yml`:
 ```yaml
 cycles:
   api-key: ${CYCLES_API_KEY}
-  base-url: https://cycles.example.com
+  base-url: http://localhost:7878
   tenant: acme
 ```
 
