@@ -2,9 +2,12 @@
  * Build-time data loader that aggregates total installs across all
  * distribution channels: npm, PyPI, Maven Central, and GHCR.
  *
- * Runs during `vitepress build` (and dev). Each fetch is wrapped in
- * try/catch so a single API failure never breaks the build.
+ * Uses a high-water mark cache (installs-cache.json) so the displayed
+ * number never decreases — even if an API is down or returns partial data.
  */
+
+import { readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 
 export interface InstallsData {
   total: number
@@ -12,6 +15,23 @@ export interface InstallsData {
 }
 
 export declare const data: InstallsData
+
+const CACHE_PATH = resolve(process.cwd(), '.vitepress/theme/installs-cache.json')
+
+function readCache(): number {
+  try {
+    const raw = readFileSync(CACHE_PATH, 'utf-8')
+    return JSON.parse(raw).total ?? 0
+  } catch {
+    return 0
+  }
+}
+
+function writeCache(total: number): void {
+  try {
+    writeFileSync(CACHE_PATH, JSON.stringify({ total, fetchedAt: new Date().toISOString() }) + '\n')
+  } catch { /* non-critical — CI environments may have read-only source dirs */ }
+}
 
 // ── npm ──────────────────────────────────────────────────────────────
 const NPM_PACKAGES = [
@@ -43,67 +63,28 @@ async function fetchNpmDownloads(): Promise<number> {
 async function fetchPypiDownloads(): Promise<number> {
   try {
     const res = await fetch(
-      'https://pypistats.org/api/packages/runcycles/overall?mirrors=false'
+      'https://pypistats.org/api/packages/runcycles/recent'
     )
     if (!res.ok) return 0
-    const json = await res.json() as { data: { downloads: number }[] }
-    return json.data.reduce((sum, d) => sum + d.downloads, 0)
+    const json = await res.json() as { data?: { last_month?: number } }
+    return json.data?.last_month ?? 0
   } catch {
     return 0
   }
 }
 
 // ── GHCR (GitHub Container Registry) ─────────────────────────────────
-const GHCR_IMAGES = ['cycles-server', 'cycles-server-admin']
-
 async function fetchGhcrPulls(): Promise<number> {
-  const token = process.env.GITHUB_TOKEN
-  if (!token) return 0
-
-  const totals = await Promise.all(
-    GHCR_IMAGES.map(async (name) => {
-      try {
-        const res = await fetch(
-          `https://api.github.com/orgs/runcycles/packages/container/${name}`,
-          { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
-        )
-        if (!res.ok) return 0
-        // The package endpoint doesn't directly expose pull count.
-        // Fetch all versions and sum their download counts.
-        const versionsRes = await fetch(
-          `https://api.github.com/orgs/runcycles/packages/container/${name}/versions?per_page=100`,
-          { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
-        )
-        if (!versionsRes.ok) return 0
-        const versions = await versionsRes.json() as { metadata?: { container?: { tags: string[] } } }[]
-        // GitHub doesn't expose per-version download counts via REST API.
-        // Use the package-level metadata if available; otherwise count versions as a proxy.
-        // For accurate counts, the GraphQL API would be needed.
-        return versions.length > 0 ? versions.length * 10 : 0 // conservative estimate
-      } catch {
-        return 0
-      }
-    })
-  )
-  return totals.reduce((a, b) => a + b, 0)
+  // GitHub REST API doesn't expose container pull counts.
+  // Requires GraphQL API with proper scopes — skip for now.
+  return 0
 }
 
 // ── Maven Central ────────────────────────────────────────────────────
 async function fetchMavenDownloads(): Promise<number> {
-  try {
-    const res = await fetch(
-      'https://search.maven.org/solrsearch/select?q=g:io.runcycles+AND+a:cycles-client-java-spring&wt=json'
-    )
-    if (!res.ok) return 0
-    const json = await res.json() as { response: { docs: { versionCount?: number }[] } }
-    const doc = json.response.docs[0]
-    // Maven Central doesn't expose download counts via the search API.
-    // versionCount is available but not downloads. Return 0 for now;
-    // can be replaced with a stats proxy if one becomes available.
-    return doc?.versionCount ?? 0
-  } catch {
-    return 0
-  }
+  // Maven Central has no public downloads API.
+  // The search API only exposes versionCount, not download stats.
+  return 0
 }
 
 // ── Loader ───────────────────────────────────────────────────────────
@@ -115,8 +96,13 @@ export default {
       fetchGhcrPulls(),
       fetchMavenDownloads(),
     ])
+    const fetched = npm + pypi + ghcr + maven
+    const cached = readCache()
+    const total = Math.max(fetched, cached)
+    console.log(`[installs] npm=${npm} pypi=${pypi} ghcr=${ghcr} maven=${maven} fetched=${fetched} cached=${cached} total=${total}`)
+    if (total > cached) writeCache(total)
     return {
-      total: npm + pypi + ghcr + maven,
+      total,
       fetchedAt: new Date().toISOString(),
     }
   },
