@@ -49,7 +49,8 @@ Add to your `claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
-        "CYCLES_API_KEY": "cyc_live_..."
+        "CYCLES_API_KEY": "cyc_live_...",
+        "CYCLES_BASE_URL": "http://localhost:7878"
       }
     }
   }
@@ -62,10 +63,11 @@ Add to your `claude_desktop_config.json`:
 claude mcp add cycles -- npx -y @runcycles/mcp-server
 ```
 
-Set your API key in the environment:
+Set your API key and base URL in the environment:
 
 ```bash
 export CYCLES_API_KEY=cyc_live_...
+export CYCLES_BASE_URL=http://localhost:7878
 ```
 
 ### Cursor / Windsurf
@@ -75,7 +77,7 @@ Use the stdio transport with:
 ```yaml
 command: npx
 args: ["-y", "@runcycles/mcp-server"]
-env: { CYCLES_API_KEY: "cyc_live_..." }
+env: { CYCLES_API_KEY: "cyc_live_...", CYCLES_BASE_URL: "http://localhost:7878" }
 ```
 
 ### Mock mode (local development)
@@ -165,7 +167,7 @@ The server includes 3 prompts that agents can invoke for guided workflows:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CYCLES_API_KEY` | *(required)* | API key for authenticating with the Cycles server |
-| `CYCLES_BASE_URL` | `https://api.runcycles.io` | Base URL of the Cycles API |
+| `CYCLES_BASE_URL` | *(required)* | Base URL of your Cycles server (e.g., `http://localhost:7878`) |
 | `CYCLES_MOCK` | — | Set to `"true"` to use mock mode (no server needed) |
 | `PORT` | `3000` | HTTP port when using `--transport http` |
 
