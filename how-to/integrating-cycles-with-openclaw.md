@@ -965,6 +965,109 @@ For high-throughput setups where the extra network call is undesirable, disable 
 }
 ```
 
+## Resilience: retry and heartbeat (v0.6.0)
+
+### Automatic retry on transient errors
+
+The plugin retries Cycles server requests on transient HTTP errors (429, 503, 504) with exponential backoff:
+
+```json
+{
+  "config": {
+    "retryableStatusCodes": [429, 503, 504],
+    "transientRetryMaxAttempts": 2,
+    "transientRetryBaseDelayMs": 500
+  }
+}
+```
+
+With default settings, a 429 response triggers up to 2 retries with 500ms and 1000ms delays. The idempotency key is preserved across retries so the Cycles server deduplicates safely.
+
+### Heartbeat for long-running tools
+
+Tools that run longer than the reservation TTL (default 60s) previously lost cost tracking silently. v0.6.0 auto-extends reservations:
+
+```json
+{
+  "config": {
+    "heartbeatIntervalMs": 30000
+  }
+}
+```
+
+Every 30 seconds, the plugin calls the Cycles `extend` endpoint to keep the reservation alive. The timer is automatically stopped when the tool completes or at `agent_end`. Set to `0` to disable.
+
+## Anomaly detection (v0.6.0)
+
+### Burn rate monitoring
+
+Detect runaway tool loops by monitoring cost-per-window:
+
+```json
+{
+  "config": {
+    "burnRateWindowMs": 60000,
+    "burnRateAlertThreshold": 3.0
+  }
+}
+```
+
+If the cost rate in the current window exceeds 3x the previous window, the plugin fires `onBurnRateAnomaly` and emits `cycles.budget.burn_rate_anomaly`. Use the callback for custom responses:
+
+```typescript
+{
+  onBurnRateAnomaly: (event) => {
+    // event: { currentBurnRate, averageBurnRate, ratio, threshold, remaining }
+    alertOps(`Agent burn rate spiked ${event.ratio.toFixed(1)}x — ${event.remaining} remaining`);
+  }
+}
+```
+
+### Predictive exhaustion warning
+
+Get advance notice before budget runs out:
+
+```json
+{
+  "config": {
+    "exhaustionWarningThresholdMs": 120000
+  }
+}
+```
+
+When estimated time-to-exhaustion drops below 120 seconds (based on current burn rate), the plugin fires `onExhaustionForecast`. The warning fires once per session.
+
+## Session event log (v0.6.0)
+
+Enable a full audit trail of every budget decision:
+
+```json
+{
+  "config": {
+    "enableEventLog": true
+  }
+}
+```
+
+When enabled, `sessionSummary.eventLog` contains every reserve, commit, deny, block, and release event with timestamps, budget levels, and amounts. The log is capped at 10,000 entries. Useful for debugging budget exhaustion and understanding agent behavior.
+
+Example event:
+```json
+{
+  "timestamp": 1711468850000,
+  "hook": "before_tool_call",
+  "action": "reserve",
+  "kind": "tool",
+  "name": "web_search",
+  "amount": 500000,
+  "decision": "ALLOW",
+  "budgetLevel": "healthy",
+  "remaining": 45000000
+}
+```
+
+The session summary also includes `unconfiguredTools` — a list of tools that used the default cost estimate (100,000 units) because they had no entry in `toolBaseCosts`. Use this to identify configuration gaps.
+
 ## Troubleshooting
 
 **"Skipping registration" warning during install**
