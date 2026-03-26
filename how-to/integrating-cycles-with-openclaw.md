@@ -17,9 +17,18 @@ AI agents make autonomous decisions — calling models, invoking tools, retrying
 - **No visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
 - **Graceless failure** — budget runs out and the agent crashes instead of adapting.
 
-This plugin solves all five. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
+This plugin solves all five — and goes further. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
 
-The result: predictable spend and controlled behavior — even when agents run autonomously for hours.
+Beyond enforcement, the plugin actively protects you:
+
+- **Burn rate anomaly detection** catches runaway tool loops before they exhaust budget — if spending spikes 3x above the session average, `onBurnRateAnomaly` fires immediately
+- **Predictive exhaustion warnings** estimate when budget will run out and fire `onExhaustionForecast` before it happens, so you can fund the budget or wind down gracefully
+- **Automatic retry with backoff** on transient Cycles server errors (429/503/504) prevents spurious denials during load spikes
+- **Reservation heartbeat** auto-extends long-running tool reservations so cost tracking doesn't silently break when a tool exceeds the default 60s TTL
+- **Full observability** via `metricsEmitter` (pipe 12 metrics into Datadog, Prometheus, Grafana, or any OTLP collector) and opt-in session event logs for debugging exactly what happened
+- **Unconfigured tool detection** reports which tools are using default cost estimates so you can tune `toolBaseCosts` after every session
+
+The result: predictable spend, controlled behavior, and full visibility — even when agents run autonomously for hours.
 
 ::: tip When to use this vs. the Cycles client directly
 If you're building a custom agent framework, use the [Cycles TypeScript client](/how-to/using-the-cycles-client-programmatically) directly. If you're running OpenClaw, this plugin gives you the same enforcement with zero custom code — just configure and go.
