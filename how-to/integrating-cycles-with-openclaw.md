@@ -16,7 +16,7 @@ openclaw plugins install @runcycles/openclaw-budget-guard
 openclaw plugins enable cycles-openclaw-budget-guard
 ```
 
-Add minimal configuration to your OpenClaw config:
+Add minimal configuration to your OpenClaw config file (typically `openclaw.json` or `openclaw.config.json`):
 
 ```json
 {
