@@ -123,7 +123,7 @@ Each reserve-commit cycle is a checkpoint. Here's how it catches the three silen
 
 ### Catching fabricated tool outputs
 
-When an agent reserves budget for a tool call and the tool returns a malformed response, the commit step records the actual outcome — including token counts and latency. A fabricated output (where the agent skips the actual tool call and invents data) shows a commit with zero external latency and zero tool-side cost. The anomaly is detectable in the [metrics recorded at commit time](/protocol/how-reserve-commit-works-in-cycles#standard-metrics):
+When an agent reserves budget for a tool call and the tool returns a malformed response, the commit step records the actual outcome — including token counts and latency. A fabricated output (where the agent skips the actual tool call and invents data) shows a commit with zero external latency and zero tool-side cost. The anomaly is detectable in the [metrics recorded at commit time](/protocol/standard-metrics-and-metadata-in-cycles):
 
 ```jsonc
 // Normal tool call commit
