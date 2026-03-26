@@ -14,12 +14,23 @@ AI agents make autonomous decisions — calling models, invoking tools, retrying
 - **Runaway spend** — a single [runaway agent](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) can blow through an entire budget in minutes. Provider spending caps are account-wide and react too slowly. Rate limits don't account for cost.
 - **Uncontrolled side-effects** — an agent can send hundreds of emails, trigger deployments, or call dangerous APIs with nothing to stop it. Cost limits alone don't help — some actions are consequential regardless of price.
 - **Noisy neighbors** — in multi-tenant or multi-user setups, one agent can consume the entire team budget, starving other users.
-- **No visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
-- **Graceless failure** — budget runs out and the agent crashes instead of adapting.
+- **No session-level cost visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
+- **Abrupt failure** — budget runs out and the agent crashes instead of adapting.
 
-This plugin solves all five. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
+This plugin solves all five — and goes further. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
 
-The result: predictable spend and controlled behavior — even when agents run autonomously for hours.
+Beyond enforcement, the plugin actively protects you:
+
+- **Burn rate anomaly detection** catches runaway tool loops before they exhaust budget — if spending spikes 3x above the session average, `onBurnRateAnomaly` fires immediately
+- **Predictive exhaustion warnings** estimate when budget will run out and fire `onExhaustionForecast` before it happens, so you can fund the budget or wind down gracefully
+- **Automatic retry with backoff** on transient Cycles server errors (429/503/504) prevents spurious denials during load spikes
+- **Reservation heartbeat** auto-extends long-running tool reservations so cost tracking doesn't silently break when a tool exceeds the default 60s TTL
+- **Full observability** via `metricsEmitter` (pipe 12 metrics into Datadog, Prometheus, Grafana, or any OTLP collector) and opt-in session event logs for debugging exactly what happened
+- **Unconfigured tool detection** reports which tools are using default cost estimates so you can tune `toolBaseCosts` after every session
+
+The result: predictable spend, controlled behavior, and full visibility — even when agents run autonomously for hours.
+
+Install, configure 3 fields, done. No agent code changes required.
 
 ::: tip When to use this vs. the Cycles client directly
 If you're building a custom agent framework, use the [Cycles TypeScript client](/how-to/using-the-cycles-client-programmatically) directly. If you're running OpenClaw, this plugin gives you the same enforcement with zero custom code — just configure and go.
@@ -125,14 +136,31 @@ If you prefer to inline the connection details:
 }
 ```
 
+> **Important:** Budget exhaustion is enforced fail-closed by default, but Cycles server connectivity failures are handled fail-open — the plugin assumes healthy budget and allows execution to continue. See [Fail-open vs fail-closed](#fail-open-vs-fail-closed) for details.
+
+## Understanding the cost model
+
+Every model call and tool call reserves a fixed cost from the budget. The default currency is `USD_MICROCENTS` — 1 unit = $0.00001.
+
+| Amount | USD |
+|--------|-----|
+| 100,000 | $0.001 |
+| 1,000,000 | $0.01 |
+| 10,000,000 | $0.10 |
+| 100,000,000 | $1.00 |
+
+**Example.** With a $5 budget (500,000,000 units) and `claude-opus` at 1,500,000/call, you can afford ~333 model calls. The `lowBudgetThreshold` (default 10,000,000 = $0.10) triggers model downgrade when budget is nearly exhausted.
+
+**Setting tool costs.** Start with defaults (100,000/call). After your first session, check `sessionSummary.unconfiguredTools` for the list of tools that need explicit costs. External API tools (web search, code execution) typically cost 500K-1M. Lightweight tools (text formatting, math) cost 10K-50K.
+
 ## What the plugin does
 
 The plugin hooks into five OpenClaw lifecycle events to enforce budget boundaries:
 
 | Hook | What happens |
 |------|-------------|
-| `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted. Commits immediately since OpenClaw has no `after_model_resolve` hook. |
-| `before_prompt_build` | Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
+| `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted. The reservation is held open for later commit (see [Model cost reconciliation](#model-cost-reconciliation-v050)). |
+| `before_prompt_build` | Commits any pending model reservation from the previous turn (with `modelCostEstimator` reconciliation if configured). Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
 | `before_tool_call` | Checks tool permissions (allowlist/blocklist), applies degradation strategies, creates a Cycles reservation. Optionally retries on denial. |
 | `after_tool_call` | Commits the reservation with actual cost (via `costEstimator` callback if configured, otherwise uses the estimate). |
 | `agent_end` | Releases orphaned reservations, builds a session summary with cost breakdown and forecasts, fires analytics callbacks/webhooks. |
@@ -612,7 +640,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[cycles-budget-guard] v0.3.4 starting
+[cycles-budget-guard] v0.6.0 starting
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
   cyclesApiKey: ****_key
@@ -857,6 +885,216 @@ Aggressive cost savings. Low thresholds, model downgrade with token limits, expe
   }
 }
 ```
+
+## Model cost reconciliation (v0.5.0)
+
+By default, model costs are estimated at reservation time based on `modelBaseCosts` or `defaultModelCost`. Since OpenClaw doesn't provide token counts after model completion, exact costs aren't available automatically.
+
+v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin reserves budget in `before_model_resolve` but doesn't commit until the next `before_prompt_build` (or `agent_end` for the last turn). This opens a reconciliation window where you can use `modelCostEstimator` to adjust the cost.
+
+```json
+{
+  "config": {
+    "modelBaseCosts": {
+      "claude-sonnet-4-20250514": 300000,
+      "claude-opus-4-20250514": 1500000
+    }
+  }
+}
+```
+
+For programmatic cost reconciliation (e.g., reading token counts from a proxy layer):
+
+```typescript
+import plugin from "@runcycles/openclaw-budget-guard";
+
+plugin({
+  ...api,
+  pluginConfig: {
+    tenant: "my-org",
+    cyclesBaseUrl: "http://localhost:7878",
+    cyclesApiKey: "cyc_...",
+    modelCostEstimator: ({ model, estimatedCost, turnIndex }) => {
+      // Look up actual token usage from your proxy/gateway
+      const usage = getTokenUsageFromProxy(turnIndex);
+      if (!usage) return undefined; // fall back to estimate
+      return usage.inputTokens * getInputPrice(model) +
+             usage.outputTokens * getOutputPrice(model);
+    },
+  },
+});
+```
+
+When a `modelCostEstimator` is provided, the plugin calls it at commit time. Return a number to override the estimate, or `undefined` to use the original estimate. Errors are caught and logged — the estimate is used as fallback.
+
+## Observability with MetricsEmitter (v0.5.0)
+
+The plugin can emit structured metrics to any observability backend (Datadog, Prometheus, Grafana, OpenTelemetry) via the `metricsEmitter` callback.
+
+### Using a custom emitter
+
+```typescript
+const emitter = {
+  gauge(name, value, tags) { /* send to your backend */ },
+  counter(name, delta, tags) { /* send to your backend */ },
+  histogram(name, value, tags) { /* send to your backend */ },
+};
+
+// Pass as config
+{ metricsEmitter: emitter }
+```
+
+### Using the built-in OTLP adapter
+
+For zero-config OpenTelemetry integration, set `otlpMetricsEndpoint`:
+
+```json
+{
+  "config": {
+    "otlpMetricsEndpoint": "http://localhost:4318/v1/metrics",
+    "otlpMetricsHeaders": {
+      "Authorization": "Bearer <token>"
+    }
+  }
+}
+```
+
+The plugin auto-creates a lightweight OTLP HTTP adapter that buffers metrics and flushes them periodically. No OpenTelemetry SDK dependency required.
+
+### Emitted metrics
+
+| Metric | Type | Tags | When |
+|--------|------|------|------|
+| `cycles.budget.remaining` | gauge | tenant, budgetId, currency | Every snapshot fetch |
+| `cycles.budget.reserved` | gauge | tenant, budgetId | Every snapshot fetch |
+| `cycles.budget.spent` | gauge | tenant, budgetId | Every snapshot fetch |
+| `cycles.budget.level` | gauge (0/1/2) | tenant, budgetId, level | Every snapshot fetch |
+| `cycles.reservation.created` | counter | tenant, kind, name | On reserve |
+| `cycles.reservation.committed` | counter | tenant, kind, name | On commit |
+| `cycles.reservation.denied` | counter | tenant, kind, name, reason | On deny |
+| `cycles.reservation.cost` | histogram | tenant, kind, name | On commit |
+| `cycles.model.downgrade` | counter | tenant, from, to | On model downgrade |
+| `cycles.tool.blocked` | counter | tenant, tool, reason | On tool block |
+| `cycles.session.duration_ms` | histogram | tenant | On agent_end |
+| `cycles.session.total_cost` | histogram | tenant | On agent_end |
+
+## Aggressive cache invalidation (v0.5.0)
+
+By default (`aggressiveCacheInvalidation: true`), the plugin refetches the budget snapshot from the Cycles server after every commit or release. This reduces the "stale window" from the `snapshotCacheTtlMs` (default 5s) to near-zero for single-agent scenarios.
+
+For high-throughput setups where the extra network call is undesirable, disable it:
+
+```json
+{
+  "config": {
+    "aggressiveCacheInvalidation": false,
+    "snapshotCacheTtlMs": 2000
+  }
+}
+```
+
+## Resilience: retry and heartbeat (v0.6.0)
+
+### Automatic retry on transient errors
+
+The plugin retries Cycles server requests on transient HTTP errors (429, 503, 504) with exponential backoff:
+
+```json
+{
+  "config": {
+    "retryableStatusCodes": [429, 503, 504],
+    "transientRetryMaxAttempts": 2,
+    "transientRetryBaseDelayMs": 500
+  }
+}
+```
+
+With default settings, a 429 response triggers up to 2 retries with 500ms and 1000ms delays. The idempotency key is preserved across retries so the Cycles server deduplicates safely.
+
+### Heartbeat for long-running tools
+
+Tools that run longer than the reservation TTL (default 60s) previously lost cost tracking silently. v0.6.0 auto-extends reservations:
+
+```json
+{
+  "config": {
+    "heartbeatIntervalMs": 30000
+  }
+}
+```
+
+Every 30 seconds, the plugin calls the Cycles `extend` endpoint to keep the reservation alive. The timer is automatically stopped when the tool completes or at `agent_end`. Set to `0` to disable.
+
+## Anomaly detection (v0.6.0)
+
+### Burn rate monitoring
+
+Detect runaway tool loops by monitoring cost-per-window:
+
+```json
+{
+  "config": {
+    "burnRateWindowMs": 60000,
+    "burnRateAlertThreshold": 3.0
+  }
+}
+```
+
+If the cost rate in the current window exceeds 3x the previous window, the plugin fires `onBurnRateAnomaly` and emits `cycles.budget.burn_rate_anomaly`. Use the callback for custom responses:
+
+```typescript
+{
+  onBurnRateAnomaly: (event) => {
+    // event: { currentBurnRate, averageBurnRate, ratio, threshold, remaining }
+    alertOps(`Agent burn rate spiked ${event.ratio.toFixed(1)}x — ${event.remaining} remaining`);
+  }
+}
+```
+
+### Predictive exhaustion warning
+
+Get advance notice before budget runs out:
+
+```json
+{
+  "config": {
+    "exhaustionWarningThresholdMs": 120000
+  }
+}
+```
+
+When estimated time-to-exhaustion drops below 120 seconds (based on current burn rate), the plugin fires `onExhaustionForecast`. The warning fires once per session.
+
+## Session event log (v0.6.0)
+
+Enable a full audit trail of every budget decision:
+
+```json
+{
+  "config": {
+    "enableEventLog": true
+  }
+}
+```
+
+When enabled, `sessionSummary.eventLog` contains every reserve, commit, deny, block, and release event with timestamps, budget levels, and amounts. The log is capped at 10,000 entries. Useful for debugging budget exhaustion and understanding agent behavior.
+
+Example event:
+```json
+{
+  "timestamp": 1711468850000,
+  "hook": "before_tool_call",
+  "action": "reserve",
+  "kind": "tool",
+  "name": "web_search",
+  "amount": 500000,
+  "decision": "ALLOW",
+  "budgetLevel": "healthy",
+  "remaining": 45000000
+}
+```
+
+The session summary also includes `unconfiguredTools` — a list of tools that used the default cost estimate (100,000 units) because they had no entry in `toolBaseCosts`. Use this to identify configuration gaps.
 
 ## Troubleshooting
 

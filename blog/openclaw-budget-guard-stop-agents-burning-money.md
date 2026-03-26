@@ -3,7 +3,7 @@ title: "Your OpenClaw Agent Has No Spending Limit — Here's How to Fix That"
 date: 2026-03-26
 author: Albert Mavashev
 tags: [openclaw, budgets, agents, runtime-authority, cost-control, plugin, tool-limits]
-description: "OpenClaw agents can call any model, invoke any tool, and retry indefinitely — with no budget enforcement. The cycles-openclaw-budget-guard plugin adds hard spend limits, tool call caps, and graceful degradation with zero code changes."
+description: "OpenClaw agents can call any model, invoke any tool, and retry indefinitely — with no budget enforcement. The cycles-openclaw-budget-guard plugin adds hard spend limits, tool call caps, and graceful degradation — typically without changing agent logic."
 blog: true
 sidebar: false
 ---
@@ -14,7 +14,9 @@ An OpenClaw agent picks up a customer support ticket. It calls GPT-4o to draft a
 
 This is not a hypothetical. It's the default behavior of every OpenClaw agent that doesn't have budget enforcement. There is no built-in spending limit. There is no call cap. There is no circuit breaker. The agent runs until the task succeeds, the context window fills up, or someone kills the process.
 
-The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin fixes this. Install it, add four lines of config, and every model call and tool invocation is budget-checked before execution. No code changes to your agent.
+The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin fixes this. Install it, add three lines of config, and every model call and tool invocation is budget-checked before execution. In typical OpenClaw setups, no agent code changes are needed.
+
+And as of v0.6.0, it does more than enforce limits — it actively *detects* the runaway loop. If spending suddenly spikes 3x above the session average, `onBurnRateAnomaly` fires immediately. If the plugin predicts the budget will exhaust in under 2 minutes, `onExhaustionForecast` warns you before it happens. The 2 AM scenario doesn't just get stopped — it gets caught early.
 
 <!-- more -->
 
@@ -26,7 +28,7 @@ If you're running OpenClaw agents in production — or plan to — these will hi
 
 An agent stuck in a retry loop, a quality-check loop, or a recursive research task can burn through your entire API budget in minutes. Provider spending caps (OpenAI, Anthropic) are account-wide, monthly, and react too slowly. By the time the cap kicks in, the damage is done.
 
-**What the plugin does:** Every model call and tool invocation reserves budget *before* execution via a [Cycles server](/quickstart/what-is-cycles). When the budget is exhausted, the next call is blocked — not the one after the alert fires.
+**What the plugin does:** Every model call and tool invocation reserves budget *before* execution via a [Cycles server](/quickstart/what-is-cycles). When the budget is exhausted, the next call is blocked — not the one after the alert fires. Burn rate anomaly detection catches sudden spending spikes (like a tool loop) and fires a callback within seconds, before the budget is gone. Predictive exhaustion warnings estimate when the budget will run out and alert you proactively.
 
 ### 2. Uncontrolled side-effects
 
@@ -44,9 +46,9 @@ In a multi-tenant platform or a team with shared API keys, one user's runaway ag
 
 The agent session ends. You know it cost *something*, but you don't know which tools were expensive, which models it chose, or how many calls it made. Debugging a cost spike means digging through API provider dashboards and correlating timestamps.
 
-**What the plugin does:** Every session produces a [cost breakdown](/how-to/integrating-cycles-with-openclaw#session-analytics-and-cost-breakdown) — per-tool cost, per-model cost, invocation counts, and remaining budget. Attached to context metadata and optionally sent to a webhook.
+**What the plugin does:** Every session produces a [cost breakdown](/how-to/integrating-cycles-with-openclaw#session-analytics-and-cost-breakdown) — per-tool cost, per-model cost, invocation counts, and remaining budget. Attached to context metadata and optionally sent to a webhook. For real-time visibility, pipe 12 metrics into Datadog, Prometheus, or any OTLP collector via the built-in [`metricsEmitter`](/how-to/integrating-cycles-with-openclaw#observability-with-metricsemitter-v050). Enable `enableEventLog` for a full audit trail of every budget decision — useful for debugging why an agent ran out of budget or why a tool was blocked.
 
-### 5. Graceless failure
+### 5. Abrupt failure
 
 The simplest budget enforcement is a hard stop: budget gone, agent dead. But that's a terrible user experience. The agent was in the middle of generating a 2,000-word report and just... stopped.
 
@@ -123,6 +125,13 @@ When budget runs low, the plugin automatically:
 3. **Caps remaining calls** — limits total calls to prevent runaway loops
 4. **Tells the agent** — injects budget status into the system prompt so the model self-regulates
 
+And continuously, the plugin:
+
+5. **Detects anomalies** — burn rate monitoring catches sudden spending spikes (configurable threshold, default 3x)
+6. **Predicts exhaustion** — estimates when budget will run out and warns before it happens
+7. **Retries through failures** — transient Cycles server errors (429/503) are retried with exponential backoff instead of causing spurious denials
+8. **Keeps long tools alive** — automatic heartbeat extends reservations for tools that run longer than 60 seconds
+
 When budget is exhausted, execution stops with a clear error:
 
 ```
@@ -137,11 +146,11 @@ The plugin hooks into five OpenClaw lifecycle events:
 
 | Hook | What happens |
 |------|-------------|
-| `before_model_resolve` | Reserves budget for the model call. Downgrades if budget is low. Blocks if exhausted. |
-| `before_prompt_build` | Injects budget status into the system prompt ("Budget is low — prefer cheaper tools"). |
-| `before_tool_call` | Checks tool permissions and call limits. Reserves budget. Blocks if denied. |
-| `after_tool_call` | Commits the actual cost (or estimate if actual isn't available). |
-| `agent_end` | Releases orphaned reservations. Builds session summary with full cost breakdown. |
+| `before_model_resolve` | Reserves budget for the model call (held open for later commit). Downgrades if budget is low. Blocks if exhausted. Checks burn rate and exhaustion forecast. |
+| `before_prompt_build` | Commits the previous model reservation (with optional `modelCostEstimator` reconciliation). Injects budget status into the system prompt. |
+| `before_tool_call` | Checks tool permissions and call limits. Reserves budget. Starts heartbeat timer for long-running tools. Checks burn rate and exhaustion forecast. Retries on transient server errors. |
+| `after_tool_call` | Commits the actual cost. Stops heartbeat timer. |
+| `agent_end` | Commits final model reservation. Releases orphaned reservations. Builds session summary with cost breakdown, unconfigured tool report, and event log. |
 
 Every reservation follows the Cycles [reserve-commit-release](/protocol/how-reserve-commit-works-in-cycles) protocol. Budget is deducted atomically on the server — no race conditions, no double-spend, no stale reads.
 
@@ -172,10 +181,11 @@ All plugin behavior works identically — model downgrade, tool limits, prompt h
 
 ## Who this is for
 
-- **Teams running OpenClaw agents in production** — you need hard limits before an overnight run becomes a $2,000 invoice
+- **Teams running OpenClaw agents in production** — you need hard limits before an overnight run becomes a $2,000 invoice, and burn rate detection to catch loops before they get there
 - **Multi-tenant platforms** — your users need isolated budgets so one customer's agent doesn't drain another's allocation
 - **Anyone building with consequential tools** — if your agent can send emails, create tickets, trigger deployments, or write to databases, you need call limits, not just cost limits
 - **Cost-conscious teams** — model downgrade and graceful degradation let you ship capable agents on tight budgets
+- **Teams that need observability** — pipe budget metrics into Datadog, Prometheus, or Grafana via OTLP, and enable session event logs for full audit trails
 
 ## Get started
 
