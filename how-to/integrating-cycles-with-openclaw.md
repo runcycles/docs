@@ -858,6 +858,113 @@ Aggressive cost savings. Low thresholds, model downgrade with token limits, expe
 }
 ```
 
+## Model cost reconciliation (v0.5.0)
+
+By default, model costs are estimated at reservation time based on `modelBaseCosts` or `defaultModelCost`. Since OpenClaw doesn't provide token counts after model completion, exact costs aren't available automatically.
+
+v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin reserves budget in `before_model_resolve` but doesn't commit until the next `before_prompt_build` (or `agent_end` for the last turn). This opens a reconciliation window where you can use `modelCostEstimator` to adjust the cost.
+
+```json
+{
+  "config": {
+    "modelBaseCosts": {
+      "claude-sonnet-4": 300000,
+      "claude-opus-4": 1500000
+    }
+  }
+}
+```
+
+For programmatic cost reconciliation (e.g., reading token counts from a proxy layer):
+
+```typescript
+import plugin from "@runcycles/openclaw-budget-guard";
+
+plugin({
+  ...api,
+  pluginConfig: {
+    tenant: "my-org",
+    cyclesBaseUrl: "http://localhost:7878",
+    cyclesApiKey: "cyc_...",
+    modelCostEstimator: ({ model, estimatedCost, turnIndex }) => {
+      // Look up actual token usage from your proxy/gateway
+      const usage = getTokenUsageFromProxy(turnIndex);
+      if (!usage) return undefined; // fall back to estimate
+      return usage.inputTokens * getInputPrice(model) +
+             usage.outputTokens * getOutputPrice(model);
+    },
+  },
+});
+```
+
+When a `modelCostEstimator` is provided, the plugin calls it at commit time. Return a number to override the estimate, or `undefined` to use the original estimate. Errors are caught and logged — the estimate is used as fallback.
+
+## Observability with MetricsEmitter (v0.5.0)
+
+The plugin can emit structured metrics to any observability backend (Datadog, Prometheus, Grafana, OpenTelemetry) via the `metricsEmitter` callback.
+
+### Using a custom emitter
+
+```typescript
+const emitter = {
+  gauge(name, value, tags) { /* send to your backend */ },
+  counter(name, delta, tags) { /* send to your backend */ },
+  histogram(name, value, tags) { /* send to your backend */ },
+};
+
+// Pass as config
+{ metricsEmitter: emitter }
+```
+
+### Using the built-in OTLP adapter
+
+For zero-config OpenTelemetry integration, set `otlpMetricsEndpoint`:
+
+```json
+{
+  "config": {
+    "otlpMetricsEndpoint": "http://localhost:4318/v1/metrics",
+    "otlpMetricsHeaders": {
+      "Authorization": "Bearer <token>"
+    }
+  }
+}
+```
+
+The plugin auto-creates a lightweight OTLP HTTP adapter that buffers metrics and flushes them periodically. No OpenTelemetry SDK dependency required.
+
+### Emitted metrics
+
+| Metric | Type | Tags | When |
+|--------|------|------|------|
+| `cycles.budget.remaining` | gauge | tenant, budgetId, currency | Every snapshot fetch |
+| `cycles.budget.reserved` | gauge | tenant, budgetId | Every snapshot fetch |
+| `cycles.budget.spent` | gauge | tenant, budgetId | Every snapshot fetch |
+| `cycles.budget.level` | gauge (0/1/2) | tenant, budgetId, level | Every snapshot fetch |
+| `cycles.reservation.created` | counter | tenant, kind, name | On reserve |
+| `cycles.reservation.committed` | counter | tenant, kind, name | On commit |
+| `cycles.reservation.denied` | counter | tenant, kind, name, reason | On deny |
+| `cycles.reservation.cost` | histogram | tenant, kind, name | On commit |
+| `cycles.model.downgrade` | counter | tenant, from, to | On model downgrade |
+| `cycles.tool.blocked` | counter | tenant, tool, reason | On tool block |
+| `cycles.session.duration_ms` | histogram | tenant | On agent_end |
+| `cycles.session.total_cost` | histogram | tenant | On agent_end |
+
+## Aggressive cache invalidation (v0.5.0)
+
+By default (`aggressiveCacheInvalidation: true`), the plugin refetches the budget snapshot from the Cycles server after every commit or release. This reduces the "stale window" from the `snapshotCacheTtlMs` (default 5s) to near-zero for single-agent scenarios.
+
+For high-throughput setups where the extra network call is undesirable, disable it:
+
+```json
+{
+  "config": {
+    "aggressiveCacheInvalidation": false,
+    "snapshotCacheTtlMs": 2000
+  }
+}
+```
+
 ## Troubleshooting
 
 **"Skipping registration" warning during install**
