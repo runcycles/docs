@@ -12,7 +12,6 @@ This guide shows how to add budget enforcement to OpenClaw agents using the [`cy
 Get budget enforcement running in under a minute:
 
 ```bash
-npm install @runcycles/openclaw-budget-guard
 openclaw plugins install @runcycles/openclaw-budget-guard
 openclaw plugins enable cycles-openclaw-budget-guard
 ```
@@ -22,11 +21,13 @@ Add minimal configuration to your OpenClaw config:
 ```json
 {
   "plugins": {
-    "cycles-openclaw-budget-guard": {
-      "cyclesBaseUrl": "http://localhost:7878",
-      "cyclesApiKey": "cyc_live_...",
-      "tenant": "my-org",
-      "currency": "USD_MICROCENTS"
+    "entries": {
+      "cycles-openclaw-budget-guard": {
+        "cyclesBaseUrl": "http://localhost:7878",
+        "cyclesApiKey": "cyc_live_...",
+        "tenant": "my-org",
+        "currency": "USD_MICROCENTS"
+      }
     }
   }
 }
@@ -35,10 +36,6 @@ Add minimal configuration to your OpenClaw config:
 That's it — all model and tool calls are now budget-guarded. Read on for advanced features like model fallbacks, tool access control, and budget-aware prompt hints.
 
 ## Prerequisites
-
-```bash
-npm install @runcycles/openclaw-budget-guard
-```
 
 ```bash
 export CYCLES_BASE_URL="http://localhost:7878"
