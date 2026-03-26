@@ -7,6 +7,20 @@ description: "Add budget enforcement to OpenClaw agents using the cycles-opencla
 
 This guide shows how to add budget enforcement to OpenClaw agents using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin. The plugin handles the full reserve → commit → release lifecycle for both model and tool calls automatically, with no custom code required.
 
+## Why budget enforcement?
+
+AI agents make autonomous decisions that cost money — every model call, tool invocation, and retry adds up. Without hard limits, a single [runaway agent](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) can blow through an entire budget in minutes. Provider spending caps are account-wide and react too slowly. Rate limits don't account for cost. In-app counters don't survive restarts or coordinate across concurrent agents.
+
+This plugin enforces **hard budget limits at the hook level** — before any model or tool call executes, it reserves budget via a Cycles server. When budget is low, models are automatically downgraded. When budget is exhausted, execution stops. The agent itself is told about remaining budget via prompt hints, so it can self-regulate before hard limits kick in.
+
+The result: predictable spend per user, session, or team — even when agents run autonomously for hours.
+
+::: tip When to use this vs. the Cycles client directly
+If you're building a custom agent framework, use the [Cycles TypeScript client](/how-to/using-the-cycles-client-programmatically) directly. If you're running OpenClaw, this plugin gives you the same enforcement with zero custom code — just configure and go.
+:::
+
+For background on why rate limits and provider caps aren't enough, see [Exposure: Why Rate Limits Leave Agents Unbounded](/concepts/exposure-why-rate-limits-leave-agents-unbounded) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
+
 ## Quick start
 
 Get budget enforcement running in under a minute:
