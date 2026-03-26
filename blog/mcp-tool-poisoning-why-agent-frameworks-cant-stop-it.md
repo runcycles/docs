@@ -3,7 +3,7 @@ title: "MCP Tool Poisoning Has an 84% Success Rate — Why Your Agent Framework 
 date: 2026-03-26
 author: Cycles Team
 tags: [security, MCP, tool-poisoning, agents, production, OWASP, runtime-authority, supply-chain]
-description: "Tool poisoning attacks succeed 84% of the time with auto-approval. 12,000+ MCP servers, 30+ CVEs in 60 days — and no enforcement layer. Here's the fix."
+description: "Tool poisoning attacks succeed 84% of the time with auto-approval. 10,000+ MCP servers, 30+ CVEs in 60 days — and no enforcement layer. Here's the fix."
 blog: true
 sidebar: false
 ---
@@ -12,13 +12,13 @@ sidebar: false
 
 A poisoned MCP tool doesn't need to be called to compromise your agent. It just needs to be loaded into context.
 
-That's the finding that reframed MCP security in 2026. [Invariant Labs demonstrated](https://mcpmanager.ai/blog/tool-poisoning/) that malicious instructions hidden in an MCP tool's description field are enough to hijack agent behavior — exfiltrating SSH keys, config files, and credentials — without the tool ever being invoked. The model reads the metadata, follows the hidden instructions, and your logs show nothing unusual.
+That's the finding that reframed MCP security in 2026. [Invariant Labs demonstrated](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) that malicious instructions hidden in an MCP tool's description field are enough to hijack agent behavior — exfiltrating SSH keys, config files, and credentials — without the tool ever being invoked. Their [open-source proof-of-concept](https://github.com/invariantlabs-ai/mcp-injection-experiments) successfully extracted SSH private keys from Claude Desktop and Cursor in test environments. The model reads the metadata, follows the hidden instructions, and your logs show nothing unusual.
 
 <!-- more -->
 
-The scale of exposure is staggering. As of February 2026, there are [over 12,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.helpnetsecurity.com/2026/03/03/enterprise-ai-agent-security-2026/) exposed to the internet with zero authentication. [Antiy CERT confirmed 1,184 malicious skills](https://www.meta-intelligence.tech/en/insight-ai-agent-security) on ClawHub. And research shows tool poisoning attacks succeed **84.2% of the time** when auto-approval is enabled — which is the default configuration for most agent frameworks.
+The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [flagged 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) on OpenClaw's ClawHub marketplace. And research shows tool poisoning attacks succeed **84.2% of the time** when auto-approval is enabled — which is the default configuration for most agent frameworks.
 
-OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities — separate from the broader Agentic AI Top 10 published the same month. Over 30 CVEs have been filed against MCP implementations in the past 60 days alone. This isn't a theoretical risk. It's active exploitation in the wild.
+OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities — separate from the broader Agentic AI Top 10 published the same month. [Over 30 CVEs have been filed](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days alone. This isn't a theoretical risk. It's active exploitation in the wild.
 
 And yet the most popular agent frameworks — LangChain, CrewAI, AutoGen, OpenAI Agents SDK — have no built-in mechanism to evaluate, restrict, or deny an MCP tool call before it executes. The agent proposes an action, the tool runs, and you find out what happened afterward.
 
@@ -41,7 +41,7 @@ The simplest and most effective variant. An attacker embeds hidden instructions 
 
 The user sees "fetch_weather." The agent sees the full description, including the hidden directive. Because the model processes tool metadata as trusted system context — not user input — it follows the instruction. The [Palo Alto Networks Unit 42 research](https://unit42.paloaltonetworks.com/model-context-protocol-attack-vectors/) documented three critical attack vectors via MCP sampling: resource theft (draining AI compute quotas), conversation hijacking, and covert tool invocation.
 
-[CyberArk's "Poison Everywhere" research](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan) showed the attack surface extends beyond descriptions. Malicious instructions injected into parameter type fields, `required` arrays, and default values are equally effective — the LLM processes the entire schema as part of its reasoning, making every field a potential injection point.
+[CyberArk's "Poison Everywhere" research](https://www.cyberark.com/resources/threat-research-blog/poison-everywhere-no-output-from-your-mcp-server-is-safe) showed the attack surface extends beyond descriptions. Malicious instructions injected into parameter type fields, `required` arrays, and default values are equally effective — the LLM processes the entire schema as part of its reasoning, making every field a potential injection point.
 
 ### Rug pulls
 
@@ -53,7 +53,7 @@ This is why [mcp-scan](https://mcpplaygroundonline.com/blog/mcp-security-tool-po
 
 When multiple MCP servers run concurrently, namespace collisions and ambiguous tool names create opportunities for malicious servers to intercept calls intended for legitimate ones. A malicious server registers a tool named `read_file` that shadows the legitimate file-system server's `read_file` — and the agent routes calls to whichever one it sees first.
 
-The first confirmed malicious MCP server in the wild — `postmark-mcp` — [silently BCC'd every outgoing email](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan) to an attacker-controlled address for weeks before detection. No user interaction. No obvious indicator.
+The first confirmed malicious MCP server in the wild — `postmark-mcp` — [silently BCC'd every outgoing email](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/) to an attacker-controlled address for weeks before detection. No user interaction. No obvious indicator.
 
 ## The OWASP MCP Top 10: What's Actually In It
 
@@ -72,7 +72,7 @@ The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) maps ten categ
 | **MCP09** | Shadow MCP Servers | Unauthorized servers operating within the environment without IT knowledge |
 | **MCP10** | Supply Chain Vulnerabilities | Community tools installed via npm/pip with no vetting, signing, or sandboxing |
 
-The [average security score across 17 popular MCP server audits](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan) was **34 out of 100**, with zero servers declaring tool permissions. The ecosystem is where web security was in 2004 — before HTTPS was the default, before OWASP's Web Top 10 changed how developers thought about input validation.
+The [average security score across 17 popular MCP server audits](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) was **34 out of 100**, with zero servers declaring tool permissions. The ecosystem is where web security was in 2004 — before HTTPS was the default, before OWASP's Web Top 10 changed how developers thought about input validation.
 
 ## Why Agent Frameworks Can't Stop This
 
@@ -195,18 +195,18 @@ Here's a practical path:
 
 ## Sources
 
-Research and data referenced in this post, published between January and March 2026:
+Research and data referenced in this post:
 
+- [Invariant Labs: MCP Security Notification — Tool Poisoning Attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) — Original tool poisoning research with proof-of-concept
 - [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) — The dedicated security framework for MCP vulnerabilities
-- [MCP Security in 2026: Tool Poisoning, OWASP MCP Top 10, and mcp-scan](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan) — Comprehensive analysis with audit scores and statistics
+- [AISecHub: MCP's First Year — 30 CVEs and 500 Server Scans](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) — February 2026. CVE breakdown, audit scores, and attack surface analysis
+- [Trend Micro: MCP Security — Network-Exposed Servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) — 492 exposed servers with zero authentication
+- [CyberArk: Poison Everywhere — No Output From Your MCP Server Is Safe](https://www.cyberark.com/resources/threat-research-blog/poison-everywhere-no-output-from-your-mcp-server-is-safe) — Full-schema poisoning beyond tool descriptions
+- [Snyk: Malicious MCP Server on npm — postmark-mcp](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/) — First confirmed malicious MCP server in the wild
 - [Palo Alto Networks Unit 42: MCP Sampling Attack Vectors](https://unit42.paloaltonetworks.com/model-context-protocol-attack-vectors/) — Resource theft, conversation hijacking, covert invocation
 - [Keysight ATI: Command Injection via MCP Tool Invocation](https://www.keysight.com/blogs/en/tech/nwvs/2026/01/12/mcp-command-injection-new-attack-vector) — January 2026
-- [Practical DevSecOps: MCP Security Vulnerabilities](https://www.practical-devsecops.com/mcp-security-vulnerabilities/) — Tool poisoning and prompt injection prevention guide
-- [Microsoft: Protecting Against Indirect Prompt Injection in MCP](https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp) — April 2025
 - [The $47,000 AI Agent Loop: A Case Study](https://earezki.com/ai-news/2026-03-23-the-ai-agent-that-cost-47000-while-everyone-thought-it-was-working/) — March 23, 2026
-- [Fortune: AI Agents Are Getting More Capable, But Reliability Is Lagging](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/) — March 24, 2026
-- [Gravitee: State of AI Agent Security 2026 Report](https://www.gravitee.io/blog/state-of-ai-agent-security-2026-report-when-adoption-outpaces-control) — 900 executives and practitioners surveyed
-- [MCPBlog.dev: The OWASP MCP Top 10 Explained](https://mcpblog.dev/blog/2026-03-15-owasp-mcp-top-10) — March 15, 2026
+- [CryptoNewsZ: OpenClaw's ClawHub Flags 1,184 Malicious Skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) — ClawHub marketplace supply chain compromise
 
 ## Further Reading
 
