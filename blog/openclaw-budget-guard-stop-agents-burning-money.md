@@ -3,7 +3,7 @@ title: "Your OpenClaw Agent Has No Spending Limit — Here's How to Fix That"
 date: 2026-03-26
 author: Albert Mavashev
 tags: [openclaw, budgets, agents, runtime-authority, cost-control, plugin, tool-limits]
-description: "OpenClaw agents can call any model, invoke any tool, and retry indefinitely — with no budget enforcement. The cycles-openclaw-budget-guard plugin adds hard spend limits, tool call caps, and graceful degradation with zero code changes."
+description: "OpenClaw agents can call any model, invoke any tool, and retry indefinitely — with no budget enforcement. The cycles-openclaw-budget-guard plugin adds hard spend limits, tool call caps, and graceful degradation — typically without changing agent logic."
 blog: true
 sidebar: false
 ---
@@ -14,7 +14,7 @@ An OpenClaw agent picks up a customer support ticket. It calls GPT-4o to draft a
 
 This is not a hypothetical. It's the default behavior of every OpenClaw agent that doesn't have budget enforcement. There is no built-in spending limit. There is no call cap. There is no circuit breaker. The agent runs until the task succeeds, the context window fills up, or someone kills the process.
 
-The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin fixes this. Install it, add three lines of config, and every model call and tool invocation is budget-checked before execution. No code changes to your agent.
+The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin fixes this. Install it, add three lines of config, and every model call and tool invocation is budget-checked before execution. In typical OpenClaw setups, no agent code changes are needed.
 
 And as of v0.6.0, it does more than enforce limits — it actively *detects* the runaway loop. If spending suddenly spikes 3x above the session average, `onBurnRateAnomaly` fires immediately. If the plugin predicts the budget will exhaust in under 2 minutes, `onExhaustionForecast` warns you before it happens. The 2 AM scenario doesn't just get stopped — it gets caught early.
 
@@ -48,7 +48,7 @@ The agent session ends. You know it cost *something*, but you don't know which t
 
 **What the plugin does:** Every session produces a [cost breakdown](/how-to/integrating-cycles-with-openclaw#session-analytics-and-cost-breakdown) — per-tool cost, per-model cost, invocation counts, and remaining budget. Attached to context metadata and optionally sent to a webhook. For real-time visibility, pipe 12 metrics into Datadog, Prometheus, or any OTLP collector via the built-in [`metricsEmitter`](/how-to/integrating-cycles-with-openclaw#observability-with-metricsemitter-v050). Enable `enableEventLog` for a full audit trail of every budget decision — useful for debugging why an agent ran out of budget or why a tool was blocked.
 
-### 5. Graceless failure
+### 5. Abrupt failure
 
 The simplest budget enforcement is a hard stop: budget gone, agent dead. But that's a terrible user experience. The agent was in the middle of generating a 2,000-word report and just... stopped.
 
