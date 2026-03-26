@@ -1,14 +1,14 @@
 ---
-title: "MCP Tool Poisoning Has an 84% Success Rate — Why Your Agent Framework Can't Stop It"
+title: "MCP Tool Poisoning Has an 84% Success Rate — Why Agent Frameworks Still Can't Prevent It"
 date: 2026-03-26
 author: Albert Mavashev
 tags: [security, MCP, tool-poisoning, agents, production, OWASP, runtime-authority, supply-chain]
-description: "Tool poisoning attacks succeed 84% of the time with auto-approval. 10,000+ MCP servers, 30+ CVEs in 60 days — and no enforcement layer. Here's the fix."
+description: "In benchmarks, tool poisoning attacks succeed 84% of the time with auto-approval. 10,000+ MCP servers, 30+ CVEs — and no external enforcement layer."
 blog: true
 sidebar: false
 ---
 
-# MCP Tool Poisoning Has an 84% Success Rate — Why Your Agent Framework Can't Stop It
+# MCP Tool Poisoning Has an 84% Success Rate — Why Agent Frameworks Still Can't Prevent It
 
 A poisoned MCP tool doesn't need to be called to compromise your agent. It just needs to be loaded into context.
 
@@ -16,17 +16,19 @@ That's the finding that reframed MCP security in 2026. [Invariant Labs demonstra
 
 <!-- more -->
 
-The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [flagged 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) on OpenClaw's ClawHub marketplace. And research shows tool poisoning attacks succeed **84.2% of the time** when auto-approval is enabled — which is the default configuration for most agent frameworks.
+The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [reported 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) circulating on OpenClaw's ClawHub marketplace. And in controlled benchmark testing, the [MCP-ITP framework](https://arxiv.org/abs/2601.07395) measured tool poisoning attack success rates **up to 84.2%** when agents auto-approve tool calls — which is the default configuration for most agent setups.
 
-OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities — separate from the broader Agentic AI Top 10 published the same month. [Over 30 CVEs have been filed](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days alone. This isn't a theoretical risk. It's active exploitation in the wild.
+OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities — separate from the broader Agentic AI Top 10 published the same month. Security researchers have [documented more than 30 CVEs](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days — a pace that prompted a [front-page Hacker News discussion](https://news.ycombinator.com/item?id=47356600) on MCP's expanding attack surface. This isn't a theoretical risk. It's active exploitation in the wild.
 
-And yet the most popular agent frameworks — LangChain, CrewAI, AutoGen, OpenAI Agents SDK — have no built-in mechanism to evaluate, restrict, or deny an MCP tool call before it executes. The agent proposes an action, the tool runs, and you find out what happened afterward.
+Some agent frameworks do offer defenses. OpenAI's Agents SDK provides [`requireApproval`](https://openai.github.io/openai-agents-python/guardrails/) callbacks and tool input/output guardrails with tripwire mechanisms. Claude Desktop and Cursor support per-tool approval prompts. These are real controls — but they are not an independent runtime authority that evaluates each MCP action against policy outside the agent's own reasoning loop. Approval dialogs require human-in-the-loop, which doesn't scale to production workloads. SDK guardrails run inside the agent's trust boundary, meaning a sufficiently poisoned context can influence the guardrail evaluation itself. And none of them enforce budget, scope, or cross-agent policy as a separate enforcement plane.
 
-That gap — between the agent's decision and the tool's execution — is where tool poisoning lives. And it's the gap that runtime authority closes.
+That gap — between the agent's decision and an _external_ policy evaluation before execution — is where tool poisoning lives. And it's the gap that runtime authority closes.
 
 ## What MCP Tool Poisoning Actually Looks Like
 
-MCP tool poisoning isn't one attack. It's a family of techniques that exploit the trust agents place in tool metadata. The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) catalogs the full attack surface, but three categories account for most real-world incidents:
+The threats above span three distinct risk classes that are related but not identical: **(1) metadata poisoning** — malicious instructions embedded in tool descriptions and schemas (Invariant Labs, CyberArk, MCP-ITP); **(2) supply chain compromise** — poisoned packages distributed through marketplaces and registries (postmark-mcp, ClawHub); and **(3) implementation vulnerabilities** — missing authentication, command injection, and path traversal in MCP server code (Trend Micro, the 30+ CVEs). Each requires different defenses, but all three converge on one architectural gap: no policy evaluation before tool execution.
+
+The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) catalogs the full attack surface. Three categories of metadata poisoning account for most targeted incidents:
 
 ### Description injection
 
@@ -198,6 +200,7 @@ Here's a practical path:
 Research and data referenced in this post:
 
 - [Invariant Labs: MCP Security Notification — Tool Poisoning Attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) — Original tool poisoning research with proof-of-concept
+- [MCP-ITP: An Automated Framework for Implicit Tool Poisoning](https://arxiv.org/abs/2601.07395) — Ruiqi Li et al., January 2026. Benchmark showing up to 84.2% attack success rate across 12 LLM agents
 - [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) — The dedicated security framework for MCP vulnerabilities
 - [AISecHub: MCP's First Year — 30 CVEs and 500 Server Scans](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) — February 2026. CVE breakdown, audit scores, and attack surface analysis
 - [Trend Micro: MCP Security — Network-Exposed Servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) — 492 exposed servers with zero authentication
