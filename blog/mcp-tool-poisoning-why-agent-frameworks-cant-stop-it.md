@@ -3,7 +3,7 @@ title: "MCP Tool Poisoning Has an 84% Success Rate — Why Your Agent Framework 
 date: 2026-03-26
 author: Cycles Team
 tags: [security, MCP, tool-poisoning, agents, production, OWASP, runtime-authority, supply-chain]
-description: "Tool poisoning attacks succeed 84% of the time when agents auto-approve MCP tool calls. 12,000+ public MCP servers, 30+ CVEs in 60 days, and your agent framework has no enforcement layer. Here's what's missing."
+description: "Tool poisoning attacks succeed 84% of the time with auto-approval. 12,000+ MCP servers, 30+ CVEs in 60 days — and no enforcement layer. Here's the fix."
 blog: true
 sidebar: false
 ---
@@ -202,7 +202,7 @@ Research and data referenced in this post, published between January and March 2
 - [Palo Alto Networks Unit 42: MCP Sampling Attack Vectors](https://unit42.paloaltonetworks.com/model-context-protocol-attack-vectors/) — Resource theft, conversation hijacking, covert invocation
 - [Keysight ATI: Command Injection via MCP Tool Invocation](https://www.keysight.com/blogs/en/tech/nwvs/2026/01/12/mcp-command-injection-new-attack-vector) — January 2026
 - [Practical DevSecOps: MCP Security Vulnerabilities](https://www.practical-devsecops.com/mcp-security-vulnerabilities/) — Tool poisoning and prompt injection prevention guide
-- [Microsoft: Protecting Against Indirect Prompt Injection in MCP](https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp) — March 2026
+- [Microsoft: Protecting Against Indirect Prompt Injection in MCP](https://developer.microsoft.com/blog/protecting-against-indirect-injection-attacks-mcp) — April 2025
 - [The $47,000 AI Agent Loop: A Case Study](https://earezki.com/ai-news/2026-03-23-the-ai-agent-that-cost-47000-while-everyone-thought-it-was-working/) — March 23, 2026
 - [Fortune: AI Agents Are Getting More Capable, But Reliability Is Lagging](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/) — March 24, 2026
 - [Gravitee: State of AI Agent Security 2026 Report](https://www.gravitee.io/blog/state-of-ai-agent-security-2026-report-when-adoption-outpaces-control) — 900 executives and practitioners surveyed
