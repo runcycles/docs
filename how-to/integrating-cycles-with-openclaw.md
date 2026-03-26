@@ -638,7 +638,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[cycles-budget-guard] v0.3.4 starting
+[cycles-budget-guard] v0.6.0 starting
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
   cyclesApiKey: ****_key
@@ -894,8 +894,8 @@ v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin res
 {
   "config": {
     "modelBaseCosts": {
-      "claude-sonnet-4": 300000,
-      "claude-opus-4": 1500000
+      "claude-sonnet-4-20250514": 300000,
+      "claude-opus-4-20250514": 1500000
     }
   }
 }
