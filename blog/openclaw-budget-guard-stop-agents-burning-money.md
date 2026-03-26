@@ -189,4 +189,12 @@ Source code: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.
 
 To deploy a Cycles server: [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack)
 
-To see budget enforcement in action: [Runaway Agent Demo](https://github.com/runcycles/cycles-runaway-demo)
+To see budget enforcement in action: [Runaway Agent Demo walkthrough](/blog/runaway-demo-agent-cost-blowup-walkthrough)
+
+## Related reading
+
+- [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — why cost control must happen before execution, not after
+- [Your AI Agent Just Burned $6 in 30 Seconds](/blog/runaway-demo-agent-cost-blowup-walkthrough) — step-by-step walkthrough of a runaway agent demo with Cycles
+- [AI Agent Failures That Budget Controls Prevent](/blog/ai-agent-failures-budget-controls-prevent) — catalog of real failure modes and how budget enforcement stops them
+- [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — why cost limits alone aren't enough for consequential actions
+- [Runaway Agents, Tool Loops, and Budget Overruns](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — the incidents this plugin is designed to prevent
