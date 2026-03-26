@@ -54,7 +54,7 @@ claude mcp add cycles -- npx -y @runcycles/mcp-server
 
 ```bash
 export CYCLES_API_KEY=cyc_live_...
-export CYCLES_BASE_URL=https://your-cycles-server.example.com
+export CYCLES_BASE_URL=http://localhost:7878
 ```
 
 **Cursor / Windsurf:**
@@ -67,7 +67,7 @@ export CYCLES_BASE_URL=https://your-cycles-server.example.com
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
         "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_BASE_URL": "https://your-cycles-server.example.com"
+        "CYCLES_BASE_URL": "http://localhost:7878"
       }
     }
   }
@@ -84,7 +84,7 @@ export CYCLES_BASE_URL=https://your-cycles-server.example.com
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
         "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_BASE_URL": "https://your-cycles-server.example.com"
+        "CYCLES_BASE_URL": "http://localhost:7878"
       }
     }
   }

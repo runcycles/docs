@@ -47,7 +47,7 @@ claude mcp add cycles -- npx -y @runcycles/mcp-server
 
 # Set required environment variables
 export CYCLES_API_KEY=cyc_live_...
-export CYCLES_BASE_URL=https://your-cycles-server.example.com
+export CYCLES_BASE_URL=http://localhost:7878
 ```
 
 The agent calls `cycles_reserve`, `cycles_commit`, and other tools as part of its reasoning. No application code wraps the LLM call.
