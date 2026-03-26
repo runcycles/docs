@@ -124,7 +124,7 @@ const result = streamText({
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "modelBaseCosts": {

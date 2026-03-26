@@ -13,7 +13,7 @@ Get budget enforcement running in under a minute:
 
 ```bash
 openclaw plugins install @runcycles/openclaw-budget-guard
-openclaw plugins enable cycles-openclaw-budget-guard
+openclaw plugins enable openclaw-budget-guard
 ```
 
 Add minimal configuration to your OpenClaw config file (typically `openclaw.json` or `openclaw.config.json`):
@@ -22,7 +22,7 @@ Add minimal configuration to your OpenClaw config file (typically `openclaw.json
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "cyclesBaseUrl": "http://localhost:7878",
           "cyclesApiKey": "cyc_live_...",
@@ -57,14 +57,14 @@ You also need:
 openclaw plugins install @runcycles/openclaw-budget-guard
 
 # Enable it
-openclaw plugins enable cycles-openclaw-budget-guard
+openclaw plugins enable openclaw-budget-guard
 ```
 
 Or install from a local checkout:
 
 ```bash
 openclaw plugins install -l ./cycles-openclaw-budget-guard
-openclaw plugins enable cycles-openclaw-budget-guard
+openclaw plugins enable openclaw-budget-guard
 ```
 
 ## Minimal configuration
@@ -75,7 +75,7 @@ Add the plugin to your OpenClaw config file (typically `openclaw.config.json`):
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme"
         }
@@ -93,7 +93,7 @@ If you prefer to inline the connection details:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "cyclesBaseUrl": "http://localhost:7878",
           "cyclesApiKey": "your-api-key",
@@ -137,7 +137,7 @@ Model fallbacks support both single values and ordered chains. When budget is lo
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "modelFallbacks": {
@@ -168,7 +168,7 @@ Configure per-tool cost estimates via `toolBaseCosts`:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "toolBaseCosts": {
@@ -213,7 +213,7 @@ Control which tools can be called using allowlists and blocklists with glob-styl
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "toolAllowlist": ["web_search", "code_*"],
@@ -237,7 +237,7 @@ When budget is low, the plugin can apply multiple composable strategies beyond m
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
@@ -286,7 +286,7 @@ Scope budgets to individual users or sessions:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "userId": "user-123",
@@ -310,7 +310,7 @@ Configure reservation behavior per-tool or globally:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "reservationTtlMs": 60000,
@@ -341,7 +341,7 @@ Optionally retry tool reservations that are denied, useful when budget is being 
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "retryOnDeny": true,
@@ -366,7 +366,7 @@ Get notified when the budget level changes (e.g., healthy → low → exhausted)
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "budgetTransitionWebhookUrl": "https://hooks.example.com/budget-alert"
@@ -411,7 +411,7 @@ The summary is attached to `ctx.metadata["cycles-budget-guard"]` and can also be
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "analyticsWebhookUrl": "https://analytics.example.com/sessions"
@@ -453,7 +453,7 @@ Override the default currency per-tool or per-model:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "currency": "USD_MICROCENTS",
@@ -478,7 +478,7 @@ Surface hierarchical budget information by setting a parent budget ID:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "budgetId": "team-alpha-agent",
@@ -500,7 +500,7 @@ Test the plugin without a live Cycles server:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "cyclesBaseUrl": "http://unused",
@@ -549,7 +549,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 {
   "plugins": {
     "entries": {
-      "cycles-openclaw-budget-guard": {
+      "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
           "logLevel": "debug"
