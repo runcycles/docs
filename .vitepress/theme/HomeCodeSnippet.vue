@@ -125,11 +125,13 @@ const result = streamText({
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "modelBaseCosts": {
-          "gpt-4o": 1000000,
-          "gpt-4o-mini": 100000,
-          "claude-sonnet-4-20250514": 300000
+        "config": {
+          "tenant": "acme",
+          "modelBaseCosts": {
+            "gpt-4o": 1000000,
+            "gpt-4o-mini": 100000,
+            "claude-sonnet-4-20250514": 300000
+          }
         }
       }
     }
