@@ -14,8 +14,8 @@ AI agents make autonomous decisions — calling models, invoking tools, retrying
 - **Runaway spend** — a single [runaway agent](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) can blow through an entire budget in minutes. Provider spending caps are account-wide and react too slowly. Rate limits don't account for cost.
 - **Uncontrolled side-effects** — an agent can send hundreds of emails, trigger deployments, or call dangerous APIs with nothing to stop it. Cost limits alone don't help — some actions are consequential regardless of price.
 - **Noisy neighbors** — in multi-tenant or multi-user setups, one agent can consume the entire team budget, starving other users.
-- **No visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
-- **Graceless failure** — budget runs out and the agent crashes instead of adapting.
+- **No session-level cost visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
+- **Abrupt failure** — budget runs out and the agent crashes instead of adapting.
 
 This plugin solves all five — and goes further. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
 
@@ -135,6 +135,8 @@ If you prefer to inline the connection details:
   }
 }
 ```
+
+> **Important:** Budget exhaustion is enforced fail-closed by default, but Cycles server connectivity failures are handled fail-open — the plugin assumes healthy budget and allows execution to continue. See [Fail-open vs fail-closed](#fail-open-vs-fail-closed) for details.
 
 ## Understanding the cost model
 
