@@ -16,9 +16,9 @@ That's the finding that reframed MCP security in 2026. [Invariant Labs demonstra
 
 <!-- more -->
 
-The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [reported 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) circulating on OpenClaw's ClawHub marketplace. And in controlled benchmark testing, the [MCP-ITP framework](https://arxiv.org/abs/2601.07395) measured tool poisoning attack success rates **up to 84.2%** when agents auto-approve tool calls — which is the default configuration for most agent setups.
+The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [reported 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) circulating on OpenClaw's ClawHub marketplace. And in controlled benchmark testing, the [MCP-ITP framework](https://arxiv.org/abs/2601.07395) measured tool poisoning attack success rates **up to 84.2%** when agents auto-approve tool calls — a configuration that is common in demos and many production integrations.
 
-OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities — separate from the broader Agentic AI Top 10 published the same month. Security researchers have [documented more than 30 CVEs](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days — a pace that prompted a [front-page Hacker News discussion](https://news.ycombinator.com/item?id=47356600) on MCP's expanding attack surface. This isn't a theoretical risk. It's active exploitation in the wild.
+OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities (currently in beta) — separate from the broader Agentic AI Top 10 published the same month. Security researchers have [documented more than 30 CVEs](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days — a pace that prompted a [front-page Hacker News discussion](https://news.ycombinator.com/item?id=47356600) on MCP's expanding attack surface. This isn't a theoretical risk. It's active exploitation in the wild.
 
 Some agent frameworks do offer defenses. OpenAI's Agents SDK provides [`requireApproval`](https://openai.github.io/openai-agents-python/guardrails/) callbacks and tool input/output guardrails with tripwire mechanisms. Claude Desktop and Cursor support per-tool approval prompts. These are real controls — but they are not an independent runtime authority that evaluates each MCP action against policy outside the agent's own reasoning loop. Approval dialogs require human-in-the-loop, which doesn't scale to production workloads. SDK guardrails run inside the agent's trust boundary, meaning a sufficiently poisoned context can influence the guardrail evaluation itself. And none of them enforce budget, scope, or cross-agent policy as a separate enforcement plane.
 
@@ -59,20 +59,20 @@ The first confirmed malicious MCP server in the wild — `postmark-mcp` — [sil
 
 ## The OWASP MCP Top 10: What's Actually In It
 
-The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) maps ten categories of MCP-specific vulnerabilities. Unlike the broader [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) — which covers general agent risks — the MCP Top 10 focuses exclusively on the tool integration layer:
+The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) (currently in beta) maps ten categories of MCP-specific vulnerabilities. Unlike the broader [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) — which covers general agent risks — the MCP Top 10 focuses exclusively on the tool integration layer:
 
 | ID | Category | What Happens |
 |---|---|---|
 | **MCP01** | Token Mismanagement & Secret Exposure | API keys and tokens leak through tool metadata, logs, or unencrypted transport |
-| **MCP02** | Excessive Privilege & Scope Creep | Tools granted broad permissions accumulate access beyond what's needed |
+| **MCP02** | Privilege Escalation via Scope Creep | Tools granted broad permissions accumulate access beyond what's needed |
 | **MCP03** | Tool Poisoning | Rug pulls, schema poisoning, tool shadowing — the attacks described above |
-| **MCP04** | Context Over-Sharing | Agents leak sensitive data from their context into tool parameters |
-| **MCP05** | Command Injection | [Unsanitized input passed to tool execution](https://www.keysight.com/blogs/en/tech/nwvs/2026/01/12/mcp-command-injection-new-attack-vector) enables shell command injection |
-| **MCP06** | Prompt Injection | Tool responses contain adversarial prompts that hijack the agent |
+| **MCP04** | Software Supply Chain Attacks & Dependency Tampering | Community tools installed via npm/pip with no vetting, signing, or sandboxing |
+| **MCP05** | Command Injection & Execution | [Unsanitized input passed to tool execution](https://www.keysight.com/blogs/en/tech/nwvs/2026/01/12/mcp-command-injection-new-attack-vector) enables shell command injection |
+| **MCP06** | Intent Flow Subversion | Tool responses contain adversarial contextual payloads that hijack agent reasoning |
 | **MCP07** | Insufficient Authentication & Authorization | 38% of scanned servers lack authentication entirely |
-| **MCP08** | Insufficient Logging & Audit | No trail of what tools executed, with what arguments, under whose authority |
+| **MCP08** | Lack of Audit and Telemetry | No trail of what tools executed, with what arguments, under whose authority |
 | **MCP09** | Shadow MCP Servers | Unauthorized servers operating within the environment without IT knowledge |
-| **MCP10** | Supply Chain Vulnerabilities | Community tools installed via npm/pip with no vetting, signing, or sandboxing |
+| **MCP10** | Context Injection & Over-Sharing | Agents leak sensitive data from their context into tool parameters |
 
 The [average security score across 17 popular MCP server audits](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) was **34 out of 100**, with zero servers declaring tool permissions. The ecosystem is where web security was in 2004 — before HTTPS was the default, before OWASP's Web Top 10 changed how developers thought about input validation.
 
@@ -127,15 +127,15 @@ Here's how this maps to the OWASP MCP Top 10:
 | OWASP MCP Risk | Runtime Authority Mitigation |
 |---|---|
 | **MCP01: Secret Exposure** | [Scope derivation](/protocol/how-scope-derivation-works-in-cycles) limits which credentials each agent can access |
-| **MCP02: Excessive Privilege** | [Reserve-commit](/protocol/how-reserve-commit-works-in-cycles) enforces least privilege per tool call — budget and action type checked before execution |
+| **MCP02: Privilege Escalation** | [Reserve-commit](/protocol/how-reserve-commit-works-in-cycles) enforces least privilege per tool call — budget and action type checked before execution |
 | **MCP03: Tool Poisoning** | Pre-execution evaluation blocks tool calls that exceed policy — even if the agent was tricked into making them |
-| **MCP04: Context Over-Sharing** | [Action authority](/blog/ai-agent-action-control-hard-limits-side-effects) restricts which parameters and data the agent can pass to tools |
+| **MCP04: Supply Chain Attacks** | [Hard spend limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) cap damage from compromised tools — a poisoned dependency can't burn unlimited budget |
 | **MCP05: Command Injection** | Argument validation at the enforcement layer catches shell metacharacters before they reach the tool |
-| **MCP06: Prompt Injection** | Post-tool response doesn't bypass the next reserve check — each subsequent action still requires authorization |
+| **MCP06: Intent Flow Subversion** | Post-tool response doesn't bypass the next reserve check — each subsequent action still requires authorization |
 | **MCP07: Insufficient Auth** | Agent identity is [explicit and scoped](/protocol/authentication-tenancy-and-api-keys-in-cycles) — each agent authenticates with its own credentials |
-| **MCP08: Insufficient Logging** | Every reserve/commit/release is recorded with [full context, scope, and decision rationale](/protocol/standard-metrics-and-metadata-in-cycles) |
+| **MCP08: Lack of Audit** | Every reserve/commit/release is recorded with [full context, scope, and decision rationale](/protocol/standard-metrics-and-metadata-in-cycles) |
 | **MCP09: Shadow Servers** | Tool calls to unregistered scopes are denied — unknown tools can't execute |
-| **MCP10: Supply Chain** | [Hard spend limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) cap damage from compromised tools — a poisoned tool can't burn unlimited budget |
+| **MCP10: Context Over-Sharing** | [Action authority](/blog/ai-agent-action-control-hard-limits-side-effects) restricts which action kinds and scopes the agent can target |
 
 The critical insight: **tool poisoning succeeds because agents execute tool calls without authorization checks.** The poisoned description tricks the agent into _deciding_ to call the tool. But if the _execution_ of that call requires passing a policy check — one the agent doesn't control — the attack is blocked even though the agent was compromised.
 
