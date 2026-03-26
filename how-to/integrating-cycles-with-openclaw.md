@@ -30,6 +30,8 @@ Beyond enforcement, the plugin actively protects you:
 
 The result: predictable spend, controlled behavior, and full visibility — even when agents run autonomously for hours.
 
+Install, configure 3 fields, done. No agent code changes required.
+
 ::: tip When to use this vs. the Cycles client directly
 If you're building a custom agent framework, use the [Cycles TypeScript client](/how-to/using-the-cycles-client-programmatically) directly. If you're running OpenClaw, this plugin gives you the same enforcement with zero custom code — just configure and go.
 :::
@@ -133,6 +135,21 @@ If you prefer to inline the connection details:
   }
 }
 ```
+
+## Understanding the cost model
+
+Every model call and tool call reserves a fixed cost from the budget. The default currency is `USD_MICROCENTS` — 1 unit = $0.00001.
+
+| Amount | USD |
+|--------|-----|
+| 100,000 | $0.001 |
+| 1,000,000 | $0.01 |
+| 10,000,000 | $0.10 |
+| 100,000,000 | $1.00 |
+
+**Example.** With a $5 budget (500,000,000 units) and `claude-opus` at 1,500,000/call, you can afford ~333 model calls. The `lowBudgetThreshold` (default 10,000,000 = $0.10) triggers model downgrade when budget is nearly exhausted.
+
+**Setting tool costs.** Start with defaults (100,000/call). After your first session, check `sessionSummary.unconfiguredTools` for the list of tools that need explicit costs. External API tools (web search, code execution) typically cost 500K-1M. Lightweight tools (text formatting, math) cost 10K-50K.
 
 ## What the plugin does
 
