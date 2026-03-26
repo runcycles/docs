@@ -23,10 +23,12 @@ Add minimal configuration to your OpenClaw config file (typically `openclaw.json
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "cyclesBaseUrl": "http://localhost:7878",
-        "cyclesApiKey": "cyc_live_...",
-        "tenant": "my-org",
-        "currency": "USD_MICROCENTS"
+        "config": {
+          "cyclesBaseUrl": "http://localhost:7878",
+          "cyclesApiKey": "cyc_live_...",
+          "tenant": "my-org",
+          "currency": "USD_MICROCENTS"
+        }
       }
     }
   }
@@ -74,7 +76,9 @@ Add the plugin to your OpenClaw config file (typically `openclaw.config.json`):
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme"
+        "config": {
+          "tenant": "acme"
+        }
       }
     }
   }
@@ -90,9 +94,11 @@ If you prefer to inline the connection details:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "cyclesBaseUrl": "http://localhost:7878",
-        "cyclesApiKey": "your-api-key",
-        "tenant": "acme"
+        "config": {
+          "cyclesBaseUrl": "http://localhost:7878",
+          "cyclesApiKey": "your-api-key",
+          "tenant": "acme"
+        }
       }
     }
   }
@@ -132,17 +138,19 @@ Model fallbacks support both single values and ordered chains. When budget is lo
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "modelFallbacks": {
-          "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
-          "gpt-4o": "gpt-4o-mini"
-        },
-        "modelBaseCosts": {
-          "claude-opus-4-20250514": 1500000,
-          "claude-sonnet-4-20250514": 300000,
-          "claude-haiku-4-5-20251001": 100000,
-          "gpt-4o": 1000000,
-          "gpt-4o-mini": 100000
+        "config": {
+          "tenant": "acme",
+          "modelFallbacks": {
+            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
+            "gpt-4o": "gpt-4o-mini"
+          },
+          "modelBaseCosts": {
+            "claude-opus-4-20250514": 1500000,
+            "claude-sonnet-4-20250514": 300000,
+            "claude-haiku-4-5-20251001": 100000,
+            "gpt-4o": 1000000,
+            "gpt-4o-mini": 100000
+          }
         }
       }
     }
@@ -161,11 +169,13 @@ Configure per-tool cost estimates via `toolBaseCosts`:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "toolBaseCosts": {
-          "web_search": 500000,
-          "code_execution": 1000000,
-          "file_read": 50000
+        "config": {
+          "tenant": "acme",
+          "toolBaseCosts": {
+            "web_search": 500000,
+            "code_execution": 1000000,
+            "file_read": 50000
+          }
         }
       }
     }
@@ -204,9 +214,11 @@ Control which tools can be called using allowlists and blocklists with glob-styl
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "toolAllowlist": ["web_search", "code_*"],
-        "toolBlocklist": ["dangerous_*"]
+        "config": {
+          "tenant": "acme",
+          "toolAllowlist": ["web_search", "code_*"],
+          "toolBlocklist": ["dangerous_*"]
+        }
       }
     }
   }
@@ -226,10 +238,12 @@ When budget is low, the plugin can apply multiple composable strategies beyond m
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
-        "maxTokensWhenLow": 1024,
-        "expensiveToolThreshold": 1000000
+        "config": {
+          "tenant": "acme",
+          "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
+          "maxTokensWhenLow": 1024,
+          "expensiveToolThreshold": 1000000
+        }
       }
     }
   }
@@ -273,9 +287,11 @@ Scope budgets to individual users or sessions:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "userId": "user-123",
-        "sessionId": "session-456"
+        "config": {
+          "tenant": "acme",
+          "userId": "user-123",
+          "sessionId": "session-456"
+        }
       }
     }
   }
@@ -295,14 +311,16 @@ Configure reservation behavior per-tool or globally:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "reservationTtlMs": 60000,
-        "toolReservationTtls": {
-          "code_execution": 120000
-        },
-        "overagePolicy": "ALLOW_IF_AVAILABLE",
-        "toolOveragePolicies": {
-          "web_search": "ALLOW_IF_AVAILABLE"
+        "config": {
+          "tenant": "acme",
+          "reservationTtlMs": 60000,
+          "toolReservationTtls": {
+            "code_execution": 120000
+          },
+          "overagePolicy": "ALLOW_IF_AVAILABLE",
+          "toolOveragePolicies": {
+            "web_search": "ALLOW_IF_AVAILABLE"
+          }
         }
       }
     }
@@ -324,10 +342,12 @@ Optionally retry tool reservations that are denied, useful when budget is being 
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "retryOnDeny": true,
-        "retryDelayMs": 2000,
-        "maxRetries": 1
+        "config": {
+          "tenant": "acme",
+          "retryOnDeny": true,
+          "retryDelayMs": 2000,
+          "maxRetries": 1
+        }
       }
     }
   }
@@ -347,8 +367,10 @@ Get notified when the budget level changes (e.g., healthy → low → exhausted)
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "budgetTransitionWebhookUrl": "https://hooks.example.com/budget-alert"
+        "config": {
+          "tenant": "acme",
+          "budgetTransitionWebhookUrl": "https://hooks.example.com/budget-alert"
+        }
       }
     }
   }
@@ -390,8 +412,10 @@ The summary is attached to `ctx.metadata["cycles-budget-guard"]` and can also be
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "analyticsWebhookUrl": "https://analytics.example.com/sessions"
+        "config": {
+          "tenant": "acme",
+          "analyticsWebhookUrl": "https://analytics.example.com/sessions"
+        }
       }
     }
   }
@@ -430,11 +454,13 @@ Override the default currency per-tool or per-model:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "currency": "USD_MICROCENTS",
-        "modelCurrency": "TOKENS",
-        "toolCurrencies": {
-          "web_search": "CREDITS"
+        "config": {
+          "tenant": "acme",
+          "currency": "USD_MICROCENTS",
+          "modelCurrency": "TOKENS",
+          "toolCurrencies": {
+            "web_search": "CREDITS"
+          }
         }
       }
     }
@@ -453,9 +479,11 @@ Surface hierarchical budget information by setting a parent budget ID:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "budgetId": "team-alpha-agent",
-        "parentBudgetId": "team-alpha"
+        "config": {
+          "tenant": "acme",
+          "budgetId": "team-alpha-agent",
+          "parentBudgetId": "team-alpha"
+        }
       }
     }
   }
@@ -473,11 +501,13 @@ Test the plugin without a live Cycles server:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "cyclesBaseUrl": "http://unused",
-        "cyclesApiKey": "unused",
-        "dryRun": true,
-        "dryRunBudget": 100000000
+        "config": {
+          "tenant": "acme",
+          "cyclesBaseUrl": "http://unused",
+          "cyclesApiKey": "unused",
+          "dryRun": true,
+          "dryRunBudget": 100000000
+        }
       }
     }
   }
@@ -520,8 +550,10 @@ Set `logLevel: "debug"` to see the plugin's activity:
   "plugins": {
     "entries": {
       "cycles-openclaw-budget-guard": {
-        "tenant": "acme",
-        "logLevel": "debug"
+        "config": {
+          "tenant": "acme",
+          "logLevel": "debug"
+        }
       }
     }
   }
