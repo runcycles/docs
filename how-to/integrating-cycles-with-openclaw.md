@@ -7,6 +7,26 @@ description: "Add budget enforcement to OpenClaw agents using the cycles-opencla
 
 This guide shows how to add budget enforcement to OpenClaw agents using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin. The plugin handles the full reserve → commit → release lifecycle for both model and tool calls automatically, with no custom code required.
 
+## Why budget enforcement?
+
+AI agents make autonomous decisions — calling models, invoking tools, retrying on failure — with no human in the loop. Without runtime enforcement:
+
+- **Runaway spend** — a single [runaway agent](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) can blow through an entire budget in minutes. Provider spending caps are account-wide and react too slowly. Rate limits don't account for cost.
+- **Uncontrolled side-effects** — an agent can send hundreds of emails, trigger deployments, or call dangerous APIs with nothing to stop it. Cost limits alone don't help — some actions are consequential regardless of price.
+- **Noisy neighbors** — in multi-tenant or multi-user setups, one agent can consume the entire team budget, starving other users.
+- **No visibility** — when a session ends, you have no idea what it spent, which tools it called most, or whether it was cost-efficient.
+- **Graceless failure** — budget runs out and the agent crashes instead of adapting.
+
+This plugin solves all five. Every model call and tool invocation is budget-checked *before* execution. When budget runs low, models are automatically downgraded, expensive tools are disabled, and the agent is told about its remaining budget via prompt hints so it can self-regulate. Side-effects are capped per tool via `toolCallLimits`. Spend is isolated per user, session, or team. And every session produces a full cost breakdown.
+
+The result: predictable spend and controlled behavior — even when agents run autonomously for hours.
+
+::: tip When to use this vs. the Cycles client directly
+If you're building a custom agent framework, use the [Cycles TypeScript client](/how-to/using-the-cycles-client-programmatically) directly. If you're running OpenClaw, this plugin gives you the same enforcement with zero custom code — just configure and go.
+:::
+
+For background on why rate limits and provider caps aren't enough, see [Exposure: Why Rate Limits Leave Agents Unbounded](/concepts/exposure-why-rate-limits-leave-agents-unbounded) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
+
 ## Quick start
 
 Get budget enforcement running in under a minute:
@@ -229,6 +249,34 @@ Control which tools can be called using allowlists and blocklists with glob-styl
 - Supports exact names and `*` wildcards (prefix: `code_*`, suffix: `*_tool`, all: `*`)
 - Tools blocked by access lists are rejected before any budget reservation is attempted
 
+## Tool call limits
+
+Cap the number of times a specific tool can be invoked per session. Useful for consequential actions like sending emails or triggering deployments:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-budget-guard": {
+        "config": {
+          "tenant": "acme",
+          "toolCallLimits": {
+            "send_email": 10,
+            "deploy": 3
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Once a tool reaches its limit, further calls are blocked with a descriptive reason. Tools without a limit are unrestricted. Limits reset on each new agent session.
+
+::: tip Combine with cost limits
+Tool call limits complement cost-based budgeting. Use `toolBaseCosts` to control spend and `toolCallLimits` to cap side-effects independently — an agent can exhaust its budget before hitting call limits, or vice versa.
+:::
+
 ## Graceful degradation strategies
 
 When budget is low, the plugin can apply multiple composable strategies beyond model downgrading:
@@ -402,6 +450,7 @@ The plugin tracks per-tool and per-model cost breakdowns throughout the session.
 - Final remaining/spent/reserved balances
 - Total reservations made
 - Per-component cost breakdown (e.g., `tool:web_search`, `model:claude-sonnet-4-20250514`)
+- Per-tool invocation counts (e.g., `{ web_search: 15, code_execution: 3 }`)
 - Session timing (start/end timestamps)
 - Average cost and estimated remaining calls
 
@@ -538,8 +587,8 @@ The plugin exports two structured error types:
 import { BudgetExhaustedError, ToolBudgetDeniedError } from "@runcycles/openclaw-budget-guard";
 ```
 
-- **`BudgetExhaustedError`** (`code: "BUDGET_EXHAUSTED"`) — thrown when budget is exhausted and `failClosed: true`
-- **`ToolBudgetDeniedError`** (`code: "TOOL_BUDGET_DENIED"`) — structured error type for tool denials
+- **`BudgetExhaustedError`** (`code: "BUDGET_EXHAUSTED"`) — thrown when budget is exhausted and `failClosed: true`. Includes `remaining`, `tenant`, and `budgetId` properties. The message includes an actionable hint to increase budget via the Cycles API.
+- **`ToolBudgetDeniedError`** (`code: "TOOL_BUDGET_DENIED"`) — structured error type for tool denials. Includes `toolName` property.
 
 ## Verifying the integration
 
@@ -560,14 +609,31 @@ Set `logLevel: "debug"` to see the plugin's activity:
 }
 ```
 
-You should see log lines like:
+On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[cycles-budget-guard] Plugin initialized tenant=acme
+[cycles-budget-guard] v0.3.4 starting
+  tenant: acme
+  cyclesBaseUrl: http://localhost:7878
+  cyclesApiKey: ****_key
+  currency: USD_MICROCENTS
+  failClosed: true
+  dryRun: false
+  logLevel: debug
+  lowBudgetThreshold: 10000000
+  exhaustedThreshold: 0
+```
+
+The plugin also warns about common misconfigurations on startup (e.g., `downgrade_model` strategy with no `modelFallbacks`, or no `toolBaseCosts` configured).
+
+With `logLevel: "debug"`, you'll see per-call activity:
+
+```
 [cycles-budget-guard] before_model_resolve: model=claude-sonnet-4-20250514 level=healthy
 [cycles-budget-guard] before_prompt_build: injecting hint (142 chars)
-[cycles-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=500000
-[cycles-budget-guard] after_tool_call: committed 500000 for tool=web_search
+[cycles-budget-guard] Tool "web_search" has no entry in toolBaseCosts — using default estimate (100000 USD_MICROCENTS)
+[cycles-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=100000
+[cycles-budget-guard] after_tool_call: committed 100000 for tool=web_search
 [cycles-budget-guard] Agent session budget summary: remaining=9500000 spent=500000 reservations=1
 ```
 
@@ -615,6 +681,7 @@ You should see log lines like:
 | `toolReservationTtls` | object | — | Tool name → TTL override (ms) |
 | `toolOveragePolicies` | object | — | Tool name → overage policy override |
 | `costEstimator` | function | — | Custom callback for dynamic cost estimation |
+| `toolCallLimits` | object | — | Map: tool name → max invocations per session |
 
 ### Prompt hints
 
@@ -699,6 +766,128 @@ If you're already using the Cycles TypeScript client directly (see [Programmatic
 | Tool access control | Your code | Automatic via `toolAllowlist` / `toolBlocklist` |
 
 The plugin is the recommended approach for OpenClaw users — it requires zero custom code and covers the full lifecycle automatically.
+
+## Config presets
+
+Common starting configurations for typical deployment scenarios.
+
+### Strict enforcement
+
+For production agents handling real spend. Blocks on exhaustion, downgrades models, caps tool calls:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-budget-guard": {
+        "config": {
+          "tenant": "my-org",
+          "failClosed": true,
+          "lowBudgetStrategies": ["downgrade_model", "disable_expensive_tools", "limit_remaining_calls"],
+          "modelFallbacks": {
+            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]
+          },
+          "modelBaseCosts": {
+            "claude-opus-4-20250514": 1500000,
+            "claude-sonnet-4-20250514": 300000,
+            "claude-haiku-4-5-20251001": 100000
+          },
+          "toolBaseCosts": {
+            "web_search": 500000,
+            "code_execution": 1000000
+          },
+          "toolCallLimits": {
+            "send_email": 10,
+            "deploy": 3
+          },
+          "maxRemainingCallsWhenLow": 5
+        }
+      }
+    }
+  }
+}
+```
+
+### Development / testing
+
+Dry-run mode with generous budget. No Cycles server needed:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-budget-guard": {
+        "config": {
+          "tenant": "dev",
+          "cyclesBaseUrl": "http://unused",
+          "cyclesApiKey": "unused",
+          "dryRun": true,
+          "dryRunBudget": 500000000,
+          "logLevel": "debug"
+        }
+      }
+    }
+  }
+}
+```
+
+### Cost-conscious
+
+Aggressive cost savings. Low thresholds, model downgrade with token limits, expensive tools disabled early:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-budget-guard": {
+        "config": {
+          "tenant": "my-org",
+          "lowBudgetThreshold": 5000000,
+          "exhaustedThreshold": 100000,
+          "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
+          "maxTokensWhenLow": 512,
+          "expensiveToolThreshold": 200000,
+          "modelFallbacks": {
+            "claude-opus-4-20250514": "claude-haiku-4-5-20251001",
+            "gpt-4o": "gpt-4o-mini"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+**"Skipping registration" warning during install**
+- This is normal. OpenClaw loads the plugin during install before your config is written. The plugin detects the missing config, logs a warning, and skips registration. After you add your config and restart the gateway, the plugin will register normally.
+
+**Plugin not loading**
+- Verify the plugin is enabled: `openclaw plugins list`
+- Check that `openclaw.plugin.json` is included in the installed package
+
+**"cyclesBaseUrl is required" error**
+- Set `cyclesBaseUrl` in config or export `CYCLES_BASE_URL` env var
+
+**"tenant is required" error**
+- Add `"tenant": "your-org"` to the plugin config
+
+**Budget always shows "healthy"**
+- Verify `currency`, `tenant`, and `budgetId` match your Cycles setup
+- Set `logLevel: "debug"` to see raw balance responses
+
+**Tools not being blocked**
+- Check `toolBaseCosts` includes your tool (default cost is 100,000 units)
+- Check `failClosed` is `true` (default)
+
+**"No toolBaseCosts configured" warning**
+- This is informational. Without `toolBaseCosts`, all tools use the default cost estimate (100,000 units). Add entries for your tools to improve budgeting accuracy.
+
+**Model not being downgraded**
+- The exact model name must match a key in `modelFallbacks`
+- Check model costs in `modelBaseCosts` — fallback must be cheaper than remaining budget
+- If you see "no modelFallbacks configured" warning, add a `modelFallbacks` entry
 
 ## Next steps
 
