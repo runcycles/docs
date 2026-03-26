@@ -183,15 +183,17 @@ MCP adoption isn't slowing down — it's accelerating. The question isn't whethe
 
 Here's a practical path:
 
+> **Already using Claude Code, Cursor, or Windsurf?** The fastest path is the [Cycles MCP server](/quickstart/getting-started-with-the-mcp-server) — single config change, no code modifications. Every tool call passes through reserve-commit enforcement immediately.
+
+For everyone else, here's a practical path:
+
 1. **Scan your existing MCP servers.** Run [`mcp-scan`](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan) (`uvx mcp-scan@latest`) against your installed servers. Check for known tool poisoning patterns and missing authentication. This is table stakes.
 
 2. **Start with shadow mode.** Deploy runtime authority in [observe-only mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) alongside your existing agents. Every MCP tool call gets evaluated but not blocked. You'll see which calls _would_ be denied — and you'll likely discover policy violations you didn't know existed.
 
-3. **Add hard limits to your highest-risk workflows.** Pick the workflow that makes the most MCP tool calls or handles the most sensitive data. Add [per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) and [action authority](/blog/ai-agent-action-control-hard-limits-side-effects). Block tool calls that exceed policy. This single change addresses MCP02 (excessive privilege), MCP03 (tool poisoning), and MCP08 (insufficient logging) simultaneously.
+3. **Add hard limits to your highest-risk workflows.** Pick the workflow that makes the most MCP tool calls or handles the most sensitive data. Add [per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) and [action authority](/blog/ai-agent-action-control-hard-limits-side-effects). Block tool calls that exceed policy. This single change addresses MCP02 (privilege escalation), MCP03 (tool poisoning), and MCP08 (lack of audit) simultaneously.
 
-4. **For MCP in Claude Code, Cursor, or Windsurf** — the [Cycles MCP server](/quickstart/getting-started-with-the-mcp-server) adds budget-aware enforcement with a single config change. Every tool call passes through reserve-commit. No code changes to your agent.
-
-5. **[Run the demo](/demos/)** — Watch a poisoned tool call get blocked in real time. Then imagine the same enforcement running on every MCP tool call in your production system.
+4. **[Run the demo](/demos/)** — Watch a poisoned tool call get blocked in real time. Then imagine the same enforcement running on every MCP tool call in your production system.
 
 ## Sources
 
