@@ -23,7 +23,7 @@ docker compose up --build
 
 The demo provisions its own tenant and budget automatically. Watch the terminal output — you'll see the unguarded agent overspend, then the guarded agent stop at the $1.00 limit.
 
-[View on GitHub](https://github.com/runcycles/cycles-runaway-demo)
+[View on GitHub](https://github.com/runcycles/cycles-runaway-demo) · [Blog walkthrough](/blog/runaway-demo-agent-cost-blowup-walkthrough)
 
 ## Action Authority Demo
 
