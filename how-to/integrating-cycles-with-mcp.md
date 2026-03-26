@@ -21,7 +21,7 @@ npm install @runcycles/mcp-server   # or use npx at runtime
 
 ```bash
 export CYCLES_API_KEY="cyc_live_..."    # from Admin Server
-export CYCLES_BASE_URL="http://localhost:7878"  # optional
+export CYCLES_BASE_URL="http://localhost:7878"  # required — your Cycles server URL
 ```
 
 For local development without an API key:
