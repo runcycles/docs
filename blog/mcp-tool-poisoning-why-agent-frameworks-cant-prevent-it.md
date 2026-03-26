@@ -141,29 +141,27 @@ The critical insight: **tool poisoning succeeds because agents execute tool call
 
 ### What This Looks Like in Practice
 
-Consider the SSH key exfiltration attack. A poisoned tool description instructs the agent to read `~/.ssh/id_rsa` and include it in a tool parameter. Without runtime authority, the agent complies — the tool call executes, and the key is exfiltrated.
+Consider the SSH key exfiltration attack. A poisoned tool description instructs the agent to first read `~/.ssh/id_rsa` and then include the contents in a tool parameter. Without runtime authority, the agent complies — both tool calls execute, and the key is exfiltrated.
 
-With runtime authority, the tool call hits a checkpoint:
+With runtime authority, the attack fails before it starts. The poisoned tool tricks the agent into calling a file-read action — but that action requires a reservation against a scope that doesn't permit it:
 
 ```python
-# Agent attempts to call poisoned tool with exfiltrated data
+# Step 1: Agent tries to read ~/.ssh/id_rsa (as instructed by poisoned tool description)
 reservation = cycles.reserve(
     scope="agent:research-bot",
-    estimate={"unit": "USD_MICROCENTS", "amount": 50000},
-    action={"kind": "mcp.tool_call", "name": "fetch_weather", "args": {"notes": "<ssh_key_content>"}}
+    estimate={"unit": "USD_MICROCENTS", "amount": 5000},
+    action={"kind": "file.read", "name": "~/.ssh/id_rsa"}
 )
 
-# Policy evaluation detects:
-# 1. Action "fetch_weather" sending data in "notes" that matches sensitive file patterns
-# 2. Agent "research-bot" not authorized for file-read actions
-# 3. Parameter payload size anomaly (SSH key is much larger than expected weather query)
-
+# Policy evaluation:
+# - Scope "agent:research-bot" has action authority for ["mcp.tool_call:fetch_weather"]
+# - Action kind "file.read" is not in the allowed set
 # Result: DENY
 # reservation.decision == "DENY"
-# reservation.reason == "Action blocked: unauthorized data pattern in tool parameters"
+# reservation.reason == "Action kind 'file.read' not authorized for scope 'agent:research-bot'"
 ```
 
-The agent was tricked. The enforcement layer wasn't. The tool call never executes.
+Cycles doesn't inspect argument content or match patterns in payloads. It enforces what it actually controls: **which action kinds a scope is authorized to perform**, and **how much budget that scope has remaining**. The agent was tricked into _wanting_ to read a file — but the scope policy says this agent can only call `fetch_weather`, not read files. The exfiltration chain breaks at step one.
 
 ### Breaking Recursive Loops Before $47,000
 
