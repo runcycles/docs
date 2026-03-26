@@ -315,7 +315,7 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 **Checklist:**
 
 1. Is `CYCLES_API_KEY` set in the MCP server environment? Without it, the server cannot authenticate.
-2. Is `CYCLES_BASE_URL` pointing to your server? The default is `https://api.runcycles.io`. For local development, set it to `http://localhost:7878`.
+2. Is `CYCLES_BASE_URL` set? **There is no default** — this variable is required. Set it to your Cycles server URL (e.g., `http://localhost:7878` for local development).
 3. Is `CYCLES_MOCK` set to `"true"`? Mock mode returns realistic responses without contacting a real server. Remove it for production use.
 
 ### MCP server not appearing in Claude Desktop or Cursor

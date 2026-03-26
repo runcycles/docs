@@ -44,6 +44,10 @@ If your agent runs in an MCP-compatible host — Claude Desktop, Claude Code, Cu
 ```bash
 # Claude Code
 claude mcp add cycles -- npx -y @runcycles/mcp-server
+
+# Set required environment variables
+export CYCLES_API_KEY=cyc_live_...
+export CYCLES_BASE_URL=https://your-cycles-server.example.com
 ```
 
 The agent calls `cycles_reserve`, `cycles_commit`, and other tools as part of its reasoning. No application code wraps the LLM call.
