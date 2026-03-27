@@ -617,7 +617,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[cycles-budget-guard] v0.6.0 starting
+[cycles-budget-guard] v0.6.1 starting
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
   cyclesApiKey: ****_key
