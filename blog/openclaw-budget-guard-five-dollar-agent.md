@@ -108,7 +108,7 @@ The key is configuring the fallback chain correctly. `"claude-opus-4-20250514": 
 
 ### Tool limits catch more bugs than budget limits
 
-A `toolCallLimits: { "web_search": 20 }` caught a search loop that budget enforcement alone would have allowed to continue. Each search cost $0.005 — cheap individually, but 200 of them would have consumed the entire budget on a single tool. The limit fired at call #21 and the agent adapted by working with the data it already had.
+A `toolCallLimits: { "web_search": 20 }` caught a search loop that budget enforcement alone would have allowed to continue. Each search cost $0.05 — cheap individually, but 200 of them would have burned $10 on a single tool. The limit fired at call #21 and the agent adapted by working with the data it already had.
 
 ### The session summary is your tuning guide
 
