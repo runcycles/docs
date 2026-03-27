@@ -59,7 +59,7 @@ Set defaultModelName in plugin config.
 
 **Feature request:** [openclaw/openclaw#55771](https://github.com/openclaw/openclaw/issues/55771) — include `model` and `provider` in the `before_model_resolve` event.
 
-## Lesson 2: You can't block a model call
+## Lesson 2: You can't cleanly block a model call
 
 OpenClaw's `before_tool_call` hook has clean blocking semantics:
 
@@ -78,7 +78,7 @@ When our plugin throws `BudgetExhaustedError`, OpenClaw catches it (the default 
 return { modelOverride: "__cycles_budget_exhausted__" };
 ```
 
-OpenClaw passes this to the LLM provider, which rejects it (`model not found`). The agent gets no response. The user sees:
+OpenClaw passes this to the LLM provider, which rejects it (`model not found`). The provider rejects the call before generation, so the agent produces no response. The user sees:
 
 ```
 ⚠ Agent failed before reply: Unknown model: openai/__cycles_budget_exhausted__
@@ -164,7 +164,7 @@ These are filed or planned feature requests:
 
 ## Build your own
 
-If you're building an OpenClaw plugin, start with our source as a reference: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard). The patterns for config resolution, hook registration, state management, and error handling are all battle-tested.
+If you're building an OpenClaw plugin, start with our source as a reference: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard). The patterns for config resolution, hook registration, state management, and error handling are all used in our released plugin.
 
 Full integration guide: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw)
 
