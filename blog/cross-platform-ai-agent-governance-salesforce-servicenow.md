@@ -141,7 +141,16 @@ The reservation is denied before the email function executes. The next Slack not
 
 The Cycles reservation ledger records every governed action — every attempt, every allow, every deny — with timestamps, platform origin, agent identity, and risk points consumed.
 
-In an emergency, setting the tenant-level budget to zero immediately halts all AI agent actions across all platforms — without logging into Salesforce, without logging into ServiceNow, without touching any agent code. One API call. Universal stop.
+If the CISO needs to halt all AI agent activity immediately — not wait for a budget to drain, but stop everything now — the Cycles Admin API supports a tenant-level kill switch:
+
+```
+PATCH /v1/admin/tenants/acme-corp
+{ "status": "SUSPENDED" }
+```
+
+A suspended tenant blocks all operations at the authentication layer. Every subsequent request from any connector — Salesforce, ServiceNow, custom agents — returns `401 UNAUTHORIZED` with reason `TENANT_SUSPENDED` before any reservation logic runs. No agent code changes. No platform logins. One API call, universal stop.
+
+When the incident is resolved, reactivate with `{ "status": "ACTIVE" }` and agents resume normally. The suspension is reversible; closure (`CLOSED`) is not.
 
 ### Scenario 2: The CFO wants a single number
 
