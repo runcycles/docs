@@ -131,9 +131,9 @@ With a shared RISK_POINTS budget of 500 per hour at the tenant level — where `
 ```json
 // 409 Conflict
 {
-  "decision": "DENY",
-  "affected_scopes": ["tenant:acme-corp"],
-  "reason_code": "BUDGET_EXCEEDED"
+  "error": "BUDGET_EXCEEDED",
+  "message": "Insufficient risk-point budget at scope tenant:acme-corp",
+  "request_id": "req_7x9f..."
 }
 ```
 
