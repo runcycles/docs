@@ -105,7 +105,7 @@ Connecting a platform to the Cycles governance plane requires a minimal connecto
 
 In both cases, the connector stores no data in the platform — all state lives in the Cycles server. The connector can be added or removed with zero side effects. The argument "just build governance in Apex" or "just build it in ServiceNow scripting" applies to the connector itself. It does not apply to the cross-platform governance logic — atomic budget enforcement across concurrent agents on different platforms, hierarchical scope enforcement, idempotent commit/release with automatic expiry. Building that correctly requires exactly what the Cycles server already provides.
 
-## Three Scenarios
+## How this works in practice
 
 ### Scenario 1: The CISO needs a kill switch
 
@@ -266,7 +266,7 @@ Three forces are converging:
 
 **AI spend is crossing the visibility threshold.** As enterprises scale from pilot to production, AI spend that was acceptable during experimentation becomes a line item the CFO scrutinizes. The first question is always "can we see this by platform and by business process?" Without a unified governance plane, the answer requires manual reconciliation across multiple billing systems.
 
-The single most likely trigger: an enterprise deploys Agentforce to production and discovers that a customer support interaction kicked off agents on both platforms, with no coordination, no shared limit, and no unified audit trail. The first cross-platform incident creates the urgency.
+A common trigger is simple: an enterprise deploys Agentforce to production and discovers that a customer support interaction kicked off agents on both platforms, with no coordination, no shared limit, and no unified audit trail. The first cross-platform incident creates the urgency.
 
 ## Getting Started
 
