@@ -102,7 +102,7 @@ Distributed systems solved cascading failures decades ago with circuit breakers,
 | **Bulkhead isolation** | Memory poisoning blast radius — one agent's failure contaminates all others | [Scope derivation](/protocol/how-scope-derivation-works-in-cycles) isolates each agent's resource consumption and action authority |
 | **Circuit breaker** | Coordination failures that cascade — one agent's bad state triggers failures in dependent agents | [Reserve returns DENY](/protocol/how-reserve-commit-works-in-cycles) when budget is depleted, breaking the cascade at the agent boundary |
 | **Transaction boundaries** | State race conditions — concurrent agents reading stale data | [Reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) — budget is atomically reserved before execution, committed on success, released on failure |
-| **Audit trail** | Temporal distance in memory poisoning — can't trace which agent wrote the bad data | Every reserve/commit/release is [recorded with scope, amount, action kind, and decision](/protocol/standard-metrics-and-metadata-in-cycles) |
+| **Audit trail** | Temporal distance in memory poisoning — can't trace which agent wrote the bad data | Every reserve, commit, and release is [recorded with scope, amount, timestamps, and metadata](/protocol/standard-metrics-and-metadata-in-cycles) — including correlation IDs that trace back to the originating agent and workflow |
 | **Least privilege** | Context starvation and scope creep — agents consuming resources beyond their role | [Action authority](/blog/ai-agent-action-control-hard-limits-side-effects) restricts which action kinds each agent scope can perform |
 
 The critical difference from traditional distributed systems: the "services" in a multi-agent system are non-deterministic. You can't write integration tests that cover the state space. This makes pre-execution enforcement — not post-execution monitoring — the only reliable containment mechanism.
@@ -117,23 +117,29 @@ Memory poisoning propagates because agents share an implicit trust boundary — 
 
 When Agent A writes a hallucinated value, downstream agents that operate under different scopes still need their own reservations to act on that data. If the resulting actions fall outside their authorized action kinds or budget constraints, the [action authority layer](/blog/ai-agent-action-control-hard-limits-side-effects) blocks them — even though the agent believes it has valid data:
 
+Consider the memory poisoning scenario from earlier. Agent C — the billing updater — receives hallucinated pricing data from shared memory and tries to act on it. Two independent enforcement layers intervene.
+
+First, **budget isolation**: the billing-updater agent has its own scope budget of $25 (set in the hierarchy below). If the operation's estimated cost exceeds the remaining budget, the reservation is denied:
+
 ```python
-# Agent C tries to update billing based on hallucinated pricing from shared memory
+# Agent C tries to update billing — but its $25 scope budget is nearly exhausted
 reservation = cycles.reserve(
     scope="agent:billing-updater",
-    estimate={"unit": "USD_MICROCENTS", "amount": 500000},
+    estimate={"unit": "USD_MICROCENTS", "amount": 180000},
     action={"kind": "billing.update", "name": "bulk-price-change"}
 )
 
-# Policy: scope "agent:billing-updater" has a per-operation cap of $100
-# The hallucinated "$499/year" across all accounts exceeds the per-operation cap
+# Policy: scope "agent:billing-updater" has $25 total budget, $2.40 remaining
+# Estimated cost of $18.00 exceeds remaining budget
 # Result: DENY
-# reason: "Estimated amount exceeds per-operation cap for scope 'agent:billing-updater'"
+# reason: "Insufficient budget in scope 'agent:billing-updater'"
 ```
+
+Second, **action authority via [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do)**: even if the dollar budget were sufficient, toolset-scoped risk-point budgets can independently cap high-blast-radius operations. A bulk billing update that affects all accounts scores high on risk points — and the risk-point budget for external writes may already be exhausted from earlier operations in the workflow.
 
 The hallucination reached Agent C. The damage didn't reach the billing system. Runtime authority doesn't fix the hallucination — it ensures that a corrupted decision in one agent can't cascade into irreversible side effects across the system.
 
-Contrast this with the memory poisoning scenario without scope isolation: Agent C has the same API key, the same permissions, and the same budget pool as Agent A. Nothing external evaluates whether "update billing for all accounts" is an action Agent C should be performing at this scale. The hallucinated pricing flows straight into the billing system.
+Contrast this with the memory poisoning scenario without scope isolation: Agent C shares the same budget pool and permissions as Agent A. Nothing external evaluates whether "update billing for all accounts" is an action Agent C should be performing at this scale. The hallucinated pricing flows straight into the billing system.
 
 ### Action Authority Prevents Cross-Agent Scope Creep
 
@@ -160,18 +166,22 @@ The research agent may have received a coordination signal from another agent sa
 
 ### Hierarchical Scopes Contain Coordination Failures
 
-For complex multi-agent workflows, [hierarchical scope derivation](/protocol/how-scope-derivation-works-in-cycles) creates nested budget and permission boundaries:
+For complex multi-agent workflows, [hierarchical scope derivation](/protocol/how-scope-derivation-works-in-cycles) creates nested budget boundaries. The protocol's canonical hierarchy — tenant → workspace → app → workflow → agent → toolset — means a single reservation is checked atomically against every ancestor scope:
 
 ```
-tenant:acme-corp ($10,000/month)
-  └── workflow:document-processing ($500/run)
-        ├── agent:research-bot ($50, actions: [llm.completion, tool.web_search])
-        ├── agent:analysis-bot ($100, actions: [llm.completion, tool.document_read])
-        ├── agent:reporting-bot ($75, actions: [llm.completion, email.send])
-        └── agent:billing-updater ($25, actions: [billing.update], cap: $100/operation)
+tenant:acme-corp                ($10,000/month — hard ceiling)
+  └── workflow:document-processing  ($500/run)
+        ├── agent:research-bot        ($50 USD budget)
+        │     └── toolset:web-search    (200 RISK_POINTS)
+        ├── agent:analysis-bot        ($100 USD budget)
+        │     └── toolset:doc-read      (100 RISK_POINTS)
+        ├── agent:reporting-bot       ($75 USD budget)
+        │     └── toolset:email         (50 RISK_POINTS — 1 email max)
+        └── agent:billing-updater     ($25 USD budget)
+              └── toolset:billing-write  (25 RISK_POINTS)
 ```
 
-Each agent's budget and permissions are independently constrained. A coordination failure where the research agent enters a loop burns $50 — not the workflow's $500 or the tenant's $10,000. The billing updater can modify billing records, but only up to $100 per operation — so even if memory poisoning feeds it wrong data, the maximum damage per action is capped.
+Each agent's dollar budget and risk-point budget are independently constrained. A coordination failure where the research agent enters a loop burns $50 — not the workflow's $500 or the tenant's $10,000. The reporting bot can send at most one email per run (50 risk points per email, 50 risk-point budget). The billing updater has a tight $25 dollar budget — so even if memory poisoning feeds it wrong data, the maximum spend on billing operations is capped at $25 for the entire run.
 
 This is bulkhead isolation for AI agents. The question isn't "what went wrong?" — it's "how far can the damage spread?" With scope isolation, the answer is always bounded.
 
