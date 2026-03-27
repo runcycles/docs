@@ -3,14 +3,14 @@ title: "We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt"
 date: 2026-03-28
 author: Albert Mavashev
 tags: [openclaw, budgets, agents, graceful-degradation, model-downgrade, production, cost-control, ai-agent-cost, llm-cost-management]
-description: "An OpenClaw research agent hits a complex query that would cost $12. With a $5 Cycles budget, it downgrades models, disables expensive tools, self-regulates via prompt hints, and completes the task for $4.85. Here's exactly what happened."
+description: "A representative OpenClaw research session that would have cost $12 is constrained to a $5 Cycles budget. The agent downgrades models, disables expensive tools, self-regulates via prompt hints, and finishes for $4.85."
 blog: true
 sidebar: false
 ---
 
 # We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt
 
-Most AI agent cost controls are kill switches. Budget runs out, agent dies mid-task, user gets nothing. [Cycles](https://runcycles.io) does something different: it makes the agent *adapt*.
+Many AI agent cost controls are kill switches. Budget runs out, agent dies mid-task, user gets nothing. [Cycles](https://runcycles.io) does something different: it makes the agent *adapt*.
 
 A research agent running on OpenClaw picks up a complex competitive analysis. It starts with Claude Opus to draft the report, calls web search to find market data, runs code execution to build charts, and iterates. Normal sessions cost $2–4. This one is harder — it needs 3x the usual tool calls.
 
@@ -169,17 +169,13 @@ Three things we learned the hard way:
 
 > **New to Cycles?** [Cycles](https://runcycles.io) is an open-source runtime authority system for AI agents. It enforces budgets, action limits, and resource boundaries — before execution, not after. The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin brings Cycles to OpenClaw without changing agent logic. See [What is Cycles?](/quickstart/what-is-cycles) to learn more.
 
-## Try it on your next session
+## Try it
 
 ```bash
 openclaw plugins install @runcycles/openclaw-budget-guard
 ```
 
-Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see the degradation behavior without a Cycles server. Then [deploy the full stack](/quickstart/deploying-the-full-cycles-stack) and watch your agent adapt instead of crash.
-
-Full documentation: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw)
-
-Source code: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard)
+Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see degradation without a Cycles server. Then [deploy the full stack](/quickstart/deploying-the-full-cycles-stack) and watch your agent adapt instead of crash. Full documentation: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw). Source: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard).
 
 ## Related reading
 
