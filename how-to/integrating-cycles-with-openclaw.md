@@ -70,12 +70,7 @@ That's it — all model and tool calls are now budget-guarded. Read on for advan
 
 ## Prerequisites
 
-```bash
-export CYCLES_BASE_URL="http://localhost:7878"
-export CYCLES_API_KEY="your-api-key"   # create via Admin Server — see note below
-```
-
-> **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
+- A Cycles API key — create one via the Admin Server. See [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
 You also need:
 - **OpenClaw** >= 0.1.0 with plugin support
@@ -100,25 +95,7 @@ openclaw plugins enable openclaw-budget-guard
 
 ## Minimal configuration
 
-Add the plugin to your OpenClaw config file (typically `openclaw.config.json`):
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "openclaw-budget-guard": {
-        "config": {
-          "tenant": "acme"
-        }
-      }
-    }
-  }
-}
-```
-
-With `CYCLES_BASE_URL` and `CYCLES_API_KEY` set as environment variables, this is the only config you need. The plugin uses sensible defaults for everything else.
-
-If you prefer to inline the connection details:
+Add the plugin to your OpenClaw config file (typically `openclaw.config.json`). Three fields are required — everything else has sensible defaults:
 
 ```json
 {
@@ -672,8 +649,8 @@ With `logLevel: "debug"`, you'll see per-call activity:
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `enabled` | boolean | `true` | Master switch |
-| `cyclesBaseUrl` | string | `$CYCLES_BASE_URL` | Cycles server URL |
-| `cyclesApiKey` | string | `$CYCLES_API_KEY` | Cycles API key |
+| `cyclesBaseUrl` | string | — | Cycles server URL (required) |
+| `cyclesApiKey` | string | — | Cycles API key (required) |
 | `tenant` | string | — | Cycles tenant (required) |
 | `budgetId` | string | — | Optional app-level budget scope |
 | `currency` | string | `USD_MICROCENTS` | Default budget unit |
@@ -1106,7 +1083,7 @@ The session summary also includes `unconfiguredTools` — a list of tools that u
 - Check that `openclaw.plugin.json` is included in the installed package
 
 **"cyclesBaseUrl is required" error**
-- Set `cyclesBaseUrl` in config or export `CYCLES_BASE_URL` env var
+- Set `cyclesBaseUrl` in your plugin config (use `"${CYCLES_BASE_URL}"` for env var interpolation)
 
 **"tenant is required" error**
 - Add `"tenant": "your-org"` to the plugin config
