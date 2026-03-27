@@ -459,7 +459,7 @@ The plugin tracks per-tool and per-model cost breakdowns throughout the session.
 - Session timing (start/end timestamps)
 - Average cost and estimated remaining calls
 
-The summary is attached to `ctx.metadata["cycles-budget-guard"]` and can also be exported via callback or webhook:
+The summary is attached to `ctx.metadata["openclaw-budget-guard"]` and can also be exported via callback or webhook:
 
 ```json
 {
@@ -488,7 +488,7 @@ Or programmatically:
 
 ## End-user budget visibility
 
-Budget status is automatically attached to `ctx.metadata["cycles-budget-guard-status"]` on every hook invocation, making it available to OpenClaw frontends for UI display:
+Budget status is automatically attached to `ctx.metadata["openclaw-budget-guard-status"]` on every hook invocation, making it available to OpenClaw frontends for UI display:
 
 ```json
 {
@@ -617,7 +617,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[cycles-budget-guard] v0.6.1 starting
+[openclaw-budget-guard] v0.6.1 starting
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
   cyclesApiKey: ****_key
@@ -634,12 +634,12 @@ The plugin also warns about common misconfigurations on startup (e.g., `downgrad
 With `logLevel: "debug"`, you'll see per-call activity:
 
 ```
-[cycles-budget-guard] before_model_resolve: model=claude-sonnet-4-20250514 level=healthy
-[cycles-budget-guard] before_prompt_build: injecting hint (142 chars)
-[cycles-budget-guard] Tool "web_search" has no entry in toolBaseCosts — using default estimate (100000 USD_MICROCENTS)
-[cycles-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=100000
-[cycles-budget-guard] after_tool_call: committed 100000 for tool=web_search
-[cycles-budget-guard] Agent session budget summary: remaining=9500000 spent=500000 reservations=1
+[openclaw-budget-guard] before_model_resolve: model=claude-sonnet-4-20250514 level=healthy
+[openclaw-budget-guard] before_prompt_build: injecting hint (142 chars)
+[openclaw-budget-guard] Tool "web_search" has no entry in toolBaseCosts — using default estimate (100000 USD_MICROCENTS)
+[openclaw-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=100000
+[openclaw-budget-guard] after_tool_call: committed 100000 for tool=web_search
+[openclaw-budget-guard] Agent session budget summary: remaining=9500000 spent=500000 reservations=1
 ```
 
 ## Full configuration reference
