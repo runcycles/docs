@@ -10,7 +10,7 @@ sidebar: false
 
 # We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt
 
-Many AI agent cost controls are kill switches. Budget runs out, agent dies mid-task, user gets nothing. [Cycles](https://runcycles.io) does something different: it makes the agent *adapt*.
+Too many AI agent cost controls are kill switches. Budget runs out, agent dies mid-task, user gets nothing. [Cycles](https://runcycles.io) does something different: it makes the agent *adapt*.
 
 A research agent running on OpenClaw picks up a complex competitive analysis. It starts with Claude Opus to draft the report, calls web search to find market data, runs code execution to build charts, and iterates. Normal sessions cost $2–4. This one is harder — it needs 3x the usual tool calls.
 
@@ -68,7 +68,7 @@ and avoid expensive tools. 7% of budget remaining. Est. ~11 tool calls and
 ~3 model calls remaining at current rate. Limit responses to 1024 tokens.
 ```
 
-The model responded to this signal by reducing optional web searches, writing tighter prose, and skipping the summary paragraph it usually generates. We did not hardcode any task-specific fallback behavior — the model adapted to the budget constraint on its own, the same way it adapts to any system prompt instruction.
+The model responded to this signal by reducing optional web searches, writing tighter prose, and skipping the summary paragraph it usually generates. We did not hardcode any task-specific fallback behavior — the model adapted to the budget constraint on its own, like it adapts to other system prompt instructions.
 
 This is the part that surprises most teams: **budget-aware agents tend to be more disciplined and less wasteful.** When the model knows resources are limited, it focuses. Fewer tangents, less padding, more direct answers. The prompt hint turns a blunt cost limit into a soft constraint the model can reason about.
 
