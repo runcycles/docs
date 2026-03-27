@@ -12,7 +12,7 @@ sidebar: false
 
 Your multi-agent system is running. Logs are green. Every API call returns 200. And one agent just silently corrupted 87% of your downstream decisions.
 
-That's not a hypothetical. [Research on multi-agent system failures](https://stellarcyber.ai/learn/agentic-ai-securiry-threats/), citing Galileo AI's December 2025 simulations, found that a single compromised agent poisoned 87% of downstream decision-making within 4 hours — faster than any incident response team could contain it. The contamination was gradual. No alerts fired. The system looked healthy the entire time.
+That's not a hypothetical. [Research on multi-agent system failures](https://stellarcyber.ai/learn/agentic-ai-securiry-threats/), citing Galileo AI simulations, found that a single compromised agent poisoned 87% of downstream decision-making within 4 hours — faster than any incident response team could contain it. The contamination was gradual. No alerts fired. The system looked healthy the entire time.
 
 <!-- more -->
 
@@ -119,18 +119,19 @@ When Agent A writes a hallucinated value, downstream agents that operate under d
 
 Consider the memory poisoning scenario from earlier. Agent C — the billing updater — receives hallucinated pricing data from shared memory and tries to act on it. Two independent enforcement layers intervene.
 
-First, **budget isolation**: the billing-updater agent has its own scope budget of $25 (set in the hierarchy below). If the operation's estimated cost exceeds the remaining budget, the reservation is denied:
+First, **budget isolation**: the billing-updater agent has its own scope budget. If the operation's estimated cost exceeds the remaining budget, the reservation is denied:
 
 ```python
-# Agent C tries to update billing — but its $25 scope budget is nearly exhausted
+# Agent C tries to update billing — but its scope budget is nearly exhausted
 reservation = cycles.reserve(
     scope="agent:billing-updater",
     estimate={"unit": "USD_MICROCENTS", "amount": 180000},
     action={"kind": "billing.update", "name": "bulk-price-change"}
 )
 
-# Policy: scope "agent:billing-updater" has $25 total budget, $2.40 remaining
-# Estimated cost of $18.00 exceeds remaining budget
+# Policy: scope "agent:billing-updater" has 250,000,000 USD_MICROCENTS ($2.50) budget
+# Only 12,000 USD_MICROCENTS ($0.00012) remaining after prior operations
+# Estimated 180,000 USD_MICROCENTS ($0.0018) exceeds remaining budget
 # Result: DENY
 # reason: "Insufficient budget in scope 'agent:billing-updater'"
 ```
@@ -169,19 +170,19 @@ The research agent may have received a coordination signal from another agent sa
 For complex multi-agent workflows, [hierarchical scope derivation](/protocol/how-scope-derivation-works-in-cycles) creates nested budget boundaries. The protocol's canonical hierarchy — tenant → workspace → app → workflow → agent → toolset — means a single reservation is checked atomically against every ancestor scope:
 
 ```
-tenant:acme-corp                ($10,000/month — hard ceiling)
-  └── workflow:document-processing  ($500/run)
-        ├── agent:research-bot        ($50 USD budget)
+tenant:acme-corp                (100B USD_MICROCENTS ≈ $1,000/month)
+  └── workflow:document-processing  (5B USD_MICROCENTS ≈ $50/run)
+        ├── agent:research-bot        (500M USD_MICROCENTS ≈ $5)
         │     └── toolset:web-search    (200 RISK_POINTS)
-        ├── agent:analysis-bot        ($100 USD budget)
+        ├── agent:analysis-bot        (1B USD_MICROCENTS ≈ $10)
         │     └── toolset:doc-read      (100 RISK_POINTS)
-        ├── agent:reporting-bot       ($75 USD budget)
+        ├── agent:reporting-bot       (750M USD_MICROCENTS ≈ $7.50)
         │     └── toolset:email         (50 RISK_POINTS — 1 email max)
-        └── agent:billing-updater     ($25 USD budget)
+        └── agent:billing-updater     (250M USD_MICROCENTS ≈ $2.50)
               └── toolset:billing-write  (25 RISK_POINTS)
 ```
 
-Each agent's dollar budget and risk-point budget are independently constrained. A coordination failure where the research agent enters a loop burns $50 — not the workflow's $500 or the tenant's $10,000. The reporting bot can send at most one email per run (50 risk points per email, 50 risk-point budget). The billing updater has a tight $25 dollar budget — so even if memory poisoning feeds it wrong data, the maximum spend on billing operations is capped at $25 for the entire run.
+Each agent's dollar budget and risk-point budget are independently constrained. A coordination failure where the research agent enters a loop burns $5 — not the workflow's $50 or the tenant's $1,000. The reporting bot can send at most one email per run (50 risk points per email, 50 risk-point budget). The billing updater has a tight $2.50 dollar budget — so even if memory poisoning feeds it wrong data, the maximum spend on billing operations is capped for the entire run.
 
 This is bulkhead isolation for AI agents. The question isn't "what went wrong?" — it's "how far can the damage spread?" With scope isolation, the answer is always bounded.
 
