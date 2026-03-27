@@ -18,7 +18,7 @@ Without budget enforcement, the session would have cost $12. The agent doesn't k
 
 We set a $5 budget using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin and let it run. It didn't stop. It *adapted*.
 
-At $3.50 remaining, the plugin switched the model from Opus to Sonnet. At $1.50, it blocked code execution (too expensive per call). It injected "budget is low — prefer cheaper tools" into the system prompt, and the model started writing shorter responses and skipping optional searches. The task completed with $0.15 to spare. The report was slightly less polished, but the analysis was correct, the data was there, and the bill was $4.85.
+At $3.50 remaining, the plugin switched the model from Opus to Sonnet. At $1.50, it blocked code execution (too expensive per call). It injected "budget is low — prefer cheaper tools" into the system prompt, and the model started writing shorter responses and skipping optional searches. The task completed with $0.15 to spare. The report was slightly less polished, but the analysis was correct, the data was there, and the bill was $4.85 instead of $12.
 
 That's the difference between a kill switch and [runtime authority](/concepts/what-is-runtime-authority-for-ai-agents).
 
@@ -37,21 +37,21 @@ Cycles Budget Guard for OpenClaw v0.7.5
   failClosed: true
   lowBudgetThreshold: 150000000
 
-Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=500000000)
-Model committed: claude-opus-4-20250514 (cost=1500000 USD_MICROCENTS)
-Tool reserved: web_search (estimate=500000, remaining=498500000)
-Tool committed: web_search (cost=500000 USD_MICROCENTS)
-Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=498000000)
-Model committed: claude-opus-4-20250514 (cost=1500000 USD_MICROCENTS)
+Model reserved: claude-opus-4-20250514 (estimate=15000000, remaining=500000000)
+Model committed: claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
+Tool reserved: web_search (estimate=5000000, remaining=485000000)
+Tool committed: web_search (cost=5000000 USD_MICROCENTS)
+Model reserved: claude-opus-4-20250514 (estimate=15000000, remaining=480000000)
+Model committed: claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
 ...
 Budget level changed: healthy → low (remaining=150000000)
 Budget low — downgrading model claude-opus-4-20250514 → claude-sonnet-4-20250514
-Model reserved: claude-sonnet-4-20250514 (estimate=300000, remaining=149500000)
+Model reserved: claude-sonnet-4-20250514 (estimate=3000000, remaining=147000000)
 ...
-Tool "code_execution" blocked: cost 10000000 exceeds expensive threshold 15000000
+Tool "code_execution" blocked: cost 10000000 exceeds expensive threshold 5000000
 ...
-Model committed: claude-sonnet-4-20250514 (cost=300000 USD_MICROCENTS)
-Agent session budget summary: remaining=1500000 spent=498500000 reservations=34
+Model committed: claude-sonnet-4-20250514 (cost=3000000 USD_MICROCENTS)
+Agent session budget summary: remaining=15000000 spent=485000000 reservations=34
 ```
 
 Every reservation, commit, downgrade, and block is visible. No digging through provider dashboards. This is what AI agent cost management looks like when it's built into the execution lifecycle — not bolted on after the fact.
@@ -74,8 +74,8 @@ This is the part that surprises most teams: **budget-aware agents are better age
 
 ```json
 {
-  "remaining": 1500000,
-  "spent": 498500000,
+  "remaining": 15000000,
+  "spent": 485000000,
   "costBreakdown": {
     "model:claude-opus-4-20250514": { "count": 8, "totalCost": 120000000 },
     "model:claude-sonnet-4-20250514": { "count": 14, "totalCost": 42000000 },
@@ -145,6 +145,7 @@ Every session produces a cost breakdown. After a week, patterns are obvious: whi
           },
           "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
           "maxTokensWhenLow": 1024,
+          "expensiveToolThreshold": 5000000,
           "lowBudgetThreshold": 150000000,
           "failClosed": true
         }
