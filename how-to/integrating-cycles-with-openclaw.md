@@ -5,6 +5,9 @@ description: "Add budget enforcement to OpenClaw agents using the cycles-opencla
 
 # Integrating Cycles with OpenClaw
 
+[![npm](https://img.shields.io/npm/v/@runcycles/openclaw-budget-guard)](https://www.npmjs.com/package/@runcycles/openclaw-budget-guard)
+[![npm downloads](https://img.shields.io/npm/dt/@runcycles/openclaw-budget-guard?label=downloads&color=555&style=flat-square)](https://www.npmjs.com/package/@runcycles/openclaw-budget-guard)
+
 This guide shows how to add budget enforcement to OpenClaw agents using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin. The plugin handles the full reserve → commit → release lifecycle for both model and tool calls automatically, with no custom code required.
 
 ## Why budget enforcement?
