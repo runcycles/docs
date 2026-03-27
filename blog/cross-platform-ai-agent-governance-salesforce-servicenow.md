@@ -1,14 +1,14 @@
 ---
-title: "Cross-Platform AI Agent Governance: Why Salesforce and ServiceNow Can't Solve This Alone"
+title: "Salesforce and ServiceNow Govern Their Own Agents. Who Governs the Whole System?"
 date: 2026-03-27
 author: Cycles Team
 tags: [governance, enterprise, salesforce, servicenow, agentforce, cross-platform, action-authority]
-description: "Enterprises running AI agents across Salesforce Agentforce, ServiceNow Now Assist, and custom frameworks have no unified governance layer. Neither platform will build one. Here's what that means — and what to do about it."
+description: "Both platforms have invested heavily in AI agent governance. But neither acts as a neutral, shared pre-execution control plane across Salesforce, ServiceNow, and custom runtimes. That gap is where cross-platform agent governance lives."
 blog: true
 sidebar: false
 ---
 
-# Cross-Platform AI Agent Governance: Why Salesforce and ServiceNow Can't Solve This Alone
+# Salesforce and ServiceNow Govern Their Own Agents. Who Governs the Whole System?
 
 A batch of 200 overdue invoices hits the system on a Tuesday afternoon. Salesforce Agentforce picks up the cases and starts auto-generating follow-up emails. Simultaneously, the invoicing system raises incidents in ServiceNow, and Now Assist begins auto-reassigning them, posting updates to customer Slack channels, and triggering escalation workflows. By the time anyone notices, 200 customer emails have gone out from Salesforce, 200 Slack notifications have gone out from ServiceNow, and 15 incidents have been auto-escalated to the wrong team.
 
@@ -20,7 +20,7 @@ This is not a hypothetical. It is the inevitable consequence of deploying autono
 
 ## The Cross-Platform Blind Spot
 
-Most enterprises with more than 5,000 employees run both Salesforce and ServiceNow. Salesforce handles customer-facing CRM — sales, service, marketing. ServiceNow handles internal operations — IT service management, HR, facilities. Many also run custom AI agents built on LangChain, Spring AI, or internal tooling.
+Many large enterprises run both Salesforce and ServiceNow. Salesforce handles customer-facing CRM — sales, service, marketing. ServiceNow handles internal operations — IT service management, HR, facilities. Many also run custom AI agents built on LangChain, Spring AI, or internal tooling.
 
 Each platform is shipping AI agents aggressively:
 
@@ -28,11 +28,11 @@ Each platform is shipping AI agents aggressively:
 - **ServiceNow Now Assist** — AI agents that triage incidents, auto-resolve tickets, generate knowledge articles, and manage change requests within ServiceNow.
 - **Custom agents** — LangChain, CrewAI, AutoGen, or bespoke agents that operate outside both platforms, calling APIs, querying databases, and interacting with third-party services.
 
-Each platform governs its own AI. Salesforce has the Einstein Trust Layer for content safety, Agentforce guardrails for topic classification, and Apex-based controls for custom logic. ServiceNow has flow-level controls, Now Assist governance settings, and instance-wide AI token pools.
+Both platforms have invested substantially in AI governance. Salesforce offers the Einstein Trust Layer for content safety, Agentforce guardrails for topic classification, and the [Agentforce Command Center](https://www.salesforce.com/news/press-releases/2025/06/23/agentforce-3-announcement/) for visibility and control across its ecosystem. ServiceNow provides [AI Control Tower](https://www.servicenow.com/products/ai-control-tower.html) for centralized AI monitoring, AI Agent Fabric for connecting third-party agents, and flow-level governance controls within the Now Platform.
 
-None of these systems sees across the boundary.
+This is not a claim that Salesforce and ServiceNow lack governance. Both offer substantial observability, analytics, and governance features within their own ecosystems — and both are expanding those capabilities aggressively. The gap is different: neither platform acts as a vendor-neutral, shared pre-execution control plane across Salesforce, ServiceNow, _and_ custom runtimes simultaneously. Each governs its own agents. Nobody governs the aggregate.
 
-Three questions that no single platform can answer:
+Three questions that illustrate this gap:
 
 1. **"How much are we spending on AI across all platforms this quarter?"** — The CFO asks this. The VP of Engineering checks Salesforce Einstein usage ($42K), ServiceNow AI usage ($31K), AWS Bedrock bills ($28K), and OpenAI invoices ($15K). There is overlap, double-counting, and no way to attribute costs to business outcomes. The reconciliation takes two weeks and has a 30% margin of error.
 
@@ -40,17 +40,19 @@ Three questions that no single platform can answer:
 
 3. **"Can we prove that our AI agents cannot send more than N customer communications per hour, across all systems?"** — The CISO asks this. The answer is no. Salesforce can limit Agentforce actions within Salesforce. ServiceNow can limit Now Assist actions within ServiceNow. But there is no mechanism to enforce a shared limit across both. The Tuesday email storm was technically within each platform's individual limits.
 
-## Why Neither Platform Will Solve This
+## Why a Neutral Governance Plane Is Needed
 
-This is not a capability gap that Salesforce or ServiceNow will close in a future release. It is a structural misalignment of incentives.
+Both Salesforce and ServiceNow are expanding their AI governance capabilities — and those capabilities are real and valuable within each platform's ecosystem. Salesforce's Command Center gives Agentforce operators visibility and control. ServiceNow's AI Control Tower provides centralized monitoring. AI Agent Fabric connects third-party agents into ServiceNow's governance model.
 
-**Salesforce has zero incentive to build governance for ServiceNow agent actions.** Salesforce's business model depends on customers using more Salesforce — more Agentforce agents, more Einstein calls, more Data Cloud queries. A feature that gives enterprises visibility into how much they're spending on ServiceNow AI, or that throttles Salesforce agent actions because ServiceNow agents already consumed the risk budget, works against that model.
+But each platform's governance is anchored to its own ecosystem. The structural challenge is not that these platforms lack governance — it is that cross-platform governance requires a neutral party.
 
-**ServiceNow has zero incentive to build governance for Salesforce agent actions.** The same logic applies in reverse. Now Assist governance settings control Now Assist. They will never control Agentforce. ServiceNow's competitive position strengthens when enterprises depend on ServiceNow for IT governance — not when that governance extends to rival platforms.
+**Platform governance is platform-scoped.** Salesforce's Agentforce Command Center monitors and controls Agentforce agents. It does not monitor Now Assist agents, LangChain agents, or custom agents running outside Salesforce. ServiceNow's AI Control Tower governs agents within the Now Platform. Even AI Agent Fabric, which connects external agents to ServiceNow, brings them _into_ ServiceNow's governance model — it does not extend governance _outward_ to cover what those agents do on other platforms.
 
-**Neither can access the other's runtime.** Even if one platform wanted to govern the other, it has no hook into the other's execution environment. Salesforce cannot intercept a ServiceNow flow before it executes. ServiceNow cannot block an Agentforce action before it sends an email. The only entity that can sit between both platforms is a third party that both platforms call into before acting.
+**Shared limits require a shared ledger.** If a Salesforce agent and a ServiceNow agent both handle the same customer interaction, enforcing a combined risk limit across both requires a single ledger that both platforms write to before acting. Neither platform provides this — and building it requires the kind of vendor-neutral protocol that neither platform is positioned to offer for the other's agents.
 
-This is the same structural gap that created the identity management market. No single SaaS platform would build cross-platform identity. Okta exists because cross-platform identity requires a neutral third party that every platform authenticates against. Cross-platform AI agent governance requires the same architectural pattern — a neutral governance plane that every agent runtime calls before every consequential action.
+**Neither can enforce pre-execution authority on the other.** Salesforce cannot intercept a ServiceNow flow before it executes. ServiceNow cannot block an Agentforce action before it sends an email. The only entity that can sit between both platforms is a third party that both platforms call into before acting.
+
+This is a familiar pattern. No single SaaS platform built cross-platform identity — Okta exists because cross-platform identity requires a neutral third party that every platform authenticates against. Cross-platform AI agent governance follows the same architectural logic: a neutral governance plane that every agent runtime calls before every consequential action.
 
 ## Unified Governance: One Protocol, Every Platform
 
@@ -95,15 +97,13 @@ This is action authority applied across platforms. Dollar budgets control cost. 
 
 ### How agents connect: thin connectors, not platform lock-in
 
-The connectors that pipe Salesforce and ServiceNow into the Cycles governance plane are intentionally minimal. Each is under 500 lines of platform-native code:
+Connecting a platform to the Cycles governance plane requires a minimal connector — a thin HTTP wrapper that calls the Cycles API before and after agent actions. The connector complexity is comparable to integrating with any external REST API, which both platforms do routinely.
 
-**Salesforce**: An Apex class with three static methods — `reserve()`, `commit()`, `release()` — that make HTTP callouts to the Cycles server via a Named Credential. An Invocable Action exposes the same lifecycle to Flow Builder and Agentforce action definitions. No custom objects, no triggers, no scheduled jobs.
+**Salesforce**: A minimal Apex connector would expose three static methods — `reserve()`, `commit()`, `release()` — making HTTP callouts to the Cycles server via a Named Credential. An Invocable Action wrapper would expose the same lifecycle to Flow Builder and Agentforce action definitions. No custom objects, no triggers, no scheduled jobs. Under 500 lines of Apex.
 
-**ServiceNow**: A Script Include with the same three methods — `reserve()`, `commit()`, `release()` — that make REST calls via a Connection & Credential Alias. A Flow Designer action exposes the lifecycle to Now Assist workflows. No tables, no UI pages, no scheduled jobs.
+**ServiceNow**: A minimal Script Include connector would provide the same three methods — `reserve()`, `commit()`, `release()` — making REST calls via a Connection & Credential Alias. A Flow Designer action would expose the lifecycle to Now Assist workflows. No tables, no UI pages, no scheduled jobs. Under 400 lines of JavaScript.
 
-Both connectors are installable in under 10 minutes. They store no data in the platform — all state is in the Cycles server. They can be removed with zero side effects. The complexity is comparable to integrating with any external REST API, which both platforms do routinely.
-
-The argument "just build governance in Apex" or "just build it in ServiceNow scripting" applies to the connector. It does not apply to the cross-platform governance logic — atomic budget enforcement across concurrent agents on different platforms, hierarchical scope enforcement, idempotent commit/release with automatic expiry. Building that correctly requires exactly what the Cycles server already provides.
+In both cases, the connector stores no data in the platform — all state lives in the Cycles server. The connector can be added or removed with zero side effects. The argument "just build governance in Apex" or "just build it in ServiceNow scripting" applies to the connector itself. It does not apply to the cross-platform governance logic — atomic budget enforcement across concurrent agents on different platforms, hierarchical scope enforcement, idempotent commit/release with automatic expiry. Building that correctly requires exactly what the Cycles server already provides.
 
 ## Three Scenarios
 
@@ -148,7 +148,7 @@ One query. One export. Every AI action, every platform, every decision. The audi
 
 ## Protocol, Not Platform
 
-The governance plane is the Cycles server — the same [open protocol](/protocol/how-reserve-commit-works-in-cycles) that already integrates with [LangChain](/how-to/integrating-cycles-with-langchain), [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk), [Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter), and [MCP-based agents](/quickstart/getting-started-with-the-mcp-server). Adding Salesforce and ServiceNow connectors extends the same reserve-commit lifecycle to two more platforms. The protocol does not change. The server does not change. The governance model does not change.
+The governance plane is the Cycles server — the same [open protocol](/protocol/how-reserve-commit-works-in-cycles) that already integrates with [LangChain](/how-to/integrating-cycles-with-langchain), [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk), [Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter), and [MCP-based agents](/quickstart/getting-started-with-the-mcp-server). Adding Salesforce and ServiceNow connectors would extend the same reserve-commit lifecycle to two more platforms. The protocol does not change. The server does not change. The governance model does not change.
 
 Cross-platform correlation works through the existing `dimensions` field on the Cycles Subject. Both connectors include `dimensions.platform` and `dimensions.correlation_id`. When a Salesforce case triggers a ServiceNow incident — a common integration pattern — both connectors pass the same correlation ID. The Cycles server tracks all reservations under this correlation, producing a unified timeline of what happened, on which platform, in what order.
 
@@ -198,9 +198,9 @@ Both hit the same tenant budget. Both consume from the same risk-point pool. Bot
 
 Three forces are converging:
 
-**Agentforce and Now Assist are going to production.** Salesforce and ServiceNow shipped autonomous agent capabilities in 2025. Enterprises that were experimenting during 2025 are deploying to production in 2026. The cross-platform governance gap becomes real the moment a customer interaction triggers agents on both platforms simultaneously — which, for any enterprise running both, is inevitable.
+**Agentforce and Now Assist are scaling to production.** Salesforce shipped [Agentforce GA in October 2024](https://www.salesforce.com/news/press-releases/2024/10/29/agentforce-general-availability-announcement/). ServiceNow introduced Now Assist AI Agents in the [Yokohama release in February 2025](https://www.servicenow.com/company/media/press-room/yokohama-release.html). Enterprises that piloted these capabilities throughout 2025 are now deploying them to production at scale. The cross-platform governance gap becomes real the moment a customer interaction triggers agents on both platforms simultaneously — which, for any enterprise running both, is inevitable.
 
-**Audit frameworks are adding AI-specific controls.** SOC2, ISO 27001, and emerging NIST guidelines are requiring audit trails for autonomous systems that process customer data. The question "show me your AI audit trail" is transitioning from "nice to have" to "audit finding." A cross-platform audit trail — one that covers Salesforce, ServiceNow, and custom agents in a single ledger — is the difference between passing and failing.
+**AI governance expectations are rising across compliance frameworks.** Organizations are mapping AI agent activity into existing SOC 2 and ISO 27001 control programs, while newer AI-focused frameworks like [NIST AI RMF](https://www.nist.gov/itl/ai-risk-management-framework) and ISO/IEC 42001 increase expectations around governance, traceability, and risk management. The question "show me your AI audit trail" is appearing more frequently in audits — and a cross-platform audit trail that covers Salesforce, ServiceNow, and custom agents in a single ledger is significantly harder to produce than a platform-specific one.
 
 **AI cost overruns are making headlines.** As enterprises scale from pilot to production, the $50K/month AI spend that was "acceptable for innovation" becomes a line item the CFO scrutinizes. The first question is always "can we see this by platform?" The answer, without a unified governance plane, is always "not without two weeks of reconciliation."
 
@@ -214,7 +214,7 @@ The single most likely trigger: an enterprise deploys Agentforce to production a
 
 3. **Run the Cycles server.** The [Docker quickstart](/quickstart/deploying-the-full-cycles-stack) stands up the full stack — Redis, Cycles server, admin API — in one command. From there, adding platform connectors is a matter of pointing HTTP callouts at the server.
 
-4. **Read the protocol.** The [reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) is the same for every integration — Python, TypeScript, Java, MCP, and the Salesforce/ServiceNow connectors. If you've used any Cycles integration, the cross-platform model is the same protocol with a shared tenant.
+4. **Read the protocol.** The [reserve-commit lifecycle](/protocol/how-reserve-commit-works-in-cycles) is the same for every integration — Python, TypeScript, Java, and MCP. If you've used any Cycles integration, the cross-platform model is the same protocol with a shared tenant. Salesforce and ServiceNow connectors follow the same pattern.
 
 ## Further Reading
 
