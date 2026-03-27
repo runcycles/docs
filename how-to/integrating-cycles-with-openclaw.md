@@ -617,7 +617,8 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-[openclaw-budget-guard] v0.6.1 starting
+  Cycles Budget Guard for OpenClaw v0.6.1
+  https://runcycles.io
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
   cyclesApiKey: ****_key
