@@ -60,7 +60,7 @@ Every reservation, commit, downgrade, and block is visible. No digging through p
 
 ## What the agent saw
 
-When budget dropped below `lowBudgetThreshold` ($1.50), the plugin injected this into the system prompt:
+When budget first crossed the `lowBudgetThreshold` ($1.50), the plugin triggered model downgrade and tool blocking. Later in the same session, with only 7% of budget remaining, the plugin injected this into the system prompt:
 
 ```
 Budget: 35000000 USD_MICROCENTS remaining. Budget is low — prefer cheaper models
