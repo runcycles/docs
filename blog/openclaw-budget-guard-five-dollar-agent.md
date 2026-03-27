@@ -2,23 +2,27 @@
 title: "We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt"
 date: 2026-03-27
 author: Albert Mavashev
-tags: [openclaw, budgets, agents, graceful-degradation, model-downgrade, production, cost-control]
-description: "A research agent hits a complex query that would normally cost $12. With a $5 budget and the Cycles plugin, it downgrades models, disables expensive tools, and still completes the task — for $4.85."
+tags: [openclaw, budgets, agents, graceful-degradation, model-downgrade, production, cost-control, ai-agent-cost, llm-cost-management]
+description: "An OpenClaw research agent hits a complex query that would cost $12. With a $5 Cycles budget, it downgrades models, disables expensive tools, self-regulates via prompt hints, and completes the task for $4.85. Here's exactly what happened."
 blog: true
 sidebar: false
 ---
 
 # We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt
 
+Most AI agent cost controls are kill switches. Budget runs out, agent dies mid-task, user gets nothing. [Cycles](https://runcycles.io) does something different: it makes the agent *adapt*.
+
 A research agent running on OpenClaw picks up a complex competitive analysis. It starts with Claude Opus to draft the report, calls web search to find market data, runs code execution to build charts, and iterates. Normal sessions cost $2–4. This one is harder — it needs 3x the usual tool calls.
 
 Without budget enforcement, the session would have cost $12. The agent doesn't know or care. It calls whatever model and tool the task needs, and the bill arrives later.
 
-We set a $5 budget and let it run. It didn't stop. It *adapted*.
+We set a $5 budget using the [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin and let it run. It didn't stop. It *adapted*.
 
 At $3.50 remaining, the plugin switched the model from Opus to Sonnet. At $1.50, it blocked code execution (too expensive per call). It injected "budget is low — prefer cheaper tools" into the system prompt, and the model started writing shorter responses and skipping optional searches. The task completed with $0.15 to spare. The report was slightly less polished, but the analysis was correct, the data was there, and the bill was $4.85.
 
 That's the difference between a kill switch and [runtime authority](/concepts/what-is-runtime-authority-for-ai-agents).
+
+> **TL;DR:** Install the plugin, set a budget, and your OpenClaw agent automatically downgrades models, disables expensive tools, and self-regulates when budget gets tight — instead of crashing.
 
 <!-- more -->
 
@@ -31,33 +35,33 @@ Cycles Budget Guard for OpenClaw v0.7.5
   tenant: research-team
   defaultModelName: claude-opus-4-20250514
   failClosed: true
-  lowBudgetThreshold: 15000000
+  lowBudgetThreshold: 150000000
 
-Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=50000000)
+Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=500000000)
 Model committed: claude-opus-4-20250514 (cost=1500000 USD_MICROCENTS)
-Tool reserved: web_search (estimate=500000, remaining=48500000)
+Tool reserved: web_search (estimate=500000, remaining=498500000)
 Tool committed: web_search (cost=500000 USD_MICROCENTS)
-Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=48000000)
+Model reserved: claude-opus-4-20250514 (estimate=1500000, remaining=498000000)
 Model committed: claude-opus-4-20250514 (cost=1500000 USD_MICROCENTS)
 ...
-Budget level changed: healthy → low (remaining=15000000)
+Budget level changed: healthy → low (remaining=150000000)
 Budget low — downgrading model claude-opus-4-20250514 → claude-sonnet-4-20250514
-Model reserved: claude-sonnet-4-20250514 (estimate=300000, remaining=14500000)
+Model reserved: claude-sonnet-4-20250514 (estimate=300000, remaining=149500000)
 ...
-Tool "code_execution" blocked: cost 1000000 exceeds expensive threshold 1500000
+Tool "code_execution" blocked: cost 10000000 exceeds expensive threshold 15000000
 ...
 Model committed: claude-sonnet-4-20250514 (cost=300000 USD_MICROCENTS)
-Agent session budget summary: remaining=150000 spent=49850000 reservations=34
+Agent session budget summary: remaining=1500000 spent=498500000 reservations=34
 ```
 
-Every reservation, commit, downgrade, and block is visible. No digging through provider dashboards.
+Every reservation, commit, downgrade, and block is visible. No digging through provider dashboards. This is what AI agent cost management looks like when it's built into the execution lifecycle — not bolted on after the fact.
 
 ## What the agent saw
 
 When budget dropped below `lowBudgetThreshold`, the plugin injected this into the system prompt:
 
 ```
-Budget: 3500000 USD_MICROCENTS remaining. Budget is low — prefer cheaper models
+Budget: 35000000 USD_MICROCENTS remaining. Budget is low — prefer cheaper models
 and avoid expensive tools. 7% of budget remaining. Est. ~11 tool calls and
 ~3 model calls remaining at current rate. Limit responses to 1024 tokens.
 ```
@@ -70,31 +74,31 @@ This is the part that surprises most teams: **budget-aware agents are better age
 
 ```json
 {
-  "remaining": 150000,
-  "spent": 49850000,
+  "remaining": 1500000,
+  "spent": 498500000,
   "costBreakdown": {
-    "model:claude-opus-4-20250514": { "count": 8, "totalCost": 12000000 },
-    "model:claude-sonnet-4-20250514": { "count": 14, "totalCost": 4200000 },
-    "tool:web_search": { "count": 9, "totalCost": 4500000 },
-    "tool:code_execution": { "count": 3, "totalCost": 3000000 }
+    "model:claude-opus-4-20250514": { "count": 8, "totalCost": 120000000 },
+    "model:claude-sonnet-4-20250514": { "count": 14, "totalCost": 42000000 },
+    "tool:web_search": { "count": 9, "totalCost": 45000000 },
+    "tool:code_execution": { "count": 3, "totalCost": 30000000 }
   },
   "unconfiguredTools": [
-    { "name": "read_file", "callCount": 4, "estimatedTotalCost": 400000 }
+    { "name": "read_file", "callCount": 4, "estimatedTotalCost": 4000000 }
   ]
 }
 ```
 
 Three things jumped out:
 
-1. **Opus cost 12M for 8 calls. Sonnet cost 4.2M for 14 calls.** Sonnet handled nearly twice as many calls for a third of the cost. Users didn't notice the switch.
+1. **Opus cost $1.20 for 8 calls. Sonnet cost $0.42 for 14 calls.** Sonnet handled nearly twice as many calls for a third of the cost. Users didn't notice the switch.
 
-2. **Code execution was blocked after 3 calls.** Each call cost 1M units. The `disable_expensive_tools` strategy kicked in at low budget. The agent compensated by describing the analysis in text instead of generating charts.
+2. **Code execution was blocked after 3 calls.** Each call cost $0.10. The `disable_expensive_tools` strategy kicked in at low budget. The agent compensated by describing the analysis in text instead of generating charts.
 
-3. **`read_file` was unconfigured.** The session summary flagged it — 4 calls using the default 100K estimate. Now we know to add it to `toolBaseCosts`.
+3. **`read_file` was unconfigured.** The session summary flagged it — 4 calls using the default estimate. Now we know to add it to `toolBaseCosts`.
 
 ## Three patterns we discovered
 
-After running this config across hundreds of sessions, three patterns emerged:
+After running this config across hundreds of sessions, three patterns emerged that changed how we think about LLM cost management.
 
 ### Model downgrade is usually invisible
 
@@ -104,7 +108,7 @@ The key is configuring the fallback chain correctly. `"claude-opus-4-20250514": 
 
 ### Tool limits catch more bugs than budget limits
 
-A `toolCallLimits: { "web_search": 20 }` caught a search loop that budget enforcement alone would have allowed to continue. Each search cost 500K units — cheap individually, but 200 of them would have consumed the entire budget on a single tool. The limit fired at call #21 and the agent adapted by working with the data it already had.
+A `toolCallLimits: { "web_search": 20 }` caught a search loop that budget enforcement alone would have allowed to continue. Each search cost $0.005 — cheap individually, but 200 of them would have consumed the entire budget on a single tool. The limit fired at call #21 and the agent adapted by working with the data it already had.
 
 ### The session summary is your tuning guide
 
@@ -126,14 +130,14 @@ Every session produces a cost breakdown. After a week, patterns are obvious: whi
             "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]
           },
           "modelBaseCosts": {
-            "claude-opus-4-20250514": 1500000,
-            "claude-sonnet-4-20250514": 300000,
-            "claude-haiku-4-5-20251001": 100000
+            "claude-opus-4-20250514": 15000000,
+            "claude-sonnet-4-20250514": 3000000,
+            "claude-haiku-4-5-20251001": 1000000
           },
           "toolBaseCosts": {
-            "web_search": 500000,
-            "code_execution": 1000000,
-            "read_file": 50000
+            "web_search": 5000000,
+            "code_execution": 10000000,
+            "read_file": 1000000
           },
           "toolCallLimits": {
             "web_search": 20,
@@ -141,7 +145,7 @@ Every session produces a cost breakdown. After a week, patterns are obvious: whi
           },
           "lowBudgetStrategies": ["downgrade_model", "reduce_max_tokens", "disable_expensive_tools"],
           "maxTokensWhenLow": 1024,
-          "lowBudgetThreshold": 15000000,
+          "lowBudgetThreshold": 150000000,
           "failClosed": true
         }
       }
@@ -150,13 +154,15 @@ Every session produces a cost breakdown. After a week, patterns are obvious: whi
 }
 ```
 
+> **New to Cycles?** [Cycles](https://runcycles.io) is an open-source runtime authority system for AI agents. It enforces budgets, action limits, and resource boundaries — before execution, not after. The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin brings Cycles to OpenClaw with zero code changes. See [What is Cycles?](/quickstart/what-is-cycles) to learn more.
+
 ## What we'd change
 
 Three things we learned the hard way:
 
 **Enable `enableEventLog` from day one.** When a session behaves unexpectedly, the event log tells you exactly what happened — which tools were blocked, when models were downgraded, why a reservation was denied. Without it, you're reading tea leaves from the session summary.
 
-**Model costs are estimates.** The plugin reserves 1.5M per Opus call regardless of how many tokens are actually used. A short response costs the same as a long one. The `modelCostEstimator` callback can improve this if you have a proxy that tracks token usage, but out of the box, expect ±20% variance.
+**Model costs are estimates.** The plugin reserves a fixed amount per Opus call regardless of how many tokens are actually used. A short response costs the same as a long one. The `modelCostEstimator` callback can improve this if you have a proxy that tracks token usage, but out of the box, expect ±20% variance.
 
 **OpenClaw doesn't pass the model name in hook events.** We had to add `defaultModelName` to the config because the `before_model_resolve` event only contains `{ prompt }`. We've filed a [feature request](https://github.com/openclaw/openclaw/issues/55771) — until it's resolved, set `defaultModelName` to your agent's model.
 
@@ -166,7 +172,7 @@ Three things we learned the hard way:
 openclaw plugins install @runcycles/openclaw-budget-guard
 ```
 
-Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see the degradation behavior without a Cycles server. Then connect to a real server and watch your agent adapt.
+Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see the degradation behavior without a Cycles server. Then [deploy the full stack](/quickstart/deploying-the-full-cycles-stack) and watch your agent adapt instead of crash.
 
 Full documentation: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw)
 
@@ -175,5 +181,7 @@ Source code: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.
 ## Related reading
 
 - [Your OpenClaw Agent Has No Spending Limit — Here's How to Fix That](/blog/openclaw-budget-guard-stop-agents-burning-money) — the first post in this series, covering the five problems the plugin solves
+- [Your AI Agent Just Burned $6 in 30 Seconds](/blog/runaway-demo-agent-cost-blowup-walkthrough) — step-by-step walkthrough of a runaway agent demo with Cycles
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — why cost control must happen before execution
-- [Degradation Paths in Cycles](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — strategies beyond model downgrade
+- [Degradation Paths in Cycles](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — deny, downgrade, disable, or defer
+- [How Much Do AI Agents Cost?](/blog/how-much-do-ai-agents-cost) — the economics of agent execution
