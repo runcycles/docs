@@ -101,8 +101,11 @@ Cycles provides an MCP server that exposes runtime authority as tools for any MC
 
 ### OpenClaw
 
+[![npm downloads](https://img.shields.io/npm/dt/@runcycles/openclaw-budget-guard?label=downloads&color=555&style=flat-square)](https://www.npmjs.com/package/@runcycles/openclaw-budget-guard)
+
 Connect Cycles to OpenClaw for budget-controlled multi-agent orchestration.
 
+- [@runcycles/openclaw-budget-guard on npm](https://www.npmjs.com/package/@runcycles/openclaw-budget-guard)
 - [OpenClaw integration guide](/how-to/integrating-cycles-with-openclaw)
 
 ## Official SDKs
