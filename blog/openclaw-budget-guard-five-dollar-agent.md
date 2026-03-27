@@ -1,6 +1,6 @@
 ---
 title: "We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt"
-date: 2026-03-27
+date: 2026-03-28
 author: Albert Mavashev
 tags: [openclaw, budgets, agents, graceful-degradation, model-downgrade, production, cost-control, ai-agent-cost, llm-cost-management]
 description: "An OpenClaw research agent hits a complex query that would cost $12. With a $5 Cycles budget, it downgrades models, disables expensive tools, self-regulates via prompt hints, and completes the task for $4.85. Here's exactly what happened."
