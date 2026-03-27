@@ -1,20 +1,20 @@
 ---
-title: "What We Learned Building a Production Plugin for OpenClaw (And What We Had to Work Around)"
+title: "Five Lessons from Building a Production OpenClaw Plugin"
 date: 2026-03-28
 author: Albert Mavashev
 tags: [openclaw, plugins, engineering, hooks, workarounds, developer-experience, production, openclaw-plugin-development]
-description: "We built a 60-property budget enforcement plugin for OpenClaw. Along the way we hit undocumented behaviors, missing hook features, and a security scanner false positive. Here are the five lessons — with code, workarounds, and filed feature requests."
+description: "We built a budget enforcement plugin for OpenClaw and hit five undocumented behaviors — including the discovery that you can't actually block a model call. Here are the workarounds we shipped and the feature requests we filed."
 blog: true
 sidebar: false
 ---
 
-# What We Learned Building a Production Plugin for OpenClaw (And What We Had to Work Around)
+# Five Lessons from Building a Production OpenClaw Plugin
 
-We built [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) — a budget enforcement plugin for OpenClaw with 60 config properties, 5 lifecycle hooks, burn rate detection, model downgrade chains, tool blocking, and observability integration. It has 300 tests and runs in production.
+We built a non-trivial [budget enforcement plugin](https://github.com/runcycles/cycles-openclaw-budget-guard) for OpenClaw and ran into several behaviors that were not obvious from the public plugin surface: missing model metadata, no clean way to block model calls, install-time config validation traps, and a security-scanner false positive. The most surprising discovery: OpenClaw's `before_model_resolve` hook has no way to prevent a model call — we had to redirect to a fake model name to force a provider-side rejection.
 
-Getting here required solving problems that aren't documented anywhere. This post is the guide we wish we had when we started.
+This post is a practical writeup of the five issues that mattered most, the workarounds we shipped, and the feature requests we filed.
 
-*None of this is a complaint about OpenClaw. The platform is well-designed and the hook lifecycle is the right abstraction. These are practical notes from building a non-trivial plugin, shared so other developers don't have to rediscover the same things.*
+*None of this is a complaint about OpenClaw. The platform is well-designed and the hook lifecycle is the right abstraction. These are field notes from building a production plugin, shared so other developers don't have to rediscover the same things.*
 
 <!-- more -->
 
@@ -88,28 +88,11 @@ Not pretty, but the budget is enforced. The model call costs nothing because the
 
 **Feature request:** We've asked for `block` support in `before_model_resolve`, matching the `before_tool_call` pattern.
 
-## Lesson 3: Your plugin initializes 5 times
+## Lesson 3: Your plugin initializes multiple times
 
-OpenClaw calls the plugin's default export function once per internal channel or worker. On a typical startup, this means the plugin initializes 4–5 times — each with its own `api` object and logger context.
+A smaller but confusing runtime behavior: OpenClaw calls the plugin's default export once per internal channel or worker — typically 4–5 times on startup. Each instance gets its own isolated state, which is correct for concurrency. But our startup banner printed 5 times and it looked broken.
 
-The first time we saw this, our startup banner printed 5 times:
-
-```
-Cycles Budget Guard for OpenClaw v0.7.5 ...
-  tenant: cyclist
-  cyclesBaseUrl: http://localhost:7878
-  ...
-[same banner 4 more times]
-```
-
-Each instance gets its own isolated state via `initHooks()` — which is actually correct. The plugin's module-level state (active reservations, cost breakdown, snapshot cache) is per-channel, not shared. But the log noise makes it look broken.
-
-**Workaround:** A module-level `startupBannerShown` flag. The full config banner shows once; subsequent inits get a short one-liner with a sequential instance counter:
-
-```
-Cycles Budget Guard initialized (tenant=cyclist, dryRun=false, instance=2)
-Cycles Budget Guard initialized (tenant=cyclist, dryRun=false, instance=3)
-```
+**Workaround:** A module-level `startupBannerShown` flag shows the full config banner once; subsequent inits get a one-liner with a sequential instance counter: `Cycles Budget Guard initialized (tenant=cyclist, dryRun=false, instance=3)`.
 
 ## Lesson 4: process.env triggers a security warning
 
