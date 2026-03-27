@@ -142,7 +142,7 @@ The Cycles reservation ledger contains every governed action:
 - **Cost** — actual USD amount charged
 - **Risk points** — consumed for this action
 
-One query. One export. Every governed AI action, every platform, every decision. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. You cannot have enforcement without a trail, and you cannot have a trail without enforcement. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
+One query. One export. Every governed AI action, every platform, every decision. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. Enforcement guarantees a trail for governed actions; logging alone does not guarantee control. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
 
 ## Protocol, Not Platform
 
@@ -196,7 +196,7 @@ Both hit the same tenant budget. Both consume from the same risk-point pool. Bot
 
 Three forces are converging:
 
-**Agentforce and Now Assist are scaling to production.** Salesforce shipped [Agentforce GA in October 2024](https://www.salesforce.com/news/press-releases/2024/10/29/agentforce-general-availability-announcement/). ServiceNow introduced Now Assist AI Agents in the [Yokohama release in February 2025](https://www.servicenow.com/company/media/press-room/yokohama-release.html). Enterprises that piloted these capabilities throughout 2025 are now deploying them to production at scale. The cross-platform governance gap becomes real the moment a customer interaction triggers agents on both platforms simultaneously — which, for any enterprise running both, is inevitable.
+**Agentforce and Now Assist are scaling to production.** Salesforce shipped [Agentforce GA in October 2024](https://www.salesforce.com/news/press-releases/2024/10/29/agentforce-general-availability-announcement/). ServiceNow introduced Now Assist AI Agents as part of the [Yokohama release in early 2025](https://www.servicenow.com/company/media/press-room/yokohama-release.html). Enterprises that piloted these capabilities throughout 2025 are now deploying them to production at scale. The cross-platform governance gap becomes real the moment a customer interaction triggers agents on both platforms simultaneously — a pattern that becomes increasingly likely as workflows span both systems.
 
 **AI governance expectations are rising across compliance frameworks.** Organizations are mapping AI agent activity into existing SOC 2 and ISO 27001 control programs, while newer AI-focused frameworks like [NIST AI RMF](https://www.nist.gov/itl/ai-risk-management-framework) and ISO/IEC 42001 increase expectations around governance, traceability, and risk management. The question "show me your AI audit trail" is appearing more frequently in audits — and a cross-platform audit trail that covers Salesforce, ServiceNow, and custom agents in a single ledger is significantly harder to produce than a platform-specific one.
 
