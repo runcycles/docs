@@ -111,11 +111,46 @@ In both cases, the connector stores no data in the platform — all state lives 
 
 A batch processing error triggers AI agents on both platforms simultaneously. Salesforce Agentforce starts auto-sending follow-up emails. ServiceNow Now Assist starts posting updates to customer Slack channels.
 
-With a shared RISK_POINTS budget of 500 per hour at the tenant level — where `email.send` costs 50 points and `slack.notify` costs 20 points — the cascade is contained. After 8 emails (400 points) and 5 Slack notifications (100 points), the budget is exhausted. The 9th email attempt in Salesforce returns `409 BUDGET_EXCEEDED`. The 6th Slack notification attempt in ServiceNow returns the same. Both platforms halt customer-facing actions simultaneously, while internal reads, note-taking, and status updates continue unaffected.
+With a shared RISK_POINTS budget of 500 per hour at the tenant level — where `email.send` costs 50 points and `slack.notify` costs 20 points — the cascade is contained. After 8 emails (400 points) and 5 Slack notifications (100 points), the budget is exhausted. The 9th email attempt from the Salesforce connector:
+
+```json
+// POST /v1/reservations
+{
+  "idempotency_key": "sf-email-009",
+  "subject": {
+    "tenant": "acme-corp",
+    "app": "salesforce",
+    "agent": "agentforce-case-bot",
+    "toolset": "customer-email"
+  },
+  "action": { "kind": "tool.email", "name": "send-follow-up" },
+  "estimate": { "unit": "RISK_POINTS", "amount": 50 }
+}
+```
+
+```json
+// 409 Conflict
+{
+  "error": "BUDGET_EXCEEDED",
+  "message": "Insufficient risk-point budget at scope tenant:acme-corp",
+  "request_id": "req_7x9f..."
+}
+```
+
+The reservation is denied before the email function executes. The next Slack notification attempt from ServiceNow returns the same `409 BUDGET_EXCEEDED`. Both platforms halt customer-facing actions simultaneously, while internal reads, note-taking, and status updates continue unaffected.
 
 The Cycles reservation ledger records every governed action — every attempt, every allow, every deny — with timestamps, platform origin, agent identity, and risk points consumed.
 
-In an emergency, setting the tenant-level budget to zero immediately halts all AI agent actions across all platforms — without logging into Salesforce, without logging into ServiceNow, without touching any agent code. One API call. Universal stop.
+If the CISO needs to halt all AI agent activity immediately — not wait for a budget to drain, but stop everything now — the Cycles Admin API supports a tenant-level kill switch:
+
+```
+PATCH /v1/admin/tenants/acme-corp
+{ "status": "SUSPENDED" }
+```
+
+A suspended tenant blocks all operations at the authentication layer. Every subsequent request from any connector — Salesforce, ServiceNow, custom agents — returns `401 UNAUTHORIZED` with reason `TENANT_SUSPENDED` before any reservation logic runs. No agent code changes. No platform logins. One API call, universal stop.
+
+When the incident is resolved, reactivate with `{ "status": "ACTIVE" }` and agents resume normally. The suspension is reversible; closure (`CLOSED`) is not.
 
 ### Scenario 2: The CFO wants a single number
 
@@ -131,18 +166,47 @@ Returns total AI spend across all platforms — for every action routed through 
 
 SOC2 Type II audit. The auditor requests a complete log of all AI-initiated actions that modified customer data in the last 90 days, across all systems.
 
-The Cycles reservation ledger contains every governed action:
+The Cycles reservation ledger contains every governed action. A single query returns them:
 
-- **Action kind** — `crm.record.update`, `incident.reassign`, `email.send`
-- **Agent identity** — which AI agent performed the action
-- **Timestamp** — when the reservation was created and committed
-- **Platform origin** — Salesforce, ServiceNow, or custom (via `dimensions.platform`)
-- **Decision** — was it allowed or denied?
-- **Correlation ID** — which business interaction triggered it
-- **Cost** — actual USD amount charged
-- **Risk points** — consumed for this action
+```
+GET /v1/reservations?tenant=acme-corp&status=COMMITTED
+```
 
-One query. One export. Every governed AI action, every platform, every decision. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. Enforcement guarantees a trail for governed actions; logging alone does not guarantee control. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
+Each entry in the response includes the full context:
+
+```json
+{
+  "reservations": [
+    {
+      "reservation_id": "res_8f3a...",
+      "status": "COMMITTED",
+      "subject": {
+        "tenant": "acme-corp",
+        "app": "salesforce",
+        "agent": "agentforce-case-bot",
+        "toolset": "customer-email",
+        "dimensions": {
+          "platform": "salesforce",
+          "correlation_id": "CASE-4782"
+        }
+      },
+      "action": { "kind": "tool.email", "name": "send-customer-reply" },
+      "reserved": { "unit": "RISK_POINTS", "amount": 50 },
+      "created_at_ms": 1743091200000,
+      "affected_scopes": [
+        "tenant:acme-corp",
+        "tenant:acme-corp/app:salesforce",
+        "tenant:acme-corp/app:salesforce/agent:agentforce-case-bot",
+        "tenant:acme-corp/app:salesforce/agent:agentforce-case-bot/toolset:customer-email"
+      ]
+    }
+  ],
+  "has_more": true,
+  "next_cursor": "eyJ..."
+}
+```
+
+Action kind, agent identity, timestamp, platform origin, correlation ID, risk points — all in one response, across all platforms. Filter by `app`, `agent`, or `toolset` to narrow to a specific platform or action type. Paginate with `cursor` for the full history. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. Enforcement guarantees a trail for governed actions; logging alone does not guarantee control. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
 
 ## Protocol, Not Platform
 
