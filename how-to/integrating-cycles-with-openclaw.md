@@ -139,7 +139,7 @@ The plugin hooks into five OpenClaw lifecycle events to enforce budget boundarie
 
 | Hook | What happens |
 |------|-------------|
-| `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted. The reservation is held open for later commit (see [Model cost reconciliation](#model-cost-reconciliation-v050)). |
+| `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted (via [model override workaround](#model-blocking-workaround-v073)). The reservation is held open for later commit (see [Model cost reconciliation](#model-cost-reconciliation-v050)). |
 | `before_prompt_build` | Commits any pending model reservation from the previous turn (with `modelCostEstimator` reconciliation if configured). Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
 | `before_tool_call` | Checks tool permissions (allowlist/blocklist), applies degradation strategies, creates a Cycles reservation. Optionally retries on denial. |
 | `after_tool_call` | Commits the reservation with actual cost (via `costEstimator` callback if configured, otherwise uses the estimate). |
@@ -675,6 +675,7 @@ With `logLevel: "debug"`, you'll see per-call activity:
 | `modelFallbacks` | object | `{}` | Model → fallback model or chain (string or string[]) |
 | `modelBaseCosts` | object | `{}` | Model name → estimated cost per call |
 | `defaultModelCost` | number | `500000` | Fallback cost when model not in `modelBaseCosts` |
+| `defaultModelName` | string | — | Model name for budget reservations. Required because OpenClaw's `before_model_resolve` event doesn't include the model name. Set to your agent's model (e.g. `"openai/gpt-5-nano"`). |
 | `defaultModelActionKind` | string | `llm.completion` | Action kind for model reservations |
 | `modelCurrency` | string | — | Override currency for model reservations |
 
@@ -1076,6 +1077,44 @@ Example event:
 ```
 
 The session summary also includes `unconfiguredTools` — a list of tools that used the default cost estimate (100,000 units) because they had no entry in `toolBaseCosts`. Use this to identify configuration gaps.
+
+## Model blocking workaround (v0.7.3)
+
+OpenClaw's `before_model_resolve` hook does not support `{ block: true }` like `before_tool_call` does ([feature request](https://github.com/openclaw/openclaw/issues/55771)). When budget is exhausted, the plugin cannot directly prevent the model call.
+
+**Workaround:** The plugin returns `{ modelOverride: "__cycles_budget_exhausted__" }`, which causes the LLM provider to reject the request with "Unknown model." The agent receives no response and no budget is spent.
+
+The user sees:
+```
+Agent failed before reply: Unknown model: openai/__cycles_budget_exhausted__
+```
+
+This is intentional. When OpenClaw adds `block` support to `before_model_resolve`, the plugin will switch to a clean blocking mechanism with a proper error message.
+
+**Note:** OpenClaw's `before_model_resolve` event also does not include the model name — it only passes `{ prompt }`. Set `defaultModelName` in your plugin config so the plugin knows which model to track:
+
+```json
+{
+  "config": {
+    "defaultModelName": "openai/gpt-5-nano"
+  }
+}
+```
+
+## What to do when budget is exhausted
+
+1. **Fund the budget** via the Cycles Admin API:
+   ```bash
+   curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:my-org&unit=USD_MICROCENTS" \
+     -H "X-Cycles-API-Key: your-admin-key" \
+     -H "Content-Type: application/json" \
+     -d '{"operation": "CREDIT", "amount": 50000000, "idempotency_key": "topup-001"}'
+   ```
+   This adds 50,000,000 units ($0.50) to the budget. Adjust the `scope` to match your `tenant` and `budgetId`.
+
+2. **Start a new agent session** — the plugin fetches fresh budget state at the start of each session.
+
+For details, see [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles).
 
 ## Troubleshooting
 
