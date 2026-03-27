@@ -14,7 +14,7 @@ A batch of 200 overdue invoices hits the system on a Tuesday afternoon. Salesfor
 
 The Salesforce admin checks Einstein usage. Everything looks normal — the agent did what it was configured to do. The ServiceNow admin checks Now Assist logs. Same story. Each platform governed its own agents correctly. Nobody governed the _aggregate_.
 
-This is not a hypothetical. It is the inevitable consequence of deploying autonomous agents on multiple platforms without a shared governance layer. And it is happening now, as enterprises move Agentforce and Now Assist from pilot to production.
+This is no longer a theoretical edge case. It is the natural failure mode of multi-platform agent deployments — and the risk grows as enterprises move Agentforce and Now Assist from pilot to production.
 
 <!-- more -->
 
@@ -34,9 +34,9 @@ This is not a claim that Salesforce and ServiceNow lack governance. Both offer s
 
 Three questions that illustrate this gap:
 
-1. **"How much are we spending on AI across all platforms this quarter?"** — The CFO asks this. The VP of Engineering checks Salesforce Einstein usage ($42K), ServiceNow AI usage ($31K), AWS Bedrock bills ($28K), and OpenAI invoices ($15K). There is overlap, double-counting, and no way to attribute costs to business outcomes. The reconciliation takes two weeks and has a 30% margin of error.
+1. **"How much are we spending on AI across all platforms this quarter?"** — The CFO asks this. The answer requires reconciling Salesforce Einstein usage reports, ServiceNow AI consumption logs, cloud provider invoices, and custom agent costs across different billing systems with different units and cadences. There is overlap, double-counting, and no way to attribute costs to business outcomes.
 
-2. **"Show me a complete log of all AI-initiated actions that modified customer data in the last 90 days, across all systems."** — The SOC2 auditor asks this. The security team can pull Salesforce audit logs and ServiceNow `sys_audit` records. But neither captures AI-initiated actions specifically (vs. human-initiated), and there is no way to correlate them across platforms. The auditor notes a finding: "Incomplete audit trail for AI-initiated data modifications."
+2. **"Show me a complete log of all AI-initiated actions that modified customer data in the last 90 days, across all systems."** — The SOC2 auditor asks this. The security team can pull Salesforce audit logs and ServiceNow `sys_audit` records separately. But neither captures AI-initiated actions specifically (vs. human-initiated), and there is no way to correlate activity across platforms into a single timeline.
 
 3. **"Can we prove that our AI agents cannot send more than N customer communications per hour, across all systems?"** — The CISO asks this. The answer is no. Salesforce can limit Agentforce actions within Salesforce. ServiceNow can limit Now Assist actions within ServiceNow. But there is no mechanism to enforce a shared limit across both. The Tuesday email storm was technically within each platform's individual limits.
 
@@ -46,7 +46,7 @@ Both Salesforce and ServiceNow are expanding their AI governance capabilities �
 
 But each platform's governance is anchored to its own ecosystem. The structural challenge is not that these platforms lack governance — it is that cross-platform governance requires a neutral party.
 
-**Platform governance is platform-scoped.** Salesforce's Agentforce Command Center monitors and controls Agentforce agents. It does not monitor Now Assist agents, LangChain agents, or custom agents running outside Salesforce. ServiceNow's AI Control Tower governs agents within the Now Platform. Even AI Agent Fabric, which connects external agents to ServiceNow, brings them _into_ ServiceNow's governance model — it does not extend governance _outward_ to cover what those agents do on other platforms.
+**Platform governance is platform-scoped.** Salesforce's Agentforce Command Center monitors and controls Agentforce agents. It does not monitor Now Assist agents, LangChain agents, or custom agents running outside Salesforce. ServiceNow's AI Control Tower governs agents within the Now Platform. [AI Agent Fabric](https://www.servicenow.com/platform/ai-agent-fabric.html) connects and controls third-party agents — but it brings them into ServiceNow's governance model, not into a vendor-neutral shared ledger. Even when a platform can connect to third-party agents, that is not the same as a neutral pre-execution authority enforced across Salesforce, ServiceNow, and custom runtimes simultaneously.
 
 **Shared limits require a shared ledger.** If a Salesforce agent and a ServiceNow agent both handle the same customer interaction, enforcing a combined risk limit across both requires a single ledger that both platforms write to before acting. Neither platform provides this — and building it requires the kind of vendor-neutral protocol that neither platform is positioned to offer for the other's agents.
 
@@ -99,9 +99,9 @@ This is action authority applied across platforms. Dollar budgets control cost. 
 
 Connecting a platform to the Cycles governance plane requires a minimal connector — a thin HTTP wrapper that calls the Cycles API before and after agent actions. The connector complexity is comparable to integrating with any external REST API, which both platforms do routinely.
 
-**Salesforce**: A minimal Apex connector would expose three static methods — `reserve()`, `commit()`, `release()` — making HTTP callouts to the Cycles server via a Named Credential. An Invocable Action wrapper would expose the same lifecycle to Flow Builder and Agentforce action definitions. No custom objects, no triggers, no scheduled jobs. Under 500 lines of Apex.
+**Salesforce**: A minimal Apex connector would expose three static methods — `reserve()`, `commit()`, `release()` — making HTTP callouts to the Cycles server via a Named Credential. An Invocable Action wrapper would expose the same lifecycle to Flow Builder and Agentforce action definitions. No custom objects, no triggers, no scheduled jobs.
 
-**ServiceNow**: A minimal Script Include connector would provide the same three methods — `reserve()`, `commit()`, `release()` — making REST calls via a Connection & Credential Alias. A Flow Designer action would expose the lifecycle to Now Assist workflows. No tables, no UI pages, no scheduled jobs. Under 400 lines of JavaScript.
+**ServiceNow**: A minimal Script Include connector would provide the same three methods — `reserve()`, `commit()`, `release()` — making REST calls via a Connection & Credential Alias. A Flow Designer action would expose the lifecycle to Now Assist workflows. No tables, no UI pages, no scheduled jobs.
 
 In both cases, the connector stores no data in the platform — all state lives in the Cycles server. The connector can be added or removed with zero side effects. The argument "just build governance in Apex" or "just build it in ServiceNow scripting" applies to the connector itself. It does not apply to the cross-platform governance logic — atomic budget enforcement across concurrent agents on different platforms, hierarchical scope enforcement, idempotent commit/release with automatic expiry. Building that correctly requires exactly what the Cycles server already provides.
 
@@ -119,15 +119,13 @@ In an emergency, setting the tenant-level budget to zero immediately halts all A
 
 ### Scenario 2: The CFO wants a single number
 
-The quarterly AI spend review. Instead of reconciling four billing systems over two weeks:
+The quarterly AI spend review. Instead of reconciling billing systems across multiple providers:
 
 ```
 GET /v1/balances?tenant=acme-corp
 ```
 
-Returns total AI spend across all platforms. Drill down by `app` to see per-platform spend (Salesforce: $42K, ServiceNow: $31K, Custom agents: $28K). Drill down by `workflow` to see per-process spend (case triage: $12K, incident auto-resolve: $18K, lead nurture: $8K).
-
-Because every Cycles reservation includes `dimensions.correlation_id` — the case number, ticket ID, or customer ID that triggered the interaction — the finance team can compute cost-per-resolved-case, cost-per-auto-resolved-incident, and cost-per-qualified-lead. Across all platforms. In real time. No reconciliation spreadsheets.
+Returns total AI spend across all platforms. Drill down by `app` to see per-platform spend. Drill down by `workflow` to see per-process spend. Because every Cycles reservation includes `dimensions.correlation_id` — the case number, ticket ID, or customer ID that triggered the interaction — the finance team can attribute AI costs to business outcomes: cost per resolved case, cost per auto-resolved incident, cost per qualified lead. Across all platforms. In real time.
 
 ### Scenario 3: The auditor asks for logs
 
@@ -202,7 +200,7 @@ Three forces are converging:
 
 **AI governance expectations are rising across compliance frameworks.** Organizations are mapping AI agent activity into existing SOC 2 and ISO 27001 control programs, while newer AI-focused frameworks like [NIST AI RMF](https://www.nist.gov/itl/ai-risk-management-framework) and ISO/IEC 42001 increase expectations around governance, traceability, and risk management. The question "show me your AI audit trail" is appearing more frequently in audits — and a cross-platform audit trail that covers Salesforce, ServiceNow, and custom agents in a single ledger is significantly harder to produce than a platform-specific one.
 
-**AI cost overruns are making headlines.** As enterprises scale from pilot to production, the $50K/month AI spend that was "acceptable for innovation" becomes a line item the CFO scrutinizes. The first question is always "can we see this by platform?" The answer, without a unified governance plane, is always "not without two weeks of reconciliation."
+**AI spend is crossing the visibility threshold.** As enterprises scale from pilot to production, AI spend that was acceptable during experimentation becomes a line item the CFO scrutinizes. The first question is always "can we see this by platform and by business process?" Without a unified governance plane, the answer requires manual reconciliation across multiple billing systems.
 
 The single most likely trigger: an enterprise deploys Agentforce to production and discovers that a customer support interaction kicked off agents on both platforms, with no coordination, no shared limit, and no unified audit trail. The first cross-platform incident creates the urgency.
 
