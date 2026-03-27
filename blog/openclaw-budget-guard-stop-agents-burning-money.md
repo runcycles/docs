@@ -1,6 +1,6 @@
 ---
 title: "Your OpenClaw Agent Has No Spending Limit — Here's How to Fix That"
-date: 2026-03-26
+date: 2026-03-27
 author: Albert Mavashev
 tags: [openclaw, budgets, agents, runtime-authority, cost-control, plugin, tool-limits]
 description: "OpenClaw agents can call any model, invoke any tool, and retry indefinitely — with no budget enforcement. The cycles-openclaw-budget-guard plugin adds hard spend limits, tool call caps, and graceful degradation — typically without changing agent logic."
