@@ -14,7 +14,7 @@ A batch of 200 overdue invoices hits the system on a Tuesday afternoon. Salesfor
 
 The Salesforce admin checks Einstein usage. Everything looks normal — the agent did what it was configured to do. The ServiceNow admin checks Now Assist logs. Same story. Each platform governed its own agents correctly. Nobody governed the _aggregate_.
 
-This is no longer a theoretical edge case. It is the natural failure mode of multi-platform agent deployments — and the risk grows as enterprises move Agentforce and Now Assist from pilot to production.
+This is becoming a natural failure mode of multi-platform agent deployments — and the risk grows as enterprises move Agentforce and Now Assist from pilot to production.
 
 <!-- more -->
 
@@ -38,7 +38,7 @@ Three questions that illustrate this gap:
 
 2. **"Show me a complete log of all AI-initiated actions that modified customer data in the last 90 days, across all systems."** — The SOC2 auditor asks this. The security team can pull Salesforce audit logs and ServiceNow `sys_audit` records separately. But neither captures AI-initiated actions specifically (vs. human-initiated), and there is no way to correlate activity across platforms into a single timeline.
 
-3. **"Can we prove that our AI agents cannot send more than N customer communications per hour, across all systems?"** — The CISO asks this. The answer is no. Salesforce can limit Agentforce actions within Salesforce. ServiceNow can limit Now Assist actions within ServiceNow. But there is no mechanism to enforce a shared limit across both. The Tuesday email storm was technically within each platform's individual limits.
+3. **"Can we prove that our AI agents cannot send more than N customer communications per hour, across all systems?"** — The CISO asks this. Salesforce can limit Agentforce actions within Salesforce. ServiceNow can limit Now Assist actions within ServiceNow — and [AI Agent Fabric](https://www.servicenow.com/platform/ai-agent-fabric.html) can connect third-party agents into ServiceNow's governance model. But no vendor-neutral shared pre-execution ledger enforces a combined limit across Salesforce, ServiceNow, and custom runtimes simultaneously. The Tuesday email storm was technically within each platform's individual limits.
 
 ## Why a Neutral Governance Plane Is Needed
 
@@ -113,7 +113,7 @@ A batch processing error triggers AI agents on both platforms simultaneously. Sa
 
 With a shared RISK_POINTS budget of 500 per hour at the tenant level — where `email.send` costs 50 points and `slack.notify` costs 20 points — the cascade is contained. After 8 emails (400 points) and 5 Slack notifications (100 points), the budget is exhausted. The 9th email attempt in Salesforce returns `409 BUDGET_EXCEEDED`. The 6th Slack notification attempt in ServiceNow returns the same. Both platforms halt customer-facing actions simultaneously, while internal reads, note-taking, and status updates continue unaffected.
 
-The Cycles reservation ledger records every action attempted, every action allowed, and every action denied — with timestamps, platform origin, agent identity, and risk points consumed. The incident review takes 15 minutes instead of 3 days.
+The Cycles reservation ledger records every governed action — every attempt, every allow, every deny — with timestamps, platform origin, agent identity, and risk points consumed.
 
 In an emergency, setting the tenant-level budget to zero immediately halts all AI agent actions across all platforms — without logging into Salesforce, without logging into ServiceNow, without touching any agent code. One API call. Universal stop.
 
@@ -125,7 +125,7 @@ The quarterly AI spend review. Instead of reconciling billing systems across mul
 GET /v1/balances?tenant=acme-corp
 ```
 
-Returns total AI spend across all platforms. Drill down by `app` to see per-platform spend. Drill down by `workflow` to see per-process spend. Because every Cycles reservation includes `dimensions.correlation_id` — the case number, ticket ID, or customer ID that triggered the interaction — the finance team can attribute AI costs to business outcomes: cost per resolved case, cost per auto-resolved incident, cost per qualified lead. Across all platforms. In real time.
+Returns total AI spend across all platforms — for every action routed through Cycles. Drill down by `app` to see per-platform spend. Drill down by `workflow` to see per-process spend. Because every Cycles reservation includes `dimensions.correlation_id` — the case number, ticket ID, or customer ID that triggered the interaction — the finance team can attribute AI costs to business outcomes: cost per resolved case, cost per auto-resolved incident, cost per qualified lead. Across all platforms. In real time.
 
 ### Scenario 3: The auditor asks for logs
 
@@ -142,7 +142,7 @@ The Cycles reservation ledger contains every governed action:
 - **Cost** — actual USD amount charged
 - **Risk points** — consumed for this action
 
-One query. One export. Every AI action, every platform, every decision. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. You cannot have enforcement without a trail, and you cannot have a trail without enforcement. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
+One query. One export. Every governed AI action, every platform, every decision. The audit trail is generated as a side effect of enforcement — not as a separate logging concern. You cannot have enforcement without a trail, and you cannot have a trail without enforcement. For the compliance model behind this, see [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance).
 
 ## Protocol, Not Platform
 
