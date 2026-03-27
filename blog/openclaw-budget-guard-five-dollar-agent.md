@@ -20,7 +20,7 @@ We set a $5 budget using the [`cycles-openclaw-budget-guard`](https://github.com
 
 When the session crossed the $1.50 low-budget threshold, the plugin downgraded from Opus to Sonnet. As budget tightened further, it blocked expensive tools like code execution and injected budget hints into the system prompt. The model responded by writing shorter outputs and skipping optional searches. The task finished with $0.15 remaining — $4.85 total instead of $12.
 
-That's the difference between a kill switch and [runtime authority](/concepts/what-is-runtime-authority-for-ai-agents).
+That's the difference between a kill switch and [runtime authority](/blog/what-is-runtime-authority-for-ai-agents).
 
 > **TL;DR:** Install the plugin, set a budget, and your OpenClaw agent automatically downgrades models, disables expensive tools, and self-regulates when budget gets tight — instead of crashing.
 
