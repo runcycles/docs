@@ -56,7 +56,7 @@ The simplest budget enforcement is a hard stop: budget gone, agent dead. But tha
 
 ## What it looks like
 
-Install the plugin (no code changes to your agent):
+Install the plugin (in typical setups, no agent code changes needed):
 
 ```bash
 openclaw plugins install @runcycles/openclaw-budget-guard
