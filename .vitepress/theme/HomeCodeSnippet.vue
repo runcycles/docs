@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { createHighlighter } from 'shiki'
-import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, openaiAgentsPath, vercelPath, openclawPath, anthropicPath, springAiPath } from './FrameworkIcons'
+import { pythonPath, typescriptPath, springAiPath, mcpPath, langchainPath, openaiAgentsPath, vercelPath, openclawPath, anthropicPath } from './FrameworkIcons'
 
 const activeTab = ref('python')
 const highlighted = ref({})
@@ -18,12 +18,11 @@ function copyCode() {
 const tabs = [
   { key: 'python', label: 'Python', icon: pythonPath },
   { key: 'typescript', label: 'TypeScript', icon: typescriptPath },
-  { key: 'java', label: 'Spring Boot', icon: springBootPath },
+  { key: 'java', label: 'Java / Spring', icon: springAiPath },
   { key: 'mcp', label: 'MCP', icon: mcpPath },
   { key: 'langchain', label: 'LangChain', icon: langchainPath },
   { key: 'openai-agents', label: 'OpenAI Agents', icon: openaiAgentsPath },
   { key: 'anthropic', label: 'Anthropic', icon: anthropicPath },
-  { key: 'spring-ai', label: 'Spring AI', icon: springAiPath },
   { key: 'vercel', label: 'Vercel AI', icon: vercelPath },
   { key: 'openclaw', label: 'OpenClaw', icon: openclawPath },
 ]
@@ -60,10 +59,16 @@ const ask = withCycles(
   java: {
     lang: 'java',
     code: `import io.runcycles.client.java.spring.annotation.Cycles;
+import org.springframework.ai.chat.client.ChatClient;
 
-@Cycles(estimate = "5000", actionKind = "llm.completion", actionName = "openai:gpt-4o")
-public String ask(String prompt) {
-    return openAiClient.chatCompletion(prompt);
+// GPT-4o: ~$2.50/1M tokens ≈ 25 microcents/token
+@Cycles(value = "#maxTokens * 25",
+        actionKind = "llm.completion",
+        actionName = "gpt-4o")
+public String chat(String prompt, int maxTokens) {
+    return chatClient.prompt(prompt)
+        .call()
+        .content();
 }`,
   },
 
@@ -117,21 +122,6 @@ def ask_claude(prompt: str) -> str:
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     ).content[0].text`,
-  },
-
-  'spring-ai': {
-    lang: 'java',
-    code: `import io.runcycles.client.java.spring.annotation.Cycles;
-import org.springframework.ai.chat.client.ChatClient;
-
-@Cycles(value = "#maxTokens * 25",
-        actionKind = "llm.completion",
-        actionName = "gpt-4o")
-public String chat(String prompt, int maxTokens) {
-    return chatClient.prompt(prompt)
-        .call()
-        .content();
-}`,
   },
 
   vercel: {
