@@ -24,6 +24,21 @@ export CYCLES_BASE_URL="http://localhost:7878"
 export CYCLES_API_KEY="cyc_live_..."    # create via Admin Server — see note below
 ```
 
+> **Prefer not to use environment variables?** All settings can be loaded programmatically from any secret manager, vault, or encrypted config file:
+>
+> ```python
+> from runcycles import CyclesConfig, AsyncCyclesClient
+> from runcycles_openai_agents import CyclesRunHooks
+>
+> config = CyclesConfig(
+>     base_url=load_from_vault("cycles_base_url"),
+>     api_key=load_from_vault("cycles_api_key"),
+> )
+> hooks = CyclesRunHooks(client=AsyncCyclesClient(config), tenant="acme")
+> ```
+>
+> See [Python Client Configuration](/configuration/python-client-configuration-reference) for all options.
+
 > **Need a Cycles server or API key?** See [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) or [API Key Management](/how-to/api-key-management-in-cycles). For tenant and budget setup, see [Tenant Management](/how-to/tenant-creation-and-management-in-cycles) and [Budget Allocation](/how-to/budget-allocation-and-management-in-cycles).
 
 ::: tip 60-Second Quick Start
