@@ -207,11 +207,11 @@ Add the starter to your project:
 <dependency>
     <groupId>io.runcycles</groupId>
     <artifactId>cycles-client-java-spring</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 ```groovy [Gradle]
-implementation 'io.runcycles:cycles-client-java-spring:0.1.1'
+implementation 'io.runcycles:cycles-client-java-spring:0.2.0'
 ```
 :::
 
