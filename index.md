@@ -4,7 +4,7 @@ hero:
   name: "Cycles"
   text: "Runtime authority for autonomous agents"
   tagline: >-
-    Enforce hard limits on agent spend, risk, and actions before execution.<br>Open protocol. Apache 2.0.
+    Enforce hard limits on agent spend, risk, and actions before execution.<br>17 framework integrations. Open protocol. Apache 2.0.
   image:
     light: /runcycles-hero.svg?v=3
     dark: /runcycles-hero-dark.svg?v=3
@@ -38,7 +38,7 @@ features:
       src: /icons/wrench.svg
       alt: How-To icon
     title: "How-To Guides"
-    details: "Integrate with OpenAI, Anthropic, LangChain, Vercel AI SDK, AWS Bedrock, and more. Budget patterns, estimation strategies, error handling, and testing."
+    details: "17 integrations: OpenAI, Anthropic, Spring AI, LangChain, Vercel AI, MCP, CrewAI, LlamaIndex, Pydantic AI, Ollama, and more. Budget patterns, estimation, error handling."
     link: /how-to/adding-cycles-to-an-existing-application
     linkText: Browse guides
   - icon:
