@@ -6,12 +6,15 @@
     "png-to-ico": "^3.0.1",
     "sharp": "^0.34.5",
     "to-ico": "^1.1.5",
-    "vitepress": "^1.6.3"
+    "vitepress": "^1.6.3",
+    "vitest": "^4.1.2"
   },
   "scripts": {
     "convert-spec": "node scripts/convert-spec.js",
     "build": "npm run convert-spec && bash scripts/generate-llms-full.sh && vitepress build",
-    "dev": "npm run convert-spec && vitepress dev"
+    "dev": "npm run convert-spec && vitepress dev",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "feed": "^5.2.0",
