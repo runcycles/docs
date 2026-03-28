@@ -59,7 +59,9 @@ def ask(prompt: str) -> str:
 
 print(ask("What is budget authority?"))
 ```
-That's it — every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the OpenAI call is made. Read on for production patterns with accurate cost tracking.
+That's it — every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the OpenAI call is made.
+
+> **Note:** This quick start commits the estimate as actual spend. For accurate cost tracking, add an `actual` callback — see [Basic pattern](#basic-pattern) below.
 :::
 
 ## Basic pattern

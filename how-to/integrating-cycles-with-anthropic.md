@@ -39,7 +39,9 @@ def ask(prompt: str) -> str:
 
 print(ask("What is budget authority?"))
 ```
-Every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the Anthropic call is made. Read on for production patterns with per-token cost tracking and tool-use workflows.
+Every call is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the Anthropic call is made.
+
+> **Note:** This quick start commits the estimate as actual spend. For accurate cost tracking, add an `actual` callback — see the decorator pattern below.
 :::
 
 ## Simple decorator pattern
@@ -197,6 +199,7 @@ Adjust these constants for the model you use:
 - **Programmatic client for multi-turn.** When tool use creates a loop of LLM calls, create a reservation per turn for fine-grained control.
 - **Tag turns for observability.** Use `action.tags` (e.g., `["turn-1"]`) to distinguish costs across turns.
 - **Custom metrics.** Use `CyclesMetrics.custom` to record tool-use metadata alongside standard token counts.
+- **Always provide `actual`.** The `estimate` reserves budget before the call; the `actual` callback commits real cost from the response. Without `actual`, the estimate is committed as-is — overstating cost on short responses, understating on long ones.
 
 ## Full example
 
