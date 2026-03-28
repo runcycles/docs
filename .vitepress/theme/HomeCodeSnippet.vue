@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { createHighlighter } from 'shiki'
-import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, openaiAgentsPath, vercelPath, openclawPath } from './FrameworkIcons'
+import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, openaiAgentsPath, vercelPath, openclawPath, anthropicPath, springAiPath } from './FrameworkIcons'
 
 const activeTab = ref('python')
 const highlighted = ref({})
@@ -22,6 +22,8 @@ const tabs = [
   { key: 'mcp', label: 'MCP', icon: mcpPath },
   { key: 'langchain', label: 'LangChain', icon: langchainPath },
   { key: 'openai-agents', label: 'OpenAI Agents', icon: openaiAgentsPath },
+  { key: 'anthropic', label: 'Anthropic', icon: anthropicPath },
+  { key: 'spring-ai', label: 'Spring AI', icon: springAiPath },
   { key: 'vercel', label: 'Vercel AI', icon: vercelPath },
   { key: 'openclaw', label: 'OpenClaw', icon: openclawPath },
 ]
@@ -99,6 +101,37 @@ agent = Agent(
     input_guardrails=[guardrail],
 )
 result = await Runner.run(agent, input="Help me!", hooks=hooks)`,
+  },
+
+  anthropic: {
+    lang: 'python',
+    code: `from anthropic import Anthropic
+from runcycles import cycles
+
+client = Anthropic()
+
+@cycles(estimate=50000, action_kind="llm.completion", action_name="anthropic:claude-sonnet-4-20250514")
+def ask_claude(prompt: str) -> str:
+    return client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    ).content[0].text`,
+  },
+
+  'spring-ai': {
+    lang: 'java',
+    code: `import io.runcycles.client.java.spring.annotation.Cycles;
+import org.springframework.ai.chat.client.ChatClient;
+
+@Cycles(value = "#maxTokens * 25",
+        actionKind = "llm.completion",
+        actionName = "gpt-4o")
+public String chat(String prompt, int maxTokens) {
+    return chatClient.prompt(prompt)
+        .call()
+        .content();
+}`,
   },
 
   vercel: {
