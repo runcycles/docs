@@ -29,7 +29,7 @@ const integrations = [
   <section class="home-integrations">
     <div class="inner">
       <h2 class="integrations-heading">Works with your stack</h2>
-      <p class="integrations-caption">Budget authority for every framework, provider, and runtime.</p>
+      <p class="integrations-caption">Budget, risk, and action authority across your AI stack.</p>
       <div class="grid">
         <a
           v-for="item in integrations"
