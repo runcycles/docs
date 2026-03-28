@@ -275,6 +275,7 @@ export default defineConfig({
             { text: 'Overview', link: '/how-to/integrations-overview' },
             { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
             { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
+            { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents', badge: { text: 'New', type: 'tip' } },
             { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
             { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
             { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
