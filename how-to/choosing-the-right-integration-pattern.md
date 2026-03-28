@@ -1,6 +1,6 @@
 ---
 title: "Choosing the Right Integration Pattern"
-description: "Pick the right Cycles integration pattern for your use case: decorator, streaming adapter, middleware, or programmatic client."
+description: "Pick the right Cycles integration pattern for your use case: decorator, streaming adapter, middleware, agent hooks, or programmatic client."
 ---
 
 # Choosing the Right Integration Pattern
@@ -13,18 +13,21 @@ Each Cycles SDK offers multiple integration patterns. This guide helps you pick 
 Is the agent an MCP-compatible host (Claude Desktop, Claude Code, Cursor, Windsurf)?
 ├── Yes → Use the MCP Server (@runcycles/mcp-server) — zero code changes
 └── No
-    Is the call streaming?
-    ├── Yes → Use reserveForStream (TS) or programmatic client (Python)
+    Is it an agent framework with lifecycle hooks (OpenAI Agents SDK, OpenClaw)?
+    ├── Yes → Use the framework plugin (runcycles-openai-agents, openclaw-budget-guard)
     └── No
-        ├── Is budget logic per-request in a web framework?
-        │   ├── Yes → Use middleware (Express, FastAPI)
-        │   └── No
-        │       ├── Is it a simple function call?
-        │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
-        │       │   └── No → Use programmatic client
-        │       └── Do you need fine-grained control over commit timing?
-        │           ├── Yes → Use programmatic client
-        │           └── No → Use decorator
+        Is the call streaming?
+        ├── Yes → Use reserveForStream (TS) or programmatic client (Python)
+        └── No
+            ├── Is budget logic per-request in a web framework?
+            │   ├── Yes → Use middleware (Express, FastAPI)
+            │   └── No
+            │       ├── Is it a simple function call?
+            │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
+            │       │   └── No → Use programmatic client
+            │       └── Do you need fine-grained control over commit timing?
+            │           ├── Yes → Use programmatic client
+            │           └── No → Use decorator
 ```
 
 ## Pattern comparison
@@ -32,6 +35,7 @@ Is the agent an MCP-compatible host (Claude Desktop, Claude Code, Cursor, Windsu
 | Pattern | Languages | Best for | Streaming | Auto-heartbeat | Auto-commit |
 |---|---|---|---|---|---|
 | **MCP Server** | Any (agent-native) | MCP-compatible AI agents | — | — | — |
+| **Agent framework plugin** | Python, TypeScript | Agent SDKs with lifecycle hooks | — | Yes | Yes |
 | **Decorator / HOF** | Python `@cycles`, TS `withCycles`, Java `@Cycles` | Simple function calls | No | Yes | Yes |
 | **Streaming adapter** | TS `reserveForStream` | Streaming responses | Yes | Yes | Manual |
 | **Middleware** | Express, FastAPI | Per-request budget in web apps | Both | Depends | Manual |
@@ -62,6 +66,34 @@ The agent calls `cycles_reserve`, `cycles_commit`, and other tools as part of it
 - You need to wrap specific functions with budget governance in your own code
 
 See [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) for setup instructions.
+
+## Pattern 0a: Agent framework plugin
+
+For agent frameworks that expose lifecycle hooks, a plugin implements the framework's hook interface to create reservations on start and commit on end — covering the entire agent run automatically with no per-function decoration.
+
+```python
+# OpenAI Agents SDK
+from agents import Agent, Runner
+from runcycles_openai_agents import CyclesRunHooks
+
+hooks = CyclesRunHooks(
+    tenant="acme",
+    tool_risk={"send_email": 50, "search": 0},
+)
+result = await Runner.run(agent, input="...", hooks=hooks)
+```
+
+**Use when:**
+- You're using an agent framework with lifecycle hooks (OpenAI Agents SDK, OpenClaw)
+- You want budget governance on every LLM call, tool invocation, and handoff automatically
+- You need tool-level risk mapping (different costs per tool)
+- You want agent handoff tracking in the Cycles ledger
+
+**Don't use when:**
+- You're not using an agent framework (use `@cycles` decorator instead)
+- You need per-function control over estimation and commit (use programmatic client)
+
+See [Integrating with OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) or [Integrating with OpenClaw](/how-to/integrating-cycles-with-openclaw).
 
 ## Pattern 1: Decorator / Higher-Order Function
 
@@ -251,6 +283,7 @@ async def agent_loop(task: str):
 ## Next steps
 
 - [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code runtime authority for Claude / Cursor / Windsurf
+- [Integrating with OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) — budget governance for OpenAI Agents SDK
 - [Getting Started with Python](/quickstart/getting-started-with-the-python-client)
 - [Getting Started with TypeScript](/quickstart/getting-started-with-the-typescript-client)
 - [Getting Started with Spring Boot](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
