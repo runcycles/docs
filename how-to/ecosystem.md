@@ -64,7 +64,8 @@ Add Cycles runtime authority to applications built with the Vercel AI SDK for se
 
 Integrate Cycles with Spring AI to bring runtime authority to Java and Kotlin AI applications.
 
-- [Spring AI quickstart](/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles)
+- [Spring AI integration guide](/how-to/integrating-cycles-with-spring-ai)
+- [Spring AI strategic quickstart](/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles)
 - [spring.io/projects/spring-ai](https://spring.io/projects/spring-ai)
 
 ## Web Frameworks
