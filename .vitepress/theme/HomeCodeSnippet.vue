@@ -345,8 +345,7 @@ onMounted(async () => {
   background: var(--vp-code-block-bg);
   padding: 20px 24px;
   overflow-x: auto;
-  /* Fixed height prevents layout shift when switching tabs */
-  height: 420px;
+  min-height: 200px;
   overflow-y: auto;
 }
 
