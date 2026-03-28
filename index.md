@@ -4,7 +4,7 @@ hero:
   name: "Cycles"
   text: "Runtime authority for autonomous agents"
   tagline: >-
-    Enforce hard limits on agent spend, risk, and actions before execution.<br>17 framework integrations. Open protocol. Apache 2.0.
+    Enforce hard limits on agent spend, risk, and actions before execution.<br>Open protocol. Apache 2.0.
   image:
     light: /runcycles-hero.svg?v=3
     dark: /runcycles-hero-dark.svg?v=3
