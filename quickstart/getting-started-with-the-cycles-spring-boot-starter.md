@@ -198,9 +198,28 @@ After this walkthrough, explore the remaining endpoints (`caps`, `custom-ttl`, `
 
 All demo source files are under `cycles-demo-client-java-spring/src/main/java/io/runcycles/demo/client/spring/`.
 
+## Installation
+
+Add the starter to your project:
+
+::: code-group
+```xml [Maven]
+<dependency>
+    <groupId>io.runcycles</groupId>
+    <artifactId>cycles-client-java-spring</artifactId>
+    <version>0.1.1</version>
+</dependency>
+```
+```groovy [Gradle]
+implementation 'io.runcycles:cycles-client-java-spring:0.1.1'
+```
+:::
+
+Check [Maven Central](https://central.sonatype.com/artifact/io.runcycles/cycles-client-java-spring) for the latest version.
+
 ## Configuration
 
-Add the starter dependency and configure the connection in your project's `application.yml`:
+Configure the connection in your project's `application.yml`:
 
 ```yaml
 cycles:
