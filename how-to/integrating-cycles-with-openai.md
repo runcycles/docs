@@ -7,6 +7,10 @@ description: "Guard OpenAI API calls with Cycles budget reservations for cost-co
 
 This guide shows how to guard OpenAI API calls with Cycles budget reservations so that every chat completion is cost-controlled, caps-aware, and observable.
 
+::: tip Using the OpenAI Agents SDK?
+If you're building multi-agent workflows with the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), see [Integrating Cycles with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) instead — it covers the entire agent run automatically with no per-function decoration.
+:::
+
 ## Prerequisites
 
 ```bash
@@ -21,6 +25,21 @@ export CYCLES_API_KEY="your-api-key"   # create via Admin Server — see note be
 export CYCLES_TENANT="acme"
 export OPENAI_API_KEY="sk-..."
 ```
+
+> **Prefer not to use environment variables?** All settings can be loaded programmatically from any secret manager, vault, or encrypted config file:
+>
+> ```python
+> from runcycles import CyclesConfig, CyclesClient, set_default_client
+>
+> config = CyclesConfig(
+>     base_url=load_from_vault("cycles_base_url"),
+>     api_key=load_from_vault("cycles_api_key"),
+>     tenant=load_from_vault("cycles_tenant"),
+> )
+> set_default_client(CyclesClient(config))
+> ```
+>
+> See [Python Client Configuration](/configuration/python-client-configuration-reference) for all options.
 
 > **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
@@ -184,6 +203,7 @@ See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-clien
 
 ## Next steps
 
+- [Integrating with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) — budget governance for multi-agent workflows
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming
 - [Testing with Cycles](/how-to/testing-with-cycles) — testing budget-guarded code

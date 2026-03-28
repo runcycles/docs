@@ -427,6 +427,7 @@ For each `@cycles`-decorated function call:
 
 ## Next steps
 
+- [Integrating with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) — budget governance for multi-agent workflows
 - [Error Handling in Python](/how-to/error-handling-patterns-in-python) — Python-specific exception hierarchy and patterns
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
 - [API Reference](/api/) — interactive endpoint documentation

@@ -98,7 +98,6 @@ agent = Agent(
     instructions="You resolve support cases.",
     input_guardrails=[guardrail],
 )
-
 result = await Runner.run(agent, input="Help me!", hooks=hooks)`,
   },
 
