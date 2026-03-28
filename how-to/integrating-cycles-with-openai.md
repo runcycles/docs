@@ -26,6 +26,21 @@ export CYCLES_TENANT="acme"
 export OPENAI_API_KEY="sk-..."
 ```
 
+> **Prefer not to use environment variables?** All settings can be loaded programmatically from any secret manager, vault, or encrypted config file:
+>
+> ```python
+> from runcycles import CyclesConfig, CyclesClient, set_default_client
+>
+> config = CyclesConfig(
+>     base_url=load_from_vault("cycles_base_url"),
+>     api_key=load_from_vault("cycles_api_key"),
+>     tenant=load_from_vault("cycles_tenant"),
+> )
+> set_default_client(CyclesClient(config))
+> ```
+>
+> See [Python Client Configuration](/configuration/python-client-configuration-reference) for all options.
+
 > **Need an API key?** Create one via the Admin Server — see [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key) or [API Key Management](/how-to/api-key-management-in-cycles).
 
 ::: tip 60-Second Quick Start
