@@ -1,0 +1,59 @@
+name: Update Install Count
+
+on:
+  schedule:
+    - cron: '0 0,8,16 * * *'  # midnight, 8 AM, 4 PM UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch download counts
+        run: |
+          # npm packages
+          TODAY=$(date +%Y-%m-%d)
+          NPM_TOTAL=0
+          for pkg in runcycles @runcycles/mcp-server @runcycles/openclaw-budget-guard; do
+            COUNT=$(curl -sf "https://api.npmjs.org/downloads/point/2020-01-01:${TODAY}/${pkg}" | jq '.downloads // 0')
+            NPM_TOTAL=$((NPM_TOTAL + COUNT))
+          done
+          echo "npm=$NPM_TOTAL"
+
+          # PyPI packages
+          PYPI_TOTAL=0
+          for pkg in runcycles runcycles-openai-agents; do
+            COUNT=$(curl -sf "https://pypistats.org/api/packages/${pkg}/recent" | jq '.data.last_month // 0')
+            PYPI_TOTAL=$((PYPI_TOTAL + COUNT))
+          done
+          echo "pypi=$PYPI_TOTAL"
+
+          FETCHED=$((NPM_TOTAL + PYPI_TOTAL))
+          echo "fetched=$FETCHED"
+
+          # Read current cache
+          CACHED=$(jq '.total // 0' .vitepress/theme/installs-cache.json)
+          echo "cached=$CACHED"
+
+          # High-water mark: only update if new total is higher
+          if [ "$FETCHED" -gt "$CACHED" ]; then
+            echo "{\"total\":${FETCHED},\"fetchedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .vitepress/theme/installs-cache.json
+            echo "UPDATED=true" >> $GITHUB_ENV
+            echo "Updated: ${CACHED} → ${FETCHED}"
+          else
+            echo "UPDATED=false" >> $GITHUB_ENV
+            echo "No update needed: fetched=${FETCHED} <= cached=${CACHED}"
+          fi
+
+      - name: Commit and push
+        if: env.UPDATED == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .vitepress/theme/installs-cache.json
+          git commit -m "chore: update install count [skip ci]"
+          git push
