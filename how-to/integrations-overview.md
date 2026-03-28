@@ -20,6 +20,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk) | TypeScript | Yes | `reserveForStream` |
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
+| [Spring AI](/how-to/integrating-cycles-with-spring-ai) | Java | Yes | `@Cycles` annotation |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
 | [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
