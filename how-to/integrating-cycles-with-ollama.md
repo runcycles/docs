@@ -133,24 +133,24 @@ Using the [ollama npm package](https://www.npmjs.com/package/ollama):
 
 ```typescript
 import { Ollama } from "ollama";
-import { CyclesClient, CyclesConfig, cycles } from "@runcycles/client";
+import { CyclesClient, CyclesConfig, withCycles } from "runcycles";
 
 const client = new CyclesClient(CyclesConfig.fromEnv());
 const ollama = new Ollama();
 
-const ask = cycles(
+const ask = withCycles(
+  {
+    client,
+    estimate: 500_000,
+    actionKind: "llm.completion",
+    actionName: "llama3.1",
+  },
   async (prompt: string): Promise<string> => {
     const response = await ollama.chat({
       model: "llama3.1",
       messages: [{ role: "user", content: prompt }],
     });
     return response.message.content;
-  },
-  {
-    client,
-    estimate: 500_000,
-    actionKind: "llm.completion",
-    actionName: "llama3.1",
   }
 );
 
