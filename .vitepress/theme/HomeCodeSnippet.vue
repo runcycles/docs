@@ -153,8 +153,7 @@ const result = streamText({
       "env": {
         "CYCLES_BASE_URL": "http://localhost:7878",
         "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_TENANT": "acme-corp",
-        "CYCLES_DEFAULT_CAP": "10000000"
+        "CYCLES_TENANT": "acme-corp"
       }
     }
   }
