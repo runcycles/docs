@@ -1,5 +1,5 @@
 ---
-title: "Integrating Cycles with Spring AI"
+title: "Integrating Cycles with Spring AI for Budget Control"
 description: "Guard Spring AI chat completions and tool calls with Cycles budget reservations using the @Cycles annotation. Includes cost estimation, caps awareness, streaming, and error handling."
 ---
 
@@ -53,7 +53,8 @@ public class ChatService {
         this.chatClient = builder.build();
     }
 
-    @Cycles(value = "#maxTokens * 15",
+    // GPT-4o: ~$2.50/1M input tokens ≈ 25 microcents/token
+    @Cycles(value = "#maxTokens * 25",
             actionKind = "llm.completion",
             actionName = "gpt-4o")
     public String chat(String prompt, int maxTokens) {
@@ -67,7 +68,7 @@ public class ChatService {
 That's it. Every call to `chat()` is now budget-guarded: Cycles reserves the estimated cost before execution, commits actual usage after, and throws `CyclesProtocolException` if the budget is exceeded.
 :::
 
-## Dynamic cost estimation
+## Dynamic cost estimation with Spring AI
 
 Use SpEL expressions to estimate cost from method parameters. The `value` (or `estimate`) attribute is evaluated before the method runs:
 
@@ -83,7 +84,7 @@ public String generate(String prompt, int maxTokens) {
         .content();
 }
 
-// Estimate from prompt length (rough token approximation)
+// Estimate from prompt length (rough token approximation: ~4 chars per token)
 @Cycles(value = "#prompt.length() / 4 * 25",
         actionKind = "llm.completion",
         actionName = "gpt-4o")
@@ -98,7 +99,7 @@ See [SpEL Expression Reference](/configuration/spel-expression-reference-for-cyc
 
 ## Reporting actual usage
 
-The `actual` attribute is evaluated after the method returns, using `#result` to reference the return value:
+The `actual` attribute is evaluated after the method returns, using `#result` to reference the return value. This lets Cycles commit the real cost instead of the estimate:
 
 ```java
 @Cycles(value = "#maxTokens * 25",
@@ -115,6 +116,11 @@ public String generate(String prompt, int maxTokens) {
 For precise token counts, access the `ChatResponse` metadata and report via `CyclesMetrics`:
 
 ```java
+import io.runcycles.client.java.spring.annotation.Cycles;
+import io.runcycles.client.java.spring.context.CyclesContextHolder;
+import io.runcycles.client.java.spring.context.CyclesReservationContext;
+import io.runcycles.client.java.spring.model.CyclesMetrics;
+
 @Cycles(value = "#maxTokens * 25",
         actionKind = "llm.completion",
         actionName = "gpt-4o")
@@ -137,19 +143,17 @@ public String generateWithMetrics(String prompt, int maxTokens) {
         metrics.setLatencyMs((int) (System.currentTimeMillis() - start));
         metrics.setModelVersion("gpt-4o-2024-08-06");
         ctx.setMetrics(metrics);
-
-        // Commit actual cost based on real token counts
-        int actualCost = (int) (usage.getTotalTokens() * 25);
-        ctx.setActual(actualCost);
     }
 
     return content;
 }
 ```
 
-## Respecting caps
+The `actual` SpEL attribute on `@Cycles` handles cost calculation. Use `CyclesMetrics` for observability data (token counts, latency, model version) that is attached to the commit for reporting.
 
-When budget is running low, Cycles may return `ALLOW_WITH_CAPS` instead of a flat `ALLOW`. Caps tell you how to constrain the operation. Read them from the reservation context:
+## Respecting budget caps in Spring AI
+
+When budget is running low, Cycles may return `ALLOW_WITH_CAPS` instead of a flat `ALLOW`. Caps tell you how to constrain the operation — for example, reducing max tokens to conserve budget. Read them from the reservation context:
 
 ```java
 @Cycles(value = "#maxTokens * 25",
@@ -173,7 +177,59 @@ public String capsAwareChat(String prompt, int maxTokens) {
 }
 ```
 
-## Guarding tool calls
+## Error handling
+
+Catch `CyclesProtocolException` to degrade gracefully when budget is exceeded. This should be part of your service layer from the start:
+
+```java
+import io.runcycles.client.java.spring.model.CyclesProtocolException;
+
+@Service
+public class ResilientChatService {
+
+    private final GuardedLlmService premiumLlm;
+    private final GuardedLlmService budgetLlm;
+
+    public String chat(String prompt) {
+        try {
+            return premiumLlm.generate(prompt, 4096);     // GPT-4o
+        } catch (CyclesProtocolException e) {
+            if (e.isBudgetExceeded()) {
+                return budgetLlm.generate(prompt, 1024);   // GPT-4o-mini fallback
+            }
+            if (e.getRetryAfterMs() != null) {
+                scheduleRetry(prompt, e.getRetryAfterMs());
+                return "Request queued. Retrying shortly.";
+            }
+            throw e;
+        }
+    }
+}
+```
+
+`GuardedLlmService` is a separate `@Service` bean whose methods are annotated with `@Cycles`. This is needed because Spring AOP proxies only intercept calls from outside the bean — see [Self-invocation workaround](#self-invocation-workaround) below.
+
+For global exception handling in a REST API:
+
+```java
+@ControllerAdvice
+public class CyclesExceptionHandler {
+
+    @ExceptionHandler(CyclesProtocolException.class)
+    public ResponseEntity<Map<String, Object>> handleBudgetError(CyclesProtocolException e) {
+        if (e.isBudgetExceeded()) {
+            return ResponseEntity.status(429)
+                .header("Retry-After", String.valueOf(
+                    e.getRetryAfterMs() != null ? e.getRetryAfterMs() / 1000 : 60))
+                .body(Map.of("error", "budget_exceeded", "message", "Budget limit reached."));
+        }
+        return ResponseEntity.status(503)
+            .body(Map.of("error", e.getReasonCode(), "message", e.getMessage()));
+    }
+}
+```
+
+## Guarding Spring AI tool calls
 
 For Spring AI function callbacks, wrap the tool execution with `@Cycles` on a separate service bean:
 
@@ -218,37 +274,36 @@ public class ToolConfig {
 
 The `toolset` attribute scopes budget per tool category, so you can set different budgets for search tools vs. database tools via the Admin API.
 
-## Streaming responses
+## Spring AI streaming with budget control
 
-For streaming, use the programmatic `CyclesClient` instead of the annotation, since the stream commits after completion:
+For streaming, use the programmatic `CyclesClient` instead of the annotation, since the stream needs to commit after all chunks arrive:
 
 ```java
+import io.runcycles.client.java.spring.client.CyclesClient;
+import io.runcycles.client.java.spring.model.*;
+
 @Service
 public class StreamingChatService {
 
     private final ChatClient chatClient;
     private final CyclesClient cyclesClient;
 
-    @Autowired
-    public StreamingChatService(ChatClient.Builder builder, CyclesClient cyclesClient) {
-        this.chatClient = builder.build();
-        this.cyclesClient = cyclesClient;
-    }
-
     public Flux<String> streamChat(String prompt, int maxTokens) {
         // Reserve budget before streaming
-        var reservation = cyclesClient.createReservation(
-            ReservationCreateRequest.builder()
-                .idempotencyKey(UUID.randomUUID().toString())
-                .subject(Subject.builder().tenant("acme").build())
-                .action(Action.builder().kind("llm.completion").name("gpt-4o").build())
-                .estimate(Amount.builder().unit("USD_MICROCENTS").amount(maxTokens * 25L).build())
-                .ttlMs(120000)
-                .build()
+        Map<String, Object> body = Map.of(
+            "idempotency_key", UUID.randomUUID().toString(),
+            "subject", Map.of("tenant", "acme"),
+            "action", Map.of("kind", "llm.completion", "name", "gpt-4o"),
+            "estimate", Map.of("unit", "USD_MICROCENTS", "amount", maxTokens * 25L),
+            "ttl_ms", 120000
         );
 
-        if (!"ALLOW".equals(reservation.getDecision())) {
-            throw new CyclesProtocolException("Budget denied: " + reservation.getDecision());
+        var response = cyclesClient.createReservation(body);
+        String reservationId = (String) response.get("reservation_id");
+        String decision = (String) response.get("decision");
+
+        if (!"ALLOW".equals(decision) && !"ALLOW_WITH_CAPS".equals(decision)) {
+            throw new CyclesProtocolException("Budget denied: " + decision);
         }
 
         AtomicInteger tokenCount = new AtomicInteger();
@@ -258,25 +313,17 @@ public class StreamingChatService {
             .content()
             .doOnNext(chunk -> tokenCount.addAndGet(chunk.length() / 4))
             .doOnComplete(() -> {
-                // Commit actual usage
-                cyclesClient.commitReservation(reservation.getReservationId(),
-                    CommitRequest.builder()
-                        .idempotencyKey(UUID.randomUUID().toString())
-                        .actual(Amount.builder()
-                            .unit("USD_MICROCENTS")
-                            .amount(tokenCount.get() * 25L)
-                            .build())
-                        .build()
-                );
+                cyclesClient.commitReservation(reservationId, Map.of(
+                    "idempotency_key", UUID.randomUUID().toString(),
+                    "actual", Map.of("unit", "USD_MICROCENTS",
+                                     "amount", tokenCount.get() * 25L)
+                ));
             })
             .doOnError(err -> {
-                // Release on failure
-                cyclesClient.releaseReservation(reservation.getReservationId(),
-                    ReleaseRequest.builder()
-                        .idempotencyKey(UUID.randomUUID().toString())
-                        .reason("stream_error: " + err.getMessage())
-                        .build()
-                );
+                cyclesClient.releaseReservation(reservationId, Map.of(
+                    "idempotency_key", UUID.randomUUID().toString(),
+                    "reason", "stream_error: " + err.getMessage()
+                ));
             });
     }
 }
@@ -284,7 +331,7 @@ public class StreamingChatService {
 
 ## Agent loop budget control
 
-For multi-step agent workflows, guard each iteration:
+For multi-step agent workflows, guard each iteration. Each call gets its own reservation, so Cycles can deny mid-workflow when budget runs out:
 
 ```java
 @Service
@@ -297,7 +344,7 @@ public class AgentService {
 
         for (int i = 0; i < maxIterations; i++) {
             try {
-                String response = llm.think(context, 2048);
+                String response = llm.generate(context, 2048);
                 if (isComplete(response)) {
                     return response;
                 }
@@ -315,67 +362,11 @@ public class AgentService {
 }
 ```
 
-Each call to `llm.think()` gets its own reservation. When budget runs out, Cycles denies the next reservation and the agent stops cleanly.
-
-## Error handling
-
-Catch `CyclesProtocolException` to degrade gracefully:
-
-```java
-@Service
-public class ResilientChatService {
-
-    private final GuardedLlmService premiumLlm;
-    private final GuardedLlmService budgetLlm;
-
-    @Autowired
-    public ResilientChatService(GuardedLlmService premiumLlm, GuardedLlmService budgetLlm) {
-        this.premiumLlm = premiumLlm;
-        this.budgetLlm = budgetLlm;
-    }
-
-    public String chat(String prompt) {
-        try {
-            return premiumLlm.generate(prompt, 4096);     // GPT-4o
-        } catch (CyclesProtocolException e) {
-            if (e.isBudgetExceeded()) {
-                return budgetLlm.generate(prompt, 1024);   // GPT-4o-mini fallback
-            }
-            if (e.isRetryable() && e.getRetryAfterMs() != null) {
-                // Queue for later
-                scheduleRetry(prompt, e.getRetryAfterMs());
-                return "Request queued. Retrying shortly.";
-            }
-            throw e;
-        }
-    }
-}
-```
-
-For global exception handling in a REST API:
-
-```java
-@ControllerAdvice
-public class CyclesExceptionHandler {
-
-    @ExceptionHandler(CyclesProtocolException.class)
-    public ResponseEntity<Map<String, Object>> handleBudgetError(CyclesProtocolException e) {
-        if (e.isBudgetExceeded()) {
-            return ResponseEntity.status(429)
-                .header("Retry-After", String.valueOf(e.getRetryAfterMs() != null ? e.getRetryAfterMs() / 1000 : 60))
-                .body(Map.of("error", "budget_exceeded", "message", "Budget limit reached."));
-        }
-        return ResponseEntity.status(503)
-            .body(Map.of("error", e.getReasonCode(), "message", e.getMessage()));
-    }
-}
-```
-
 ## Production patterns
 
 ### Dry-run rollout
 
-Start in shadow mode to measure budget impact without affecting production:
+Start in shadow mode to measure budget impact before enforcing:
 
 ```java
 @Cycles(value = "#maxTokens * 25",
@@ -383,19 +374,17 @@ Start in shadow mode to measure budget impact without affecting production:
         actionName = "gpt-4o",
         dryRun = true)
 public String shadowChat(String prompt, int maxTokens) {
-    // This method does NOT execute in dry-run mode.
-    // The reservation is evaluated but no budget is held.
     return chatClient.prompt(prompt).call().content();
 }
 ```
 
 ::: warning
-When `dryRun = true`, the guarded method does **not** execute. The annotation returns `null` after the dry-run reservation check. Use this for measuring budget impact, not for production traffic.
+When `dryRun = true`, the guarded method does **not** execute. The annotation evaluates the reservation against the budget but skips method execution and returns a framework result object. Use this to measure what budget impact would be, not for serving production traffic.
 :::
 
 ### Multi-tenant via SpEL
 
-Resolve tenant from the request context:
+Resolve tenant from the method parameters:
 
 ```java
 @Cycles(value = "#maxTokens * 25",
@@ -415,6 +404,12 @@ Spring AOP proxies do not intercept self-calls within the same bean. If you call
 // This bean's @Cycles annotations ARE intercepted by the proxy
 @Service
 public class GuardedLlmService {
+    private final ChatClient chatClient;
+
+    public GuardedLlmService(ChatClient.Builder builder) {
+        this.chatClient = builder.build();
+    }
+
     @Cycles(value = "#maxTokens * 25", actionKind = "llm.completion", actionName = "gpt-4o")
     public String generate(String prompt, int maxTokens) {
         return chatClient.prompt(prompt).call().content();
@@ -431,6 +426,16 @@ public class AgentOrchestrator {
     }
 }
 ```
+
+## Key points
+
+- `@Cycles` works with any Spring AI `ChatClient` or `ChatModel` call — no adapter needed
+- Use `value` (SpEL) to estimate cost before execution, `actual` to commit real cost after
+- `CyclesContextHolder.get()` provides reservation context inside the guarded method — use it for caps and metrics
+- Guard tool calls with `@Cycles` on a separate `@Service` bean, scoped with `toolset`
+- For streaming, use the programmatic `CyclesClient` instead of the annotation
+- Catch `CyclesProtocolException` to degrade to a cheaper model or queue for retry
+- Start with `dryRun = true` for shadow-mode rollouts before enforcing
 
 ## Next steps
 
