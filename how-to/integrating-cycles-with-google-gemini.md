@@ -1,11 +1,11 @@
 ---
 title: "Integrating Cycles with Google Gemini"
-description: "Add budget governance to Google Gemini API calls using the runcycles TypeScript client and the @google/generative-ai SDK."
+description: "Add budget governance to Google Gemini API calls using the runcycles TypeScript client and the @google/genai SDK."
 ---
 
 # Integrating Cycles with Google Gemini
 
-This guide shows how to add budget governance to Google Gemini API calls using the `runcycles` TypeScript client and the `@google/generative-ai` SDK.
+This guide shows how to add budget governance to Google Gemini API calls using the `runcycles` TypeScript client and the `@google/genai` SDK.
 
 ## Prerequisites
 
@@ -16,30 +16,33 @@ This guide shows how to add budget governance to Google Gemini API calls using t
 ## Installation
 
 ```bash
-npm install runcycles @google/generative-ai
+npm install runcycles @google/genai
 ```
 
 ## Non-streaming calls with withCycles
 
 ```typescript
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
 
 const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
 setDefaultClient(cyclesClient);
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 const askGemini = withCycles(
   {
-    estimate: 500000,  // ~$0.005 per call (Gemini 2.0 Flash is inexpensive)
+    estimate: 500_000,  // ~$0.005 per call
+    actual: (result: string) => Math.ceil(result.length / 4 * 40),  // rough output-token cost
     actionKind: "llm.completion",
-    actionName: "gemini-2.0-flash",
+    actionName: "google:gemini-2.5-flash",
   },
   async (prompt: string) => {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+    return response.text ?? "";
   },
 );
 
@@ -47,12 +50,16 @@ const response = await askGemini("Explain budget governance for AI agents.");
 console.log(response);
 ```
 
+::: tip actual vs estimate
+Without an `actual` callback, Cycles commits the `estimate` as the real spend — which overstates cost on cheap calls and understates it on expensive ones. Always provide `actual` when you can derive real usage from the response.
+:::
+
 ## Streaming calls with reserveForStream
 
-For streaming responses, use `reserveForStream`:
+For streaming responses, use `reserveForStream` to reserve before the stream starts and commit after it finishes with real token counts:
 
 ```typescript
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import {
   CyclesClient,
   CyclesConfig,
@@ -61,16 +68,20 @@ import {
 } from "runcycles";
 
 const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL = "gemini-2.5-flash";
 const MAX_TOKENS = 1024;
 
-// Gemini 2.0 Flash pricing:
-// Input: $0.10/1M tokens = 10 microcents/token
-// Output: $0.40/1M tokens = 40 microcents/token
+// Gemini 2.5 Flash pricing:
+// Input: $0.15/1M tokens = 15 microcents/token
+// Output: $0.60/1M tokens = 60 microcents/token
 function estimateCost(inputTokens: number, maxOutputTokens: number): number {
-  return Math.ceil((inputTokens * 10 + maxOutputTokens * 40) * 1.2);
+  return Math.ceil((inputTokens * 15 + maxOutputTokens * 60) * 1.2);
+}
+
+function actualCost(inputTokens: number, outputTokens: number): number {
+  return Math.ceil(inputTokens * 15 + outputTokens * 60);
 }
 
 async function streamWithBudget(prompt: string) {
@@ -83,7 +94,7 @@ async function streamWithBudget(prompt: string) {
     estimate,
     unit: "USD_MICROCENTS",
     actionKind: "llm.completion",
-    actionName: MODEL_NAME,
+    actionName: MODEL,
   });
 
   try {
@@ -94,30 +105,27 @@ async function streamWithBudget(prompt: string) {
     }
 
     // 2. Stream the response
-    const model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
-      generationConfig: { maxOutputTokens: maxTokens },
+    const streamResult = await ai.models.generateContentStream({
+      model: MODEL,
+      contents: prompt,
+      config: { maxOutputTokens: maxTokens },
     });
 
-    const streamResult = await model.generateContentStream(prompt);
-
-    for await (const chunk of streamResult.stream) {
-      const text = chunk.text();
+    for await (const chunk of streamResult) {
+      const text = chunk.text;
       if (text) process.stdout.write(text);
     }
     console.log();
 
     // 3. Commit actual usage from aggregated response metadata
-    const aggregated = await streamResult.response;
-    const usage = aggregated.usageMetadata;
+    const usage = streamResult.usageMetadata;
     const inputTokens = usage?.promptTokenCount ?? 0;
     const outputTokens = usage?.candidatesTokenCount ?? 0;
 
-    const actualCost = Math.ceil(inputTokens * 10 + outputTokens * 40);
-    await handle.commit(actualCost, {
+    await handle.commit(actualCost(inputTokens, outputTokens), {
       tokensInput: inputTokens,
       tokensOutput: outputTokens,
-      modelVersion: MODEL_NAME,
+      modelVersion: MODEL,
     });
   } catch (err) {
     await handle.release("stream_error");
@@ -128,13 +136,13 @@ async function streamWithBudget(prompt: string) {
 
 ## Gemini usage metadata
 
-The Gemini SDK provides token usage through `response.usageMetadata`:
+The `@google/genai` SDK provides token usage through `usageMetadata` on the response:
 
 - `promptTokenCount` — input tokens
 - `candidatesTokenCount` — output tokens
 - `totalTokenCount` — total tokens
 
-For streaming, access this from the aggregated response after the stream completes: `const aggregated = await streamResult.response`.
+For streaming, access this from the stream result after iteration completes.
 
 ## Next steps
 
