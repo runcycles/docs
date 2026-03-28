@@ -19,8 +19,8 @@ const { frontmatter } = useData()
   <Layout>
     <template #home-features-before>
       <HomeSocialProof v-if="frontmatter.layout === 'home'" />
-      <HomeCodeSnippet v-if="frontmatter.layout === 'home'" />
       <HomeIntegrations v-if="frontmatter.layout === 'home'" />
+      <HomeCodeSnippet v-if="frontmatter.layout === 'home'" />
     </template>
     <template #not-found>
       <NotFound />
