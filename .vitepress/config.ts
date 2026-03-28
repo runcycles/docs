@@ -282,6 +282,7 @@ export default defineConfig({
             { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
             { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
             { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
+            { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai', badge: { text: 'New', type: 'tip' } },
             { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
             { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
             { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
