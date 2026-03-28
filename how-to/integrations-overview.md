@@ -13,6 +13,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 |-------------|----------|-----------|---------|
 | [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
 | [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
+| [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) | Python | — | RunHooks (lifecycle hooks) |
 | [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
 | [LangChain.js](/how-to/integrating-cycles-with-langchain-js) | TypeScript | Yes | Callback handler |
@@ -41,6 +42,15 @@ The simplest approach. Wrap your LLM-calling function and Cycles handles reserva
 - **TypeScript:** `withCycles` higher-order function
 
 Best for: individual model calls, simple request-response flows.
+
+### RunHooks / Lifecycle hooks
+
+For agent frameworks that expose lifecycle hooks. A plugin implements the framework's hook interface to create reservations on start and commit on end — covering the entire agent run automatically.
+
+- **OpenAI Agents SDK:** `CyclesRunHooks` implements the SDK's `RunHooks` interface
+- **OpenClaw:** Plugin hooks into `before_model_resolve`, `before_tool_call`, etc.
+
+Best for: multi-agent workflows, tool governance, agent handoff tracking.
 
 ### Callback handler
 
