@@ -60,17 +60,27 @@ async function fetchNpmDownloads(): Promise<number> {
 }
 
 // ── PyPI ─────────────────────────────────────────────────────────────
+const PYPI_PACKAGES = [
+  'runcycles',
+  'runcycles-openai-agents',
+]
+
 async function fetchPypiDownloads(): Promise<number> {
-  try {
-    const res = await fetch(
-      'https://pypistats.org/api/packages/runcycles/recent'
-    )
-    if (!res.ok) return 0
-    const json = await res.json() as { data?: { last_month?: number } }
-    return json.data?.last_month ?? 0
-  } catch {
-    return 0
-  }
+  const totals = await Promise.all(
+    PYPI_PACKAGES.map(async (pkg) => {
+      try {
+        const res = await fetch(
+          `https://pypistats.org/api/packages/${pkg}/recent`
+        )
+        if (!res.ok) return 0
+        const json = await res.json() as { data?: { last_month?: number } }
+        return json.data?.last_month ?? 0
+      } catch {
+        return 0
+      }
+    })
+  )
+  return totals.reduce((a, b) => a + b, 0)
 }
 
 // ── GHCR (GitHub Container Registry) ─────────────────────────────────
