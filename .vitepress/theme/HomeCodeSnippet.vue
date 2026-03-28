@@ -172,7 +172,6 @@ const result = streamText({
           "tenant": "acme",
           "modelBaseCosts": {
             "gpt-4o": 1000000,
-            "gpt-4o-mini": 100000,
             "claude-sonnet-4-20250514": 300000
           }
         }
