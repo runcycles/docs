@@ -99,6 +99,16 @@ Cycles provides an MCP server that exposes runtime authority as tools for any MC
 - [MCP integration guide](/how-to/integrating-cycles-with-mcp)
 - [modelcontextprotocol.io](https://modelcontextprotocol.io)
 
+### OpenAI Agents SDK
+
+[![PyPI downloads](https://img.shields.io/pypi/dm/runcycles-openai-agents?label=downloads&color=555&style=flat-square)](https://pypi.org/project/runcycles-openai-agents/)
+
+Add budget governance to OpenAI Agents SDK workflows. The plugin hooks into the SDK's `RunHooks` interface to automatically enforce budgets on every LLM call, tool invocation, and agent handoff — with tool risk mapping and pre-run guardrails.
+
+- [runcycles-openai-agents on PyPI](https://pypi.org/project/runcycles-openai-agents/)
+- [OpenAI Agents integration guide](/how-to/integrating-cycles-with-openai-agents)
+- [Source on GitHub](https://github.com/runcycles/cycles-openai-agents)
+
 ### OpenClaw
 
 [![npm downloads](https://img.shields.io/npm/dt/@runcycles/openclaw-budget-guard?label=downloads&color=555&style=flat-square)](https://www.npmjs.com/package/@runcycles/openclaw-budget-guard)

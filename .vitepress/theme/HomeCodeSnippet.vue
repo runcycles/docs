@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { createHighlighter } from 'shiki'
-import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, vercelPath, openclawPath } from './FrameworkIcons'
+import { pythonPath, typescriptPath, springBootPath, mcpPath, langchainPath, openaiAgentsPath, vercelPath, openclawPath } from './FrameworkIcons'
 
 const activeTab = ref('python')
 const highlighted = ref({})
@@ -21,6 +21,7 @@ const tabs = [
   { key: 'java', label: 'Spring Boot', icon: springBootPath },
   { key: 'mcp', label: 'MCP', icon: mcpPath },
   { key: 'langchain', label: 'LangChain', icon: langchainPath },
+  { key: 'openai-agents', label: 'OpenAI Agents', icon: openaiAgentsPath },
   { key: 'vercel', label: 'Vercel AI', icon: vercelPath },
   { key: 'openclaw', label: 'OpenClaw', icon: openclawPath },
 ]
@@ -79,6 +80,26 @@ handler = CyclesBudgetHandler(
 
 llm = ChatOpenAI(model="gpt-4o", callbacks=[handler])
 result = llm.invoke([HumanMessage(content="Hello!")])`,
+  },
+
+  'openai-agents': {
+    lang: 'python',
+    code: `from agents import Agent, Runner
+from runcycles_openai_agents import CyclesRunHooks, cycles_budget_guardrail
+
+guardrail = cycles_budget_guardrail(tenant="acme", estimate=5_000_000)
+hooks = CyclesRunHooks(
+    tenant="acme",
+    tool_risk={"send_email": 50, "search": 0},
+)
+
+agent = Agent(
+    name="support-bot",
+    instructions="You resolve support cases.",
+    input_guardrails=[guardrail],
+)
+
+result = await Runner.run(agent, input="Help me!", hooks=hooks)`,
   },
 
   vercel: {
