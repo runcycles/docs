@@ -163,6 +163,7 @@ This matches the Cycles philosophy: budget enforcement should be a guardrail, no
 | `app` | `str` | `None` | Subject.app |
 | `workflow` | `str` | `None` | Subject.workflow |
 | `agent` | `str` | `None` | Subject.agent (overridden by actual agent name) |
+| `toolset` | `str` | `None` | Subject.toolset |
 | `tool_risk` | `dict` or `ToolRiskMap` | `{}` | Tool name → risk points |
 | `default_tool_risk` | `int` | `1` | Risk points for unmapped tools |
 | `llm_estimate` | `int` | `500_000` | Per-LLM-call estimate (~$0.005) |

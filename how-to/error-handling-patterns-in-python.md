@@ -210,7 +210,7 @@ with CyclesClient(config) as client:
         # 410 = reservation expired
         logger.error(
             "Cycles client error: status=%d, error=%s",
-            response.status_code, response.error_message,
+            response.status, response.error_message,
         )
 ```
 

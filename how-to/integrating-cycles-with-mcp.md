@@ -188,6 +188,22 @@ For workflows with multiple costly steps, check the balance first, then reserve 
 
 Each step gets its own reservation, so the budget authority can deny mid-workflow if the agent is burning through budget too fast. See [Common Budget Patterns](/how-to/common-budget-patterns) for more examples.
 
+## Tool reference
+
+The MCP server exposes 9 tools:
+
+| Tool | Description |
+|------|-------------|
+| `cycles_reserve` | Create a budget reservation before executing a costly operation |
+| `cycles_commit` | Finalize a reservation with actual usage |
+| `cycles_release` | Release an unused reservation back to the budget pool |
+| `cycles_extend` | Extend the TTL of an active reservation (heartbeat) |
+| `cycles_decide` | Lightweight budget check without creating a reservation |
+| `cycles_create_event` | Record usage directly without a reservation (post-hoc metering) |
+| `cycles_check_balance` | Query current budget balance for a tenant/scope |
+| `cycles_list_reservations` | List active reservations with optional filters |
+| `cycles_get_reservation` | Get details of a specific reservation by ID |
+
 ## Resources
 
 The MCP server exposes resources for inspecting budget state:
@@ -248,7 +264,7 @@ npx @runcycles/mcp-server --transport http
 
 The server starts on port 3000 (configurable via `PORT` env var) with:
 
-- `GET /health` — health check (`{"status": "ok", "version": "0.1.1"}`)
+- `GET /health` — health check (`{"status": "ok", "version": "0.2.0"}`)
 - `POST /mcp` — MCP Streamable HTTP endpoint
 - `GET /mcp` — MCP SSE endpoint
 - `DELETE /mcp` — MCP session cleanup

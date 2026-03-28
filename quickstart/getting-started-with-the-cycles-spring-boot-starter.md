@@ -375,7 +375,7 @@ Options: `ALLOW_IF_AVAILABLE` (default), `REJECT`, `ALLOW_WITH_OVERDRAFT`.
 @Cycles(value = "1000", dryRun = true)
 ```
 
-Evaluates the reservation without actually holding budget. Useful for shadow-mode rollouts.
+Evaluates the reservation without actually holding budget. The guarded method does **not** execute — the decorator returns `null` immediately after the dry-run reservation check. Useful for shadow-mode rollouts where you want to measure budget impact without affecting production behavior.
 
 ### Custom dimensions
 

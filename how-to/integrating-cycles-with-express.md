@@ -44,6 +44,7 @@ interface CyclesGuardOptions {
   actionName: string;
   estimateFn: (req: Request) => number;
   unit?: string;
+  tenantFn?: (req: Request) => string;
 }
 
 export function cyclesGuard(options: CyclesGuardOptions) {
@@ -57,6 +58,7 @@ export function cyclesGuard(options: CyclesGuardOptions) {
         unit: options.unit ?? "USD_MICROCENTS",
         actionKind: options.actionKind,
         actionName: options.actionName,
+        ...(options.tenantFn && { tenant: options.tenantFn(req) }),
       });
 
       // Attach the handle so route handlers can commit/release

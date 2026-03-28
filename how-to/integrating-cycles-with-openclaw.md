@@ -759,6 +759,22 @@ With `logLevel: "debug"`, you'll see per-call activity:
 |-------|------|---------|-------------|
 | `parentBudgetId` | string | — | Parent budget ID for pool balance visibility |
 
+### Advanced / operational settings
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `aggressiveCacheInvalidation` | boolean | `false` | Invalidate budget snapshot cache after every mutation |
+| `heartbeatIntervalMs` | number | `30000` | Interval for reservation TTL heartbeat extensions |
+| `retryableStatusCodes` | number[] | `[429, 502, 503, 504]` | HTTP status codes eligible for transient retry |
+| `transientRetryMaxAttempts` | number | `2` | Max retries on transient server errors |
+| `transientRetryBaseDelayMs` | number | `500` | Base delay for transient retries (ms) |
+| `burnRateWindowMs` | number | `60000` | Window for burn-rate anomaly detection |
+| `burnRateAlertThreshold` | number | — | Alert when burn rate exceeds this (per-window) |
+| `enableEventLog` | boolean | `false` | Log all budget events for debugging |
+| `exhaustionWarningThresholdMs` | number | — | Warn when time-to-exhaustion falls below this |
+| `otlpMetricsEndpoint` | string | — | OpenTelemetry OTLP endpoint for budget metrics |
+| `otlpMetricsHeaders` | object | — | Custom headers for OTLP exporter |
+
 ## Comparison with manual integration
 
 If you're already using the Cycles TypeScript client directly (see [Programmatic Client Usage](/how-to/using-the-cycles-client-programmatically)), the plugin automates the same reserve → commit → release pattern but at the OpenClaw hook level:
