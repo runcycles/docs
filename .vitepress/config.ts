@@ -269,27 +269,51 @@ export default defineConfig({
         },
         {
           text: 'Integrations',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'Ecosystem', link: '/how-to/ecosystem', badge: { text: 'New', type: 'tip' } },
             { text: 'Overview', link: '/how-to/integrations-overview' },
-            { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
-            { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
-            { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents', badge: { text: 'New', type: 'tip' } },
-            { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
-            { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
-            { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
-            { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
-            { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
-            { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
-            { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai', badge: { text: 'New', type: 'tip' } },
-            { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex', badge: { text: 'New', type: 'tip' } },
-            { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai', badge: { text: 'New', type: 'tip' } },
-            { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai', badge: { text: 'New', type: 'tip' } },
-            { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama', badge: { text: 'New', type: 'tip' } },
-            { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
-            { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
-            { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
+            {
+              text: 'LLM Providers',
+              collapsed: true,
+              items: [
+                { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
+                { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
+                { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
+                { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
+                { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama', badge: { text: 'New', type: 'tip' } },
+              ]
+            },
+            {
+              text: 'AI Frameworks',
+              collapsed: true,
+              items: [
+                { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
+                { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
+                { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
+                { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai', badge: { text: 'New', type: 'tip' } },
+                { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex', badge: { text: 'New', type: 'tip' } },
+                { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai', badge: { text: 'New', type: 'tip' } },
+                { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai', badge: { text: 'New', type: 'tip' } },
+              ]
+            },
+            {
+              text: 'Agent Platforms',
+              collapsed: true,
+              items: [
+                { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
+                { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents', badge: { text: 'New', type: 'tip' } },
+                { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
+              ]
+            },
+            {
+              text: 'Web Frameworks',
+              collapsed: true,
+              items: [
+                { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
+                { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
+              ]
+            },
           ]
         },
         {
