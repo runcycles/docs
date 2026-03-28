@@ -25,7 +25,7 @@ For non-streaming `InvokeModel` calls, use the `withCycles` HOF:
 
 ```typescript
 import { InvokeModelCommand, BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
-import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
+import { CyclesClient, CyclesConfig, withCycles, setDefaultClient, getCyclesContext } from "runcycles";
 
 const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
 setDefaultClient(cyclesClient);
@@ -33,26 +33,61 @@ setDefaultClient(cyclesClient);
 const bedrock = new BedrockRuntimeClient({ region: "us-east-1" });
 const MODEL_ID = "anthropic.claude-sonnet-4-20250514-v1:0";
 
+// Claude on Bedrock pricing (us-east-1):
+// Input: $3.00/1M tokens = 300 microcents/token
+// Output: $15.00/1M tokens = 1500 microcents/token
+function costMicrocents(inputTokens: number, outputTokens: number): number {
+  return Math.ceil(inputTokens * 300 + outputTokens * 1500);
+}
+
+const DEFAULT_MAX_TOKENS = 1024;
+
 const askClaude = withCycles(
   {
-    estimate: 5000000,  // ~$0.05 per call
+    client: cyclesClient,
     actionKind: "llm.completion",
     actionName: MODEL_ID,
+    estimate: (prompt: string) => {
+      const inputTokens = Math.ceil(prompt.length / 4);
+      return costMicrocents(inputTokens, DEFAULT_MAX_TOKENS);
+    },
+    actual: (response: { usage: { input_tokens: number; output_tokens: number } }) => {
+      return costMicrocents(response.usage.input_tokens, response.usage.output_tokens);
+    },
   },
   async (prompt: string) => {
+    const ctx = getCyclesContext();
+
+    // Respect budget caps
+    let maxTokens = DEFAULT_MAX_TOKENS;
+    if (ctx?.caps?.maxTokens) {
+      maxTokens = Math.min(maxTokens, ctx.caps.maxTokens);
+    }
+
     const command = new InvokeModelCommand({
       modelId: MODEL_ID,
       contentType: "application/json",
       accept: "application/json",
       body: JSON.stringify({
         anthropic_version: "bedrock-2023-05-31",
-        max_tokens: 1024,
+        max_tokens: maxTokens,
         messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const result = await bedrock.send(command);
-    return JSON.parse(new TextDecoder().decode(result.body));
+    const response = JSON.parse(new TextDecoder().decode(result.body));
+
+    // Report metrics for observability
+    if (ctx) {
+      ctx.metrics = {
+        tokensInput: response.usage.input_tokens,
+        tokensOutput: response.usage.output_tokens,
+        modelVersion: MODEL_ID,
+      };
+    }
+
+    return response;
   },
 );
 

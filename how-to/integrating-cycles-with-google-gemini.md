@@ -1,16 +1,20 @@
 ---
 title: "Integrating Cycles with Google Gemini"
-description: "Add budget governance to Google Gemini API calls using the runcycles TypeScript client and the @google/generative-ai SDK."
+description: "Add budget governance to Google Gemini API calls using the runcycles TypeScript client. Covers non-streaming and streaming patterns with actual token-based cost accounting."
 ---
 
 # Integrating Cycles with Google Gemini
 
-This guide shows how to add budget governance to Google Gemini API calls using the `runcycles` TypeScript client and the `@google/generative-ai` SDK.
+This guide shows how to add budget governance to Google Gemini API calls using the `runcycles` TypeScript client.
+
+::: warning SDK migration
+The examples below use `@google/generative-ai`, which Google is replacing with `@google/genai`. The API patterns are similar — see [Google's migration guide](https://ai.google.dev/gemini-api/docs/migrate) for the new SDK. The runcycles integration works the same way with either SDK.
+:::
 
 ## Prerequisites
 
 - A running Cycles stack with a tenant, API key, and budget ([Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack))
-- A Google AI API key
+- A Google AI API key (`GOOGLE_API_KEY`)
 - Node.js 20+
 
 ## Installation
@@ -23,59 +27,110 @@ npm install runcycles @google/generative-ai
 
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { CyclesClient, CyclesConfig, withCycles, setDefaultClient } from "runcycles";
-
-const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
-setDefaultClient(cyclesClient);
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
-
-const askGemini = withCycles(
-  {
-    estimate: 500000,  // ~$0.005 per call (Gemini 2.0 Flash is inexpensive)
-    actionKind: "llm.completion",
-    actionName: "gemini-2.0-flash",
-  },
-  async (prompt: string) => {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  },
-);
-
-const response = await askGemini("Explain budget governance for AI agents.");
-console.log(response);
-```
-
-## Streaming calls with reserveForStream
-
-For streaming responses, use `reserveForStream`:
-
-```typescript
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { GenerateContentResult } from "@google/generative-ai";
 import {
-  CyclesClient,
-  CyclesConfig,
-  reserveForStream,
-  BudgetExceededError,
+  CyclesClient, CyclesConfig, withCycles,
+  getCyclesContext, BudgetExceededError,
 } from "runcycles";
 
 const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL = "gemini-2.0-flash";
 const MAX_TOKENS = 1024;
 
-// Gemini 2.0 Flash pricing:
+// Per-token pricing in USD microcents (prompts ≤ 128k tokens)
 // Input: $0.10/1M tokens = 10 microcents/token
 // Output: $0.40/1M tokens = 40 microcents/token
-function estimateCost(inputTokens: number, maxOutputTokens: number): number {
-  return Math.ceil((inputTokens * 10 + maxOutputTokens * 40) * 1.2);
+function costMicrocents(inputTokens: number, outputTokens: number): number {
+  return Math.ceil(inputTokens * 10 + outputTokens * 40);
+}
+
+const callGemini = withCycles(
+  {
+    client: cyclesClient,
+    actionKind: "llm.completion",
+    actionName: MODEL,
+    estimate: (prompt: string) => {
+      const inputTokens = Math.ceil(prompt.length / 4);
+      return costMicrocents(inputTokens, MAX_TOKENS);
+    },
+    actual: (result: GenerateContentResult) => {
+      const usage = result.response.usageMetadata;
+      return costMicrocents(
+        usage?.promptTokenCount ?? 0,
+        usage?.candidatesTokenCount ?? 0,
+      );
+    },
+  },
+  async (prompt: string) => {
+    const ctx = getCyclesContext();
+
+    // Respect budget caps — reduce max_tokens if budget is running low
+    let maxTokens = MAX_TOKENS;
+    if (ctx?.caps?.maxTokens) {
+      maxTokens = Math.min(maxTokens, ctx.caps.maxTokens);
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: MODEL,
+      generationConfig: { maxOutputTokens: maxTokens },
+    });
+
+    const result = await model.generateContent(prompt);
+
+    // Report metrics for observability
+    if (ctx) {
+      const usage = result.response.usageMetadata;
+      ctx.metrics = {
+        tokensInput: usage?.promptTokenCount,
+        tokensOutput: usage?.candidatesTokenCount,
+        modelVersion: MODEL,
+      };
+    }
+
+    return result;
+  },
+);
+
+// Usage
+try {
+  const result = await callGemini("Explain budget governance for AI agents.");
+  console.log(result.response.text());
+} catch (err) {
+  if (err instanceof BudgetExceededError) {
+    console.error("Budget exhausted:", err.message);
+  } else {
+    throw err;
+  }
+}
+```
+
+::: tip estimate vs actual
+The `estimate` callback runs **before** the LLM call to reserve budget. The `actual` callback runs **after** to commit real usage. Without `actual`, Cycles commits the estimate — which overstates cost on short responses and understates it on long ones. Always provide both when token counts are available.
+:::
+
+## Streaming calls with reserveForStream
+
+For streaming responses, use `reserveForStream` to reserve before the stream starts and commit real token counts after it finishes:
+
+```typescript
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { CyclesClient, CyclesConfig, reserveForStream, BudgetExceededError } from "runcycles";
+
+const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+
+const MODEL = "gemini-2.0-flash";
+const MAX_TOKENS = 1024;
+
+function costMicrocents(inputTokens: number, outputTokens: number): number {
+  return Math.ceil(inputTokens * 10 + outputTokens * 40);
 }
 
 async function streamWithBudget(prompt: string) {
   const estimatedInputTokens = Math.ceil(prompt.length / 4);
-  const estimate = estimateCost(estimatedInputTokens, MAX_TOKENS);
+  const estimate = costMicrocents(estimatedInputTokens, MAX_TOKENS);
 
   // 1. Reserve budget
   const handle = await reserveForStream({
@@ -83,7 +138,7 @@ async function streamWithBudget(prompt: string) {
     estimate,
     unit: "USD_MICROCENTS",
     actionKind: "llm.completion",
-    actionName: MODEL_NAME,
+    actionName: MODEL,
   });
 
   try {
@@ -95,7 +150,7 @@ async function streamWithBudget(prompt: string) {
 
     // 2. Stream the response
     const model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
+      model: MODEL,
       generationConfig: { maxOutputTokens: maxTokens },
     });
 
@@ -107,17 +162,16 @@ async function streamWithBudget(prompt: string) {
     }
     console.log();
 
-    // 3. Commit actual usage from aggregated response metadata
+    // 3. Commit actual usage from aggregated response
     const aggregated = await streamResult.response;
     const usage = aggregated.usageMetadata;
     const inputTokens = usage?.promptTokenCount ?? 0;
     const outputTokens = usage?.candidatesTokenCount ?? 0;
 
-    const actualCost = Math.ceil(inputTokens * 10 + outputTokens * 40);
-    await handle.commit(actualCost, {
+    await handle.commit(costMicrocents(inputTokens, outputTokens), {
       tokensInput: inputTokens,
       tokensOutput: outputTokens,
-      modelVersion: MODEL_NAME,
+      modelVersion: MODEL,
     });
   } catch (err) {
     await handle.release("stream_error");
@@ -128,7 +182,7 @@ async function streamWithBudget(prompt: string) {
 
 ## Gemini usage metadata
 
-The Gemini SDK provides token usage through `response.usageMetadata`:
+The Gemini SDK provides token counts through `response.usageMetadata`:
 
 - `promptTokenCount` — input tokens
 - `candidatesTokenCount` — output tokens
