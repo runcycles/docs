@@ -7,6 +7,10 @@ description: "Guard OpenAI API calls with Cycles budget reservations for cost-co
 
 This guide shows how to guard OpenAI API calls with Cycles budget reservations so that every chat completion is cost-controlled, caps-aware, and observable.
 
+::: tip Using the OpenAI Agents SDK?
+If you're building multi-agent workflows with the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), see [Integrating Cycles with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) instead — it covers the entire agent run automatically with no per-function decoration.
+:::
+
 ## Prerequisites
 
 ```bash
@@ -184,6 +188,7 @@ See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-clien
 
 ## Next steps
 
+- [Integrating with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) — budget governance for multi-agent workflows
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming
 - [Testing with Cycles](/how-to/testing-with-cycles) — testing budget-guarded code
