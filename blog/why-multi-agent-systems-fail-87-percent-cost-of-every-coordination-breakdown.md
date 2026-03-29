@@ -12,7 +12,7 @@ sidebar: false
 
 Consider a four-agent research pipeline: Planner, Researcher, Analyst, Writer. In development, it works 90% of the time and costs $3.50 per run. In production, failure rate climbs to 55%. Each failure triggers retries, context regrowth, and cascading delegation — turning a $3.50 run into a $40+ recovery sequence. The monitoring dashboard shows 200 OK on every API call. The invoice shows $12,000 for a week that should have cost $2,800.
 
-Nobody models the cost of failures that look like successes.
+The published MAST and SEMAP literature explains how multi-agent systems fail, but does not model per-failure cost in production.
 
 <!-- more -->
 
@@ -30,7 +30,7 @@ The [MAST study](https://sky.cs.berkeley.edu/project/mast/) (Cemri et al., NeurI
 | **Inter-agent misalignment** | 32.3% | Wrong assumptions propagated, conversation resets, lost handoff context |
 | **Task verification failures** | 23.5% | Agent marks task complete when it isn't, skips validation, accepts wrong output |
 
-The failure rates varied by framework — from 41% (best) to 86.7% (worst) — but every framework exhibited all three categories. Better models helped: GPT-4 reduced failures compared to CodeLlama. But even with the strongest model, failure rates remained above 40%. The paper's key insight: **better system design improved outcomes more than better models** — up to 15.6% improvement from architectural changes alone.
+The failure rates varied by framework — from 41% (best) to 86.7% (worst). Across MAST-Data, failures clustered into all three categories, and framework-level profiles varied by architecture and benchmark. Model choice mattered but didn't eliminate failures: GPT-4o showed substantially fewer specification and misalignment failures than Claude 3.7 Sonnet within MetaGPT, and Qwen2.5-Coder proved substantially more robust than CodeLlama among the open models tested. But even with better-performing model setups, failure rates remained high. The paper's key insight: **better system design improved outcomes more than better models** — up to 15.6% improvement from architectural changes alone.
 
 A [follow-up study (SEMAP)](https://arxiv.org/html/2510.12120) using protocol-driven agent engineering in software-engineering multi-agent settings demonstrated up to 69.6% reduction in failures on function-level development tasks by enforcing structured communication protocols between agents. The problem isn't the models. It's what happens between them.
 
@@ -214,7 +214,7 @@ Research and data referenced in this post:
 - [SEMAP: Protocol-Driven Multi-Agent Engineering](https://arxiv.org/html/2510.12120) — Up to 69.6% failure reduction on function-level development tasks through structured communication protocols in software-engineering multi-agent settings
 - [LangChain State of AI Agents](https://www.langchain.com/state-of-agent-engineering) — 57.3% have agents in production, quality is #1 barrier (32%)
 
-All dollar figures in cost tables and scenario models are illustrative, calculated from published per-token pricing for GPT-4o and Claude Sonnet 4 as of March 2026. They are not measured production data.
+All dollar figures in cost tables and scenario models are illustrative. They are not measured production data. Pricing assumptions: GPT-4o at $2.50 input / $10.00 output per 1M tokens ([OpenAI model pricing](https://platform.openai.com/docs/models/gpt-4o)); Claude Sonnet 4 at $3.00 input / $15.00 output per 1M tokens ([Anthropic pricing](https://www.anthropic.com/pricing)). Verify current rates before using these models for your own budgeting.
 
 ## Further Reading
 
