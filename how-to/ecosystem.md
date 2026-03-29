@@ -37,6 +37,13 @@ Cycles works with AWS Bedrock's multi-model platform, giving you budget control 
 - [AWS Bedrock integration guide](/how-to/integrating-cycles-with-aws-bedrock)
 - [aws.amazon.com/bedrock](https://aws.amazon.com/bedrock)
 
+### Ollama / Local LLMs
+
+Budget control for local model runners — track GPU time and compute costs for self-hosted models. Works with Ollama, vLLM, text-generation-inference, and LocalAI.
+
+- [Ollama integration guide](/how-to/integrating-cycles-with-ollama)
+- [ollama.com](https://ollama.com)
+
 ## AI Frameworks & SDKs
 
 ### LangChain (Python)
@@ -67,6 +74,27 @@ Integrate Cycles with Spring AI to bring runtime authority to Java and Kotlin AI
 - [Spring AI integration guide](/how-to/integrating-cycles-with-spring-ai)
 - [Spring AI strategic quickstart](/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles)
 - [spring.io/projects/spring-ai](https://spring.io/projects/spring-ai)
+
+### LlamaIndex
+
+Add budget governance to LlamaIndex RAG pipelines. Guard retrieval and generation stages separately for fine-grained cost control.
+
+- [LlamaIndex integration guide](/how-to/integrating-cycles-with-llamaindex)
+- [llamaindex.ai](https://www.llamaindex.ai)
+
+### CrewAI
+
+Budget control for CrewAI multi-agent workflows. Scope budgets per agent and per crew with hierarchical budget paths.
+
+- [CrewAI integration guide](/how-to/integrating-cycles-with-crewai)
+- [crewai.com](https://www.crewai.com)
+
+### Pydantic AI
+
+Guard Pydantic AI agent runs and tool calls with the `@cycles` decorator. Works with structured output and tool scoping.
+
+- [Pydantic AI integration guide](/how-to/integrating-cycles-with-pydantic-ai)
+- [ai.pydantic.dev](https://ai.pydantic.dev)
 
 ## Web Frameworks
 
