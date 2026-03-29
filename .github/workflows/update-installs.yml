@@ -2,7 +2,7 @@ name: Update Install Count
 
 on:
   schedule:
-    - cron: '0 0,8,16 * * *'  # midnight, 8 AM, 4 PM UTC
+    - cron: '0 6 * * *'  # 6 AM UTC daily
   workflow_dispatch:
 
 jobs:
@@ -57,5 +57,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/installs.json .vitepress/theme/installs-cache.json
-          git commit -m "chore: update install count [skip ci]"
+          git commit -m "chore: update install count"
           git push
