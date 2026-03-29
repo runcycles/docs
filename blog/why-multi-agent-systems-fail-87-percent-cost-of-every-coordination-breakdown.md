@@ -214,7 +214,7 @@ Research and data referenced in this post:
 - [SEMAP: Protocol-Driven Multi-Agent Engineering](https://arxiv.org/html/2510.12120) — Up to 69.6% failure reduction on function-level development tasks through structured communication protocols in software-engineering multi-agent settings
 - [LangChain State of AI Agents](https://www.langchain.com/state-of-agent-engineering) — 57.3% have agents in production, quality is #1 barrier (32%)
 
-All dollar figures in cost tables and scenario models are illustrative. They are not measured production data. Pricing assumptions: GPT-4o at $2.50 input / $10.00 output per 1M tokens ([OpenAI model pricing](https://platform.openai.com/docs/models/gpt-4o)); Claude Sonnet 4 at $3.00 input / $15.00 output per 1M tokens ([Anthropic pricing](https://www.anthropic.com/pricing)). Verify current rates before using these models for your own budgeting.
+All dollar figures in cost tables and scenario models are illustrative. They are not measured production data. Pricing assumptions: GPT-4o at $2.50 input / $10.00 output per 1M tokens ([OpenAI API docs](https://developers.openai.com/api/docs/models/gpt-4o)); Claude Sonnet 4 at $3.00 input / $15.00 output per 1M tokens ([Anthropic API pricing](https://docs.anthropic.com/en/docs/about-claude/models)). Verify current rates before using these models for your own budgeting.
 
 ## Further Reading
 
