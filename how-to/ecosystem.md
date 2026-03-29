@@ -112,13 +112,6 @@ Use the Cycles Python client with FastAPI for high-performance, budget-aware AI 
 - [FastAPI integration guide](/how-to/integrating-cycles-with-fastapi)
 - [fastapi.tiangolo.com](https://fastapi.tiangolo.com)
 
-### Spring Boot
-
-Leverage the Cycles Spring Boot Starter for auto-configured runtime authority in your Spring Boot applications.
-
-- [Spring Boot quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter)
-- [spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-
 ## Agent Platforms
 
 ### MCP (Model Context Protocol)
