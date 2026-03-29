@@ -1,20 +1,31 @@
 <script setup>
-import { computed } from 'vue'
-import { data } from './installs.data'
+import { ref, onMounted } from 'vue'
 
-const formatted = computed(() =>
-  data.total.toLocaleString('en-US')
-)
+const total = ref(0)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/installs.json')
+    if (res.ok) {
+      const json = await res.json()
+      total.value = json.total ?? 0
+    }
+  } catch {
+    // non-critical — counter just won't show
+  }
+})
+
+const formatted = new Intl.NumberFormat('en-US')
 </script>
 
 <template>
-  <p v-if="data.total > 0" class="social-proof">
+  <p v-if="total > 0" class="social-proof">
     <svg class="social-proof-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
-    {{ formatted }}+ package installs
+    {{ formatted.format(total) }}+ package installs
   </p>
 </template>
 
