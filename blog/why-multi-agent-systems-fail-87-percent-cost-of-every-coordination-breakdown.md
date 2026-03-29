@@ -1,6 +1,6 @@
 ---
 title: "Multi-Agent Systems Fail Up to 87% of the Time — Here's What Each Failure Actually Costs"
-date: 2026-03-28
+date: 2026-03-29
 author: Cycles Team
 tags: [multi-agent, failures, cost, coordination, production, MAST, runtime-authority, engineering]
 description: "UC Berkeley's MAST taxonomy found 14 failure modes across 1,642 multi-agent traces with 41–87% failure rates. Nobody modeled what each failure costs. We built the cost model."
