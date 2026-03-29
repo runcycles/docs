@@ -21,6 +21,10 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Spring AI](/how-to/integrating-cycles-with-spring-ai) | Java | Yes | `@Cycles` annotation |
+| [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) | Python | — | Decorator |
+| [CrewAI](/how-to/integrating-cycles-with-crewai) | Python | — | Decorator |
+| [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai) | Python | — | Decorator |
+| [Ollama / Local LLMs](/how-to/integrating-cycles-with-ollama) | Python / TypeScript | — | Decorator / `withCycles` |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
 | [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
