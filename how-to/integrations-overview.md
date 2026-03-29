@@ -11,23 +11,27 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 
 | Integration | Language | Streaming | Pattern |
 |-------------|----------|-----------|---------|
-| [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
+| **LLM Providers** | | | |
 | [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
-| [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) | Python | — | RunHooks (lifecycle hooks) |
 | [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
+| [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
+| [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
+| [Ollama / Local LLMs](/how-to/integrating-cycles-with-ollama) | Python / TypeScript | — | Decorator / `withCycles` |
+| **AI Frameworks** | | | |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
 | [LangChain.js](/how-to/integrating-cycles-with-langchain-js) | TypeScript | Yes | Callback handler |
 | [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk) | TypeScript | Yes | `reserveForStream` |
-| [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
-| [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Spring AI](/how-to/integrating-cycles-with-spring-ai) | Java | Yes | `@Cycles` annotation |
 | [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) | Python | — | Decorator |
 | [CrewAI](/how-to/integrating-cycles-with-crewai) | Python | — | Decorator |
 | [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai) | Python | — | Decorator |
-| [Ollama / Local LLMs](/how-to/integrating-cycles-with-ollama) | Python / TypeScript | — | Decorator / `withCycles` |
+| **Agent Platforms** | | | |
+| [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
+| [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) | Python | — | RunHooks (lifecycle hooks) |
+| [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
+| **Web Frameworks** | | | |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
-| [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
 
 ## Integration patterns
 
