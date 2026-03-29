@@ -1,17 +1,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { data } from './installs.data'
 
-const total = ref(0)
+const total = ref(data.total)
 
 onMounted(async () => {
   try {
     const res = await fetch('/installs.json')
     if (res.ok) {
       const json = await res.json()
-      total.value = json.total ?? 0
+      if ((json.total ?? 0) > total.value) {
+        total.value = json.total
+      }
     }
   } catch {
-    // non-critical — counter just won't show
+    // non-critical — build-time value is already displayed
   }
 })
 
