@@ -26,9 +26,11 @@ description: "Cycles documentation — quickstart guides, integration tutorials,
 
 **LLM Providers:** [OpenAI](/how-to/integrating-cycles-with-openai) · [Anthropic](/how-to/integrating-cycles-with-anthropic) · [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) · [Google Gemini](/how-to/integrating-cycles-with-google-gemini) · [Ollama](/how-to/integrating-cycles-with-ollama)
 
-**AI Frameworks:** [LangChain](/how-to/integrating-cycles-with-langchain) · [Spring AI](/how-to/integrating-cycles-with-spring-ai) · [Vercel AI](/how-to/integrating-cycles-with-vercel-ai-sdk) · [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) · [CrewAI](/how-to/integrating-cycles-with-crewai) · [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai)
+**AI Frameworks:** [LangChain](/how-to/integrating-cycles-with-langchain) · [LangChain.js](/how-to/integrating-cycles-with-langchain-js) · [Spring AI](/how-to/integrating-cycles-with-spring-ai) · [Vercel AI](/how-to/integrating-cycles-with-vercel-ai-sdk) · [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) · [CrewAI](/how-to/integrating-cycles-with-crewai) · [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai)
 
 **Agent Platforms:** [MCP](/how-to/integrating-cycles-with-mcp) · [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) · [OpenClaw](/how-to/integrating-cycles-with-openclaw)
+
+**Web Frameworks:** [Express](/how-to/integrating-cycles-with-express) · [FastAPI](/how-to/integrating-cycles-with-fastapi)
 
 ## Reference
 

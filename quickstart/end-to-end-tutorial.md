@@ -393,8 +393,10 @@ docker compose down -v
 
 ## Next steps
 
+- [Python Client Quickstart](/quickstart/getting-started-with-the-python-client) — `@cycles` decorator deep dive
+- [TypeScript Client Quickstart](/quickstart/getting-started-with-the-typescript-client) — `withCycles` wrapper deep dive
+- [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — `@Cycles` annotation deep dive
 - [Demos](/demos/) — see Cycles in action with the runaway agent and action authority scenarios
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
 - [Adding Cycles to an Existing Application](/how-to/adding-cycles-to-an-existing-application) — integrate incrementally
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model call
-- [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — test policies without enforcing them
