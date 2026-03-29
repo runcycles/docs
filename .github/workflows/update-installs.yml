@@ -2,7 +2,7 @@ name: Update Install Count
 
 on:
   schedule:
-    - cron: '0 0,8,16 * * *'  # midnight, 8 AM, 4 PM UTC
+    - cron: '0 6 * * *'  # 6 AM UTC daily
   workflow_dispatch:
 
 jobs:
