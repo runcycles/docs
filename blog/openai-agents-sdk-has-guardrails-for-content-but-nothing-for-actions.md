@@ -1,9 +1,9 @@
 ---
-title: "OpenAI Agents SDK: Content Guardrails, But No Action Control"
+title: "OpenAI Agents SDK: Content Guardrails, No Action Control"
 date: 2026-03-30
 author: Cycles Team
 tags: [openai, agents, runtime-authority, governance, risk, actions, python, RunHooks]
-description: "The OpenAI Agents SDK has content guardrails but no action controls. Its RunHooks interface is the ideal insertion point for runtime authority over tools, cost, and risk."
+description: "The OpenAI Agents SDK has content guardrails but no action controls. RunHooks is the ideal insertion point for runtime authority over tools, cost, and risk."
 blog: true
 sidebar: false
 ---
