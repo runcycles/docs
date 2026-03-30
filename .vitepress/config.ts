@@ -149,7 +149,7 @@ export default defineConfig({
             text: 'Reference',
             items: [
               { text: 'API Reference (Interactive)', link: '/api/' },
-              { text: 'Admin API', link: '/admin-api/' },
+              { text: 'Admin API (Interactive)', link: '/admin-api/' },
               { text: 'Protocol Spec', link: 'https://github.com/runcycles/cycles-protocol' },
               { text: 'Configuration', link: '/configuration/python-client-configuration-reference' },
             ],
