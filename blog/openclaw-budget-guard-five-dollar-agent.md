@@ -35,24 +35,24 @@ Here's the plugin output from that session, at info level — no debug mode need
 ```
 Cycles Budget Guard for OpenClaw v0.7.5
   tenant: research-team
-  defaultModelName: claude-opus-4-20250514
+  defaultModelName: anthropic/claude-opus-4-20250514
   failClosed: true
   lowBudgetThreshold: 150000000
 
-Model reserved: claude-opus-4-20250514 (estimate=15000000, remaining=500000000)
-Model committed: claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
+Model reserved: anthropic/claude-opus-4-20250514 (estimate=15000000, remaining=500000000)
+Model committed: anthropic/claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
 Tool reserved: web_search (estimate=5000000, remaining=485000000)
 Tool committed: web_search (cost=5000000 USD_MICROCENTS)
-Model reserved: claude-opus-4-20250514 (estimate=15000000, remaining=480000000)
-Model committed: claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
+Model reserved: anthropic/claude-opus-4-20250514 (estimate=15000000, remaining=480000000)
+Model committed: anthropic/claude-opus-4-20250514 (cost=15000000 USD_MICROCENTS)
 ...
 Budget level changed: healthy → low (remaining=150000000)
-Budget low — downgrading model claude-opus-4-20250514 → claude-sonnet-4-20250514
-Model reserved: claude-sonnet-4-20250514 (estimate=3000000, remaining=147000000)
+Budget low — downgrading model anthropic/claude-opus-4-20250514 → anthropic/claude-sonnet-4-20250514
+Model reserved: anthropic/claude-sonnet-4-20250514 (estimate=3000000, remaining=147000000)
 ...
 Tool "code_execution" blocked: cost 10000000 exceeds expensive threshold 5000000
 ...
-Model committed: claude-sonnet-4-20250514 (cost=3000000 USD_MICROCENTS)
+Model committed: anthropic/claude-sonnet-4-20250514 (cost=3000000 USD_MICROCENTS)
 Agent session budget summary: remaining=15000000 spent=485000000 reservations=34
 ```
 
@@ -79,8 +79,8 @@ This is the part that surprises most teams: **budget-aware agents tend to be mor
   "remaining": 15000000,
   "spent": 485000000,
   "costBreakdown": {
-    "model:claude-opus-4-20250514": { "count": 8, "totalCost": 120000000 },
-    "model:claude-sonnet-4-20250514": { "count": 14, "totalCost": 42000000 },
+    "model:anthropic/claude-opus-4-20250514": { "count": 8, "totalCost": 120000000 },
+    "model:anthropic/claude-sonnet-4-20250514": { "count": 14, "totalCost": 42000000 },
     "tool:web_search": { "count": 9, "totalCost": 45000000 },
     "tool:code_execution": { "count": 3, "totalCost": 30000000 }
   },
@@ -106,7 +106,7 @@ Running this config across multiple test sessions, three patterns emerged that c
 
 Sonnet's output quality for research and analysis tasks is comparable to Opus in most cases. In our test sessions, the downgraded outputs were difficult to distinguish from the Opus-generated ones. The 5x cost reduction was measurable; the quality difference was hard to detect.
 
-The key is configuring the fallback chain correctly. `"claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]` gives the plugin two steps to try. It picks the cheapest model that fits within the remaining budget.
+The key is configuring the fallback chain correctly. `"anthropic/claude-opus-4-20250514": ["anthropic/claude-sonnet-4-20250514", "anthropic/claude-haiku-4-5-20251001"]` gives the plugin two steps to try. It picks the cheapest model that fits within the remaining budget.
 
 ### Tool limits catch more bugs than budget limits
 
@@ -137,14 +137,14 @@ Three things we learned the hard way:
           "cyclesBaseUrl": "${CYCLES_BASE_URL}",
           "cyclesApiKey": "${CYCLES_API_KEY}",
           "tenant": "research-team",
-          "defaultModelName": "claude-opus-4-20250514",
+          "defaultModelName": "anthropic/claude-opus-4-20250514",
           "modelFallbacks": {
-            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]
+            "anthropic/claude-opus-4-20250514": ["anthropic/claude-sonnet-4-20250514", "anthropic/claude-haiku-4-5-20251001"]
           },
           "modelBaseCosts": {
-            "claude-opus-4-20250514": 15000000,
-            "claude-sonnet-4-20250514": 3000000,
-            "claude-haiku-4-5-20251001": 1000000
+            "anthropic/claude-opus-4-20250514": 15000000,
+            "anthropic/claude-sonnet-4-20250514": 3000000,
+            "anthropic/claude-haiku-4-5-20251001": 1000000
           },
           "toolBaseCosts": {
             "web_search": 5000000,
