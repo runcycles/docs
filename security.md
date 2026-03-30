@@ -64,7 +64,9 @@ Cycles separates the runtime plane from the management plane:
 ```
 ┌─────────────────────────────────────────────────┐
 │                Public Network                   │
-│  Your App → Load Balancer → Cycles Server:7878  │
+│  Your App →                                     │
+│           Load Balancer →                       │
+│                     Cycles Server:7878          │
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
