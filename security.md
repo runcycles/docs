@@ -18,21 +18,20 @@ Cycles stores budget state — reservation amounts, balances, event records, and
 
 ## Event audit trail
 
-Every budget operation creates a structured, immutable record:
+Every budget operation — reservation, commit, release, event — creates a structured record:
 
 | Field | Description |
 |---|---|
-| `event_id` / `reservation_id` | Unique identifier for the operation |
-| `tenant_id` | Tenant that owns the scope |
-| `subject` | Full scope hierarchy (workspace, app, workflow, agent, toolset) |
+| `reservation_id` / `event_id` | Unique identifier for the operation |
+| `subject` | Full scope hierarchy (tenant, workspace, app, workflow, agent, toolset) |
 | `action` | What happened (kind, name, tags) |
-| `amount_reserved` | Budget locked before execution |
-| `amount_committed` | Actual usage recorded after execution |
+| `estimate` | Budget locked before execution (reservations) |
+| `actual` | Usage recorded after execution (commits and events) |
 | `status` | RESERVED, COMMITTED, RELEASED, EXPIRED, APPLIED |
-| `created_at` | Timestamp of the operation |
+| `metrics` | Operational metadata (tokens, latency, model version) |
 | `metadata` | Arbitrary key-value pairs for audit context |
 
-Every allow decision, every deny decision, every commit, and every release is logged. The audit trail answers "which agent spent how much, on what, when, and whether it was allowed" from the event log alone.
+Every reservation, commit, release, and event is logged with the scope context needed for audit. The trail answers "which agent spent how much, on what, and when" from the budget ledger alone.
 
 ### Querying the audit trail
 

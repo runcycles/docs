@@ -27,7 +27,7 @@ The margin impact is direct. Teams pricing AI features at $15/user/month see act
 
 Every reservation, commit, release, and event in Cycles creates a structured, queryable record. Each record includes: tenant ID, full scope hierarchy (workspace, app, workflow, agent), amount reserved, amount committed, timestamp, status, and arbitrary metadata.
 
-This means every budget decision — every allow and every deny — is logged with the context needed for audit. You can answer "which agent spent how much, on what, and when" from the event log alone, without reconstructing it from scattered application logs.
+This means every budget operation — every reservation, commit, release, and event — is logged with the context needed for audit. You can answer "which agent spent how much, on what, and when" from the event log alone, without reconstructing it from scattered application logs.
 
 The event log is queryable via the REST API. Retention is 90 days in hot storage (Redis), with export to cold storage (S3, GCS) for long-term compliance. The admin server records audit logs for all administrative operations — API key creation, tenant changes, budget modifications.
 
