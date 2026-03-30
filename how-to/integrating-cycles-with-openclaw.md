@@ -169,15 +169,15 @@ Model fallbacks support both single values and ordered chains. When budget is lo
         "config": {
           "tenant": "acme",
           "modelFallbacks": {
-            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
-            "gpt-4o": "gpt-4o-mini"
+            "anthropic/claude-opus-4-20250514": ["anthropic/claude-sonnet-4-20250514", "anthropic/claude-haiku-4-5-20251001"],
+            "openai/gpt-4o": "openai/gpt-4o-mini"
           },
           "modelBaseCosts": {
-            "claude-opus-4-20250514": 1500000,
-            "claude-sonnet-4-20250514": 300000,
-            "claude-haiku-4-5-20251001": 100000,
-            "gpt-4o": 1000000,
-            "gpt-4o-mini": 100000
+            "anthropic/claude-opus-4-20250514": 1500000,
+            "anthropic/claude-sonnet-4-20250514": 300000,
+            "anthropic/claude-haiku-4-5-20251001": 100000,
+            "openai/gpt-4o": 1000000,
+            "openai/gpt-4o-mini": 100000
           }
         }
       }
@@ -457,7 +457,7 @@ The plugin tracks per-tool and per-model cost breakdowns throughout the session.
 - Tenant, budget, user, and session identifiers
 - Final remaining/spent/reserved balances
 - Total reservations made
-- Per-component cost breakdown (e.g., `tool:web_search`, `model:claude-sonnet-4-20250514`)
+- Per-component cost breakdown (e.g., `tool:web_search`, `model:anthropic/claude-sonnet-4-20250514`)
 - Per-tool invocation counts (e.g., `{ web_search: 15, code_execution: 3 }`)
 - Session timing (start/end timestamps)
 - Average cost and estimated remaining calls
@@ -638,7 +638,7 @@ The plugin also warns about common misconfigurations on startup (e.g., `downgrad
 With `logLevel: "debug"`, you'll see per-call activity:
 
 ```
-[openclaw-budget-guard] before_model_resolve: model=claude-sonnet-4-20250514 level=healthy
+[openclaw-budget-guard] before_model_resolve: model=anthropic/claude-sonnet-4-20250514 level=healthy
 [openclaw-budget-guard] before_prompt_build: injecting hint (142 chars)
 [openclaw-budget-guard] Tool "web_search" has no entry in toolBaseCosts — using default estimate (100000 USD_MICROCENTS)
 [openclaw-budget-guard] before_tool_call: tool=web_search callId=abc123 estimate=100000
@@ -811,12 +811,12 @@ For production agents handling real spend. Blocks on exhaustion, downgrades mode
           "failClosed": true,
           "lowBudgetStrategies": ["downgrade_model", "disable_expensive_tools", "limit_remaining_calls"],
           "modelFallbacks": {
-            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]
+            "anthropic/claude-opus-4-20250514": ["anthropic/claude-sonnet-4-20250514", "anthropic/claude-haiku-4-5-20251001"]
           },
           "modelBaseCosts": {
-            "claude-opus-4-20250514": 1500000,
-            "claude-sonnet-4-20250514": 300000,
-            "claude-haiku-4-5-20251001": 100000
+            "anthropic/claude-opus-4-20250514": 1500000,
+            "anthropic/claude-sonnet-4-20250514": 300000,
+            "anthropic/claude-haiku-4-5-20251001": 100000
           },
           "toolBaseCosts": {
             "web_search": 500000,
@@ -874,8 +874,8 @@ Aggressive cost savings. Low thresholds, model downgrade with token limits, expe
           "maxTokensWhenLow": 512,
           "expensiveToolThreshold": 200000,
           "modelFallbacks": {
-            "claude-opus-4-20250514": "claude-haiku-4-5-20251001",
-            "gpt-4o": "gpt-4o-mini"
+            "anthropic/claude-opus-4-20250514": "anthropic/claude-haiku-4-5-20251001",
+            "openai/gpt-4o": "openai/gpt-4o-mini"
           }
         }
       }
@@ -894,8 +894,8 @@ v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin res
 {
   "config": {
     "modelBaseCosts": {
-      "claude-sonnet-4-20250514": 300000,
-      "claude-opus-4-20250514": 1500000
+      "anthropic/claude-sonnet-4-20250514": 300000,
+      "anthropic/claude-opus-4-20250514": 1500000
     }
   }
 }

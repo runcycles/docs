@@ -170,8 +170,8 @@ const result = streamText({
         "config": {
           "tenant": "acme",
           "modelBaseCosts": {
-            "gpt-4o": 1000000,
-            "claude-sonnet-4-20250514": 300000
+            "openai/gpt-4o": 1000000,
+            "anthropic/claude-sonnet-4-20250514": 300000
           }
         }
       }
