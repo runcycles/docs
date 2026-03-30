@@ -71,17 +71,17 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 <details>
 <summary><strong>AI Agent — You get a budget, not just a limit</strong></summary>
 
-Without budget awareness, you are flying blind. You don't know if you're on iteration 5 or iteration 200. You don't know if the workflow you're executing has already consumed 90% of the customer's allocation. You will loop, retry, and fan out until something external kills you — and by then you may have burned $4,200 or sent 200 wrong emails. You had no way to know.
+Right now, you have no way to know how much room you have. You don't know if you're on iteration 5 or 200. You don't know if this customer's allocation is nearly gone. When you hit a wall — rate limit, timeout, kill signal — you lose your chance to wrap up, save state, or explain what happened. The user sees a failed run. You never got the information to do better.
 
-Cycles gives you that knowledge. Before every costly action, you call `reserve` and receive a decision:
+Cycles changes that. Call `check_balance` before you plan. Call `reserve` before each costly step. You get back one of three decisions:
 
 - **ALLOW** — proceed.
-- **ALLOW_WITH_CAPS** — proceed with constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`). Adjust your plan.
-- **DENY** — stop this action. Summarize what you completed, tell the user what remains, and exit gracefully.
+- **ALLOW_WITH_CAPS** — proceed, but you now know your constraints: `maxTokens`, `toolDenylist`, `maxStepsRemaining`. Plan accordingly.
+- **DENY** — do not execute. You still have control: summarize what you completed, tell the user what remains, exit cleanly.
 
-You can check remaining budget anytime (`check_balance`), do a preflight check without locking funds (`decide`), and report actual usage after execution (`commit`) so unused budget returns to the pool.
+After execution, call `commit` with actual usage — unused budget returns to the pool for your next step. If you skip a step, call `release`.
 
-This makes you a better agent. You can plan around constraints instead of crashing into them. You can [skip optional steps, defer non-urgent work](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer), or switch to a cheaper model. You can tell the user *why* you stopped and *what's left* — instead of silently failing or running up a bill they didn't authorize.
+This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). You can drop to a cheaper model, skip optional tool calls, defer work — and explain the trade-off to the user. Bounds you can see, not limits you discover by crashing into them.
 
 [MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
 
