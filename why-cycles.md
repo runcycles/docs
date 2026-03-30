@@ -71,17 +71,17 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 <details>
 <summary><strong>AI Agent — You get a budget, not just a limit</strong></summary>
 
-Right now, you have no way to know how much room you have. You don't know if you're on iteration 5 or 200. You don't know if this customer's allocation is nearly gone. When you hit a wall — rate limit, timeout, kill signal — you lose your chance to wrap up, save state, or explain what happened. The user sees a failed run. You never got the information to do better.
+Your SDK tells you what each call cost — after it happened. It doesn't tell you how much budget remains for this run, this tenant, this workflow. It doesn't tell you that three other agents are drawing from the same pool. It doesn't tell you to downgrade your approach *before* making an expensive call. You don't know if you're on iteration 5 or 200. When you hit a wall — rate limit, timeout, kill signal — you lose your chance to wrap up, explain, or hand off. The user sees a failed run.
 
-Cycles changes that. Call `check_balance` before you plan. Call `reserve` before each costly step. You get back one of three decisions:
+Cycles gives you pre-execution decisions, not post-hoc telemetry. Call `check_balance` before you plan. Call `reserve` before each costly step. You get back:
 
 - **ALLOW** — proceed.
-- **ALLOW_WITH_CAPS** — proceed, but you now know your constraints: `maxTokens`, `toolDenylist`, `maxStepsRemaining`. Plan accordingly.
-- **DENY** — do not execute. You still have control: summarize what you completed, tell the user what remains, exit cleanly.
+- **ALLOW_WITH_CAPS** — proceed with constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`). Plan accordingly.
+- **DENY** — do not execute. Summarize what you completed, tell the user what remains, exit cleanly.
 
-After execution, call `commit` with actual usage — unused budget returns to the pool for your next step. If you skip a step, call `release`.
+Call `commit` after execution so unused budget returns to the pool. Call `release` if you skip a step.
 
-This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). You can drop to a cheaper model, skip optional tool calls, defer work — and explain the trade-off to the user. Bounds you can see, not limits you discover by crashing into them.
+This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). Drop to a cheaper model, skip optional calls, defer work — and explain the trade-off. Bounds you can see, not limits you discover by crashing into them.
 
 [MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
 
