@@ -5,7 +5,7 @@ description: "For B2B SaaS teams shipping AI agents to customers — blast radiu
 
 # Why Cycles
 
-If you're a B2B SaaS team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
+If you're a team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
 
 ## What Cycles solves
 
@@ -22,7 +22,7 @@ If you're a B2B SaaS team shipping AI agents to customers — support copilots, 
 ## By role
 
 <details>
-<summary><strong>CTO / VP Engineering — Contain blast radius, protect margins</strong></summary>
+<summary><strong>Engineering — Contain blast radius, protect margins</strong></summary>
 
 Every agent action passes through a reserve-commit gate. Before an LLM call executes, Cycles atomically checks the budget and locks the estimated cost. If the budget is exhausted, the call is denied and the agent degrades gracefully — cheaper model, shorter response, or explicit stop.
 
