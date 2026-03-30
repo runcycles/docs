@@ -291,7 +291,8 @@ If these failure modes look familiar — or if you'd rather prevent them than ex
 
 For failures where the risk is action rather than cost:
 
-- **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — when the $1.40 agent causes $50K in damage
+- **[5 AI Agent Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents)** — the companion post for action failures
+- **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — RISK_POINTS, toolset budgets, and progressive capability narrowing
 - **[Action Authority](/concepts/action-authority-controlling-what-agents-do)** — risk-point budgets and toolset-scoped controls
 
 The cheapest incident is the one that never happens. The second cheapest is the one that's capped at $15 instead of $4,200.
