@@ -5,15 +5,17 @@ description: "For B2B SaaS teams shipping AI agents to customers — blast radiu
 
 # Why Cycles
 
-If you're a B2B SaaS team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the runtime authority layer that enforces hard budget limits before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
+If you're a B2B SaaS team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the runtime authority layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
 
-## Three problems Cycles solves
+## What Cycles solves
 
 **Protect margin.** Agent costs follow a heavy-tail distribution — the top 10% of users consume [72% of total spend](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin). Without per-user budget caps, a feature priced for 80% gross margin [delivers 23%](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin). Cycles bounds the tail so unit economics stay predictable.
 
 **Contain cross-tenant blast radius.** A single runaway agent can burn [$4,200 in three hours](/blog/ai-agent-failures-budget-controls-prevent). Cycles enforces hierarchical budgets — tenant, workspace, workflow, run — so one customer's bad agent cannot starve the platform or another customer's allocation.
 
 **Audit every action.** Every reservation, commit, and event creates a structured record with full scope context. Queryable via API, 90-day hot retention, exportable to cold storage. No log reconstruction required — the budget ledger is the audit trail. [Details →](/security)
+
+**Gate high-consequence actions.** A support agent [sent 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects). Total model spend: $1.40. Business impact: $50K+ in lost pipeline. No spending limit would have caught it. Cycles supports [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) — budgets denominated in blast radius, not dollars — so agents can read and reason freely while dangerous capabilities (email, deploy, delete) are gated separately.
 
 ---
 
@@ -28,7 +30,9 @@ Without this gate, a single runaway agent can burn **$4,200 in three hours** —
 
 Blast radius is bounded at every level: per-run, per-workflow, per-tenant. One bad agent cannot starve the platform. Budgets are hierarchical — tenant, workspace, app, workflow, agent — so you set ceilings at the level that matches your architecture.
 
-The margin impact is direct. In one [unit economics analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin), a team pricing an AI feature at $15/user/month saw actual costs balloon to $11.50/user without enforcement — a 23% gross margin against an 80% target. With per-user budget caps, the same feature runs at 68% margin.
+The margin impact is direct. In one [unit economics analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin), a team pricing an AI feature at $15/user/month saw costs hit $11.50/user — a 23% margin against an 80% target. Per-user caps restore it to 68%.
+
+Cost is the first dimension. [Action authority](/concepts/action-authority-controlling-what-agents-do) is the second — gating what agents do, not just what they spend, via risk-point budgets per toolset.
 
 [Why rate limits are not enough →](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems)
 
