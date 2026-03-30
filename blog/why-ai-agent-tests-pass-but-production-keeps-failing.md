@@ -58,7 +58,7 @@ The math doesn't work at scale. The following estimates are illustrative, based 
 | 50,000 | ~$7,500 | ~$22,500-$75,000 | Painful |
 | 500,000 | ~$75,000 | ~$225,000-$750,000 | Unsustainable |
 
-So teams sample. They run evals on 1-5% of traffic. The other 95-99% runs without semantic review — observed by dashboards, but never evaluated for correctness. As [Fortune reported](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/): "AI agents are getting more capable, but reliability is lagging." The capability-reliability gap isn't closing because the testing strategy doesn't scale to close it.
+So teams sample. They run evals on sampled subsets of production traffic. The rest runs without semantic review — observed by dashboards, but never evaluated for correctness. As [Fortune reported](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/): "AI agents are getting more capable, but reliability is lagging." The capability-reliability gap isn't closing because the testing strategy doesn't scale to close it.
 
 ### Blind Spot 3: Non-determinism destroys regression testing
 
@@ -78,7 +78,7 @@ Your eval suite tests step 1 in isolation and it passes. Tests step 2 in isolati
 
 ## Enforcement: The Deterministic Layer for Non-Deterministic Systems
 
-The fix isn't better evals. It's a different architectural layer — one that is deterministic by design and runs on 100% of traffic at negligible cost.
+The fix isn't better evals. It's a different architectural layer — one that is deterministic by design and can run on every request rather than a sampled subset.
 
 Instead of evaluating outputs after the fact, you enforce constraints *before every action*. Every tool call, every LLM invocation, every side effect passes through a checkpoint that verifies the action is authorized, within budget, and structurally valid before it executes.
 
@@ -88,9 +88,9 @@ This is [runtime authority](/blog/what-is-runtime-authority-for-ai-agents). Here
 
 | | Evaluation (evals) | Enforcement (runtime authority) |
 |---|---|---|
-| **When** | After execution, on sampled traffic | Before every action, on 100% of traffic |
+| **When** | After execution, on sampled traffic | Before every action, on all traffic |
 | **What it checks** | Output quality (semantic) | Behavioral correctness (structural) |
-| **Cost per check** | ~$0.01-$0.10 (LLM-as-judge call) | Fraction of a cent (policy lookup) |
+| **Cost per check** | ~$0.01-$0.10 (est. LLM-as-judge call) | Fraction of a cent (est. policy lookup) |
 | **Deterministic** | No (LLM judge varies run-to-run) | Yes (policy rules produce same result) |
 | **Catches loops** | No (agent never reaches the eval) | Yes (budget cap stops iteration N+1) |
 | **Catches fabrication** | Sometimes (if the judge notices) | Flags anomalies (near-zero cost on a step that should have external API cost is a strong signal, though not proof — caching or free-tier tools can also produce low-cost commits) |
@@ -143,13 +143,13 @@ These aren't heuristics. They're deterministic rules evaluated before execution.
 
 The hardest testing problem — verifying that multi-step workflows produce correct end-to-end results — gets a structural proxy through [hierarchical scope budgets](/protocol/how-scope-derivation-works-in-cycles).
 
-When a workflow scope allocates budget across child agent scopes, the spending pattern reveals integration issues:
+When a workflow scope allocates budget across child agent scopes, the spending pattern can surface integration issues:
 
-- Research agent consumes 15 reserve-commit cycles, analysis agent consumes 9 → **data loss detected** in the handoff (6 items dropped)
+- Research agent consumes 15 reserve-commit cycles, analysis agent consumes 9 → **possible handoff loss or workflow mismatch** worth investigating (6 expected items unaccounted for)
 - Three parallel agents each reserve successfully but total exceeds parent scope → **atomic reservation** prevents concurrent overspend
 - Fan-out workflow spawns 50 sub-agents instead of expected 5 → **parent scope budget** caps total exposure regardless of spawn count
 
-None of these require semantic evaluation. The structural economics of the run reveal problems that output-focused testing misses.
+None of these require semantic evaluation. The structural economics of the run surface problems that output-focused testing misses.
 
 ## Where This Fits in Your Testing Stack
 
@@ -157,15 +157,15 @@ Enforcement isn't a replacement for evals. It's the layer that covers the traffi
 
 The practical stack:
 
-- **Enforcement** catches structural failures on 100% of traffic: loops, scope violations, budget overruns, anomalous cost patterns. Cost: negligible.
+- **Enforcement** catches structural failures on all traffic: loops, scope violations, budget overruns, anomalous cost patterns. Cost per check is estimated at a fraction of a cent.
 - **Evals** catch semantic failures on sampled traffic: wrong answers, poor tone, factual errors. Cost: high but necessary for quality signal.
 - **Observability** provides forensic data for debugging. Cost: moderate. Essential for tuning both other layers.
 
-Most teams have observability. About half have evals. Almost none have enforcement. That's why tests pass and production fails.
+Most teams have observability. About half have evals. Far fewer teams have enforcement than either observability or evals. That's why tests pass and production fails.
 
 ## What To Do This Week
 
-1. **Start with [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)** — Run enforcement alongside your existing agents without blocking anything. Collect per-step cost data. Teams typically discover structural failures within 48 hours that their evals never caught — and it runs on 100% of traffic at a fraction of eval cost.
+1. **Start with [shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)** — Run enforcement alongside your existing agents without blocking anything. Collect per-step cost data. Shadow mode often surfaces structural failures quickly that evals never caught — and it covers all traffic at a fraction of eval cost.
 
 2. **Set per-run budgets on your riskiest workflow** — Pick the agent where a failure has real consequences. Add a [budget ceiling](/blog/ai-agent-budget-control-enforce-hard-spend-limits). Review which runs would have been blocked. If the answer is "the ones that looped" — you've found the gap.
 
