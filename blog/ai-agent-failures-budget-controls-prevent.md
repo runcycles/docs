@@ -273,6 +273,10 @@ The total across these five scenarios: **$30,100 in preventable spend** (countin
 
 The pattern is simple. Budget enforcement is a pre-execution check. It asks one question before every LLM call: "Is there budget remaining for this?" If yes, proceed. If no, stop. Every failure in this post would have been caught by that single question.
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 If these failure modes look familiar — or if you'd rather prevent them than experience them:

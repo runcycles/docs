@@ -198,6 +198,10 @@ Agent costs are a function of call patterns, not just token prices. A 10% change
 
 [Cycles](/) provides this layer. Every LLM call checks against a budget before executing. When the budget is exhausted, the call is denied and the agent degrades gracefully.
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 If you're estimating costs for a new agent deployment or trying to understand an existing one:

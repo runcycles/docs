@@ -133,6 +133,7 @@ export default defineConfig({
     },
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Why Cycles', link: '/why-cycles' },
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       {
         text: 'Docs',
@@ -140,6 +141,7 @@ export default defineConfig({
           { text: 'Concepts', link: '/concepts/comparisons' },
           { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
           { text: 'Integrations', link: '/how-to/integrations-overview' },
+          { text: 'Security', link: '/security' },
           { text: 'Incident Patterns', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
           { text: 'Configuration', link: '/configuration/python-client-configuration-reference' },
         ],
@@ -178,6 +180,10 @@ export default defineConfig({
       '/demos/': [],
       '/blog/': [],
       '/': [
+        {
+          text: 'Why Cycles',
+          link: '/why-cycles',
+        },
         {
           text: 'Quickstart',
           items: [
@@ -364,6 +370,7 @@ export default defineConfig({
           text: 'Operations',
           collapsed: true,
           items: [
+            { text: 'Security', link: '/security' },
             { text: 'Production Operations', link: '/how-to/production-operations-guide' },
             { text: 'Admin API Guide', link: '/admin-api/guide' },
             { text: 'Client Performance Tuning', link: '/how-to/client-performance-tuning' },

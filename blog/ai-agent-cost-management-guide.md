@@ -222,6 +222,10 @@ For teams moving from Tier 0 or 1 to Tier 4, the recommended path:
 
 This process takes 4-8 weeks for most teams. The shadow mode step is critical — it prevents enforcement from breaking production workflows on day one.
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 The progression from no controls to hard enforcement is predictable. The question isn't whether you'll need Tier 4 — it's whether you get there before or after an expensive incident.

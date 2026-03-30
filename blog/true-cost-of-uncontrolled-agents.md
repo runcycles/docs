@@ -109,6 +109,10 @@ Uncontrolled agents are not a hypothetical risk. They are a recurring, measurabl
 
 The cost of building budget controls is small. The cost of not having them compounds with every agent you deploy.
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — detailed breakdowns with dollar math for each failure mode

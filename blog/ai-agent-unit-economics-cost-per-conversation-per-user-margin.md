@@ -126,6 +126,10 @@ Token pricing is an engineering metric. Cost per conversation is a business KPI.
 
 **Model routing by economics.** Route simple conversations to GPT-4o-mini ($0.15/1M input tokens) and complex conversations to GPT-4o ($2.50/1M input tokens). The routing decision is economic, not just capability-based. A simple "what's my order status?" query does not need a $2.50/1M-token model. A complex debugging session does. [Routing and enforcement complement each other](/blog/manifest-vs-cycles-routing-vs-runtime-authority) — the router picks the model, the runtime authority bounds the cost.
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — raw provider pricing and per-scenario cost breakdowns

@@ -123,6 +123,10 @@ You do not need to enforce budgets everywhere on day one. The proven path:
 
 For a detailed shadow mode guide, see [Shadow Mode: How to Roll Out Budget Enforcement Without Breaking Production](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production). For help choosing where to start, see [How to Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails).
 
+## From cost visibility to cost control
+
+Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+
 ## Next steps
 
 - **[What is Cycles?](/quickstart/what-is-cycles)** — the runtime that implements the reserve-commit enforcement pattern
