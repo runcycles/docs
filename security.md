@@ -40,7 +40,7 @@ Events and reservations are queryable via the REST API:
 ```bash
 # List reservations for a tenant
 curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=COMMITTED" \
-  -H "Authorization: Bearer $CYCLES_API_KEY"
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY"
 
 # Admin audit logs (administrative operations)
 curl -s "http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=50" \

@@ -25,7 +25,7 @@ The margin impact is direct. Teams pricing AI features at $15/user/month see act
 <details>
 <summary><strong>Security / Compliance — Every action is auditable</strong></summary>
 
-Every reservation, commit, release, and event in Cycles creates a structured, queryable record. Each record includes: tenant ID, full scope hierarchy (workspace, app, workflow, agent), amount reserved, amount committed, timestamp, status, and arbitrary metadata.
+Every reservation, commit, release, and event in Cycles creates a structured, queryable record. Each record includes: full scope hierarchy (tenant, workspace, app, workflow, agent, toolset), amounts reserved and committed, timestamp, status, and arbitrary metadata.
 
 This means every budget operation — every reservation, commit, release, and event — is logged with the context needed for audit. You can answer "which agent spent how much, on what, and when" from the event log alone, without reconstructing it from scattered application logs.
 

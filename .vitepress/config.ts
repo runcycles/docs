@@ -182,9 +182,7 @@ export default defineConfig({
       '/': [
         {
           text: 'Why Cycles',
-          items: [
-            { text: 'Why Cycles', link: '/why-cycles' },
-          ]
+          link: '/why-cycles',
         },
         {
           text: 'Quickstart',
