@@ -1,11 +1,11 @@
 ---
 title: "Why Cycles"
-description: "Why CTOs, security teams, and finance leaders choose Cycles — blast radius containment, auditable event trails, and bounded unit economics for AI agents."
+description: "For B2B SaaS teams shipping AI agents to customers — blast radius containment, auditable event trails, and bounded unit economics per tenant."
 ---
 
 # Why Cycles
 
-Cycles is the runtime authority layer for autonomous agents. It makes a deterministic allow/deny decision before every LLM call, tool invocation, or side effect — so agents cannot spend more than you authorize.
+If you're a B2B SaaS team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the runtime authority layer that enforces hard budget limits before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
 
 <details>
 <summary><strong>CTO / VP Engineering — Contain blast radius, protect margins</strong></summary>
