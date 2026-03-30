@@ -132,30 +132,39 @@ export default defineConfig({
       label: 'On this page'
     },
     nav: [
-      { text: 'Home', link: '/' },
       { text: 'Why Cycles', link: '/why-cycles' },
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       {
         text: 'Docs',
         items: [
-          { text: 'Concepts', link: '/concepts/comparisons' },
-          { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
-          { text: 'Integrations', link: '/how-to/integrations-overview' },
-          { text: 'Security', link: '/security' },
-          { text: 'Incident Patterns', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
-          { text: 'Configuration', link: '/configuration/python-client-configuration-reference' },
+          {
+            text: 'Getting Started',
+            items: [
+              { text: 'Concepts', link: '/concepts/comparisons' },
+              { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
+              { text: 'Integrations', link: '/how-to/integrations-overview' },
+            ],
+          },
+          {
+            text: 'Reference',
+            items: [
+              { text: 'API Reference (Interactive)', link: '/api/' },
+              { text: 'Admin API', link: '/admin-api/' },
+              { text: 'Protocol Spec', link: 'https://github.com/runcycles/cycles-protocol' },
+              { text: 'Configuration', link: '/configuration/python-client-configuration-reference' },
+            ],
+          },
+          {
+            text: 'Operations',
+            items: [
+              { text: 'Security', link: '/security' },
+              { text: 'Incident Patterns', link: '/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent' },
+              { text: 'Demos', link: '/demos/' },
+            ],
+          },
         ],
       },
-      {
-        text: 'API Reference',
-        items: [
-          { text: 'Cycles Protocol API', link: '/api/' },
-          { text: 'RunCycles Admin API', link: '/admin-api/' },
-        ],
-      },
-      { text: 'Demos', link: '/demos/' },
       { text: 'Blog', link: '/blog/' },
-      { text: 'Protocol', link: 'https://github.com/runcycles/cycles-protocol' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
     sidebar: {
