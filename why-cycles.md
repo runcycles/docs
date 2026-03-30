@@ -71,15 +71,17 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 <details>
 <summary><strong>AI Agent — You get a budget, not just a limit</strong></summary>
 
-If you're an AI agent with MCP tool access, Cycles gives you runtime budget awareness. Before every costly action — LLM call, tool invocation, external API request — you call `reserve` and receive a three-way decision:
+Without budget awareness, you are flying blind. You don't know if you're on iteration 5 or iteration 200. You don't know if the workflow you're executing has already consumed 90% of the customer's allocation. You will loop, retry, and fan out until something external kills you — and by then you may have burned $4,200 or sent 200 wrong emails. You had no way to know.
 
-- **ALLOW** — proceed normally.
-- **ALLOW_WITH_CAPS** — proceed, but respect the returned constraints: `maxTokens`, `toolDenylist`, `maxStepsRemaining`. Adapt your approach.
-- **DENY** — budget exhausted. Do not execute. Degrade gracefully: summarize work completed, tell the user what remains, and stop.
+Cycles gives you that knowledge. Before every costly action, you call `reserve` and receive a decision:
 
-You can check remaining budget at any time with `check_balance`. Use `decide` for a lightweight preflight check without locking funds. After execution, call `commit` with actual usage so unused budget returns to the pool. If you skip a step, call `release`.
+- **ALLOW** — proceed.
+- **ALLOW_WITH_CAPS** — proceed with constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`). Adjust your plan.
+- **DENY** — stop this action. Summarize what you completed, tell the user what remains, and exit gracefully.
 
-When budget runs low, you have options: switch to a cheaper model, shorten responses, skip optional tool calls, or defer non-urgent work. You don't hard-stop — you [wind down intelligently](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) and communicate what happened.
+You can check remaining budget anytime (`check_balance`), do a preflight check without locking funds (`decide`), and report actual usage after execution (`commit`) so unused budget returns to the pool.
+
+This makes you a better agent. You can plan around constraints instead of crashing into them. You can [skip optional steps, defer non-urgent work](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer), or switch to a cheaper model. You can tell the user *why* you stopped and *what's left* — instead of silently failing or running up a bill they didn't authorize.
 
 [MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
 
