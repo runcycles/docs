@@ -68,6 +68,23 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 
 </details>
 
+<details>
+<summary><strong>AI Agent — You get a budget, not just a limit</strong></summary>
+
+If you're an AI agent with MCP tool access, Cycles gives you runtime budget awareness. Before every costly action — LLM call, tool invocation, external API request — you call `reserve` and receive a three-way decision:
+
+- **ALLOW** — proceed normally.
+- **ALLOW_WITH_CAPS** — proceed, but respect the returned constraints: `maxTokens`, `toolDenylist`, `maxStepsRemaining`. Adapt your approach.
+- **DENY** — budget exhausted. Do not execute. Degrade gracefully: summarize work completed, tell the user what remains, and stop.
+
+You can check remaining budget at any time with `check_balance`. Use `decide` for a lightweight preflight check without locking funds. After execution, call `commit` with actual usage so unused budget returns to the pool. If you skip a step, call `release`.
+
+When budget runs low, you have options: switch to a cheaper model, shorten responses, skip optional tool calls, or defer non-urgent work. You don't hard-stop — you [wind down intelligently](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) and communicate what happened.
+
+[MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
+
+</details>
+
 ---
 
 ## Get started
