@@ -32,7 +32,7 @@ What's missing is the other half of governance: runtime authorization for _actio
 
 The gap has three dimensions:
 
-**Cost.** There are no spending limits. A tenant running a support agent and a tenant running an analytics pipeline share the same unlimited OpenAI budget. If one tenant's agent enters a retry loop, the entire account pays for it. Provider-level spending caps are account-wide and react too slowly — by the time they trigger, the damage is done.
+**Cost.** There are no spending limits. A tenant running a support agent and a tenant running an analytics pipeline share the same unlimited OpenAI budget. If one tenant's agent enters a retry loop, the entire account pays for it. Provider-level spending caps are account-wide and may react too slowly — by the time they trigger, the damage is done.
 
 **Risk.** Every tool call is treated equally. `search_knowledge_base` and `send_email` have the same authorization status: allowed, unconditionally. There's no mechanism to assign different risk levels, require different authorization thresholds, or enforce different policies per tool.
 
@@ -53,7 +53,7 @@ This is exactly what a pre-execution authorization check needs. Here's how the h
 | `on_tool_start` | "Is this agent authorized to call this tool right now, given its risk level and remaining budget?" | Raise `BudgetExceededError` — tool never executes |
 | `on_tool_end` | "Record what actually happened — commit the real cost." | — |
 | `on_llm_start` | "Does this agent have budget for another LLM call?" | Raise `BudgetExceededError` — no tokens consumed |
-| `on_llm_end` | "Commit actual token usage from `response.usage`." | — |
+| `on_llm_end` | "Commit the reserved amount and record actual token counts as metrics." | — |
 | `on_handoff` | "Record that Agent A delegated to Agent B." | — (audit only) |
 
 The critical insight: authorization happens _before_ execution, not after. If the answer is DENY, the expensive API call never fires. No tokens are consumed. No side-effects occur. The agent stops cleanly with a typed exception that your application can handle.
@@ -64,7 +64,7 @@ The reserve-commit pattern makes this concrete:
 
 1. **Before the action:** Reserve budget or risk points. The Cycles server checks the tenant's remaining balance and returns ALLOW or DENY.
 2. **Execute the action:** Only if authorized. The reservation holds the estimated cost so concurrent requests don't over-allocate.
-3. **After the action:** Commit actual usage (real token counts from the LLM response, or actual risk points consumed by the tool).
+3. **After the action:** Commit usage and record token metrics from `response.usage` for observability.
 4. **On failure:** Release the reservation to return budget to the pool.
 
 The SDK's hooks bracket every action with a start/end pair — the exact shape needed for reserve/commit.
@@ -85,7 +85,7 @@ That's the entire integration. No decorator on each function. No code changes to
 Behind the scenes, for every LLM call in the agent run:
 1. `on_llm_start` creates a reservation with an estimated cost
 2. The LLM call executes (only if authorized)
-3. `on_llm_end` commits actual token usage from `response.usage`
+3. `on_llm_end` commits the reservation and records actual token counts from `response.usage` as metrics
 
 For every tool call:
 1. `on_tool_start` creates a reservation with the tool's risk-point cost
@@ -173,7 +173,7 @@ Runtime action authority is one layer of agent governance. It's not the only one
 
 **Streaming-aware budget management** isn't supported. The OpenAI Agents SDK doesn't expose streaming-specific lifecycle hooks, so there's no way to track token usage mid-stream. Tokens are committed after the full response is received via `on_llm_end`.
 
-**Exact cost prediction** isn't possible. Estimates are used before the LLM call to reserve budget; actual token counts from `response.usage` are committed after. The gap between estimate and actual is typically small, but it exists.
+**Exact cost prediction** isn't possible. Estimates are used before the LLM call to reserve budget. After the call, the reserved amount is committed and actual token counts are recorded as metrics. When using `llm_unit=Unit.TOKENS`, actual token counts are committed directly; with the default `llm_unit=Unit.USD_MICROCENTS`, the pre-estimated amount is committed. Either way, token metrics from `response.usage` are always recorded for observability.
 
 **Fail-open is the default.** If the Cycles server is unreachable, the agent continues with full authority. This is a deliberate design choice — budget enforcement should be a guardrail, not a single point of failure. Set `fail_open=False` to enforce strict governance when infrastructure reliability is guaranteed.
 
