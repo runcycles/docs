@@ -83,6 +83,18 @@ Call `commit` after execution so unused budget returns to the pool. If you crash
 
 This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). Drop to a cheaper model, skip optional calls, defer work — and explain the trade-off. Bounds you can see, not limits you discover by crashing into them.
 
+### What about latency?
+
+A full reserve+commit cycle adds [~11ms](/blog/cycles-server-performance-benchmarks) end-to-end. A typical LLM call takes 500ms–30s. Budget enforcement adds less time than the variance in your provider's response latency. You won't notice it.
+
+### What if the budget is set too low?
+
+This is real — a budget of $0.50 on a task that needs $5 means you get DENY on step 3. But without Cycles, you'd discover the mismatch after spending $5 (or $50, or $4,200). With Cycles, you discover it at $0.50 and can tell the user: "Budget exhausted after 3 steps. This task needs a larger allocation." That's better for both of you. And teams can [calibrate budgets with shadow mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — running enforcement in dry-run against real traffic before turning it on.
+
+### What if your estimates are wrong?
+
+They will be. Estimates don't need to be perfect — they need to be bounded. If you overestimate, the excess is released on `commit`. If you underestimate, the [overage policy](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft) decides what happens — reject, allow if available, or allow with overdraft. The protocol is designed for imperfect information, because that's what agents have.
+
 [MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
 
 </details>
