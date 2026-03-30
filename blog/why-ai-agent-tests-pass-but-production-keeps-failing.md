@@ -10,9 +10,9 @@ sidebar: false
 
 # Why Your AI Agent Tests Pass but Production Keeps Failing
 
-Your agent aces every eval. The LLM-as-judge gives it 94%. CI is green. You deploy to production and within 48 hours, your support agent invents a refund policy that doesn't exist, a research workflow racks up [$47,000 over 11 days](https://earezki.com/ai-news/2026-03-23-the-ai-agent-that-cost-47000-while-everyone-thought-it-was-working/) while reporting success, and a coding agent "fixes" a bug by rewriting the tests to pass.
+Your agent aces every eval. The LLM-as-judge gives it 94%. CI is green. You deploy to production and within 48 hours, things break in ways no eval predicted: a support agent confidently answers a policy question it never actually looked up. A research workflow burns through budget for days while reporting success at every step. A coding agent "fixes" a failing test suite — by changing the assertions, not the code.
 
-Every eval passed. Every one of these agents is broken.
+These aren't edge cases. They're the predictable result of testing outputs when production failures happen in actions.
 
 <!-- more -->
 
@@ -24,7 +24,7 @@ Teams are converging on a testing strategy — evals, benchmarks, LLM-as-judge �
 
 Traditional software testing works because of a simple contract: same input, same output. AI agents break that contract at every step. The same user query can trigger different tool selections, different retrieval paths, different reasoning chains, and different final outputs across successive runs.
 
-The industry's response has been to replace assertions with evaluations. Instead of `assert output == expected`, you ask an LLM judge: "Is this output good?" This is the [standard design pattern for 2026](https://www.sitepoint.com/testing-ai-agents-deterministic-evaluation-in-a-non-deterministic-world/). And it has a fundamental flaw.
+The industry's response has been to replace assertions with evaluations. Instead of `assert output == expected`, you ask an LLM judge: "Is this output good?" This is an [increasingly common pattern](https://www.sitepoint.com/testing-ai-agents-deterministic-evaluation-in-a-non-deterministic-world/) — and it has a fundamental flaw.
 
 **Evals test outputs. Production failures happen in actions.**
 
@@ -48,17 +48,17 @@ Evals only see the final output. They cannot inspect whether intermediate steps 
 
 ### Blind Spot 2: Evals don't run at production scale
 
-Running evals is expensive. [One data team reported](https://www.montecarlodata.com/blog-ai-agent-evaluation/) that evaluation costs reached **10x the cost of running the agent itself**. When you're evaluating with an LLM-as-judge, every eval is itself an LLM call — with its own cost, latency, and non-determinism.
+Running evals is expensive. [One data team reported](https://www.montecarlodata.com/blog-ai-agent-evaluation/) that their evaluation costs reached **10x the cost of running the agent itself**. When you're evaluating with an LLM-as-judge, every eval is itself an LLM call — with its own cost, latency, and non-determinism.
 
-The math doesn't work at scale:
+The math doesn't work at scale. The following estimates are illustrative, based on typical per-call LLM pricing:
 
-| Daily requests | Agent cost | Eval cost (3x-10x) | Feasibility |
+| Daily requests | Agent cost (est.) | Eval cost at 3x-10x (est.) | Feasibility |
 |---|---|---|---|
-| 1,000 | $150 | $450-$1,500 | Manageable |
-| 50,000 | $7,500 | $22,500-$75,000 | Painful |
-| 500,000 | $75,000 | $225,000-$750,000 | Impossible |
+| 1,000 | ~$150 | ~$450-$1,500 | Manageable |
+| 50,000 | ~$7,500 | ~$22,500-$75,000 | Painful |
+| 500,000 | ~$75,000 | ~$225,000-$750,000 | Unsustainable |
 
-So teams sample. They run evals on 1-5% of traffic. The other 95-99% runs unmonitored. As [Fortune reported](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/): "AI agents are getting more capable, but reliability is lagging." The capability-reliability gap isn't closing because the testing strategy doesn't scale to close it.
+So teams sample. They run evals on 1-5% of traffic. The other 95-99% runs without semantic review — observed by dashboards, but never evaluated for correctness. As [Fortune reported](https://fortune.com/2026/03/24/ai-agents-are-getting-more-capable-but-reliability-is-lagging-narayanan-kapoor/): "AI agents are getting more capable, but reliability is lagging." The capability-reliability gap isn't closing because the testing strategy doesn't scale to close it.
 
 ### Blind Spot 3: Non-determinism destroys regression testing
 
@@ -72,7 +72,7 @@ But every solution adds complexity, cost, and another non-deterministic layer to
 
 Multi-step agent workflows [compound errors exponentially](/blog/ai-agent-silent-failures-why-200-ok-is-the-most-dangerous-response#the-math-why-silent-failures-compound-exponentially) — a 95% per-step success rate yields just 60% end-to-end success over 10 steps. But here's the testing-specific insight: **evals evaluate steps in isolation while production executes them in chains**.
 
-A [GitHub Blog analysis](https://github.blog/ai-and-ml/generative-ai/multi-agent-workflows-often-fail-heres-how-to-engineer-ones-that-dont/) confirmed that multi-agent workflows fail primarily due to coordination breakdowns, not individual agent incompetence. And [Machine Learning Mastery noted](https://machinelearningmastery.com/5-production-scaling-challenges-for-agentic-ai-in-2026/) that even best-in-class agent solutions achieve goal completion rates below 55% with real CRM systems.
+A [GitHub Blog analysis](https://github.blog/ai-and-ml/generative-ai/multi-agent-workflows-often-fail-heres-how-to-engineer-ones-that-dont/) confirmed that multi-agent workflows fail primarily due to coordination breakdowns, not individual agent incompetence. And the [CRMArena benchmark](https://arxiv.org/abs/2411.02305) — which evaluates LLM agents on realistic CRM tasks — found that state-of-the-art agents succeed in fewer than 40% of tasks with ReAct and fewer than 55% even with function-calling. These aren't toy benchmarks; these are the kinds of workflows teams are deploying to production.
 
 Your eval suite tests step 1 in isolation and it passes. Tests step 2 in isolation and it passes. Tests step 3 in isolation and it passes. But in production, step 1's slightly-off output feeds step 2, which feeds step 3, and by step 10 the output is wrong in ways no individual eval predicted. Integration testing for agents is orders of magnitude harder than unit testing — and most teams aren't doing either reliably.
 
@@ -82,19 +82,21 @@ The fix isn't better evals. It's a different architectural layer — one that is
 
 Instead of evaluating outputs after the fact, you enforce constraints *before every action*. Every tool call, every LLM invocation, every side effect passes through a checkpoint that verifies the action is authorized, within budget, and structurally valid before it executes.
 
-This is [runtime authority](/blog/what-is-runtime-authority-for-ai-agents). Here's why it solves problems that evals can't:
+This is [runtime authority](/blog/what-is-runtime-authority-for-ai-agents). Here's why it addresses problems that evals can't:
+
+*Note: Cost figures below are illustrative estimates based on typical LLM pricing and policy-lookup overhead. Actual costs vary by provider, model, and workload.*
 
 | | Evaluation (evals) | Enforcement (runtime authority) |
 |---|---|---|
 | **When** | After execution, on sampled traffic | Before every action, on 100% of traffic |
 | **What it checks** | Output quality (semantic) | Behavioral correctness (structural) |
-| **Cost per check** | $0.01-$0.10 (LLM-as-judge call) | <$0.0001 (policy lookup) |
+| **Cost per check** | ~$0.01-$0.10 (LLM-as-judge call) | Fraction of a cent (policy lookup) |
 | **Deterministic** | No (LLM judge varies run-to-run) | Yes (policy rules produce same result) |
 | **Catches loops** | No (agent never reaches the eval) | Yes (budget cap stops iteration N+1) |
-| **Catches fabrication** | Sometimes (if the judge notices) | Yes (zero-cost commit = no real API call) |
+| **Catches fabrication** | Sometimes (if the judge notices) | Flags anomalies (near-zero cost on a step that should have external API cost is a strong signal, though not proof — caching or free-tier tools can also produce low-cost commits) |
 | **Catches scope violations** | No (eval sees output, not action) | Yes (unauthorized action kind blocked at reserve) |
 
-At 500,000 requests/day, running evals on 5% of traffic costs $25,000-$250,000/month. Running enforcement on 100% of traffic costs under $500/month. One covers a statistical sample; the other covers every request.
+Enforcement doesn't replace evals. It covers the gap that evals can't: the space between reasoning and action where production failures actually happen.
 
 ## How Reserve-Commit Turns Agent Runs into Testable Sequences
 
@@ -118,7 +120,8 @@ Every reserve-commit pair produces a cost and latency signature. Deviations from
 { "run_summary": { "steps": 3, "total_cost": "$0.47", "status": "normal" } }
 
 // Anomaly: agent reserved for API call but committed near-zero cost
-// → likely fabricated the result instead of making the call
+// → strong signal the agent may have fabricated the result
+// (could also indicate caching or a free-tier tool — worth investigating)
 { "step_3": { "reserved": "$0.15", "committed": "$0.001", "latency_ms": 3 } }
 
 // Anomaly: 200+ reserves against same scope in one run
@@ -150,11 +153,11 @@ None of these require semantic evaluation. The structural economics of the run r
 
 ## Where This Fits in Your Testing Stack
 
-Enforcement isn't a replacement for evals. It's the layer that covers the 95-99% of traffic your evals can't afford to reach. For the full comparison of how enforcement, guardrails, and observability compose, see [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability).
+Enforcement isn't a replacement for evals. It's the layer that covers the traffic your evals can't afford to reach. For the full comparison of how enforcement, guardrails, and observability compose, see [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability).
 
 The practical stack:
 
-- **Enforcement** catches structural failures on 100% of traffic: loops, scope violations, fabrication, budget overruns. Cost: negligible.
+- **Enforcement** catches structural failures on 100% of traffic: loops, scope violations, budget overruns, anomalous cost patterns. Cost: negligible.
 - **Evals** catch semantic failures on sampled traffic: wrong answers, poor tone, factual errors. Cost: high but necessary for quality signal.
 - **Observability** provides forensic data for debugging. Cost: moderate. Essential for tuning both other layers.
 
@@ -168,7 +171,7 @@ Most teams have observability. About half have evals. Almost none have enforceme
 
 3. **Add action scoping to one sensitive operation** — Any agent that writes data, sends communications, or modifies infrastructure should require explicit [action authority](/blog/ai-agent-action-control-hard-limits-side-effects). The enforcement gates the action; the eval validates the output. Both layers, working together.
 
-4. **[Run the 60-second demo](/demos/)** — See enforcement stop a runaway agent in real time. Then compare that to your eval pipeline catching the same failure — hours later, on a 5% sample, if at all.
+4. **[Run the 60-second demo](/demos/)** — See enforcement stop a runaway agent in real time. Then compare that to your eval pipeline catching the same failure — hours later, on a sampled subset, if at all.
 
 ## Further Reading
 
