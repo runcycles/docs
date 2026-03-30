@@ -271,11 +271,13 @@ In every case, the agent was allowed to spend money without asking permission. T
 
 The total across these five scenarios: **$30,100 in preventable spend** (counting three months of the scope leak). With enforcement, the total would have been roughly $6,100 — an 80% reduction, with better user experience and faster failure detection.
 
-The pattern is simple. Budget enforcement is a pre-execution check. It asks one question before every LLM call: "Is there budget remaining for this?" If yes, proceed. If no, stop. Every failure in this post would have been caught by that single question.
+The pattern is simple. Budget enforcement is a pre-execution check. It asks one question before every LLM call: "Is there budget remaining for this?" If yes, proceed. If no, stop. Every failure in this post would have been caught by that single question. For failures where the risk is operational rather than monetary, the same pattern applies with a different unit — [risk points instead of dollars](/concepts/action-authority-controlling-what-agents-do).
 
-## From cost visibility to cost control
+## Budget failures are not the only kind
 
-Cost overruns are a symptom. The root cause is the absence of a pre-execution enforcement layer — a system that asks "is there budget for this?" before every action, not after. That's what [runtime authority](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) provides: deterministic budget decisions at the point of execution, not retroactive alerts on a dashboard.
+The five failures above are all denominated in dollars. But agents also fail by *doing the wrong thing* — and those failures can cost far more than any token bill. A support agent that [sends 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects) costs $1.40 in model spend. The business impact: $50K+ in lost pipeline. No spending limit would have caught it.
+
+This is why Cycles is positioned as [runtime authority](/blog/what-is-runtime-authority-for-ai-agents), not just budget authority. Budget authority caps what agents spend (the five scenarios above). [Action authority](/concepts/action-authority-controlling-what-agents-do) caps what agents *do* — gating high-consequence operations like email, deploy, and delete with risk-point budgets per toolset. Both dimensions use the same reserve-commit protocol and the same infrastructure.
 
 ## Next steps
 
@@ -286,5 +288,10 @@ If these failure modes look familiar — or if you'd rather prevent them than ex
 - **[How to Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails)** — decide where to start: tenant budgets, run budgets, or model call guardrails
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the maturity model from no controls to hard enforcement
 - **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
+
+For failures where the risk is action rather than cost:
+
+- **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — when the $1.40 agent causes $50K in damage
+- **[Action Authority](/concepts/action-authority-controlling-what-agents-do)** — risk-point budgets and toolset-scoped controls
 
 The cheapest incident is the one that never happens. The second cheapest is the one that's capped at $15 instead of $4,200.
