@@ -71,15 +71,15 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 <details>
 <summary><strong>AI Agent — You get a budget, not just a limit</strong></summary>
 
-Your SDK tells you what each call cost — after it happened. It doesn't tell you how much budget remains for this run, this tenant, this workflow. It doesn't tell you that three other agents are drawing from the same pool. It doesn't tell you to downgrade your approach *before* making an expensive call. You don't know if you're on iteration 5 or 200. When you hit a wall — rate limit, timeout, kill signal — you lose your chance to wrap up, explain, or hand off. The user sees a failed run.
+Your SDK tells you what each call cost — after it happened. You could track that locally. But a local counter breaks when 20 of you run concurrently against the same customer budget — you all read "remaining: $500" and all proceed. If you crash, your local state is gone. And you can't see the tenant's allocation, the workflow's run budget, or the workspace capacity. That context lives outside you. This isn't a gap you close with [more tools](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — it requires a shared authority.
 
-Cycles gives you pre-execution decisions, not post-hoc telemetry. Call `check_balance` before you plan. Call `reserve` before each costly step. You get back:
+Cycles is that authority. Call `check_balance` before you plan. Call `reserve` before each costly step. You get back:
 
 - **ALLOW** — proceed.
-- **ALLOW_WITH_CAPS** — proceed with constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`). Plan accordingly.
+- **ALLOW_WITH_CAPS** — proceed with constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`). The authority tells you *how* to adapt, not just whether to proceed.
 - **DENY** — do not execute. Summarize what you completed, tell the user what remains, exit cleanly.
 
-Call `commit` after execution so unused budget returns to the pool. Call `release` if you skip a step.
+Call `commit` after execution so unused budget returns to the pool. If you crash, reservations expire and budget recovers automatically.
 
 This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). Drop to a cheaper model, skip optional calls, defer work — and explain the trade-off. Bounds you can see, not limits you discover by crashing into them.
 
