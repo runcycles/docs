@@ -74,4 +74,5 @@ Budget enforcement is not a cost center. It is the mechanism that makes AI featu
 
 - [What is Cycles?](/quickstart/what-is-cycles) — 5-minute overview
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — from zero to working enforcement in 30 minutes
-- [5 Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — the incidents, with dollar math
+- [5 Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — cost incidents, with dollar math
+- [5 Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents) — action incidents, where the spend was negligible

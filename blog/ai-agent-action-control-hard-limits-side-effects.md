@@ -158,6 +158,7 @@ Teams that implement both dimensions have runtime authority. Teams that implemen
 ## Next steps
 
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the companion post covering budget authority in depth
+- **[5 AI Agent Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents)** — the scenario-driven companion: five action failures with impact analysis
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — failure scenarios with full cost math
 - **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, USD_MICROCENTS, TOKENS, and CREDITS
 - **[How Reserve-Commit Works in Cycles](/protocol/how-reserve-commit-works-in-cycles)** — the pre-execution authorization lifecycle
