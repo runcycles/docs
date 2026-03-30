@@ -235,6 +235,7 @@ cycles-server:
 
 ## Next steps
 
+- [Security Overview](/security) — data residency, audit trail, compliance posture
 - [Production Operations Guide](/how-to/production-operations-guide) — deployment and infrastructure
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — metrics and alerting
 - [API Key Management](/how-to/api-key-management-in-cycles) — key lifecycle management

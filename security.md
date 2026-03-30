@@ -1,9 +1,9 @@
 ---
-title: "Security"
-description: "Cycles security posture: data residency, event audit trail, access control, and compliance."
+title: "Cycles Security"
+description: "Cycles security posture for AI agent budget enforcement: data residency, queryable event audit trail, tenant isolation, least-privilege API keys, and SOC 2 compliance status."
 ---
 
-# Security
+# Cycles Security
 
 Cycles is infrastructure that sits in the execution path of autonomous agents. Security is a first-order concern.
 

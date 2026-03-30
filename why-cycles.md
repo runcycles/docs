@@ -1,6 +1,6 @@
 ---
 title: "Why Cycles"
-description: "Why CTOs, security teams, and finance leaders choose Cycles for runtime budget authority over autonomous AI agents."
+description: "Why CTOs, security teams, and finance leaders choose Cycles — blast radius containment, auditable event trails, and bounded unit economics for AI agents."
 ---
 
 # Why Cycles
@@ -35,7 +35,7 @@ Access control separates the runtime plane (port 7878, scoped API keys with leas
 
 Self-hosted deployments keep all data in your infrastructure — nothing leaves your network. SOC 2 Type I is in progress for the managed cloud offering.
 
-[Event log API →](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) · [Security hardening →](/how-to/security-hardening)
+[Security overview →](/security) · [Event log API →](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) · [Security hardening →](/how-to/security-hardening)
 
 </details>
 
