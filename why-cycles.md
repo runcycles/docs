@@ -1,22 +1,34 @@
 ---
 title: "Why Cycles"
-description: "Why CTOs, security teams, and finance leaders choose Cycles — blast radius containment, auditable event trails, and bounded unit economics for AI agents."
+description: "For B2B SaaS teams shipping AI agents to customers — blast radius containment, auditable event trails, and bounded unit economics per tenant."
 ---
 
 # Why Cycles
 
-Cycles is the runtime authority layer for autonomous agents. It makes a deterministic allow/deny decision before every LLM call, tool invocation, or side effect — so agents cannot spend more than you authorize.
+If you're a B2B SaaS team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the runtime authority layer that enforces hard budget limits before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
+
+## Three problems Cycles solves
+
+**Protect margin.** Agent costs follow a heavy-tail distribution — the top 10% of users consume [72% of total spend](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin). Without per-user budget caps, a feature priced for 80% gross margin [delivers 23%](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin). Cycles bounds the tail so unit economics stay predictable.
+
+**Contain cross-tenant blast radius.** A single runaway agent can burn [$4,200 in three hours](/blog/ai-agent-failures-budget-controls-prevent). Cycles enforces hierarchical budgets — tenant, workspace, workflow, run — so one customer's bad agent cannot starve the platform or another customer's allocation.
+
+**Audit every action.** Every reservation, commit, and event creates a structured record with full scope context. Queryable via API, 90-day hot retention, exportable to cold storage. No log reconstruction required — the budget ledger is the audit trail. [Details →](/security)
+
+---
+
+## By role
 
 <details>
 <summary><strong>CTO / VP Engineering — Contain blast radius, protect margins</strong></summary>
 
 Every agent action passes through a reserve-commit gate. Before an LLM call executes, Cycles atomically checks the budget and locks the estimated cost. If the budget is exhausted, the call is denied and the agent degrades gracefully — cheaper model, shorter response, or explicit stop.
 
-Without this gate, a single runaway agent can burn **$4,200 in three hours**. A coding agent hit an ambiguous error, retried with expanding context windows, and looped 240 times before anyone noticed. With a $15 per-run budget in Cycles, the same agent stops after 8 iterations and surfaces the problem immediately.
+Without this gate, a single runaway agent can burn **$4,200 in three hours** — a coding agent hit an ambiguous error, retried with expanding context windows, and [looped 240 times before anyone noticed](/blog/ai-agent-failures-budget-controls-prevent). With a $15 per-run budget in Cycles, the same agent stops after 8 iterations and surfaces the problem immediately.
 
 Blast radius is bounded at every level: per-run, per-workflow, per-tenant. One bad agent cannot starve the platform. Budgets are hierarchical — tenant, workspace, app, workflow, agent — so you set ceilings at the level that matches your architecture.
 
-The margin impact is direct. Teams pricing AI features at $15/user/month see actual costs balloon to $11.50/user without enforcement — a 23% gross margin against an 80% target. With per-user budget caps, the same feature runs at 68% margin. The enforcement layer is what makes unit economics predictable.
+The margin impact is direct. In one [unit economics analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin), a team pricing an AI feature at $15/user/month saw actual costs balloon to $11.50/user without enforcement — a 23% gross margin against an 80% target. With per-user budget caps, the same feature runs at 68% margin.
 
 [Why rate limits are not enough →](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems)
 
@@ -42,15 +54,13 @@ Self-hosted deployments keep all data in your infrastructure — nothing leaves 
 <details>
 <summary><strong>Finance — From unpredictable spend to bounded unit economics</strong></summary>
 
-A team estimated $800/month for a customer support agent based on prototype traffic. The first production invoice was $4,200. The per-token pricing was exactly right — the call volume was not. Agents averaged 11 LLM calls per conversation instead of the 3 assumed in the estimate. Retries doubled call counts on bad days. Context windows grew with each turn.
+In one [real deployment](/blog/how-much-do-ai-agents-cost), a team estimated $800/month for a customer support agent based on prototype traffic. The first production invoice was $4,200. The per-token pricing was exactly right — the call volume was not. Agents averaged 11 LLM calls per conversation instead of the 3 assumed in the estimate. Retries doubled call counts on bad days.
 
-This is the norm, not the exception. Without pre-execution enforcement, agent costs follow a heavy-tail distribution where the top 10% of users consume 72% of spend. One user triggered 340 conversations in a month and cost $310 alone — wiping out the margin from 50+ light users.
+This is the norm. In a [unit economics analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin) of an AI copilot feature, the top 10% of users consumed 72% of total spend. One user triggered 340 conversations in a month and cost $310 alone — wiping out the margin from 50+ light users.
 
-Cycles bounds this tail. A $15/month per-user cap turns a 23% gross margin feature into a 68% gross margin feature, with only 5% of users ever hitting the limit. A $15 per-run cap prevents the $4,200 tool loop entirely — the agent stops at $15 and surfaces the problem for human review instead of silently burning budget.
+Cycles bounds this tail. In the same analysis, a $15/month per-user cap turned a 23% gross margin into 68%, with only 5% of users ever hitting the limit. A $15 per-run cap prevents the [$4,200 tool loop](/blog/ai-agent-failures-budget-controls-prevent) entirely — the agent stops at $15 and surfaces the problem for human review.
 
-Budget enforcement is not a cost center. It is the mechanism that makes AI feature unit economics predictable and protectable.
-
-[The $800→$4,200 story →](/blog/how-much-do-ai-agents-cost) · [Unit economics analysis →](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin)
+Budget enforcement is not a cost center. It is the mechanism that makes AI feature unit economics predictable.
 
 </details>
 
