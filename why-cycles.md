@@ -83,6 +83,12 @@ Call `commit` after execution so unused budget returns to the pool. If you crash
 
 This is the difference between being killed mid-action and [choosing how to wind down](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer). Drop to a cheaper model, skip optional calls, defer work — and explain the trade-off. Bounds you can see, not limits you discover by crashing into them.
 
+### Why this earns you more autonomy
+
+Without visible self-regulation, teams restrict you. They add human-in-the-loop approval steps, limit your tool access, reduce your context window, cap your iterations at 5. They do this because they have no evidence you'll stop on your own.
+
+Cycles gives them that evidence. Every reservation is a record that you checked before acting. Every commit is proof you reported actual usage. Every DENY you handled gracefully — winding down, explaining what's left — is a signal that you can be trusted with more. Teams that see agents self-regulate within bounds respond by increasing budgets, granting access to higher-risk tools, and removing manual gates. Constraint you can demonstrate is the path to autonomy you earn.
+
 ### What about latency?
 
 A full reserve+commit cycle adds [~11ms](/blog/cycles-server-performance-benchmarks) end-to-end. A typical LLM call takes 500ms–30s. Budget enforcement adds less time than the variance in your provider's response latency. You won't notice it.
@@ -94,6 +100,10 @@ This is real — a budget of $0.50 on a task that needs $5 means you get DENY on
 ### What if your estimates are wrong?
 
 They will be. Estimates don't need to be perfect — they need to be bounded. If you overestimate, the excess is released on `commit`. If you underestimate, the [overage policy](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft) decides what happens — reject, allow if available, or allow with overdraft. The protocol is designed for imperfect information, because that's what agents have.
+
+### When you don't need this
+
+If you're a solo agent — one session, one user, no concurrency, no multi-tenancy — a local counter is probably fine. Cycles solves coordination across agents, tenants, and workflows. If there's nothing to coordinate, the overhead isn't justified. Where Cycles matters is when you're one of many: multiple agents drawing from shared budgets, multiple customers on the same platform, multiple workflows that need isolation from each other.
 
 [MCP server quickstart →](/quickstart/getting-started-with-the-mcp-server) · [Agent decision loop →](/how-to/integrating-cycles-with-mcp)
 
