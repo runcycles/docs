@@ -94,12 +94,12 @@ For production, add model fallbacks and tool costs:
           "tenant": "my-org",
           "failClosed": true,
           "modelFallbacks": {
-            "claude-opus-4-20250514": ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"]
+            "anthropic/claude-opus-4-20250514": ["anthropic/claude-sonnet-4-20250514", "anthropic/claude-haiku-4-5-20251001"]
           },
           "modelBaseCosts": {
-            "claude-opus-4-20250514": 1500000,
-            "claude-sonnet-4-20250514": 300000,
-            "claude-haiku-4-5-20251001": 100000
+            "anthropic/claude-opus-4-20250514": 1500000,
+            "anthropic/claude-sonnet-4-20250514": 300000,
+            "anthropic/claude-haiku-4-5-20251001": 100000
           },
           "toolBaseCosts": {
             "web_search": 500000,
