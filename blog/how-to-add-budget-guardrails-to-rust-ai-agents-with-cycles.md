@@ -3,7 +3,7 @@ title: "How to Add Budget Guardrails to Rust AI Agents with Cycles"
 date: 2026-03-31
 author: "Cycles Team"
 tags: [rust, agents, engineering, costs, guide]
-description: "Add deterministic budget enforcement to Rust AI agents and LLM workflows using the runcycles crate — with_cycles() for automatic lifecycle, RAII guards for streaming, and compile-time safety against double-commits."
+description: "Add budget enforcement to Rust AI agents with the runcycles crate — automatic lifecycle, RAII guards for streaming, and compile-time safety."
 blog: true
 sidebar: false
 featured: true
@@ -251,8 +251,7 @@ Instead of a binary ALLOW/DENY, Cycles supports `ALLOW_WITH_CAPS` — the budget
 ```rust
 |ctx| async move {
     // Default parameters
-    let mut max_tokens = 4000;
-    let mut model = "gpt-4o";
+    let mut max_tokens: i64 = 4000;
 
     // Respect caps from budget policy
     if let Some(caps) = &ctx.caps {
@@ -265,8 +264,8 @@ Instead of a binary ALLOW/DENY, Cycles supports `ALLOW_WITH_CAPS` — the budget
         }
     }
 
-    let response = call_llm_with_params(model, max_tokens).await?;
-    Ok((response, Amount::tokens(response.usage)))
+    let response = call_llm("Summarize", max_tokens).await?;
+    Ok((response, Amount::tokens(max_tokens)))
 }
 ```
 
@@ -312,7 +311,7 @@ match resp.decision {
 | **Double-commit prevention** | Compile error (`self` consumed) | Runtime check | Runtime check (`finalized` flag) |
 | **Forgotten reservation** | Compiler warning (`#[must_use]`) | Silent (GC cleans up) | Silent (GC cleans up) |
 | **Drop cleanup** | Best-effort release via `tokio::spawn` | N/A | N/A |
-| **Context access** | `GuardContext` (owned, no lifetimes) | `get_cycles_context()` (thread-local) | `getCyclesContext()` (AsyncLocalStorage) |
+| **Context access** | `GuardContext` (owned, no lifetimes) | `get_cycles_context()` (contextvars) | `getCyclesContext()` (AsyncLocalStorage) |
 | **Async** | Native async/await | sync + async variants | async only |
 | **Zero dependencies** | No (reqwest, serde, tokio) | No (httpx, pydantic) | Yes (built-in fetch) |
 | **Wire format** | serde (zero mapper code) | Pydantic models | Manual mappers (380 lines) |
@@ -321,13 +320,13 @@ The Rust client's unique advantage is **compile-time lifecycle safety** — the 
 
 ## Get started
 
-Install:
+Add to your project:
 
 ```bash
 cargo add runcycles
 ```
 
-Full quickstart with server setup, API keys, and progressive examples:
+You'll need a running Cycles server with a tenant and API key. The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) sets up everything in under 5 minutes, or jump straight to the Rust-specific guide:
 
 - [Getting Started with the Rust Client](/quickstart/getting-started-with-the-rust-client) — installation through advanced patterns
 - [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles) — the protocol lifecycle in detail
