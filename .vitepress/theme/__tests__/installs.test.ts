@@ -10,6 +10,27 @@ function shouldUpdateCache(total: number, cached: number): boolean {
   return total > cached
 }
 
+// Mirrors the per-source high-water mark logic in installs.data.ts
+interface SourceCounts {
+  npm: number
+  pypi: number
+  ghcr: number
+  maven: number
+}
+
+interface InstallsCache extends SourceCounts {
+  total: number
+}
+
+function computeTotal(fetched: SourceCounts, cached: InstallsCache): number {
+  const npm = Math.max(fetched.npm, cached.npm)
+  const pypi = Math.max(fetched.pypi, cached.pypi)
+  const ghcr = Math.max(fetched.ghcr, cached.ghcr)
+  const maven = Math.max(fetched.maven, cached.maven)
+  const sum = npm + pypi + ghcr + maven
+  return Math.max(sum, cached.total)
+}
+
 describe('installs high-water-mark logic', () => {
   it('returns fetched when fetched > cached', () => {
     expect(highWaterMark(1000, 500)).toBe(1000)
@@ -61,5 +82,45 @@ describe('npm downloads aggregation', () => {
     const downloads = [100, 0, 300] // middle package failed
     const total = downloads.reduce((a, b) => a + b, 0)
     expect(total).toBe(400)
+  })
+})
+
+describe('per-source high-water marks', () => {
+  it('captures npm growth even when pypi drops', () => {
+    const cached: InstallsCache = { npm: 2000, pypi: 1286, ghcr: 0, maven: 0, total: 3286 }
+    const fetched: SourceCounts = { npm: 2200, pypi: 900, ghcr: 0, maven: 0 }
+    expect(computeTotal(fetched, cached)).toBe(3486) // npm grew by 200
+  })
+
+  it('preserves pypi peak when pypi rolling window decreases', () => {
+    const cached: InstallsCache = { npm: 2506, pypi: 1286, ghcr: 0, maven: 0, total: 3792 }
+    const fetched: SourceCounts = { npm: 2506, pypi: 900, ghcr: 0, maven: 0 }
+    expect(computeTotal(fetched, cached)).toBe(3792) // pypi stays at 1286
+  })
+
+  it('handles legacy cache format (no per-source fields)', () => {
+    // Legacy cache only has total, per-source fields default to 0
+    const cached: InstallsCache = { npm: 0, pypi: 0, ghcr: 0, maven: 0, total: 3286 }
+    const fetched: SourceCounts = { npm: 2506, pypi: 1090, ghcr: 0, maven: 0 }
+    expect(computeTotal(fetched, cached)).toBe(3596) // new sum exceeds old total
+  })
+
+  it('legacy cache floor prevents regression when APIs are partially down', () => {
+    const cached: InstallsCache = { npm: 0, pypi: 0, ghcr: 0, maven: 0, total: 3286 }
+    const fetched: SourceCounts = { npm: 2000, pypi: 500, ghcr: 0, maven: 0 }
+    expect(computeTotal(fetched, cached)).toBe(3286) // floor holds
+  })
+
+  it('all sources contribute independently to total', () => {
+    const cached: InstallsCache = { npm: 100, pypi: 200, ghcr: 50, maven: 30, total: 380 }
+    const fetched: SourceCounts = { npm: 150, pypi: 180, ghcr: 60, maven: 25 }
+    // npm: max(150,100)=150, pypi: max(180,200)=200, ghcr: max(60,50)=60, maven: max(25,30)=30
+    expect(computeTotal(fetched, cached)).toBe(440)
+  })
+
+  it('handles all APIs down gracefully', () => {
+    const cached: InstallsCache = { npm: 2506, pypi: 1090, ghcr: 0, maven: 0, total: 3596 }
+    const fetched: SourceCounts = { npm: 0, pypi: 0, ghcr: 0, maven: 0 }
+    expect(computeTotal(fetched, cached)).toBe(3596) // all cached values preserved
   })
 })
