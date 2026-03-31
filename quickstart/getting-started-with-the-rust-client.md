@@ -81,7 +81,7 @@ Requires Rust 1.88+. Dependencies (`reqwest`, `serde`, `tokio`) are installed au
 ## Configuration
 
 ```rust
-use runcycles::{CyclesClient, CyclesConfig};
+use runcycles::CyclesClient;
 
 let client = CyclesClient::builder(
     "cyc_live_...",        // from Admin Server — see tip above
