@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v5
 
@@ -53,17 +54,28 @@ jobs:
             JSON="{\"npm\":${NPM_HWM},\"pypi\":${PYPI_HWM},\"ghcr\":0,\"maven\":0,\"total\":${TOTAL},\"fetchedAt\":\"${NOW}\"}"
             echo "$JSON" > "$CACHE_FILE"
             echo "UPDATED=true" >> $GITHUB_ENV
-            echo "Updated: ${CACHED_TOTAL} → ${TOTAL}"
+            echo "Updated: ${CACHED_TOTAL} \u2192 ${TOTAL}"
           else
             echo "UPDATED=false" >> $GITHUB_ENV
             echo "No update needed: total=${TOTAL} <= cached=${CACHED_TOTAL}"
           fi
 
-      - name: Commit and push
+      - name: Create PR with updated count
         if: env.UPDATED == 'true'
         run: |
+          BRANCH="chore/update-install-count-$(date +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add .vitepress/theme/installs-cache.json
           git commit -m "chore: update install count"
-          git push
+          git push -u origin "$BRANCH"
+
+          # Create PR, or skip if one already exists for today
+          gh pr create \
+            --title "chore: update install count" \
+            --body "Automated daily update of download counters." \
+            --head "$BRANCH" \
+            --base main || echo "PR already exists, skipping"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
