@@ -35,23 +35,33 @@ jobs:
           done
           echo "pypi=$PYPI_TOTAL"
 
+          # crates.io packages
+          CRATES_TOTAL=0
+          for pkg in runcycles; do
+            COUNT=$(curl -sf -H 'User-Agent: runcycles-docs (https://github.com/runcycles/docs)' "https://crates.io/api/v1/crates/${pkg}" | jq '.crate.downloads // 0')
+            CRATES_TOTAL=$((CRATES_TOTAL + COUNT))
+          done
+          echo "crates=$CRATES_TOTAL"
+
           # Read per-source cached values
           CACHED_NPM=$(jq '.npm // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
           CACHED_PYPI=$(jq '.pypi // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
+          CACHED_CRATES=$(jq '.crates // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
           CACHED_TOTAL=$(jq '.total // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
-          echo "cached: npm=$CACHED_NPM pypi=$CACHED_PYPI total=$CACHED_TOTAL"
+          echo "cached: npm=$CACHED_NPM pypi=$CACHED_PYPI crates=$CACHED_CRATES total=$CACHED_TOTAL"
 
           # Per-source high-water marks
           NPM_HWM=$(( NPM_TOTAL > CACHED_NPM ? NPM_TOTAL : CACHED_NPM ))
           PYPI_HWM=$(( PYPI_TOTAL > CACHED_PYPI ? PYPI_TOTAL : CACHED_PYPI ))
-          SUM=$((NPM_HWM + PYPI_HWM))
+          CRATES_HWM=$(( CRATES_TOTAL > CACHED_CRATES ? CRATES_TOTAL : CACHED_CRATES ))
+          SUM=$((NPM_HWM + PYPI_HWM + CRATES_HWM))
           TOTAL=$(( SUM > CACHED_TOTAL ? SUM : CACHED_TOTAL ))
-          echo "hwm: npm=$NPM_HWM pypi=$PYPI_HWM total=$TOTAL"
+          echo "hwm: npm=$NPM_HWM pypi=$PYPI_HWM crates=$CRATES_HWM total=$TOTAL"
 
           # Update if any source grew
-          if [ "$NPM_HWM" -gt "$CACHED_NPM" ] || [ "$PYPI_HWM" -gt "$CACHED_PYPI" ] || [ "$TOTAL" -gt "$CACHED_TOTAL" ]; then
+          if [ "$NPM_HWM" -gt "$CACHED_NPM" ] || [ "$PYPI_HWM" -gt "$CACHED_PYPI" ] || [ "$CRATES_HWM" -gt "$CACHED_CRATES" ] || [ "$TOTAL" -gt "$CACHED_TOTAL" ]; then
             NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-            JSON="{\"npm\":${NPM_HWM},\"pypi\":${PYPI_HWM},\"ghcr\":0,\"maven\":0,\"total\":${TOTAL},\"fetchedAt\":\"${NOW}\"}"
+            JSON="{\"npm\":${NPM_HWM},\"pypi\":${PYPI_HWM},\"crates\":${CRATES_HWM},\"ghcr\":0,\"maven\":0,\"total\":${TOTAL},\"fetchedAt\":\"${NOW}\"}"
             echo "$JSON" > "$CACHE_FILE"
             echo "UPDATED=true" >> $GITHUB_ENV
             echo "Updated: ${CACHED_TOTAL} \u2192 ${TOTAL}"

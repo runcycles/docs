@@ -1,6 +1,6 @@
 /**
  * Build-time data loader that aggregates total installs across all
- * distribution channels: npm, PyPI, Maven Central, and GHCR.
+ * distribution channels: npm, PyPI, crates.io, Maven Central, and GHCR.
  *
  * Uses per-source high-water mark caches (installs-cache.json) so the
  * displayed number never decreases — even if an API is down or returns
@@ -22,6 +22,7 @@ export declare const data: InstallsData
 interface InstallsCache {
   npm: number
   pypi: number
+  crates: number
   ghcr: number
   maven: number
   total: number
@@ -37,13 +38,14 @@ function readCache(): InstallsCache {
     return {
       npm: raw.npm ?? 0,
       pypi: raw.pypi ?? 0,
+      crates: raw.crates ?? 0,
       ghcr: raw.ghcr ?? 0,
       maven: raw.maven ?? 0,
       total: raw.total ?? 0,
       fetchedAt: raw.fetchedAt ?? '',
     }
   } catch {
-    return { npm: 0, pypi: 0, ghcr: 0, maven: 0, total: 0, fetchedAt: '' }
+    return { npm: 0, pypi: 0, crates: 0, ghcr: 0, maven: 0, total: 0, fetchedAt: '' }
   }
 }
 
@@ -103,6 +105,30 @@ async function fetchPypiDownloads(): Promise<number> {
   return totals.reduce((a, b) => a + b, 0)
 }
 
+// ── crates.io ────────────────────────────────────────────────────────
+const CRATES_PACKAGES = [
+  'runcycles',
+]
+
+async function fetchCratesDownloads(): Promise<number> {
+  const totals = await Promise.all(
+    CRATES_PACKAGES.map(async (pkg) => {
+      try {
+        const res = await fetch(
+          `https://crates.io/api/v1/crates/${pkg}`,
+          { headers: { 'User-Agent': 'runcycles-docs (https://github.com/runcycles/docs)' } }
+        )
+        if (!res.ok) return 0
+        const json = await res.json() as { crate?: { downloads?: number } }
+        return json.crate?.downloads ?? 0
+      } catch {
+        return 0
+      }
+    })
+  )
+  return totals.reduce((a, b) => a + b, 0)
+}
+
 // ── GHCR (GitHub Container Registry) ─────────────────────────────────
 async function fetchGhcrPulls(): Promise<number> {
   // GitHub REST API doesn't expose container pull counts.
@@ -120,9 +146,10 @@ async function fetchMavenDownloads(): Promise<number> {
 // ── Loader ───────────────────────────────────────────────────────────
 export default {
   async load(): Promise<InstallsData> {
-    const [npmFetched, pypiFetched, ghcrFetched, mavenFetched] = await Promise.all([
+    const [npmFetched, pypiFetched, cratesFetched, ghcrFetched, mavenFetched] = await Promise.all([
       fetchNpmDownloads(),
       fetchPypiDownloads(),
+      fetchCratesDownloads(),
       fetchGhcrPulls(),
       fetchMavenDownloads(),
     ])
@@ -132,9 +159,10 @@ export default {
     // Per-source high-water marks: each source never decreases independently
     const npm = Math.max(npmFetched, cached.npm)
     const pypi = Math.max(pypiFetched, cached.pypi)
+    const crates = Math.max(cratesFetched, cached.crates)
     const ghcr = Math.max(ghcrFetched, cached.ghcr)
     const maven = Math.max(mavenFetched, cached.maven)
-    const sum = npm + pypi + ghcr + maven
+    const sum = npm + pypi + crates + ghcr + maven
 
     // Guard against legacy cache where total might exceed the sum of
     // per-source zeros (one-time migration from old {total}-only format)
@@ -142,14 +170,15 @@ export default {
 
     console.log(
       `[installs] npm=${npmFetched}(hwm:${npm}) pypi=${pypiFetched}(hwm:${pypi})` +
+      ` crates=${cratesFetched}(hwm:${crates})` +
       ` ghcr=${ghcrFetched} maven=${mavenFetched} total=${total} cached=${cached.total}`
     )
 
     const now = new Date().toISOString()
-    const newCache: InstallsCache = { npm, pypi, ghcr, maven, total, fetchedAt: now }
+    const newCache: InstallsCache = { npm, pypi, crates, ghcr, maven, total, fetchedAt: now }
 
     if (total > cached.total || npm > cached.npm || pypi > cached.pypi
-        || ghcr > cached.ghcr || maven > cached.maven) {
+        || crates > cached.crates || ghcr > cached.ghcr || maven > cached.maven) {
       writeCache(newCache)
     }
 
