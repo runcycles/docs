@@ -2,7 +2,7 @@
 title: "How to Add Budget and Action Guardrails to Rust AI Agents with Cycles"
 date: 2026-03-31
 author: "Cycles Team"
-tags: [rust, agents, engineering, costs, guide]
+tags: [rust, agents, engineering, costs, governance, guide]
 description: "Add budget and action authority to Rust AI agents — control spend, tool access, token limits, and step counts with compile-time safety."
 blog: true
 sidebar: false
@@ -149,7 +149,7 @@ guard.commit(
 
 Key safety properties:
 
-- The guard starts a background heartbeat that extends the reservation TTL every 30 seconds — your stream won't expire mid-response
+- The guard starts a background heartbeat that extends the reservation TTL at half the TTL interval — your stream won't expire mid-response
 - `guard.commit(self)` takes ownership — you can't accidentally commit twice (it's a compile error)
 - If a panic occurs and the guard is dropped, `Drop` spawns a best-effort release so budget isn't leaked
 
@@ -380,4 +380,3 @@ You'll need a running Cycles server with a tenant and API key. The [End-to-End T
 - [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles) — the protocol lifecycle in detail
 - [GitHub: runcycles/cycles-client-rust](https://github.com/runcycles/cycles-client-rust) — source, examples, AUDIT.md
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — graceful degradation strategies
-- [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — full stack setup with budget, tenant, and API key
