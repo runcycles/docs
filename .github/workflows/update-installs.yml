@@ -15,6 +15,8 @@ jobs:
 
       - name: Fetch download counts
         run: |
+          CACHE_FILE=".vitepress/theme/installs-cache.json"
+
           # npm packages
           TODAY=$(date +%Y-%m-%d)
           NPM_TOTAL=0
@@ -32,23 +34,29 @@ jobs:
           done
           echo "pypi=$PYPI_TOTAL"
 
-          FETCHED=$((NPM_TOTAL + PYPI_TOTAL))
-          echo "fetched=$FETCHED"
+          # Read per-source cached values
+          CACHED_NPM=$(jq '.npm // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
+          CACHED_PYPI=$(jq '.pypi // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
+          CACHED_TOTAL=$(jq '.total // 0' "$CACHE_FILE" 2>/dev/null || echo 0)
+          echo "cached: npm=$CACHED_NPM pypi=$CACHED_PYPI total=$CACHED_TOTAL"
 
-          # Read current cache
-          CACHED=$(jq '.total // 0' public/installs.json)
-          echo "cached=$CACHED"
+          # Per-source high-water marks
+          NPM_HWM=$(( NPM_TOTAL > CACHED_NPM ? NPM_TOTAL : CACHED_NPM ))
+          PYPI_HWM=$(( PYPI_TOTAL > CACHED_PYPI ? PYPI_TOTAL : CACHED_PYPI ))
+          SUM=$((NPM_HWM + PYPI_HWM))
+          TOTAL=$(( SUM > CACHED_TOTAL ? SUM : CACHED_TOTAL ))
+          echo "hwm: npm=$NPM_HWM pypi=$PYPI_HWM total=$TOTAL"
 
-          # High-water mark: only update if new total is higher
-          if [ "$FETCHED" -gt "$CACHED" ]; then
-            JSON="{\"total\":${FETCHED},\"fetchedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
-            echo "$JSON" > public/installs.json
-            echo "$JSON" > .vitepress/theme/installs-cache.json
+          # Update if any source grew
+          if [ "$NPM_HWM" -gt "$CACHED_NPM" ] || [ "$PYPI_HWM" -gt "$CACHED_PYPI" ] || [ "$TOTAL" -gt "$CACHED_TOTAL" ]; then
+            NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            JSON="{\"npm\":${NPM_HWM},\"pypi\":${PYPI_HWM},\"ghcr\":0,\"maven\":0,\"total\":${TOTAL},\"fetchedAt\":\"${NOW}\"}"
+            echo "$JSON" > "$CACHE_FILE"
             echo "UPDATED=true" >> $GITHUB_ENV
-            echo "Updated: ${CACHED} → ${FETCHED}"
+            echo "Updated: ${CACHED_TOTAL} → ${TOTAL}"
           else
             echo "UPDATED=false" >> $GITHUB_ENV
-            echo "No update needed: fetched=${FETCHED} <= cached=${CACHED}"
+            echo "No update needed: total=${TOTAL} <= cached=${CACHED_TOTAL}"
           fi
 
       - name: Commit and push
@@ -56,6 +64,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/installs.json .vitepress/theme/installs-cache.json
+          git add .vitepress/theme/installs-cache.json
           git commit -m "chore: update install count"
           git push
