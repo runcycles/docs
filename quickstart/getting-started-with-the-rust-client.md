@@ -118,15 +118,15 @@ let reply = with_cycles( // [!code focus]
         .subject(Subject { tenant: Some("acme-corp".into()), ..Default::default() }),
     |ctx| async move { // [!code focus]
         // ctx.caps, ctx.decision, ctx.reservation_id available
-        let result = call_llm("Hello").await;
-        let actual_tokens = result.usage.total_tokens;
-        Ok((result.text, Amount::tokens(actual_tokens))) // [!code focus]
+        let response = call_llm("Hello").await;
+        let actual_tokens = 42; // from your LLM response usage stats
+        Ok((response, Amount::tokens(actual_tokens))) // [!code focus]
     },
 ).await?;
 // On success → auto-commits actual_tokens. On error → auto-releases.
 ```
 
-This reserves 1000 tokens before the closure runs, then commits the actual usage afterward. If the closure returns `Err`, the reservation is released automatically.
+The closure returns `Ok((result, actual_cost))` — a tuple of your return value and the actual `Amount` spent. If the closure returns `Err`, the reservation is released automatically.
 
 ### `WithCyclesConfig` parameters
 
