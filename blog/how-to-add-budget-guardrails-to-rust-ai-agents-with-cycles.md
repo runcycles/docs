@@ -1,21 +1,26 @@
 ---
-title: "How to Add Budget Guardrails to Rust AI Agents with Cycles"
+title: "How to Add Budget and Action Guardrails to Rust AI Agents with Cycles"
 date: 2026-03-31
 author: "Cycles Team"
 tags: [rust, agents, engineering, costs, guide]
-description: "Add budget enforcement to Rust AI agents with the runcycles crate — automatic lifecycle, RAII guards for streaming, and compile-time safety."
+description: "Add budget and action authority to Rust AI agents — control spend, tool access, token limits, and step counts with compile-time safety."
 blog: true
 sidebar: false
 featured: true
 ---
 
-# How to Add Budget Guardrails to Rust AI Agents with Cycles
+# How to Add Budget and Action Guardrails to Rust AI Agents with Cycles
 
 A retry loop on a Rust agent service hit a transient 503 from the LLM provider. The exponential backoff reset. The loop retried — with a fresh prompt each time. Three minutes and 47 retries later, the team got a $200 invoice for a single user request. The function worked exactly as designed. The budget was the thing nobody designed.
 
 <!-- more -->
 
-This is the gap that Cycles fills: a reservation-based budget authority that sits between your agent code and the LLM call, enforcing spend limits before the expensive operation happens — not after.
+This is the gap that Cycles fills. It's not just a billing meter — it's a **runtime authority** for both **budget** and **action control**. Before an agent calls an LLM, Cycles answers two questions:
+
+1. **Budget:** Does this agent have enough budget for this operation?
+2. **Action:** Is this agent *allowed* to take this action right now? (Which tools? How many tokens? How many steps remaining? Is there a cooldown?)
+
+The server returns either ALLOW, ALLOW_WITH_CAPS (proceed but with constraints), or DENY — and the client enforces it before the expensive call happens.
 
 The `runcycles` crate brings this to Rust with an API designed around ownership semantics and compile-time safety. This post shows how to integrate it into existing Rust agent code at three levels of control.
 
@@ -244,32 +249,75 @@ match with_cycles(&client, config, |ctx| async move {
 
 The error type is an enum, not an exception hierarchy — you get exhaustive matching for free.
 
-## Caps: soft-landing instead of hard denial
+## Action authority: caps, tool control, and step limits
 
-Instead of a binary ALLOW/DENY, Cycles supports `ALLOW_WITH_CAPS` — the budget exists but policy constraints apply. This lets you degrade gracefully instead of failing:
+Budget is only half the story. Cycles also governs **what an agent can do** through caps — runtime constraints returned alongside the budget decision. When the server returns `ALLOW_WITH_CAPS`, it's saying: "you have budget, but here are the rules."
+
+Caps include:
+
+| Cap | What it controls | Example |
+|-----|-----------------|---------|
+| `max_tokens` | Maximum tokens for this operation | Reduce from 4000 → 500 as budget runs low |
+| `max_steps_remaining` | How many more agent steps are allowed | Prevent infinite tool-call loops |
+| `tool_allowlist` | Only these tools may be used | `["web_search"]` — block code execution |
+| `tool_denylist` | These tools are blocked | `["shell_exec", "file_write"]` — safety guardrails |
+| `cooldown_ms` | Minimum wait before next action | Rate-limit an aggressive agent |
+
+Here's how to build a caps-aware agent in Rust:
 
 ```rust
-|ctx| async move {
-    // Default parameters
-    let mut max_tokens: i64 = 4000;
+let reply = with_cycles(
+    &client,
+    WithCyclesConfig::new(Amount::tokens(4000))
+        .action("llm.completion", "gpt-4o")
+        .subject(Subject {
+            tenant: Some("acme-corp".into()),
+            agent: Some("research-bot".into()),
+            ..Default::default()
+        }),
+    |ctx| async move {
+        let mut max_tokens: i64 = 4000;
+        let mut use_web_search = true;
 
-    // Respect caps from budget policy
-    if let Some(caps) = &ctx.caps {
-        if let Some(cap) = caps.max_tokens {
-            max_tokens = cap.min(max_tokens);
-        }
-        // Policy might restrict expensive tools
-        if !caps.is_tool_allowed("web_search") {
-            // Skip web search, use cached data instead
-        }
-    }
+        // Respect action authority constraints
+        if let Some(caps) = &ctx.caps {
+            // Token limit — reduce output length as budget gets low
+            if let Some(cap) = caps.max_tokens {
+                max_tokens = cap.min(max_tokens);
+            }
 
-    let response = call_llm("Summarize", max_tokens).await?;
-    Ok((response, Amount::tokens(max_tokens)))
-}
+            // Tool restrictions — policy blocks certain capabilities
+            if !caps.is_tool_allowed("web_search") {
+                use_web_search = false; // fall back to cached data
+            }
+
+            // Step limit — agent is near its operation count ceiling
+            if let Some(steps) = caps.max_steps_remaining {
+                if steps <= 1 {
+                    // Last allowed step — skip optional work, just summarize
+                    max_tokens = max_tokens.min(500);
+                }
+            }
+
+            // Cooldown — wait before proceeding
+            if let Some(cooldown) = caps.cooldown_ms {
+                tokio::time::sleep(std::time::Duration::from_millis(cooldown as u64)).await;
+            }
+        }
+
+        let context = if use_web_search {
+            web_search("latest findings").await?
+        } else {
+            "Using cached context".to_string()
+        };
+
+        let response = call_llm(&context, max_tokens).await?;
+        Ok((response, Amount::tokens(max_tokens)))
+    },
+).await?;
 ```
 
-The server decides the caps based on remaining budget, policy rules, or rate limits. Your code just checks and adapts.
+This is the difference between a budget meter and a runtime authority. A meter tells you what happened. Cycles tells the agent what it's *allowed to do* — before it acts.
 
 ## Shadow mode: deploy without risk
 
