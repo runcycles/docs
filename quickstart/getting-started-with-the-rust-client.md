@@ -423,4 +423,4 @@ For each `with_cycles()` call or `ReservationGuard`:
 
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — general error handling patterns
 - [API Reference](/api/) — interactive endpoint documentation
-- [Protocol Specification](/protocol/cycles-protocol) — the OpenAPI spec that all clients implement
+- [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles) — the core protocol lifecycle
