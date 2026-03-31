@@ -1,7 +1,7 @@
 ---
 title: "How to Add Budget and Action Guardrails to Rust AI Agents with Cycles"
 date: 2026-03-31
-author: "Cycles Team"
+author: Albert Mavashev
 tags: [rust, agents, engineering, costs, governance, guide]
 description: "Add budget and action authority to Rust AI agents — control spend, tool access, token limits, and step counts with compile-time safety."
 blog: true
