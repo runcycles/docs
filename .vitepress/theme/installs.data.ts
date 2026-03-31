@@ -2,8 +2,11 @@
  * Build-time data loader that aggregates total installs across all
  * distribution channels: npm, PyPI, Maven Central, and GHCR.
  *
- * Uses a high-water mark cache (installs-cache.json) so the displayed
- * number never decreases — even if an API is down or returns partial data.
+ * Uses per-source high-water mark caches (installs-cache.json) so the
+ * displayed number never decreases — even if an API is down or returns
+ * partial data. Each source is tracked independently to prevent a
+ * rolling-window source (like PyPI last_month) from masking growth in
+ * an all-time source (like npm).
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -16,20 +19,37 @@ export interface InstallsData {
 
 export declare const data: InstallsData
 
-const CACHE_PATH = resolve(process.cwd(), '.vitepress/theme/installs-cache.json')
+interface InstallsCache {
+  npm: number
+  pypi: number
+  ghcr: number
+  maven: number
+  total: number
+  fetchedAt: string
+}
 
-function readCache(): number {
+const CACHE_PATH = resolve(process.cwd(), '.vitepress/theme/installs-cache.json')
+const PUBLIC_PATH = resolve(process.cwd(), 'public/installs.json')
+
+function readCache(): InstallsCache {
   try {
-    const raw = readFileSync(CACHE_PATH, 'utf-8')
-    return JSON.parse(raw).total ?? 0
+    const raw = JSON.parse(readFileSync(CACHE_PATH, 'utf-8'))
+    return {
+      npm: raw.npm ?? 0,
+      pypi: raw.pypi ?? 0,
+      ghcr: raw.ghcr ?? 0,
+      maven: raw.maven ?? 0,
+      total: raw.total ?? 0,
+      fetchedAt: raw.fetchedAt ?? '',
+    }
   } catch {
-    return 0
+    return { npm: 0, pypi: 0, ghcr: 0, maven: 0, total: 0, fetchedAt: '' }
   }
 }
 
-function writeCache(total: number): void {
+function writeCache(data: InstallsCache): void {
   try {
-    writeFileSync(CACHE_PATH, JSON.stringify({ total, fetchedAt: new Date().toISOString() }) + '\n')
+    writeFileSync(CACHE_PATH, JSON.stringify(data) + '\n')
   } catch { /* non-critical — CI environments may have read-only source dirs */ }
 }
 
@@ -100,20 +120,44 @@ async function fetchMavenDownloads(): Promise<number> {
 // ── Loader ───────────────────────────────────────────────────────────
 export default {
   async load(): Promise<InstallsData> {
-    const [npm, pypi, ghcr, maven] = await Promise.all([
+    const [npmFetched, pypiFetched, ghcrFetched, mavenFetched] = await Promise.all([
       fetchNpmDownloads(),
       fetchPypiDownloads(),
       fetchGhcrPulls(),
       fetchMavenDownloads(),
     ])
-    const fetched = npm + pypi + ghcr + maven
+
     const cached = readCache()
-    const total = Math.max(fetched, cached)
-    console.log(`[installs] npm=${npm} pypi=${pypi} ghcr=${ghcr} maven=${maven} fetched=${fetched} cached=${cached} total=${total}`)
-    if (total > cached) writeCache(total)
-    return {
-      total,
-      fetchedAt: new Date().toISOString(),
+
+    // Per-source high-water marks: each source never decreases independently
+    const npm = Math.max(npmFetched, cached.npm)
+    const pypi = Math.max(pypiFetched, cached.pypi)
+    const ghcr = Math.max(ghcrFetched, cached.ghcr)
+    const maven = Math.max(mavenFetched, cached.maven)
+    const sum = npm + pypi + ghcr + maven
+
+    // Guard against legacy cache where total might exceed the sum of
+    // per-source zeros (one-time migration from old {total}-only format)
+    const total = Math.max(sum, cached.total)
+
+    console.log(
+      `[installs] npm=${npmFetched}(hwm:${npm}) pypi=${pypiFetched}(hwm:${pypi})` +
+      ` ghcr=${ghcrFetched} maven=${mavenFetched} total=${total} cached=${cached.total}`
+    )
+
+    const now = new Date().toISOString()
+    const newCache: InstallsCache = { npm, pypi, ghcr, maven, total, fetchedAt: now }
+
+    if (total > cached.total || npm > cached.npm || pypi > cached.pypi
+        || ghcr > cached.ghcr || maven > cached.maven) {
+      writeCache(newCache)
     }
+
+    // Write public/installs.json for runtime refresh in HomeSocialProof.vue
+    try {
+      writeFileSync(PUBLIC_PATH, JSON.stringify({ total, fetchedAt: now }) + '\n')
+    } catch { /* non-critical */ }
+
+    return { total, fetchedAt: now }
   },
 }
