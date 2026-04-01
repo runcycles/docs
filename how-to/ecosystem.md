@@ -18,9 +18,10 @@ Integrate Cycles runtime authority with ChatGPT, GPT-4, GPT-4o, and other OpenAI
 
 ### Anthropic
 
-Use Cycles with Claude models to set spending limits on autonomous agent workflows powered by Anthropic's API.
+Use Cycles with Claude models to set spending limits on autonomous agent workflows powered by Anthropic's API. Available in both Python and TypeScript.
 
-- [Anthropic integration guide](/how-to/integrating-cycles-with-anthropic)
+- [Anthropic integration guide (Python)](/how-to/integrating-cycles-with-anthropic)
+- [Anthropic integration guide (TypeScript)](/how-to/integrating-cycles-with-anthropic-typescript)
 - [anthropic.com](https://anthropic.com)
 
 ### Google Gemini
@@ -110,7 +111,21 @@ Budget governance for AnyAgent's unified agent interface. A single callback cove
 - [AnyAgent integration guide](/how-to/integrating-cycles-with-anyagent)
 - [mozilla-ai.github.io/any-agent](https://mozilla-ai.github.io/any-agent/)
 
+### AutoGen
+
+Budget governance for Microsoft AutoGen multi-agent workflows. Wrap the model client with Cycles reservations for per-call and per-agent cost control across teams, swarms, and graph flows.
+
+- [AutoGen integration guide](/how-to/integrating-cycles-with-autogen)
+- [microsoft.github.io/autogen](https://microsoft.github.io/autogen/)
+
 ## Web Frameworks
+
+### Next.js
+
+Add budget governance to Next.js applications with route-level budget guards, server actions, and client-side error handling. Works with any LLM provider.
+
+- [Next.js integration guide](/how-to/integrating-cycles-with-nextjs)
+- [nextjs.org](https://nextjs.org)
 
 ### Express.js
 
@@ -118,6 +133,13 @@ Add Cycles middleware to your Express.js API to enforce runtime authority on any
 
 - [Express.js integration guide](/how-to/integrating-cycles-with-express)
 - [expressjs.com](https://expressjs.com)
+
+### Django
+
+Add Cycles middleware to Django applications for budget-checked views, per-tenant isolation, and preflight budget guards.
+
+- [Django integration guide](/how-to/integrating-cycles-with-django)
+- [djangoproject.com](https://www.djangoproject.com)
 
 ### FastAPI
 

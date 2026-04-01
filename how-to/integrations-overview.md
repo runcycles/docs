@@ -13,7 +13,8 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 |-------------|----------|-----------|---------|
 | **LLM Providers** | | | |
 | [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
-| [Anthropic](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
+| [Anthropic (Python)](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
+| [Anthropic (TypeScript)](/how-to/integrating-cycles-with-anthropic-typescript) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Ollama / Local LLMs](/how-to/integrating-cycles-with-ollama) | Python / TypeScript | — | Decorator / `withCycles` |
@@ -27,12 +28,15 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [CrewAI](/how-to/integrating-cycles-with-crewai) | Python | — | Decorator |
 | [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai) | Python | — | Decorator |
 | [AnyAgent](/how-to/integrating-cycles-with-anyagent) | Python | — | Callback (lifecycle hooks) |
+| [AutoGen](/how-to/integrating-cycles-with-autogen) | Python | — | Model client wrapper |
 | **Agent Platforms** | | | |
 | [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
 | [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) | Python | — | RunHooks (lifecycle hooks) |
 | [OpenClaw](/how-to/integrating-cycles-with-openclaw) | TypeScript | Yes | Plugin (lifecycle hooks) |
 | **Web Frameworks** | | | |
+| [Next.js](/how-to/integrating-cycles-with-nextjs) | TypeScript | Yes | `withCycles` / Middleware |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
+| [Django](/how-to/integrating-cycles-with-django) | Python | — | Middleware / Decorator |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
 
 ## Integration patterns
