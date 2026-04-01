@@ -26,6 +26,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) | Python | — | Decorator |
 | [CrewAI](/how-to/integrating-cycles-with-crewai) | Python | — | Decorator |
 | [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai) | Python | — | Decorator |
+| [AnyAgent](/how-to/integrating-cycles-with-anyagent) | Python | — | Callback (lifecycle hooks) |
 | **Agent Platforms** | | | |
 | [MCP Server](/how-to/integrating-cycles-with-mcp) | TypeScript (Node.js) | — | MCP tools |
 | [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) | Python | — | RunHooks (lifecycle hooks) |

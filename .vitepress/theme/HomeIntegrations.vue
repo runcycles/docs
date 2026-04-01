@@ -19,6 +19,7 @@ const integrations = [
   { name: 'LlamaIndex', icon: pythonPath, link: '/how-to/integrating-cycles-with-llamaindex' },
   { name: 'CrewAI', icon: pythonPath, link: '/how-to/integrating-cycles-with-crewai' },
   { name: 'Pydantic AI', icon: pythonPath, link: '/how-to/integrating-cycles-with-pydantic-ai' },
+  { name: 'AnyAgent', icon: pythonPath, link: '/how-to/integrating-cycles-with-anyagent' },
   { name: 'Ollama', icon: pythonPath, link: '/how-to/integrating-cycles-with-ollama' },
   { name: 'Express', icon: typescriptPath, link: '/how-to/integrating-cycles-with-express' },
   { name: 'FastAPI', icon: pythonPath, link: '/how-to/integrating-cycles-with-fastapi' },
