@@ -43,7 +43,7 @@ New event-driven observability system spanning all three services.
 - Delivery keys: 14-day Redis TTL (configurable via `DELIVERY_TTL_DAYS`)
 - ZSET index cleanup: hourly via RetentionCleanupService
 
-**Testing:** 513 tests across 3 services, all 95%+ coverage. E2E verified with 12 event types.
+**Testing:** 530 tests across 3 services (events: 114, admin: 319, server: 97), all 95%+ coverage. Full-stack E2E test (23 assertions) verified across all services via Docker.
 
 ---
 
