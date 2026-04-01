@@ -264,6 +264,7 @@ With this approach, each node function gets a single reservation for the entire 
 LangGraph conditional edges can route based on budget availability. Use the Cycles client's preflight `decide` call to check whether budget is available before choosing the next node:
 
 ```python
+import uuid
 from langgraph.graph import StateGraph, START, END, MessagesState
 from runcycles import (
     CyclesClient, CyclesConfig, DecisionRequest,
@@ -275,7 +276,7 @@ client = CyclesClient(CyclesConfig.from_env())
 def should_continue(state: MessagesState) -> str:
     """Route to 'refine' if budget allows, otherwise go to 'summarize'."""
     response = client.decide(DecisionRequest(
-        idempotency_key=f"decide-refine-{id(state)}",
+        idempotency_key=f"decide-{uuid.uuid4()}",
         subject=Subject(tenant="acme", workflow="pipeline"),
         action=Action(kind="llm.completion", name="gpt-4o"),
         estimate=Amount(unit=Unit.USD_MICROCENTS, amount=3_000_000),
