@@ -261,20 +261,28 @@ With this approach, each node function gets a single reservation for the entire 
 
 ## Conditional edges with budget checks
 
-LangGraph conditional edges can route based on budget availability. Use the Cycles client to check budget before choosing the next node:
+LangGraph conditional edges can route based on budget availability. Use the Cycles client's preflight `decide` call to check whether budget is available before choosing the next node:
 
 ```python
 from langgraph.graph import StateGraph, START, END, MessagesState
-from runcycles import CyclesClient, CyclesConfig, Subject, Amount, Unit
+from runcycles import (
+    CyclesClient, CyclesConfig, DecisionRequest,
+    Subject, Action, Amount, Unit,
+)
 
 client = CyclesClient(CyclesConfig.from_env())
 
 def should_continue(state: MessagesState) -> str:
     """Route to 'refine' if budget allows, otherwise go to 'summarize'."""
-    balance = client.get_balance(Subject(tenant="acme", workflow="pipeline"))
-    if balance.is_success:
-        remaining = balance.get_body_attribute("remaining")
-        if remaining and remaining.get("amount", 0) > 1_000_000:
+    response = client.decide(DecisionRequest(
+        idempotency_key=f"decide-refine-{id(state)}",
+        subject=Subject(tenant="acme", workflow="pipeline"),
+        action=Action(kind="llm.completion", name="gpt-4o"),
+        estimate=Amount(unit=Unit.USD_MICROCENTS, amount=3_000_000),
+    ))
+    if response.is_success:
+        decision = response.get_body_attribute("decision")
+        if decision == "ALLOW":
             return "refine"
     return "summarize"
 
@@ -289,7 +297,7 @@ graph.add_edge("summarize", END)
 app = graph.compile()
 ```
 
-This pattern lets the graph adapt its execution path based on remaining budget — running more expensive refinement steps only when budget permits, and falling back to cheaper summarization otherwise.
+The `decide` call is a lightweight preflight check — it returns `"ALLOW"` or `"DENY"` without creating a reservation. This lets the graph skip expensive refinement steps when budget is low and fall back to cheaper summarization.
 
 ## Tool-calling agent graph
 
@@ -344,13 +352,13 @@ except BudgetExceededError:
     result = {"messages": [AIMessage(content="Budget limit reached. Try again later.")]}
 ```
 
-For multi-node graphs where partial completion is acceptable, handle errors within individual node functions:
+For multi-node graphs where partial completion is acceptable, use the callback handler approach (not the `@cycles` decorator) so you can catch the error inside the node function. With `@cycles`, the error is raised **before** the function body executes, so it cannot be caught inside:
 
 ```python
-@cycles(estimate=3_000_000, action_kind="llm.completion", action_name="research-node")
+# Callback handler approach — error raised during llm.invoke(), catchable inside the node
 def researcher(state: MessagesState) -> dict:
     try:
-        result = llm.invoke(state["messages"])
+        result = researcher_llm.invoke(state["messages"])
         return {"messages": [result]}
     except BudgetExceededError:
         return {"messages": [AIMessage(content="Research skipped — budget exhausted.")]}
@@ -373,7 +381,7 @@ You can combine approaches — for example, use per-node callback handlers for L
 
 - **Callback handler works in graph nodes.** The `CyclesBudgetHandler` from the LangChain integration works without modification inside LangGraph nodes.
 - **Per-node scoping with separate handlers.** Create handlers with different `agent` values to track and limit costs per graph node independently.
-- **Conditional edges enable budget-aware routing.** Check remaining budget to skip expensive nodes or choose cheaper alternatives.
+- **Conditional edges enable budget-aware routing.** Use `client.decide()` preflight checks to skip expensive nodes or choose cheaper alternatives.
 - **ReAct agents are automatically covered.** Tool-calling loops created with `create_react_agent` get budget-checked on every LLM turn.
 - **Errors propagate cleanly.** `BudgetExceededError` raised inside a node stops the graph, or can be caught within the node for graceful degradation.
 
