@@ -249,6 +249,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { text: 'Choosing the Right Overage Policy', link: '/how-to/choosing-the-right-overage-policy' },
+                { text: 'Multi-Tenant SaaS Guide', link: '/how-to/multi-tenant-saas-with-cycles', badge: { text: 'New', type: 'tip' } },
                 { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
                 { text: 'Multi-Agent Shared Budgets', link: '/how-to/multi-agent-shared-workspace-budget-patterns' },
                 { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
