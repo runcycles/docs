@@ -197,11 +197,11 @@ export default defineConfig({
           text: 'Quickstart',
           items: [
             { text: 'What is Cycles?', link: '/quickstart/what-is-cycles' },
-            { text: 'End-to-End Tutorial', link: '/quickstart/end-to-end-tutorial', badge: { text: 'Start Here', type: 'tip' } },
+            { text: 'End-to-End Tutorial', link: '/quickstart/end-to-end-tutorial' },
             { text: 'Add to a Python App', link: '/quickstart/getting-started-with-the-python-client' },
             { text: 'Add to a TypeScript App', link: '/quickstart/getting-started-with-the-typescript-client' },
             { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
-            { text: 'Add to a Rust App', link: '/quickstart/getting-started-with-the-rust-client', badge: { text: 'New', type: 'tip' } },
+            { text: 'Add to a Rust App', link: '/quickstart/getting-started-with-the-rust-client' },
             { text: 'Add to Claude / Cursor / Windsurf', link: '/quickstart/getting-started-with-the-mcp-server' },
             { text: 'Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
             { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
@@ -249,7 +249,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { text: 'Choosing the Right Overage Policy', link: '/how-to/choosing-the-right-overage-policy' },
-                { text: 'Multi-Tenant SaaS Guide', link: '/how-to/multi-tenant-saas-with-cycles', badge: { text: 'New', type: 'tip' } },
+                { text: 'Multi-Tenant SaaS Guide', link: '/how-to/multi-tenant-saas-with-cycles' },
                 { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
                 { text: 'Multi-Agent Shared Budgets', link: '/how-to/multi-agent-shared-workspace-budget-patterns' },
                 { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
@@ -290,7 +290,7 @@ export default defineConfig({
           text: 'Integrations',
           collapsed: true,
           items: [
-            { text: 'Ecosystem', link: '/how-to/ecosystem', badge: { text: 'New', type: 'tip' } },
+            { text: 'Ecosystem', link: '/how-to/ecosystem' },
             { text: 'Overview', link: '/how-to/integrations-overview' },
             {
               text: 'LLM Providers',
@@ -298,10 +298,10 @@ export default defineConfig({
               items: [
                 { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
                 { text: 'Anthropic (Python)', link: '/how-to/integrating-cycles-with-anthropic' },
-                { text: 'Anthropic (TypeScript)', link: '/how-to/integrating-cycles-with-anthropic-typescript', badge: { text: 'New', type: 'tip' } },
+                { text: 'Anthropic (TypeScript)', link: '/how-to/integrating-cycles-with-anthropic-typescript' },
                 { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
                 { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
-                { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama', badge: { text: 'New', type: 'tip' } },
+                { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama' },
               ]
             },
             {
@@ -310,14 +310,14 @@ export default defineConfig({
               items: [
                 { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
                 { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
-                { text: 'LangGraph', link: '/how-to/integrating-cycles-with-langgraph', badge: { text: 'New', type: 'tip' } },
+                { text: 'LangGraph', link: '/how-to/integrating-cycles-with-langgraph' },
                 { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
-                { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai', badge: { text: 'New', type: 'tip' } },
-                { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex', badge: { text: 'New', type: 'tip' } },
-                { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai', badge: { text: 'New', type: 'tip' } },
-                { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai', badge: { text: 'New', type: 'tip' } },
-                { text: 'AnyAgent', link: '/how-to/integrating-cycles-with-anyagent', badge: { text: 'New', type: 'tip' } },
-                { text: 'AutoGen', link: '/how-to/integrating-cycles-with-autogen', badge: { text: 'New', type: 'tip' } },
+                { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai' },
+                { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex' },
+                { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai' },
+                { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai' },
+                { text: 'AnyAgent', link: '/how-to/integrating-cycles-with-anyagent' },
+                { text: 'AutoGen', link: '/how-to/integrating-cycles-with-autogen' },
               ]
             },
             {
@@ -325,7 +325,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
-                { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents', badge: { text: 'New', type: 'tip' } },
+                { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents' },
                 { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
               ]
             },
@@ -333,9 +333,9 @@ export default defineConfig({
               text: 'Web Frameworks',
               collapsed: true,
               items: [
-                { text: 'Next.js', link: '/how-to/integrating-cycles-with-nextjs', badge: { text: 'New', type: 'tip' } },
+                { text: 'Next.js', link: '/how-to/integrating-cycles-with-nextjs' },
                 { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
-                { text: 'Django', link: '/how-to/integrating-cycles-with-django', badge: { text: 'New', type: 'tip' } },
+                { text: 'Django', link: '/how-to/integrating-cycles-with-django' },
                 { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
               ]
             },
@@ -346,7 +346,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'API Reference (Manual)', link: '/protocol/api-reference-for-the-cycles-protocol' },
-            { text: 'API Reference (Interactive)', link: '/api/', badge: { text: 'Interactive', type: 'info' } },
+            { text: 'API Reference (Interactive)', link: '/api/' },
             { text: 'Reserve / Commit Lifecycle', link: '/protocol/how-reserve-commit-works-in-cycles' },
             { text: 'Authentication and Tenancy', link: '/protocol/authentication-tenancy-and-api-keys-in-cycles' },
             { text: 'Scope Derivation', link: '/protocol/how-scope-derivation-works-in-cycles' },
