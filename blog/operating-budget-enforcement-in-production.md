@@ -62,9 +62,15 @@ curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reser
 
 ### Step 2: Check the budget
 
+The runtime server (port 7878) and admin server (port 7979) both expose `/v1/balances` but with different query parameter styles. Use whichever is available in your environment:
+
 ```bash
-# Runtime server (protocol spec) — uses individual subject params
+# Runtime server — protocol spec uses individual subject params
 curl "http://localhost:7878/v1/balances?tenant=acme-corp&workspace=prod" \
+  -H "X-Cycles-API-Key: $API_KEY"
+
+# Admin server — governance spec uses scope_prefix
+curl "http://localhost:7979/v1/admin/budgets?scope_prefix=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
   -H "X-Cycles-API-Key: $API_KEY"
 ```
 
