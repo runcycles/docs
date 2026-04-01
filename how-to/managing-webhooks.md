@@ -11,16 +11,16 @@ This guide covers the full webhook lifecycle: creating subscriptions, testing co
 
 ### Admin subscription
 
-Required fields: `url` and `event_types` (at least one event type). All other fields are optional — the server provides sensible defaults.
+Required fields: `url` and `event_types` (at least one event type). Add `?tenant_id=acme-corp` to scope the subscription to a specific tenant; omit for system-wide subscriptions (all tenants). All other fields are optional — the server provides sensible defaults (`signing_secret` is auto-generated if omitted).
 
 ```bash
-curl -X POST http://localhost:7979/v1/admin/webhooks \
+# Tenant-scoped subscription (receives events for acme-corp only)
+curl -X POST 'http://localhost:7979/v1/admin/webhooks?tenant_id=acme-corp' \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-endpoint.example.com/cycles-webhook",
     "event_types": ["budget.exhausted", "budget.over_limit_entered", "reservation.denied"],
-    "signing_secret": "your-secret-here",
     "retry_policy": {
       "max_retries": 5,
       "initial_delay_ms": 1000,
