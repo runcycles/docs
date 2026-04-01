@@ -63,6 +63,7 @@ curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reser
 ### Step 2: Check the budget
 
 ```bash
+# Runtime server (protocol spec) — uses individual subject params
 curl "http://localhost:7878/v1/balances?tenant=acme-corp&workspace=prod" \
   -H "X-Cycles-API-Key: $API_KEY"
 ```
@@ -112,7 +113,7 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp
 # Agents will automatically succeed on next attempt — no restart needed
 ```
 
-**Time to resolution:** Under 60 seconds if you have the admin key ready.
+**Time to resolution:** Under 60 seconds if you have the API key ready.
 
 ### Scenario B: Over-limit — debt exceeds overdraft
 
@@ -204,7 +205,7 @@ Budget enforcement works best when budgets are calibrated to actual workloads. H
 
 1. **Start at 2x expected cost.** Over-allocate on day one. You can always reduce later. Under-allocation on a new workload causes immediate agent failures.
 
-2. **Use shadow mode for the first week.** Deploy with `dry_run: true` on reservations. This logs what *would* have been denied without actually blocking agents. Review denial events to tune budgets before enforcing.
+2. **Use shadow mode for the first week.** Set [`dry_run: true`](/protocol/dry-run-shadow-mode-evaluation-in-cycles) on reservation requests. The server evaluates the budget decision but doesn't actually reserve funds, so agents are never blocked. Review the decisions to tune budgets before enforcing.
 
 3. **Set overdraft_limit to 10-20% of allocation.** This handles burst variance without blocking agents during normal traffic spikes. A $100 budget with $15 overdraft tolerates short bursts without hitting over-limit.
 
