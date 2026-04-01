@@ -1,7 +1,7 @@
 ---
 title: "When Budget Enforcement Fires: An Operator's Guide to Cycles in Production"
 date: 2026-04-01
-author: "Albert Mavashev"
+author: Albert Mavashev
 tags: [operations, incident-response, production, observability]
 description: "What to do when reservation.denied fires at 2am. Diagnostic decision trees, emergency playbooks, and metrics that predict budget incidents."
 blog: true
