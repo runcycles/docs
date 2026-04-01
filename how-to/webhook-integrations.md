@@ -601,9 +601,9 @@ async def forward_to_datadog(request: Request):
     return {"ok": True}
 ```
 
-### Grafana annotations (via Datadog)
+### Event overlays in Datadog
 
-Budget events posted to Datadog automatically appear as overlays on Datadog dashboards. Use the `tags` for filtering — e.g., show only `budget.exhausted` events on your cost dashboard.
+Budget events posted via the Events API appear in Datadog's [Events Explorer](https://docs.datadoghq.com/service_management/events/explorer/) and can be overlaid on Datadog dashboards. Use `tags` for filtering — e.g., show only `budget.exhausted` events on your cost dashboard.
 
 ## Integration: Microsoft Teams
 
