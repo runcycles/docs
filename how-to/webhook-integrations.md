@@ -371,6 +371,7 @@ const EMOJI = {
   'budget.over_limit_entered': ':no_entry:',
   'budget.threshold_crossed': ':warning:',
   'budget.funded': ':money_with_wings:',
+  'reservation.denied': ':no_entry:',
   'tenant.suspended': ':pause_button:',
   'tenant.closed': ':stop_sign:',
 };
