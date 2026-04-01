@@ -41,7 +41,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.1
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -51,7 +51,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server:0.1.25.1
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -61,7 +61,7 @@ services:
       redis: { condition: service_healthy }
   # Optional: webhook event delivery service (port 7980)
   cycles-events:
-    image: ghcr.io/runcycles/cycles-server-events:latest
+    image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
     ports: ["7980:7980"]
     environment:
       REDIS_HOST: redis
@@ -140,27 +140,34 @@ echo "  API key:        $API_KEY"
 
 ## What you are deploying
 
-A complete Cycles deployment has three components that share a single Redis instance:
+A complete Cycles deployment has four components that share a single Redis instance:
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                       Your Application                        │
-│    @Cycles annotation  /  CyclesClient  /  raw HTTP           │
-└──────────────┬────────────────────────────────────────────────┘
-               │ HTTP (port 7878)
-               ▼
-┌──────────────────────────┐     ┌──────────────────────────┐
-│     Cycles Server        │     │   Cycles Admin Server    │
-│  (runtime enforcement)   │     │ (tenant/budget/key mgmt) │
-│  Port 7878               │     │ Port 7979                │
-└──────────┬───────────────┘     └──────────┬───────────────┘
-           │                                │
-           └───────────┬────────────────────┘
-                       ▼
-              ┌─────────────────┐
-              │    Redis 7+     │
-              │   Port 6379     │
-              └─────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                       Your Application                       │
+│    @Cycles annotation  /  CyclesClient  /  raw HTTP          │
+└─────────────────────────────┬────────────────────────────────┘
+                              │ HTTP (port 7878)
+                              ▼
+┌────────────────────────────┐   ┌────────────────────────────┐
+│      Cycles Server         │   │   Cycles Admin Server      │
+│   (runtime enforcement)    │   │  (tenant/budget/key mgmt)  │
+│   Port 7878                │   │  Port 7979                 │
+└─────────────┬──────────────┘   └──────────────┬─────────────┘
+              │                                 │
+              └──────────────┬──────────────────┘
+                             ▼
+              ┌──────────────────────────────┐
+              │          Redis 7+            │
+              │         Port 6379            │
+              └──────────────┬───────────────┘
+                             │ BRPOP
+                             ▼
+              ┌──────────────────────────────┐
+              │   Cycles Events Service      │
+              │  (webhook delivery, optional)│
+              │  Port 7980                   │
+              └──────────────────────────────┘
 ```
 
 | Component | Purpose | Port |
@@ -168,8 +175,9 @@ A complete Cycles deployment has three components that share a single Redis inst
 | **Redis 7+** | Stores all budget state, reservations, and tenant data | 6379 |
 | **Cycles Admin Server** | Create tenants, API keys, and budget ledgers. Management plane. | 7979 |
 | **Cycles Server** | Runtime budget enforcement. Your app talks to this. | 7878 |
+| **Cycles Events Service** | Async webhook delivery with HMAC signing. Optional. | 7980 |
 
-Your application only talks to the **Cycles Server** (port 7878). You use the **Admin Server** (port 7979) to set up tenants, keys, and budgets before your app starts enforcing.
+Your application only talks to the **Cycles Server** (port 7878). You use the **Admin Server** (port 7979) to set up tenants, keys, and budgets before your app starts enforcing. The **Events Service** (port 7980) is optional — it delivers webhook notifications asynchronously. See [Deploying the Events Service](/quickstart/deploying-the-events-service).
 
 ## Prerequisites
 
@@ -210,7 +218,7 @@ services:
       retries: 5
 
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.1
     ports:
       - "7979:7979"
     environment:
@@ -223,7 +231,7 @@ services:
         condition: service_healthy
 
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server:0.1.25.1
     ports:
       - "7878:7878"
     environment:
@@ -245,7 +253,7 @@ docker compose up -d
 ```
 
 ::: tip Version pinning
-The examples above pin version `0.1.24.1`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
+The examples above pin version `0.1.25.1`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
 :::
 
 Verify all services are healthy:
@@ -300,7 +308,7 @@ Build and start the admin server:
 cd cycles-server-admin/cycles-admin-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD= ADMIN_API_KEY=admin-bootstrap-key \
-  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.24.1.jar
+  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.25.1.jar
 ```
 
 In a second terminal, build and start the cycles server:
@@ -309,7 +317,7 @@ In a second terminal, build and start the cycles server:
 cd cycles-server/cycles-protocol-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 \
-  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.24.1.jar
+  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.25.1.jar
 ```
 
 ## Step 2: Create a tenant
