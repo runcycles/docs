@@ -27,23 +27,23 @@ export OPENAI_API_KEY="sk-..."
 ::: tip 60-Second Quick Start
 ```python
 from any_agent import AnyAgent, AgentConfig
-from runcycles import CyclesClient, CyclesConfig, set_default_client
+from runcycles import CyclesClient, CyclesConfig
 
-set_default_client(CyclesClient(CyclesConfig.from_env()))
+client = CyclesClient(CyclesConfig.from_env())
 
 agent = AnyAgent.create(
     agent_framework="openai",
     agent_config=AgentConfig(
         model_id="openai:gpt-4o",
         instructions="You are a helpful assistant.",
-        callbacks=[CyclesBudgetCallback(tenant="acme", agent="my-agent")],
+        callbacks=[CyclesBudgetCallback(client=client, tenant="acme", agent="my-agent")],
     ),
 )
 
 trace = agent.run("What is budget authority?")
 print(trace.final_output)
 ```
-Every LLM call and tool execution is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the call is made. See the full `CyclesBudgetCallback` implementation below.
+Every LLM call and tool execution is now budget-guarded. If the budget is exhausted, `BudgetExceeded` is raised _before_ the call is made. See the full `CyclesBudgetCallback` implementation below.
 :::
 
 ## The callback approach
@@ -57,7 +57,7 @@ from any_agent import AgentCancel
 from runcycles import (
     CyclesClient, CyclesConfig, ReservationCreateRequest, CommitRequest,
     ReleaseRequest, Subject, Action, Amount, Unit, CyclesMetrics,
-    BudgetExceededError, CyclesProtocolError, set_default_client,
+    BudgetExceededError, CyclesProtocolError,
 )
 
 
@@ -153,13 +153,14 @@ class CyclesBudgetCallback(Callback):
         return self._reserve(context, self.action_kind, self.action_name, self.llm_estimate)
 
     def after_llm_call(self, context, *args, **kwargs):
-        attrs = context.current_span.attributes or {}
+        attrs = getattr(context.current_span, "attributes", None) or {}
         input_tokens = attrs.get("gen_ai.usage.input_tokens", 0)
         output_tokens = attrs.get("gen_ai.usage.output_tokens", 0)
         return self._commit(context, input_tokens, output_tokens)
 
     def before_tool_execution(self, context, *args, **kwargs):
-        tool_name = (context.current_span.attributes or {}).get("gen_ai.tool.name", "unknown")
+        attrs = getattr(context.current_span, "attributes", None) or {}
+        tool_name = attrs.get("gen_ai.tool.name", "unknown")
         return self._reserve(context, "tool.execution", tool_name, self.tool_estimate)
 
     def after_tool_execution(self, context, *args, **kwargs):
@@ -167,6 +168,13 @@ class CyclesBudgetCallback(Callback):
 ```
 
 ## Using the callback
+
+> **Note:** Passing `callbacks=[...]` in `AgentConfig` replaces the default callbacks (including the console trace printer). To keep the default console output alongside budget governance, include `ConsolePrintSpan()`:
+>
+> ```python
+> from any_agent.callbacks import ConsolePrintSpan
+> callbacks=[CyclesBudgetCallback(...), ConsolePrintSpan()]
+> ```
 
 ### Basic agent
 
