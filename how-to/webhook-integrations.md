@@ -632,16 +632,19 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 
 Transform Cycles events into [Adaptive Card](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) format for Teams:
 
+> **Note:** Microsoft deprecated Office 365 Connectors (incoming webhooks via `webhook.office.com` URLs) in 2024. Existing webhooks still work but Microsoft recommends migrating to [Power Automate Workflows](https://learn.microsoft.com/en-us/power-automate/teams/send-a-message-in-teams). The Adaptive Card payload format below works with both the legacy connector and Workflows HTTP triggers.
+
 ```python
 import hmac
 import hashlib
 import json
 import requests
 
-TEAMS_WEBHOOK_URL = "https://your-org.webhook.office.com/webhookb2/..."
+TEAMS_WEBHOOK_URL = "https://your-org.webhook.office.com/webhookb2/..."  # Legacy connector
+# Or Power Automate Workflow HTTP trigger URL
 SIGNING_SECRET = "teams-webhook-secret"
 
-COLOR_MAP = {
+CARD_COLOR_MAP = {
     "budget.exhausted": "attention",       # Red
     "budget.over_limit_entered": "attention",
     "budget.threshold_crossed": "warning",  # Yellow
@@ -666,7 +669,7 @@ async def forward_to_teams(request: Request):
 
     event = json.loads(body)
     data = event.get("data", {})
-    color = COLOR_MAP.get(event["event_type"], "default")
+    color = CARD_COLOR_MAP.get(event["event_type"], "default")
 
     facts = [
         {"title": "Tenant", "value": event["tenant_id"]},
@@ -689,14 +692,14 @@ async def forward_to_teams(request: Request):
             "content": {
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                 "type": "AdaptiveCard",
-                "version": "1.4",
+                "version": "1.5",
                 "body": [
                     {
                         "type": "TextBlock",
                         "size": "medium",
                         "weight": "bolder",
                         "text": f"Cycles: {event['event_type']}",
-                        "style": color,
+                        "color": color,
                     },
                     {
                         "type": "FactSet",
