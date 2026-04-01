@@ -65,7 +65,11 @@ PRICE_PER_OUTPUT_TOKEN = 1_000   # GPT-4o: $10/1M tokens in microcents
 
 
 class CyclesBudgetClient:
-    """Wraps an OpenAIChatCompletionClient with Cycles budget governance."""
+    """Wraps an OpenAIChatCompletionClient with Cycles budget governance.
+
+    Delegates all ChatCompletionClient protocol methods to the inner client
+    via __getattr__, overriding only create() for budget enforcement.
+    """
 
     def __init__(
         self,
