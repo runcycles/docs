@@ -3,13 +3,13 @@ title: "Real-Time Budget Alerts for AI Agents: Designing Cycles' Webhook Event S
 date: 2026-04-01
 author: "Cycles Team"
 tags: [engineering, webhooks, architecture, observability]
-description: "How we designed a webhook event system that delivers budget alerts to PagerDuty, Slack, and custom systems in milliseconds — the architecture decisions, delivery guarantees, and failure modes behind Cycles v0.1.25."
+description: "How we designed a webhook event system that delivers AI agent budget alerts to PagerDuty, Slack, and custom systems — architecture, delivery guarantees, and failure handling."
 blog: true
 sidebar: false
 head:
   - - meta
     - name: keywords
-      content: "webhook events, AI agent budget alerts, HMAC signing, event-driven architecture, PagerDuty integration, budget monitoring, real-time alerts, webhook delivery"
+      content: "webhook events, AI agent budget alerts, AI cost management, LLM spend control, HMAC signing, event-driven architecture, PagerDuty integration, budget monitoring, real-time alerts, webhook delivery, at-least-once delivery, webhook retry"
 ---
 
 # Real-Time Budget Alerts for AI Agents: Designing Cycles' Webhook Event System
@@ -78,7 +78,7 @@ Three services, three workloads, three scaling profiles:
 
 | Service | Workload | Latency Target | Scaling Driver |
 |---|---|---|---|
-| Runtime (reserve/commit) | Synchronous, hot path | <10ms p99 | Agent request volume |
+| Runtime (reserve/commit) | Synchronous, hot path | [<10ms p99](/blog/cycles-server-performance-benchmarks) | Agent request volume |
 | Admin (CRUD) | Synchronous, operator-facing | <200ms | Human operator actions |
 | Events (webhook delivery) | Asynchronous, variable latency | Best-effort | Subscription count × event rate |
 
@@ -109,7 +109,7 @@ We evaluated four approaches for webhook payload verification:
 
 HMAC-SHA256 proves both identity (the sender knows the shared secret) and integrity (the body hasn't been modified in transit). It requires no certificate infrastructure, no IP management, and no special HTTP client configuration. Receivers verify with 3 lines of code in any language.
 
-The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. Signing secrets are encrypted at rest in Redis using AES-256-GCM — a compromise of the Redis data store doesn't expose the secrets.
+The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. Signing secrets can be encrypted at rest in Redis using AES-256-GCM (enabled via the `WEBHOOK_SECRET_ENCRYPTION_KEY` environment variable). When configured, a compromise of the Redis data store doesn't expose the signing secrets.
 
 ## Failure handling: what happens when things break
 
@@ -117,9 +117,9 @@ This is the section that matters most for on-call engineers evaluating whether t
 
 | Scenario | What Happens | Recovery |
 |---|---|---|
-| Endpoint returns 500 | Retry with exponential backoff (1s, 2s, 4s, 8s, 16s) | Auto-recovers when endpoint returns 2xx |
+| Endpoint returns 500 | Retry with exponential backoff (default: 1s, 2s, 4s, 8s, 16s) | Auto-recovers when endpoint returns 2xx |
 | Endpoint unreachable | Same retry sequence | Auto-recovers when reachable |
-| Endpoint down for hours | All 5 retries exhaust → delivery marked FAILED | Re-enable subscription via API, replay missed events |
+| Endpoint down for hours | Retries exhaust (5 by default) → delivery marked FAILED | Re-enable subscription via API, replay missed events |
 | 10 consecutive failures | Subscription auto-disabled (status → DISABLED) | Fix endpoint, PATCH subscription to ACTIVE (resets counter) |
 | Events service down | Events accumulate in Redis (90-day TTL) | Drains backlog on restart; deliveries older than 24h auto-fail |
 | Redis down | Admin and runtime servers continue operating (fire-and-forget fails silently) | Events resume when Redis recovers |
@@ -168,6 +168,8 @@ We have complete integration guides with working code for [PagerDuty, Slack, Dat
 
 Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (26 of 40 types). Admin-only events (api_key, policy, system) require admin key access.
 
+Webhook URLs are validated at creation time with SSRF protection enabled by default: RFC 1918 private IP ranges, loopback, and link-local addresses are blocked, and HTTPS is required in production. These can be configured via `PUT /v1/admin/config/webhook-security` for environments that need internal endpoint access.
+
 ## What's next
 
 The v0.1.25 event system delivers the foundation: state change notifications with reliable delivery and HMAC signing. Coming next:
@@ -176,7 +178,7 @@ The v0.1.25 event system delivers the foundation: state change notifications wit
 - **Burn rate anomaly detection**: alert when spend rate exceeds the rolling average by a configurable multiplier
 - **Rate spike detection**: alert on reservation denial rate spikes and expiry rate spikes across rolling windows
 
-These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml) as `WebhookThresholdConfig` — the schema is ready, the implementation follows.
+These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml) as `WebhookThresholdConfig`. The schema is finalized; server-side implementation is on the roadmap.
 
 ---
 
