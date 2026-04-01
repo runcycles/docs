@@ -296,7 +296,8 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
-                { text: 'Anthropic', link: '/how-to/integrating-cycles-with-anthropic' },
+                { text: 'Anthropic (Python)', link: '/how-to/integrating-cycles-with-anthropic' },
+                { text: 'Anthropic (TypeScript)', link: '/how-to/integrating-cycles-with-anthropic-typescript', badge: { text: 'New', type: 'tip' } },
                 { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
                 { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
                 { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama', badge: { text: 'New', type: 'tip' } },
@@ -315,6 +316,7 @@ export default defineConfig({
                 { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai', badge: { text: 'New', type: 'tip' } },
                 { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai', badge: { text: 'New', type: 'tip' } },
                 { text: 'AnyAgent', link: '/how-to/integrating-cycles-with-anyagent', badge: { text: 'New', type: 'tip' } },
+                { text: 'AutoGen', link: '/how-to/integrating-cycles-with-autogen', badge: { text: 'New', type: 'tip' } },
               ]
             },
             {
@@ -330,7 +332,9 @@ export default defineConfig({
               text: 'Web Frameworks',
               collapsed: true,
               items: [
+                { text: 'Next.js', link: '/how-to/integrating-cycles-with-nextjs', badge: { text: 'New', type: 'tip' } },
                 { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
+                { text: 'Django', link: '/how-to/integrating-cycles-with-django', badge: { text: 'New', type: 'tip' } },
                 { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
               ]
             },

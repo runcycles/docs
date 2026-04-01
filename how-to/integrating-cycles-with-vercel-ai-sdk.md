@@ -190,6 +190,7 @@ export function Chat() {
 
 ## Next steps
 
+- [Integrating with Next.js](/how-to/integrating-cycles-with-nextjs) — middleware, server actions, per-tenant isolation
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — streaming patterns in detail
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Choosing the Right Integration Pattern](/how-to/choosing-the-right-integration-pattern) — when to use `withCycles` vs `reserveForStream`
