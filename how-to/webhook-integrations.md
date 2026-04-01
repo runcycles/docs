@@ -259,7 +259,7 @@ Route budget alerts to PagerDuty for on-call incident response.
 ### Setup
 
 ```bash
-# Create subscription for budget alert events
+# Create subscription for budget and security alert events
 curl -X POST http://localhost:7979/v1/admin/webhooks \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
@@ -351,6 +351,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
       "budget.exhausted",
       "budget.over_limit_entered",
       "budget.funded",
+      "reservation.denied",
       "tenant.suspended",
       "tenant.closed"
     ],
@@ -559,7 +560,7 @@ def handle():
         handle_budget_exhausted(event)
     elif event_type == "reservation.denied":
         handle_denial(event)
-    elif event_type.startswith("budget.threshold_crossed"):
+    elif event_type == "budget.threshold_crossed":
         handle_threshold(event)
 
     mark_processed(event_id)
