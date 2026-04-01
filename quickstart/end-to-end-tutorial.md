@@ -393,7 +393,11 @@ docker compose down -v
 
 ## Next steps
 
-- [Deploy the Events Service](/quickstart/deploying-the-events-service) — add webhook notifications for budget alerts (PagerDuty, Slack, etc.)
+::: tip Want real-time budget alerts?
+The tutorial above deploys the core budget enforcement stack. To receive webhook notifications when budgets run out, thresholds are crossed, or reservations are denied, add the optional events service. It takes 2 minutes.
+:::
+
+- [Deploy the Events Service](/quickstart/deploying-the-events-service) — get Slack, PagerDuty, or custom webhook alerts for budget events
 - [Python Client Quickstart](/quickstart/getting-started-with-the-python-client) — `@cycles` decorator deep dive
 - [TypeScript Client Quickstart](/quickstart/getting-started-with-the-typescript-client) — `withCycles` wrapper deep dive
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — `@Cycles` annotation deep dive

@@ -242,8 +242,10 @@ services:
       redis:
         condition: service_healthy
 
-  # Optional: async webhook delivery service (uncomment to enable)
-  # See: https://runcycles.io/quickstart/deploying-the-events-service
+  # Optional: webhook delivery service — uncomment to receive budget alerts
+  # via Slack, PagerDuty, or custom endpoints. Set WEBHOOK_SECRET_ENCRYPTION_KEY
+  # for production: export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
+  # Docs: https://runcycles.io/quickstart/deploying-the-events-service
   # cycles-events:
   #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
   #   ports:

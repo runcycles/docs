@@ -132,8 +132,8 @@ All three must have sufficient budget for the reservation to succeed.
                       ▼
              ┌─────────────────────────┐
              │  Cycles Events Service  │
-             │  (webhooks, opt.)       │
-             │   Port 7980             │
+             │  Webhooks (optional)    │
+             │  Port 7980              │
              └─────────────────────────┘
 ```
 

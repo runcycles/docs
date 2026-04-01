@@ -203,18 +203,19 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 
-**Webhook subscription example:**
+**Create a webhook subscription** (add `?tenant_id=acme-corp` to scope to a tenant; omit for system-wide):
 
 ```bash
-curl -X POST http://localhost:7979/v1/admin/webhooks \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+curl -X POST 'http://localhost:7979/v1/admin/webhooks?tenant_id=acme-corp' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-endpoint.example.com/webhook",
-    "event_types": ["budget.exhausted", "reservation.denied"],
-    "signing_secret": "your-hmac-secret"
+    "event_types": ["budget.exhausted", "reservation.denied"]
   }'
 ```
+
+The response includes `subscription_id` and `signing_secret` (auto-generated, returned only once).
 
 **List webhooks:**
 

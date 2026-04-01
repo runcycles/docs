@@ -5,17 +5,17 @@ description: "How to deploy the Cycles events service (cycles-server-events) for
 
 # Deploying the Events Service
 
-The events service (`cycles-server-events`, port 7980) delivers webhook events asynchronously. It is optional — the admin and runtime servers operate normally without it. When deployed, it consumes delivery jobs from Redis and sends HTTP POST requests to webhook endpoints with HMAC-SHA256 signatures.
+The events service (`cycles-server-events`, port 7980) delivers webhook events asynchronously — use it to get real-time alerts in Slack, PagerDuty, or your own systems when budgets run out, thresholds are crossed, or reservations are denied.
+
+It is optional — the admin and runtime servers operate normally without it. When deployed, it consumes delivery jobs from Redis and sends HTTP POST requests to webhook endpoints with HMAC-SHA256 signatures.
 
 ## Quick start with Docker
 
-The fastest way to run the events service alongside the admin and runtime servers:
+If you already have the full stack running via [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack), uncomment the `cycles-events` block in your `docker-compose.yml` and restart. Otherwise, use the full-stack compose from the admin repo:
 
 ```bash
-# Generate shared encryption key (same key for all services)
+# From the cycles-server-admin directory
 export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
-
-# Start the full stack
 docker compose -f docker-compose.full-stack.yml up
 ```
 
