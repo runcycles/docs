@@ -92,8 +92,22 @@ All integrations follow the same protocol:
 
 See [Using the Cycles Client Programmatically](/how-to/using-the-cycles-client-programmatically) for the full client API reference.
 
+## Webhook & Observability Integrations
+
+Cycles emits webhook events for budget state changes, reservation denials, tenant lifecycle, and more. Connect to external alerting and incident management systems:
+
+| Integration | Use Case | Guide |
+|---|---|---|
+| **PagerDuty** | On-call incident response for budget exhaustion and over-limit | [Webhook Integrations](/how-to/webhook-integrations#integration-pagerduty) |
+| **Slack** | Channel notifications for budget thresholds and tenant alerts | [Webhook Integrations](/how-to/webhook-integrations#integration-slack) |
+| **ServiceNow** | Incident creation for critical budget events | [Webhook Integrations](/how-to/webhook-integrations#integration-servicenow) |
+| **Custom receiver** | Direct HTTP endpoint with HMAC verification | [Webhook Integrations](/how-to/webhook-integrations#integration-custom-receiver-direct) |
+
+See [Webhook Integrations](/how-to/webhook-integrations) for full examples with signature verification code in Python, Node.js, and Go.
+
 ## Next steps
 
 - [Adding Cycles to an Existing Application](/how-to/adding-cycles-to-an-existing-application) — step-by-step guide for your first integration
+- [Webhook Integrations](/how-to/webhook-integrations) — PagerDuty, Slack, ServiceNow webhook examples
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation
 - [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — handling budget errors across languages

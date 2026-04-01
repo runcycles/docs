@@ -232,6 +232,27 @@ cycles-server:
 - [ ] Audit log retention policy defined
 - [ ] Key rotation schedule established
 - [ ] Dangerous Redis commands disabled
+- [ ] `WEBHOOK_SECRET_ENCRYPTION_KEY` generated and stored in secrets manager
+- [ ] Webhook URL security: HTTPS enforced, private CIDR ranges blocked
+- [ ] Signing secret rotation procedure documented
+
+## Webhook Security
+
+### Signing secret encryption at rest
+
+Webhook signing secrets are encrypted in Redis using AES-256-GCM. All three services must share the same key via `WEBHOOK_SECRET_ENCRYPTION_KEY`. Generate with `openssl rand -base64 32`. Store in a secrets manager — not in source code.
+
+### SSRF prevention
+
+Webhook URLs resolving to private IPs are blocked by default (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, loopback, link-local). HTTP rejected in production. Configure via `PUT /v1/admin/config/webhook-security`.
+
+### Signing secret rotation
+
+`PATCH /v1/admin/webhooks/{id}` with a new `signing_secret`. Update the consumer to verify the new secret. In-flight retries will use the old secret until retried with the new one.
+
+### Encryption key rotation
+
+Rotating `WEBHOOK_SECRET_ENCRYPTION_KEY` requires decrypting all secrets with the old key, re-encrypting with the new key, and restarting all services simultaneously.
 
 ## Next steps
 
