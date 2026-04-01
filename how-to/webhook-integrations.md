@@ -252,6 +252,56 @@ func verifyWebhook(body []byte, secret, signature string) bool {
 }
 ```
 
+### Java / Spring Boot
+
+```java
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
+@RestController
+public class WebhookController {
+
+    @Value("${cycles.webhook.signing-secret}")
+    private String signingSecret;
+
+    @PostMapping("/webhook")
+    public ResponseEntity<Void> handleWebhook(
+            @RequestBody byte[] body,
+            @RequestHeader("X-Cycles-Signature") String signature) {
+
+        if (!verifySignature(body, signingSecret, signature)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String json = new String(body, StandardCharsets.UTF_8);
+        // Parse and route event...
+        return ResponseEntity.ok().build();
+    }
+
+    private boolean verifySignature(byte[] body, String secret, String signature) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(
+                secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(body);
+            StringBuilder hex = new StringBuilder("sha256=");
+            for (byte b : hash) hex.append(String.format("%02x", b));
+            // Constant-time comparison to prevent timing attacks
+            return MessageDigest.isEqual(
+                hex.toString().getBytes(StandardCharsets.UTF_8),
+                signature.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+```
+
+::: tip Raw body required
+Spring Boot parses JSON by default. Use `byte[]` as the parameter type (or configure `HttpMessageConverter`) to get the raw bytes for HMAC verification. If you parse JSON first, whitespace differences will produce a different hash.
+:::
 ## Integration: PagerDuty
 
 Route budget alerts to PagerDuty for on-call incident response.
@@ -935,3 +985,10 @@ curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
 | `api_key.revoked` | Admin server | `cycles-admin` | Security: key access removed |
 | `system.store_connection_lost` | Any service | `cycles-server` | Critical: Redis connection failure |
 | `system.webhook_delivery_failed` | Events service | `cycles-server-events` | Meta: webhook delivery permanently failed after all retries |
+
+## Next steps
+
+- [Managing Webhooks](/how-to/managing-webhooks) — create, test, replay, and monitor webhook subscriptions
+- [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) — full 40-event-type catalog, delivery headers, retry policy, and status lifecycle
+- [Deploying the Events Service](/quickstart/deploying-the-events-service) — deploy the async webhook delivery service
+- [Security](/security#webhook-security) — SSRF protection, signing secret encryption, and deduplication

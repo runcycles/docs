@@ -208,6 +208,7 @@ export default defineConfig({
             { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
             { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
             { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
+            { text: 'Deploy the Events Service', link: '/quickstart/deploying-the-events-service' },
           ]
         },
         {
@@ -354,6 +355,7 @@ export default defineConfig({
             { text: 'Reservation Recovery and Listing', link: '/protocol/reservation-recovery-and-listing-in-cycles' },
             { text: 'Metrics and Metadata', link: '/protocol/standard-metrics-and-metadata-in-cycles' },
             { text: 'Error Codes and Error Handling', link: '/protocol/error-codes-and-error-handling-in-cycles' },
+            { text: 'Webhook Event Delivery Protocol', link: '/protocol/webhook-event-delivery-protocol' },
           ]
         },
         {

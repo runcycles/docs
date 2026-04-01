@@ -216,7 +216,73 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
   }'
 ```
 
-See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+**List webhooks:**
+
+```bash
+curl -s 'http://localhost:7979/v1/admin/webhooks?tenant_id=acme-corp' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+**Test a webhook** (sends a `system.webhook_test` event):
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/whsub_abc123/test \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+**Query deliveries for a subscription:**
+
+```bash
+curl -s 'http://localhost:7979/v1/admin/webhooks/whsub_abc123/deliveries?status=FAILED' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+**Replay events** (re-deliver events from a time range):
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/whsub_abc123/replay \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"from": "2026-04-01T00:00:00Z", "to": "2026-04-01T12:00:00Z"}'
+```
+
+**Query events:**
+
+```bash
+curl -s 'http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=budget.exhausted&limit=10' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+**View webhook security config:**
+
+```bash
+curl -s http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+# Returns: {"blocked_cidr_ranges": [...], "allow_http": false, "allowed_url_patterns": []}
+```
+
+**Update webhook security config** (enable HTTP for local dev):
+
+```bash
+curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"allow_http": true, "blocked_cidr_ranges": []}'
+```
+
+**Tenant self-service** (using `X-Cycles-API-Key` with `webhooks:write` permission):
+
+```bash
+curl -X POST http://localhost:7979/v1/webhooks \
+  -H "X-Cycles-API-Key: $TENANT_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://my-app.example.com/cycles-webhook",
+    "event_types": ["budget.exhausted", "budget.threshold_crossed"]
+  }'
+```
+
+See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 40-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
 
 ## Next steps
 
