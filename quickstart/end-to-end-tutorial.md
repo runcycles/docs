@@ -78,7 +78,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.1
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -88,7 +88,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.24.1
+    image: ghcr.io/runcycles/cycles-server:0.1.25.1
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -393,6 +393,7 @@ docker compose down -v
 
 ## Next steps
 
+- [Deploy the Events Service](/quickstart/deploying-the-events-service) — add webhook notifications for budget alerts (PagerDuty, Slack, etc.)
 - [Python Client Quickstart](/quickstart/getting-started-with-the-python-client) — `@cycles` decorator deep dive
 - [TypeScript Client Quickstart](/quickstart/getting-started-with-the-typescript-client) — `withCycles` wrapper deep dive
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — `@Cycles` annotation deep dive

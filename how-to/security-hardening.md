@@ -204,7 +204,7 @@ docker run --rm ghcr.io/runcycles/cycles-server:latest whoami
 Use specific version tags, not `latest`:
 
 ```yaml
-image: ghcr.io/runcycles/cycles-server:0.1.24.1  # Pinned
+image: ghcr.io/runcycles/cycles-server:0.1.25.1  # Pinned
 # NOT: ghcr.io/runcycles/cycles-server:latest   # Unpinned
 ```
 
@@ -214,7 +214,7 @@ Mount the container filesystem as read-only:
 
 ```yaml
 cycles-server:
-  image: ghcr.io/runcycles/cycles-server:0.1.24.1
+  image: ghcr.io/runcycles/cycles-server:0.1.25.1
   read_only: true
   tmpfs:
     - /tmp
