@@ -324,9 +324,37 @@ If all retries are exhausted or the client process crashes entirely, the reserva
 3. Restart the Cycles Server if Redis connection pool is exhausted
 4. Active reservations with remaining TTL are preserved in Redis and will resume when connectivity returns
 
+## Events Service Deployment
+
+The **events delivery service** (`cycles-server-events`, port 7980) is an optional component that delivers webhook notifications. If not deployed, admin and runtime servers continue operating normally — events and deliveries accumulate in Redis with TTL until the service is started.
+
+### Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Same across all services. Generate: `openssl rand -base64 32` |
+| `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
+| `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
+| `MAX_DELIVERY_AGE_MS` | 86400000 | Stale deliveries auto-fail after this age (24h default) |
+
+### Events service down
+
+1. Admin and runtime servers are **unaffected** (fire-and-forget)
+2. Redis accumulates data with TTL (90d events, 14d deliveries)
+3. On restart: stale deliveries (>24h) auto-fail, fresh ones deliver normally
+
+### Runbook: webhook delivery failures
+
+1. Check health: `GET http://localhost:7980/actuator/health`
+2. Check queue depth: `redis-cli LLEN dispatch:pending`
+3. Check if subscription auto-disabled: `GET /v1/admin/webhooks/{id}`
+4. Re-enable: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
+5. Verify `WEBHOOK_SECRET_ENCRYPTION_KEY` matches across all services
+
 ## Next steps
 
+- [Webhook Integrations](/how-to/webhook-integrations) — PagerDuty, Slack, ServiceNow examples
 - [Client Performance Tuning](/how-to/client-performance-tuning) — timeout, retry, and connection pool optimization
-- [Security Hardening](/how-to/security-hardening) — Redis AUTH, TLS, key rotation
+- [Security Hardening](/how-to/security-hardening) — Redis AUTH, TLS, key rotation, webhook security
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — metrics and alerting setup
 - [Server Configuration Reference](/configuration/server-configuration-reference-for-cycles) — all configuration properties

@@ -59,9 +59,23 @@ services:
       REDIS_PASSWORD: ""
     depends_on:
       redis: { condition: service_healthy }
+  # Optional: webhook event delivery service (port 7980)
+  cycles-events:
+    image: ghcr.io/runcycles/cycles-server-events:latest
+    ports: ["7980:7980"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      WEBHOOK_SECRET_ENCRYPTION_KEY: "${WEBHOOK_SECRET_ENCRYPTION_KEY:-}"
+    depends_on:
+      redis: { condition: service_healthy }
 volumes:
   redis-data:
 COMPOSE
+
+# Generate encryption key for webhook signing secrets (optional)
+export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
 
 docker compose up -d
 

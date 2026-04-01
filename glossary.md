@@ -206,3 +206,27 @@ The iterative cycle where an AI agent reasons, acts, observes results, and decid
 ### Guardrail
 
 A constraint placed on an AI system to prevent undesirable outcomes. Budget authority is a financial guardrail — it prevents agents from consuming more resources than allocated, complementing safety and content guardrails.
+
+### Webhook
+
+An HTTP POST callback triggered by a state change event. Cycles delivers webhooks to subscriber-configured URLs with HMAC-SHA256 signatures for payload verification. Delivery is at-least-once with exponential backoff retry. See [Webhooks and Events](/concepts/webhooks-and-events).
+
+### Event (Webhook)
+
+An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 40 event types across 6 categories. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
+
+### Signing Secret
+
+A shared secret used to compute HMAC-SHA256 signatures for webhook payload verification. Generated at subscription creation, returned once, encrypted at rest using AES-256-GCM.
+
+### HMAC-SHA256
+
+Hash-based Message Authentication Code using SHA-256. Signs webhook payloads so receivers can verify authenticity. Sent in the `X-Cycles-Signature` header as `sha256=<hex>`.
+
+### Webhook Subscription
+
+Configuration defining which events to deliver and where. Includes URL, event type filter, signing secret, retry policy, and auto-disable threshold.
+
+### Events Service
+
+The async webhook delivery service (`cycles-server-events`, port 7980). Consumes from shared Redis queue via BRPOP and delivers via HTTP POST with HMAC signing. Optional — admin and runtime operate without it.

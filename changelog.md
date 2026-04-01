@@ -7,7 +7,47 @@ description: "Release history and version notes for the Cycles Protocol, server,
 
 Release history for the Cycles Protocol and reference implementations.
 
-## v0.1.24 — March 2026 (Current)
+## v0.1.25 — April 2026 (Current)
+
+**Pillar 4: Events & Webhooks (Observability Plane)**
+
+New event-driven observability system spanning all three services.
+
+**Protocol spec (non-breaking, guidance only):**
+- Added WEBHOOK EVENT GUIDANCE section documenting 40 event types, payload schema, delivery protocol, and X-Cycles-Signature HMAC verification
+- No new API endpoints — guidance is informational, not normative
+
+**Admin server (20 new endpoints):**
+- 12 admin webhook/event endpoints at `/v1/admin/webhooks` and `/v1/admin/events`
+- 8 tenant self-service endpoints at `/v1/webhooks` and `/v1/events` (requires `webhooks:read/write`, `events:read`)
+- `GET/PUT /v1/admin/config/webhook-security` — SSRF protection with blocked CIDR ranges
+- 40 event types across 6 categories: budget (15), reservation (5), tenant (6), api_key (6), policy (3), system (5)
+- Event emission wired into all existing controllers
+
+**Runtime server (event emission):**
+- `reservation.denied` on DENY decision (reserve and decide endpoints)
+- `reservation.commit_overage` on commit with actual > estimated
+
+**Events delivery service (`cycles-server-events`, port 7980):**
+- Async webhook delivery via BRPOP from shared Redis dispatch queue
+- HMAC-SHA256 payload signing (`X-Cycles-Signature: sha256=<hex>`)
+- Exponential backoff retry, auto-disable after consecutive failures
+- Stale delivery protection (>24h deliveries auto-fail on pickup)
+
+**Security:**
+- AES-256-GCM encryption for signing secrets at rest (`WEBHOOK_SECRET_ENCRYPTION_KEY` env var)
+- Webhook URL SSRF protection: private IPs blocked by default, HTTPS required in production
+
+**Data retention:**
+- Event keys: 90-day Redis TTL (configurable via `EVENT_TTL_DAYS`)
+- Delivery keys: 14-day Redis TTL (configurable via `DELIVERY_TTL_DAYS`)
+- ZSET index cleanup: hourly via RetentionCleanupService
+
+**Testing:** 513 tests across 3 services, all 95%+ coverage. E2E verified with 12 event types.
+
+---
+
+## v0.1.24 — March 2026
 
 ::: danger Migration required — default overage policy changed
 The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVAILABLE`**. If you relied on `REJECT` as the implicit default, reservations and commits that previously failed will now succeed and may allow overspend. To preserve the previous behavior, explicitly set `overagePolicy = "REJECT"` on your decorators/annotations, or update tenant defaults via `PATCH /v1/admin/tenants/{id}` with `"default_commit_overage_policy": "REJECT"`.

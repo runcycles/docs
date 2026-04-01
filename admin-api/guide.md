@@ -190,8 +190,37 @@ curl -s 'http://localhost:7979/v1/admin/audit-logs?tenant_id=acme-corp&limit=10'
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
 
+## Pillar 4: Events & Webhooks (v0.1.25)
+
+The admin server provides 20 webhook/event endpoints for real-time observability:
+
+- **Webhook management**: create, list, get, update, delete, test subscriptions
+- **Event query**: list and retrieve events by tenant, type, category, time range
+- **Delivery tracking**: list delivery attempts per subscription with status/date filters
+- **Event replay**: re-deliver historical events to a subscription
+- **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (26 of 40 event types)
+
+Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
+
+**Webhook subscription example:**
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-endpoint.example.com/webhook",
+    "event_types": ["budget.exhausted", "reservation.denied"],
+    "signing_secret": "your-hmac-secret"
+  }'
+```
+
+See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+
 ## Next steps
 
+- [Webhook Integrations](/how-to/webhook-integrations) — PagerDuty, Slack, ServiceNow examples
 - [Admin API Reference (Interactive)](/admin-api/) — full OpenAPI explorer
 - [Tenant Management](/how-to/tenant-creation-and-management-in-cycles) — tenant lifecycle patterns
 - [API Key Management](/how-to/api-key-management-in-cycles) — key rotation and permissions

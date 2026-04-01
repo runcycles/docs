@@ -244,6 +244,33 @@ The admin server exposes powerful management operations. In production:
 - Use a strong, randomly generated `ADMIN_API_KEY`
 - Consider disabling Swagger UI (`springdoc.swagger-ui.enabled=false`)
 
+## Events Service Configuration
+
+The events delivery service (`cycles-server-events`, port 7980) is an optional component for webhook delivery.
+
+| Variable | Default | Description |
+|---|---|---|
+| `REDIS_HOST` | localhost | Redis hostname (shared with admin/runtime) |
+| `REDIS_PORT` | 6379 | Redis port |
+| `REDIS_PASSWORD` | (empty) | Redis password |
+| `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Must match admin and runtime. Generate: `openssl rand -base64 32` |
+| `dispatch.pending.timeout-seconds` | 5 | BRPOP blocking timeout |
+| `dispatch.retry.poll-interval-ms` | 5000 | Retry queue poll interval (ms) |
+| `dispatch.http.timeout-seconds` | 30 | HTTP timeout for webhook delivery |
+| `dispatch.http.connect-timeout-seconds` | 5 | HTTP connect timeout |
+| `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail (24h) |
+| `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
+| `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
+| `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+
+### Encryption key (shared across all services)
+
+`WEBHOOK_SECRET_ENCRYPTION_KEY` must be the same on admin, runtime, and events services. Admin encrypts signing secrets on write; events decrypts on read. If not set, secrets are stored in plaintext (backward compatible for development).
+
+```bash
+export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
+```
+
 ## Next steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — end-to-end deployment guide

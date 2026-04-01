@@ -233,6 +233,7 @@ export default defineConfig({
                 { text: 'vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
               ]
             },
+            { text: 'Webhooks and Events', link: '/concepts/webhooks-and-events' },
             { text: 'Glossary', link: '/glossary' },
           ]
         },
@@ -387,6 +388,7 @@ export default defineConfig({
             { text: 'Observability Setup', link: '/how-to/observability-setup' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
+            { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },
             { text: 'Changelog', link: '/changelog' },
           ]
         },
