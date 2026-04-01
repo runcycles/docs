@@ -62,7 +62,7 @@ curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reser
 
 ### Step 2: Check the budget
 
-The runtime server (port 7878) and admin server (port 7979) both expose `/v1/balances` but with different query parameter styles. Use whichever is available in your environment:
+The runtime server and admin server can both answer the budget question, but through different endpoints. Use whichever is available in your environment:
 
 ```bash
 # Runtime server — protocol spec uses individual subject params
