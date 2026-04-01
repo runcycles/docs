@@ -50,20 +50,49 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   }'
 ```
 
-### Available permissions
+### Available permissions (23 total)
+
+**Tenant-scoped permissions** (used with `X-Cycles-API-Key` for runtime and tenant operations):
+
+| Permission | Grants | Default |
+|---|---|---|
+| `reservations:create` | Create new reservations | Yes |
+| `reservations:commit` | Commit existing reservations | Yes |
+| `reservations:release` | Release existing reservations | Yes |
+| `reservations:extend` | Extend reservation TTL | Yes |
+| `reservations:list` | List reservations | Yes |
+| `balances:read` | Query balance information | Yes |
+| `webhooks:write` | Create, update, delete tenant webhooks at `/v1/webhooks` | No |
+| `webhooks:read` | List tenant webhooks and delivery history | No |
+| `events:read` | Query tenant event stream at `/v1/events` | No |
+
+**Admin wildcard permissions** (used with `X-Cycles-API-Key` for admin operations):
 
 | Permission | Grants |
 |---|---|
-| `reservations:create` | Create new reservations |
-| `reservations:commit` | Commit existing reservations |
-| `reservations:release` | Release existing reservations |
-| `reservations:extend` | Extend existing reservations |
-| `reservations:list` | List reservations |
-| `balances:read` | Query balance information |
-| `admin:read` | Read admin resources (budgets, policies) via the admin server |
-| `admin:write` | Modify admin resources (create/fund budgets, manage policies) via the admin server |
+| `admin:read` | Read any admin resource (budgets, policies, tenants, webhooks, events, audit) |
+| `admin:write` | Modify any admin resource (create/fund budgets, manage policies, manage webhooks) |
 
-A typical runtime key needs only `reservations:*` and `balances:read`. Add `admin:read` and/or `admin:write` if the key will also be used for budget management through the admin server (port 7979). For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
+**Admin granular permissions** (v0.1.25 — finer-grained alternative to admin wildcards):
+
+| Permission | Grants |
+|---|---|
+| `admin:tenants:read` | Read tenant details |
+| `admin:tenants:write` | Create and update tenants |
+| `admin:budgets:read` | List and read budgets |
+| `admin:budgets:write` | Create, fund, and update budgets |
+| `admin:policies:read` | List and read policies |
+| `admin:policies:write` | Create and update policies |
+| `admin:apikeys:read` | List API keys |
+| `admin:apikeys:write` | Create and revoke API keys |
+| `admin:webhooks:read` | List admin webhook subscriptions and deliveries |
+| `admin:webhooks:write` | Create, update, delete, test, and replay admin webhooks |
+| `admin:events:read` | Query admin event stream |
+| `admin:audit:read` | Query audit logs |
+
+> **Defaults:** When no permissions are specified at key creation, the key receives the 6 default runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`). Webhook, event, and admin permissions must be explicitly requested.
+
+A typical runtime key needs only the 6 defaults. Add `webhooks:write` and `webhooks:read` if tenants manage their own [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) if the key is used for budget management via the admin server (port 7979). For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
 
 Response:
 

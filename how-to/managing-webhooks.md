@@ -373,7 +373,7 @@ curl "http://localhost:7979/v1/events?event_type=budget.exhausted" \
   -H "X-Cycles-API-Key: $TENANT_API_KEY"
 ```
 
-**Required permissions:** `webhooks:write` (create/update/delete), `webhooks:read` (list), `events:read` (query events).
+**Required permissions:** `webhooks:write` (create/update/delete), `webhooks:read` (list), `events:read` (query events). These are not included in default key permissions — they must be explicitly requested at key creation. See [API Key Permissions](/how-to/api-key-management-in-cycles#available-permissions-23-total) for the full list.
 
 ## Webhook URL Security
 
