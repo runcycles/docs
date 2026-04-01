@@ -12,7 +12,7 @@ For streaming patterns with the Vercel AI SDK, see [Integrating with Vercel AI S
 ## Prerequisites
 
 - A running Cycles stack with a tenant, API key, and budget ([Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack))
-- A Next.js 14+ project (App Router)
+- A Next.js 15+ project (App Router)
 - Node.js 20+
 
 ## Installation
@@ -112,35 +112,28 @@ export async function POST(req: Request) {
 }
 ```
 
-## Next.js Middleware for budget preflight
+## Budget preflight in API routes
 
-Use Next.js middleware to check budget before requests hit your API routes:
+Next.js middleware runs in the Edge Runtime, which does not support Node.js APIs required by the `runcycles` client. Instead, add a preflight budget check at the start of your API route handler:
 
 ```typescript
-// middleware.ts
-import { NextResponse, type NextRequest } from "next/server";
-import { CyclesClient, CyclesConfig } from "runcycles";
+// app/api/chat/route.ts
+import { NextResponse } from "next/server";
+import { cyclesClient } from "@/lib/cycles";
 
-const cyclesClient = new CyclesClient(CyclesConfig.fromEnv());
-
-const GUARDED_PATHS = ["/api/chat", "/api/summarize"];
-
-export async function middleware(req: NextRequest) {
-  if (!GUARDED_PATHS.some((p) => req.nextUrl.pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
-
+export async function POST(req: Request) {
   const tenant = req.headers.get("x-tenant-id") ?? "acme";
 
-  const response = await cyclesClient.decide({
+  // Preflight: check budget before doing expensive work
+  const preflight = await cyclesClient.decide({
     idempotency_key: crypto.randomUUID(),
     subject: { tenant, app: "my-nextjs-app" },
-    action: { kind: "api.request", name: req.nextUrl.pathname },
+    action: { kind: "api.request", name: "/api/chat" },
     estimate: { unit: "USD_MICROCENTS", amount: 1_000_000 },
   });
 
-  if (response.isSuccess) {
-    const decision = response.getBodyAttribute("decision");
+  if (preflight.isSuccess) {
+    const decision = preflight.getBodyAttribute("decision");
     if (decision === "DENY") {
       return NextResponse.json(
         { error: "budget_exceeded", message: "Insufficient budget." },
@@ -149,12 +142,10 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Budget allows — proceed with the LLM call
+  const { prompt } = await req.json();
+  // ... your withCycles-wrapped LLM call here ...
 }
-
-export const config = {
-  matcher: ["/api/chat/:path*", "/api/summarize/:path*"],
-};
 ```
 
 ## Server Actions with budget governance

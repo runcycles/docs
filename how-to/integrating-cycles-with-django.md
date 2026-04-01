@@ -114,13 +114,21 @@ class CyclesExceptionMiddleware:
     def process_exception(self, request, exception):
         if isinstance(exception, BudgetExceededError):
             return JsonResponse(
-                {"error": "budget_exceeded", "message": "Insufficient budget for this request."},
+                {
+                    "error": "budget_exceeded",
+                    "message": "Insufficient budget for this request.",
+                    "retry_after_ms": exception.retry_after_ms,
+                },
                 status=402,
             )
         if isinstance(exception, CyclesProtocolError):
             status = 429 if exception.is_retryable() else 503
             return JsonResponse(
-                {"error": str(exception.error_code), "message": str(exception)},
+                {
+                    "error": str(exception.error_code),
+                    "message": str(exception),
+                    "retry_after_ms": exception.retry_after_ms,
+                },
                 status=status,
             )
         return None
@@ -233,6 +241,9 @@ def budget_view(request, tenant_id):
 
 ```python
 # urls.py
+from django.urls import path
+from myapp import views
+
 urlpatterns = [
     path("api/chat/", views.chat_view),
     path("api/budget/<str:tenant_id>/", views.budget_view),
