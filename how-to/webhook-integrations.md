@@ -1,0 +1,563 @@
+---
+title: Webhook Integrations
+description: Connect Cycles webhook events to PagerDuty, Slack, ServiceNow, and custom receivers
+---
+
+# Webhook Integrations
+
+Cycles emits webhook events for every state change — budget exhaustion, reservation denials, API key revocations, tenant lifecycle changes, and more. This guide shows concrete examples of webhook payloads and how to integrate with common services.
+
+## Webhook Payload Examples
+
+### reservation.denied
+
+Emitted when a reservation or decide request is denied (budget exceeded, overdraft limit, etc.).
+
+```json
+{
+  "event_id": "evt_a1b2c3d4e5f67890",
+  "event_type": "reservation.denied",
+  "category": "reservation",
+  "timestamp": "2026-04-01T14:32:01.456Z",
+  "tenant_id": "acme-corp",
+  "scope": "tenant:acme-corp/workspace:prod/agent:support-bot",
+  "actor": {
+    "type": "api_key",
+    "key_id": "key_9f8e7d6c-5b4a-3210",
+    "source_ip": "10.0.1.42"
+  },
+  "source": "cycles-server",
+  "data": {
+    "scope": "tenant:acme-corp/workspace:prod/agent:support-bot",
+    "unit": "USD_MICROCENTS",
+    "reason_code": "BUDGET_EXCEEDED",
+    "requested_amount": 5000000,
+    "remaining": 0
+  },
+  "correlation_id": null,
+  "request_id": "req_abc123"
+}
+```
+
+### budget.exhausted
+
+Emitted when remaining budget hits zero.
+
+```json
+{
+  "event_id": "evt_f0e1d2c3b4a59687",
+  "event_type": "budget.exhausted",
+  "category": "budget",
+  "timestamp": "2026-04-01T14:32:00.123Z",
+  "tenant_id": "acme-corp",
+  "scope": "tenant:acme-corp/workspace:prod",
+  "actor": {
+    "type": "api_key",
+    "key_id": "key_9f8e7d6c-5b4a-3210"
+  },
+  "source": "cycles-server",
+  "data": {
+    "scope": "tenant:acme-corp/workspace:prod",
+    "unit": "USD_MICROCENTS",
+    "threshold": 1.0,
+    "utilization": 1.0,
+    "allocated": 100000000,
+    "remaining": 0,
+    "spent": 85000000,
+    "reserved": 15000000,
+    "direction": "rising"
+  }
+}
+```
+
+### budget.threshold_crossed
+
+Emitted when utilization crosses a configured threshold (e.g., 80%, 95%).
+
+```json
+{
+  "event_id": "evt_1122334455667788",
+  "event_type": "budget.threshold_crossed",
+  "category": "budget",
+  "timestamp": "2026-04-01T13:15:00.789Z",
+  "tenant_id": "acme-corp",
+  "scope": "tenant:acme-corp/workspace:prod",
+  "source": "cycles-server",
+  "data": {
+    "scope": "tenant:acme-corp/workspace:prod",
+    "unit": "USD_MICROCENTS",
+    "threshold": 0.80,
+    "utilization": 0.82,
+    "allocated": 100000000,
+    "remaining": 18000000,
+    "spent": 67000000,
+    "reserved": 15000000,
+    "direction": "rising"
+  }
+}
+```
+
+### budget.over_limit_entered
+
+Emitted when debt exceeds overdraft_limit.
+
+```json
+{
+  "event_id": "evt_aabbccdd11223344",
+  "event_type": "budget.over_limit_entered",
+  "category": "budget",
+  "timestamp": "2026-04-01T14:45:12.345Z",
+  "tenant_id": "acme-corp",
+  "scope": "tenant:acme-corp/workspace:prod",
+  "source": "cycles-server",
+  "data": {
+    "scope": "tenant:acme-corp/workspace:prod",
+    "unit": "USD_MICROCENTS",
+    "debt": 15000000,
+    "overdraft_limit": 10000000,
+    "is_over_limit": true,
+    "debt_utilization": 1.5
+  }
+}
+```
+
+### tenant.suspended
+
+Emitted when a tenant is suspended.
+
+```json
+{
+  "event_id": "evt_5566778899aabbcc",
+  "event_type": "tenant.suspended",
+  "category": "tenant",
+  "timestamp": "2026-04-01T09:00:00.000Z",
+  "tenant_id": "acme-corp",
+  "source": "cycles-admin",
+  "actor": {
+    "type": "admin"
+  },
+  "data": {
+    "tenant_id": "acme-corp",
+    "new_status": "SUSPENDED",
+    "changed_fields": ["status"]
+  }
+}
+```
+
+### api_key.auth_failed
+
+Emitted when authentication fails (invalid or revoked key).
+
+```json
+{
+  "event_id": "evt_ddee0011ff223344",
+  "event_type": "api_key.auth_failed",
+  "category": "api_key",
+  "timestamp": "2026-04-01T11:22:33.456Z",
+  "tenant_id": "acme-corp",
+  "source": "cycles-admin",
+  "data": {
+    "key_id": "key_expired_abc",
+    "failure_reason": "KEY_EXPIRED",
+    "source_ip": "203.0.113.42"
+  }
+}
+```
+
+## Webhook Delivery Headers
+
+Every webhook POST includes these headers:
+
+```http
+POST /your-webhook-endpoint HTTP/1.1
+Content-Type: application/json
+X-Cycles-Event-Id: evt_a1b2c3d4e5f67890
+X-Cycles-Event-Type: reservation.denied
+X-Cycles-Signature: sha256=a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+User-Agent: cycles-server-events/0.1.25.1
+```
+
+## Signature Verification
+
+Always verify the `X-Cycles-Signature` header before processing a webhook:
+
+### Python
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook(body: bytes, secret: str, signature: str) -> bool:
+    expected = "sha256=" + hmac.new(
+        secret.encode("utf-8"),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+# In your Flask/FastAPI handler:
+@app.post("/webhook")
+async def handle_webhook(request: Request):
+    body = await request.body()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    if not verify_webhook(body, SIGNING_SECRET, sig):
+        return Response(status_code=401)
+
+    event = json.loads(body)
+    event_type = event["event_type"]
+    # Route to handler...
+```
+
+### Node.js
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(body, secret, signature) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signature)
+  );
+}
+
+// In Express:
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-cycles-signature'] || '';
+  if (!verifyWebhook(req.body, SIGNING_SECRET, sig)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(req.body);
+  console.log(`Event: ${event.event_type} for tenant ${event.tenant_id}`);
+  res.status(200).json({ received: true });
+});
+```
+
+### Go
+
+```go
+func verifyWebhook(body []byte, secret, signature string) bool {
+    mac := hmac.New(sha256.New, []byte(secret))
+    mac.Write(body)
+    expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+    return hmac.Equal([]byte(expected), []byte(signature))
+}
+```
+
+## Integration: PagerDuty
+
+Route budget alerts to PagerDuty for on-call incident response.
+
+### Setup
+
+```bash
+# Create subscription for critical budget events
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-pagerduty",
+    "event_types": [
+      "budget.exhausted",
+      "budget.over_limit_entered",
+      "reservation.denied"
+    ],
+    "signing_secret": "pd-webhook-secret-abc123",
+    "disable_after_failures": 20
+  }'
+```
+
+### Middleware (Python)
+
+Transform Cycles events into PagerDuty Events API v2 format:
+
+```python
+import requests
+
+PAGERDUTY_ROUTING_KEY = "your-pagerduty-integration-key"
+
+SEVERITY_MAP = {
+    "budget.exhausted": "critical",
+    "budget.over_limit_entered": "critical",
+    "budget.threshold_crossed": "warning",
+    "reservation.denied": "warning",
+    "api_key.auth_failed": "info",
+}
+
+@app.post("/cycles-to-pagerduty")
+async def forward_to_pagerduty(request: Request):
+    body = await request.body()
+    # Verify signature first (see above)
+
+    event = json.loads(body)
+    severity = SEVERITY_MAP.get(event["event_type"], "info")
+
+    pd_payload = {
+        "routing_key": PAGERDUTY_ROUTING_KEY,
+        "event_action": "trigger",
+        "dedup_key": event["event_id"],  # Prevents duplicate PD incidents
+        "payload": {
+            "summary": f"[Cycles] {event['event_type']} — tenant: {event['tenant_id']}",
+            "severity": severity,
+            "source": event.get("scope", event["tenant_id"]),
+            "component": event["source"],
+            "group": event["category"],
+            "custom_details": event.get("data", {})
+        }
+    }
+
+    requests.post(
+        "https://events.pagerduty.com/v2/enqueue",
+        json=pd_payload
+    )
+    return {"ok": True}
+```
+
+### What triggers PagerDuty alerts
+
+| Cycles Event | PagerDuty Severity | When |
+|---|---|---|
+| `budget.exhausted` | Critical | Budget remaining = 0, all reservations denied |
+| `budget.over_limit_entered` | Critical | Debt > overdraft limit, scope frozen |
+| `budget.threshold_crossed` (95%) | Warning | Budget nearly depleted |
+| `reservation.denied` | Warning | Agent couldn't reserve budget |
+
+## Integration: Slack
+
+Post budget notifications to a Slack channel.
+
+### Setup
+
+```bash
+# Subscribe to budget and tenant events
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-slack",
+    "event_categories": ["budget", "tenant"],
+    "event_types": ["budget.threshold_crossed", "budget.exhausted", "budget.over_limit_entered", "tenant.suspended"],
+    "signing_secret": "slack-webhook-secret-xyz"
+  }'
+```
+
+### Middleware (Node.js)
+
+```javascript
+const SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/T.../B.../xxx';
+
+const EMOJI = {
+  'budget.exhausted': ':rotating_light:',
+  'budget.over_limit_entered': ':no_entry:',
+  'budget.threshold_crossed': ':warning:',
+  'budget.funded': ':money_with_wings:',
+  'tenant.suspended': ':pause_button:',
+  'tenant.closed': ':stop_sign:',
+};
+
+app.post('/cycles-to-slack', express.raw({ type: 'application/json' }), async (req, res) => {
+  // Verify signature first
+
+  const event = JSON.parse(req.body);
+  const emoji = EMOJI[event.event_type] || ':bell:';
+  const data = event.data || {};
+
+  let text = `${emoji} *${event.event_type}*\n`;
+  text += `Tenant: \`${event.tenant_id}\`\n`;
+  if (event.scope) text += `Scope: \`${event.scope}\`\n`;
+
+  if (data.utilization !== undefined) {
+    text += `Utilization: ${(data.utilization * 100).toFixed(1)}%\n`;
+  }
+  if (data.remaining !== undefined) {
+    text += `Remaining: ${(data.remaining / 1000000).toFixed(2)} USD\n`;
+  }
+  if (data.reason_code) {
+    text += `Reason: ${data.reason_code}\n`;
+  }
+
+  await fetch(SLACK_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      unfurl_links: false,
+    }),
+  });
+
+  res.status(200).json({ ok: true });
+});
+```
+
+### Example Slack messages
+
+```
+:warning: budget.threshold_crossed
+Tenant: `acme-corp`
+Scope: `tenant:acme-corp/workspace:prod`
+Utilization: 82.0%
+Remaining: 18.00 USD
+
+:rotating_light: budget.exhausted
+Tenant: `acme-corp`
+Scope: `tenant:acme-corp/workspace:prod`
+Utilization: 100.0%
+Remaining: 0.00 USD
+
+:no_entry: reservation.denied
+Tenant: `acme-corp`
+Scope: `tenant:acme-corp/workspace:prod/agent:support-bot`
+Reason: BUDGET_EXCEEDED
+```
+
+## Integration: ServiceNow
+
+Create incidents in ServiceNow for critical budget events.
+
+### Setup
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-servicenow",
+    "event_types": [
+      "budget.over_limit_entered",
+      "budget.exhausted",
+      "system.store_connection_lost"
+    ],
+    "signing_secret": "snow-secret-123"
+  }'
+```
+
+### Middleware (Python)
+
+```python
+import requests
+
+SNOW_INSTANCE = "yourcompany.service-now.com"
+SNOW_USER = "cycles-integration"
+SNOW_PASS = "..."
+
+PRIORITY_MAP = {
+    "budget.over_limit_entered": "2",   # High
+    "budget.exhausted": "2",            # High
+    "system.store_connection_lost": "1", # Critical
+}
+
+@app.post("/cycles-to-servicenow")
+async def forward_to_snow(request: Request):
+    body = await request.body()
+    event = json.loads(body)
+
+    incident = {
+        "short_description": f"Cycles: {event['event_type']} — {event['tenant_id']}",
+        "description": json.dumps(event, indent=2),
+        "priority": PRIORITY_MAP.get(event["event_type"], "3"),
+        "category": "Budget Governance",
+        "subcategory": event["category"],
+        "caller_id": "cycles-system",
+        "assignment_group": "Platform Engineering",
+        "correlation_id": event["event_id"],
+    }
+
+    requests.post(
+        f"https://{SNOW_INSTANCE}/api/now/table/incident",
+        json=incident,
+        auth=(SNOW_USER, SNOW_PASS),
+        headers={"Content-Type": "application/json"}
+    )
+    return {"ok": True}
+```
+
+## Integration: Custom Receiver (Direct)
+
+For simple use cases, receive webhooks directly without middleware:
+
+```python
+from flask import Flask, request
+import hmac, hashlib, json
+
+app = Flask(__name__)
+SIGNING_SECRET = "your-signing-secret"
+
+@app.post("/webhook")
+def handle():
+    # 1. Verify signature
+    body = request.get_data()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET.encode(), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return "Unauthorized", 401
+
+    # 2. Parse event
+    event = json.loads(body)
+    event_type = event["event_type"]
+    event_id = request.headers.get("X-Cycles-Event-Id")
+
+    # 3. Deduplicate (at-least-once delivery)
+    if already_processed(event_id):
+        return "OK", 200
+
+    # 4. Route by event type
+    if event_type == "budget.exhausted":
+        handle_budget_exhausted(event)
+    elif event_type == "reservation.denied":
+        handle_denial(event)
+    elif event_type.startswith("budget.threshold_crossed"):
+        handle_threshold(event)
+
+    mark_processed(event_id)
+    return "OK", 200
+```
+
+## Tenant Self-Service Webhooks
+
+Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events):
+
+```bash
+# Tenant creates their own webhook using their API key
+curl -X POST http://localhost:7979/v1/webhooks \
+  -H "X-Cycles-API-Key: $TENANT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.example.com/budget-alerts",
+    "event_types": [
+      "budget.threshold_crossed",
+      "budget.exhausted",
+      "reservation.denied"
+    ]
+  }'
+
+# Response includes the signing_secret (returned ONCE — store it securely):
+# {
+#   "subscription": { "subscription_id": "whsub_abc123...", ... },
+#   "signing_secret": "whsec_dGVzdC1zZWNyZXQ..."
+# }
+```
+
+## Event Type Reference
+
+| Event Type | Source | Use Case |
+|---|---|---|
+| `budget.threshold_crossed` | Runtime | Warning: budget nearing limit (e.g., 80%, 95%) |
+| `budget.exhausted` | Runtime | Critical: remaining = 0, all reservations denied |
+| `budget.over_limit_entered` | Runtime | Critical: debt > overdraft limit, scope frozen |
+| `budget.over_limit_exited` | Admin | Recovery: debt repaid below limit |
+| `budget.debt_incurred` | Runtime | Info: commit created debt via overdraft |
+| `reservation.denied` | Runtime | Warning: agent couldn't reserve budget |
+| `reservation.commit_overage` | Runtime | Info: actual spend > estimated |
+| `reservation.expired` | Sweeper | Info: reservation TTL expired |
+| `tenant.suspended` | Admin | Alert: tenant operations paused |
+| `tenant.closed` | Admin | Alert: tenant permanently closed |
+| `api_key.auth_failed` | Admin | Security: authentication failure |
+| `api_key.revoked` | Admin | Security: key access removed |
+| `system.store_connection_lost` | System | Critical: Redis connection failure |
+| `system.webhook_delivery_failed` | Events | Meta: webhook delivery permanently failed |
