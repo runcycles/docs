@@ -1,7 +1,7 @@
 ---
 title: "Real-Time Budget Alerts for AI Agents: Designing Cycles' Webhook Event System"
 date: 2026-04-01
-author: "Cycles Team"
+author: "Albert Mavashev"
 tags: [engineering, webhooks, architecture, observability]
 description: "How we designed a webhook event system that delivers AI agent budget alerts to PagerDuty, Slack, and custom systems — architecture, delivery guarantees, and failure handling."
 blog: true

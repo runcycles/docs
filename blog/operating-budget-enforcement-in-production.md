@@ -1,9 +1,9 @@
 ---
 title: "When Budget Enforcement Fires: An Operator's Guide to Cycles in Production"
 date: 2026-04-01
-author: "Cycles Team"
+author: "Albert Mavashev"
 tags: [operations, incident-response, production, observability]
-description: "What to do when reservation.denied fires at 2am. Diagnostic decision trees, emergency response playbooks, and the metrics that predict budget incidents before they happen."
+description: "What to do when reservation.denied fires at 2am. Diagnostic decision trees, emergency playbooks, and metrics that predict budget incidents."
 blog: true
 sidebar: false
 head:
@@ -63,7 +63,7 @@ curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reser
 ### Step 2: Check the budget
 
 ```bash
-curl "http://localhost:7878/v1/balances?tenant=acme-corp&scope_prefix=tenant:acme-corp/workspace:prod" \
+curl "http://localhost:7878/v1/balances?tenant=acme-corp&workspace=prod" \
   -H "X-Cycles-API-Key: $API_KEY"
 ```
 
@@ -94,7 +94,7 @@ All agents in a workspace are being denied. Revenue-impacting.
 
 ```bash
 # 1. Confirm the budget state
-curl "http://localhost:7979/v1/admin/budgets?scope=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
+curl "http://localhost:7979/v1/admin/budgets?scope_prefix=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
   -H "X-Cycles-API-Key: $API_KEY"
 # Look for: remaining=0, status=ACTIVE
 
@@ -120,7 +120,7 @@ An agent committed more than estimated (via `ALLOW_WITH_OVERDRAFT` policy), accu
 
 ```bash
 # 1. Check debt level
-curl "http://localhost:7979/v1/admin/budgets?scope=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
+curl "http://localhost:7979/v1/admin/budgets?scope_prefix=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
   -H "X-Cycles-API-Key: $API_KEY"
 # Look for: debt > overdraft_limit, is_over_limit=true
 
@@ -161,7 +161,7 @@ curl -X POST "http://localhost:7979/v1/admin/api-keys" \
   -d '{"tenant_id": "acme-corp", "name": "support-bot-v2", "permissions": ["reservations:create", "reservations:commit", "balances:read"]}'
 ```
 
-**Important:** Revoking a key is permanent. Active reservations created with the revoked key can still be committed or released — only new requests are blocked.
+**Important:** Revoking a key is permanent via the API — there is no un-revoke. Active reservations created before revocation can still be committed or released using another valid key for the same tenant. Only new requests using the revoked key are blocked.
 
 ## Estimate accuracy: the most underrated metric
 
@@ -182,7 +182,7 @@ How to measure: compare `reserved` and `spent` from the balance API over time. A
 
 ## Five metrics that predict budget incidents
 
-These are the numbers your budget operations dashboard should show.
+These are the numbers your budget operations dashboard should show. The thresholds below are suggested starting points — tune them based on your workload patterns.
 
 | Metric | What It Shows | Watch For |
 |---|---|---|
