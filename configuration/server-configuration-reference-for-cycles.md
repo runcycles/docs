@@ -271,9 +271,36 @@ The events delivery service (`cycles-server-events`, port 7980) is an optional c
 export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
 ```
 
+### Full events service configuration example
+
+```bash
+# Required — must match admin and runtime servers
+REDIS_HOST=redis.example.com
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
+
+# Dispatch tuning
+dispatch.pending.timeout-seconds=5
+dispatch.retry.poll-interval-ms=5000
+dispatch.http.timeout-seconds=30
+dispatch.http.connect-timeout-seconds=5
+
+# Delivery lifecycle
+MAX_DELIVERY_AGE_MS=86400000       # 24h — deliveries older than this auto-fail
+
+# Data retention
+EVENT_TTL_DAYS=90                  # Event records in Redis
+DELIVERY_TTL_DAYS=14               # Delivery records in Redis
+RETENTION_CLEANUP_INTERVAL_MS=3600000  # ZSET index cleanup (1h)
+```
+
+See [Deploying the Events Service](/quickstart/deploying-the-events-service) for the full deployment guide.
+
 ## Next steps
 
 - [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) — end-to-end deployment guide
+- [Deploying the Events Service](/quickstart/deploying-the-events-service) — webhook delivery service setup
 - [Self-Hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) — deployment guide
 - [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — system design
 - [Client Configuration Reference](/configuration/client-configuration-reference-for-cycles-spring-boot-starter) — client-side properties

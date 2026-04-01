@@ -56,10 +56,23 @@ This is a reference page. If you haven't set up Cycles yet, start with the [End-
               │            Redis 7+                 │
               │  (budget state, reservations,       │
               │   tenants, API keys, audit logs)    │
+              └──────────────────┬──────────────────┘
+                                 │ BRPOP (dispatch:pending)
+                                 ▼
+              ┌─────────────────────────────────────┐
+              │   Cycles Events Service (port 7980) │
+              │   (async webhook delivery, HMAC     │
+              │    signing, retry, auto-disable)    │
+              └──────────────────┬──────────────────┘
+                                 │ HTTP POST + X-Cycles-Signature
+                                 ▼
+              ┌─────────────────────────────────────┐
+              │       External Webhook Endpoints    │
+              │   (PagerDuty, Slack, your app)      │
               └─────────────────────────────────────┘
 ```
 
-Your application talks to the **Cycles Server** (port 7878) at runtime. The **Cycles Admin Server** (port 7979) is the management plane where you create tenants, generate API keys, and configure budget ledgers. Both servers share the same Redis instance.
+Your application talks to the **Cycles Server** (port 7878) at runtime. The **Cycles Admin Server** (port 7979) is the management plane where you create tenants, generate API keys, and configure budget ledgers. The **Cycles Events Service** (port 7980) delivers webhook notifications asynchronously. All three services share the same Redis instance.
 
 ## Components
 
@@ -191,6 +204,32 @@ Separating the management plane from the runtime enforcement plane lets you:
 - Apply different access controls to management vs runtime operations
 
 See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-admin) for the full API reference.
+
+### Cycles Events Service
+
+The async webhook delivery service. It runs as a separate Spring Boot 3.5 service on port 7980 and shares the same Redis instance.
+
+**What it does:**
+
+- Consumes delivery jobs from a Redis queue (`dispatch:pending`) via BRPOP
+- Delivers events to webhook endpoints via HTTP POST with HMAC-SHA256 signatures
+- Retries failed deliveries with exponential backoff (configurable: default 5 retries, 1s–60s delay)
+- Auto-disables subscriptions after consecutive failures (default threshold: 10)
+- Expires stale deliveries after configurable max age (default: 24h)
+- Cleans up expired ZSET index entries hourly
+
+**Why a separate service:**
+
+| Concern | Admin Server | Events Service |
+|---------|-------------|----------------|
+| Workload | Synchronous CRUD, operator-facing | Asynchronous delivery, variable latency |
+| Scaling | Scale with admin traffic | Scale with webhook volume |
+| Failure isolation | Admin stays responsive during delivery backlog | Delivery retries don't block admin API |
+| Concurrency | Single instance | Multiple instances safe (BRPOP is atomic) |
+
+**Optional:** If the events service is not deployed, admin and runtime servers operate normally. Events and deliveries accumulate in Redis (bounded by TTL) and are processed when the events service starts.
+
+See [Deploying the Events Service](/quickstart/deploying-the-events-service) for setup and [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the delivery specification.
 
 ### Cycles MCP Server
 
@@ -334,10 +373,17 @@ A typical deployment:
                   │         Redis 7+             │
                   │   (single instance or        │
                   │    Redis Cluster)            │
-                  └──────────────────────────────┘
+                  └──────────────┬───────────────┘
+                                │
+                                ▼
+                  ┌──────────────────────────────┐      ┌──────────────────────┐
+                  │   Cycles Events Service      │ ───► │  Webhook Endpoints   │
+                  │   (optional, port 7980)      │      │  (PagerDuty, Slack,  │
+                  └──────────────────────────────┘      │   your app, etc.)    │
+                                                        └──────────────────────┘
 ```
 
-Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines.
+Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines. The events service is optional — if deployed, it consumes delivery jobs from Redis and delivers webhooks with HMAC-SHA256 signatures.
 
 Non-Spring clients (Python, TypeScript/Node.js, Go) can use the protocol directly via HTTP — the client libraries are convenience layers, not a requirement. MCP-compatible agents (Claude Desktop, Claude Code, Cursor, Windsurf) can use the Cycles MCP Server for a zero-code integration path.
 

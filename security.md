@@ -93,6 +93,38 @@ Cycles separates the runtime plane from the management plane:
 | Admin server access | You control | Role-based access |
 | Compliance scope | Your audit perimeter | SOC 2 Type I in progress |
 
+## Webhook security
+
+Cycles delivers events to external HTTP endpoints via webhooks. Three layers protect this surface:
+
+### HMAC-SHA256 signature verification
+
+Every webhook delivery includes an `X-Cycles-Signature` header containing `sha256=<hex>`, the HMAC-SHA256 of the raw JSON body using the subscription's signing secret as the key. Receivers **must** verify this header before processing the payload. This proves both the sender's identity (shared secret) and the body's integrity (hash match).
+
+Signing secrets are generated at subscription creation and returned exactly once. They should be stored in a secrets manager, not in application code.
+
+See [Webhook Integrations](/how-to/webhook-integrations#signature-verification) for verification code in Python, Node.js, Go, and Java.
+
+### SSRF protection
+
+Webhook URLs are validated on creation and update to prevent Server-Side Request Forgery:
+
+- **HTTPS required** — HTTP URLs are rejected by default (`allow_http: false`)
+- **Private IP blocking** — Resolved IPs are checked against private/reserved ranges (loopback, RFC 1918, link-local, IPv6 private). This check is always enforced regardless of configuration.
+- **URL pattern allowlisting** — Optional `allowed_url_patterns` restrict accepted URLs to specific domains
+
+Default blocked CIDRs: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`
+
+Configuration is managed via `GET/PUT /v1/admin/config/webhook-security`. See the [Admin API Guide](/admin-api/guide#pillar-4-events--webhooks-v0125) for examples.
+
+### Signing secret encryption at rest
+
+Webhook signing secrets are encrypted in Redis using AES-256-GCM with a 12-byte random IV per encryption. The encryption key (`WEBHOOK_SECRET_ENCRYPTION_KEY`) must be shared across the admin, runtime, and events services. If not set, secrets are stored in plaintext (backward compatible for development).
+
+### At-least-once delivery
+
+Webhooks are delivered at least once. Network retries, service restarts, or replay operations may cause duplicate deliveries. Receivers should deduplicate using the `X-Cycles-Event-Id` header (unique per event). Store processed event IDs with a short TTL (e.g., 24 hours) to detect replays.
+
 ## Certification status
 
 SOC 2 Type I certification is in progress for the managed cloud offering. This page and the [Security Hardening Guide](/how-to/security-hardening) document exactly what we log, how we store it, and how access is controlled.
