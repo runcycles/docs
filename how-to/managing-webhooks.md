@@ -1,0 +1,405 @@
+---
+title: Managing Webhooks
+description: Create, test, monitor, troubleshoot, and manage webhook subscriptions in Cycles
+---
+
+# Managing Webhooks
+
+This guide covers the full webhook lifecycle: creating subscriptions, testing connectivity, monitoring delivery health, handling failures, rotating secrets, and replaying events.
+
+## Creating a Webhook Subscription
+
+### Admin subscription (all 40 event types)
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-endpoint.example.com/cycles-webhook",
+    "event_types": ["budget.exhausted", "budget.over_limit_entered", "reservation.denied"],
+    "signing_secret": "your-secret-here",
+    "retry_policy": {
+      "max_retries": 5,
+      "initial_delay_ms": 1000,
+      "backoff_multiplier": 2.0,
+      "max_delay_ms": 60000
+    },
+    "disable_after_failures": 10
+  }'
+```
+
+The response includes the `subscription_id` and `signing_secret`. **Store the signing secret securely** — it's returned only once.
+
+```json
+{
+  "subscription": {
+    "subscription_id": "whsub_abc123...",
+    "status": "ACTIVE",
+    "consecutive_failures": 0,
+    ...
+  },
+  "signing_secret": "your-secret-here"
+}
+```
+
+### Auto-generated signing secret
+
+If you omit `signing_secret`, the server generates a cryptographically random one:
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-endpoint.example.com/webhook",
+    "event_types": ["budget.exhausted"]
+  }'
+```
+
+The generated secret (e.g., `whsec_dGVzdC1zZWNy...`) is in the response. Copy it immediately.
+
+### Category-based subscriptions
+
+Subscribe to **all events in a category** using `event_categories`. This is additive with `event_types` — if you specify both, you get the union.
+
+```bash
+# All budget events (15 types) + all reservation events (5 types)
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-endpoint.example.com/webhook",
+    "event_categories": ["budget", "reservation"]
+  }'
+```
+
+> **Note:** Category subscriptions receive future event types added to that category in new releases, without subscription changes.
+
+### Scope filtering
+
+Narrow events to specific scopes:
+
+```bash
+# Only events for the prod workspace
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-endpoint.example.com/webhook",
+    "event_types": ["budget.exhausted"],
+    "scope_filter": "tenant:acme-corp/workspace:prod/*"
+  }'
+```
+
+### Tenant-scoped subscriptions
+
+Subscribe to events for a specific tenant by passing `tenant_id` as a query parameter:
+
+```bash
+curl -X POST "http://localhost:7979/v1/admin/webhooks?tenant_id=acme-corp" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.example.com/webhook",
+    "event_types": ["budget.exhausted", "reservation.denied"]
+  }'
+```
+
+Omit `tenant_id` for system-wide subscriptions (receives events from all tenants).
+
+## Testing a Webhook
+
+Before relying on a webhook, verify connectivity:
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/whsub_abc123/test \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "response_status": 200,
+  "response_time_ms": 42,
+  "event_id": "evt_test_abc123"
+}
+```
+
+The test sends a `system.webhook_test` event to the subscription's URL. It does **not** count toward consecutive failures or affect subscription status.
+
+## Listing Subscriptions
+
+```bash
+# All subscriptions
+curl http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Filter by status
+curl "http://localhost:7979/v1/admin/webhooks?status=DISABLED" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Filter by tenant
+curl "http://localhost:7979/v1/admin/webhooks?tenant_id=acme-corp" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+## Monitoring Delivery Health
+
+### Check delivery history
+
+```bash
+curl "http://localhost:7979/v1/admin/webhooks/whsub_abc123/deliveries?status=FAILED&limit=10" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+Response shows delivery attempts with status, response code, and error details:
+
+```json
+{
+  "deliveries": [
+    {
+      "delivery_id": "del_xyz789",
+      "event_id": "evt_abc123",
+      "event_type": "budget.exhausted",
+      "status": "FAILED",
+      "attempts": 6,
+      "response_status": 503,
+      "error_message": "HTTP 503",
+      "attempted_at": "2026-04-01T12:00:00Z",
+      "completed_at": "2026-04-01T12:05:32Z"
+    }
+  ],
+  "has_more": false
+}
+```
+
+### Check subscription health
+
+```bash
+curl http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+Key fields to monitor:
+- `consecutive_failures` — number of deliveries that failed in a row (resets to 0 on any success)
+- `status` — `ACTIVE`, `PAUSED`, or `DISABLED`
+- `last_success_at` — when the last delivery succeeded
+- `last_failure_at` — when the last delivery failed
+
+### Redis queue depth
+
+```bash
+# Pending deliveries (waiting for events service to process)
+redis-cli LLEN dispatch:pending
+
+# Deliveries in retry queue
+redis-cli ZCARD dispatch:retry
+```
+
+If `dispatch:pending` grows continuously, the events service may be down or overwhelmed.
+
+## Handling Failures
+
+### Subscription statuses
+
+| Status | Meaning | Deliveries | How to fix |
+|---|---|---|---|
+| `ACTIVE` | Normal operation | Delivering | — |
+| `PAUSED` | Manually paused | Queued but not delivered | `PATCH` status to `ACTIVE` |
+| `DISABLED` | Auto-disabled after consecutive failures | Stopped | Fix endpoint, then `PATCH` status to `ACTIVE` |
+
+### Re-enabling a disabled subscription
+
+When a subscription is auto-disabled (e.g., 10 consecutive failures), fix the underlying issue first, then:
+
+```bash
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "ACTIVE"}'
+```
+
+This resets `consecutive_failures` to 0 and resumes delivery.
+
+### Pausing and resuming
+
+```bash
+# Pause (e.g., during maintenance)
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "PAUSED"}'
+
+# Resume
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "ACTIVE"}'
+```
+
+## Updating a Subscription
+
+Partial update — only provided fields change:
+
+```bash
+# Change URL
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://new-endpoint.example.com/webhook"}'
+
+# Change event types (replaces, does not merge)
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"event_types": ["budget.exhausted", "budget.threshold_crossed", "reservation.denied"]}'
+
+# Adjust retry policy
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"retry_policy": {"max_retries": 10, "max_delay_ms": 120000}}'
+```
+
+## Rotating Signing Secrets
+
+To rotate the HMAC signing secret:
+
+```bash
+curl -X PATCH http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"signing_secret": "new-secret-value"}'
+```
+
+**Rotation procedure:**
+1. Generate new secret
+2. Update the subscription with the new secret
+3. Update the receiver to accept both old and new signatures (dual verification)
+4. Once all in-flight retries with the old secret complete, remove old secret from receiver
+
+## Replaying Events
+
+Re-deliver historical events to a subscription (e.g., after fixing a broken endpoint):
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/whsub_abc123/replay \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "2026-04-01T00:00:00Z",
+    "to": "2026-04-01T23:59:59Z",
+    "max_events": 100
+  }'
+```
+
+Response:
+
+```json
+{
+  "replay_id": "replay_abc123",
+  "events_queued": 47,
+  "estimated_completion_seconds": 5
+}
+```
+
+Filter by event type:
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/whsub_abc123/replay \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "2026-04-01T00:00:00Z",
+    "to": "2026-04-01T23:59:59Z",
+    "event_types": ["budget.exhausted"],
+    "max_events": 1000
+  }'
+```
+
+## Deleting a Subscription
+
+```bash
+curl -X DELETE http://localhost:7979/v1/admin/webhooks/whsub_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+Returns `204 No Content`. Pending deliveries for this subscription will fail when processed (subscription not found).
+
+## Querying Events
+
+Browse the event stream independent of webhooks:
+
+```bash
+# All events for a tenant
+curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&limit=20" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Filter by type and time range
+curl "http://localhost:7979/v1/admin/events?event_type=budget.exhausted&from=2026-04-01T00:00:00Z&to=2026-04-02T00:00:00Z" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Get a single event by ID
+curl http://localhost:7979/v1/admin/events/evt_abc123 \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+## Tenant Self-Service
+
+Tenants manage their own webhooks via `/v1/webhooks` (using `X-Cycles-API-Key`):
+
+```bash
+# Create (restricted to budget.*, reservation.*, tenant.* events)
+curl -X POST http://localhost:7979/v1/webhooks \
+  -H "X-Cycles-API-Key: $TENANT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme.example.com/budget-alerts",
+    "event_types": ["budget.exhausted", "reservation.denied"]
+  }'
+
+# List tenant's subscriptions
+curl http://localhost:7979/v1/webhooks \
+  -H "X-Cycles-API-Key: $TENANT_API_KEY"
+
+# Query tenant's events
+curl "http://localhost:7979/v1/events?event_type=budget.exhausted" \
+  -H "X-Cycles-API-Key: $TENANT_API_KEY"
+```
+
+**Required permissions:** `webhooks:write` (create/update/delete), `webhooks:read` (list), `events:read` (query events).
+
+## Webhook URL Security
+
+By default, webhook URLs that resolve to private IP ranges are blocked (SSRF protection). To manage:
+
+```bash
+# View current security config
+curl http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Allow internal endpoints (production)
+curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "allowed_url_patterns": ["https://*.internal.example.com/*"],
+    "blocked_cidr_ranges": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+  }'
+
+# Enable HTTP for development/testing
+curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"allow_http": true, "blocked_cidr_ranges": []}'
+```
+
+## Next Steps
+
+- [Webhook Integrations](/how-to/webhook-integrations) — PagerDuty, Slack, ServiceNow examples with signature verification
+- [Webhooks and Events Concepts](/concepts/webhooks-and-events) — architecture, delivery semantics, event types
+- [Security Hardening](/how-to/security-hardening) — encryption, SSRF, secret rotation
+- [Production Operations](/how-to/production-operations-guide) — events service deployment and failure handling
