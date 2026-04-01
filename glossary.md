@@ -227,6 +227,10 @@ Hash-based Message Authentication Code using SHA-256. Signs webhook payloads so 
 
 Configuration defining which events to deliver and where. Includes URL, event type filter, signing secret, retry policy, and auto-disable threshold.
 
+### Webhook Delivery
+
+A single attempt to deliver an event to a webhook endpoint via HTTP POST. Tracked in Redis with status (PENDING, SUCCESS, RETRYING, FAILED), attempt count, response code, and timing. At-least-once — consumers should deduplicate using `event_id`.
+
 ### Events Service
 
 The async webhook delivery service (`cycles-server-events`, port 7980). Consumes from shared Redis queue via BRPOP and delivers via HTTP POST with HMAC signing. Optional — admin and runtime operate without it.
