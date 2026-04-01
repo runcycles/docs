@@ -308,6 +308,7 @@ export default defineConfig({
               items: [
                 { text: 'LangChain.py', link: '/how-to/integrating-cycles-with-langchain' },
                 { text: 'LangChain.js', link: '/how-to/integrating-cycles-with-langchain-js' },
+                { text: 'LangGraph', link: '/how-to/integrating-cycles-with-langgraph', badge: { text: 'New', type: 'tip' } },
                 { text: 'Vercel AI SDK', link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
                 { text: 'Spring AI', link: '/how-to/integrating-cycles-with-spring-ai', badge: { text: 'New', type: 'tip' } },
                 { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex', badge: { text: 'New', type: 'tip' } },

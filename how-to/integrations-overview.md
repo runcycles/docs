@@ -20,6 +20,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | **AI Frameworks** | | | |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
 | [LangChain.js](/how-to/integrating-cycles-with-langchain-js) | TypeScript | Yes | Callback handler |
+| [LangGraph](/how-to/integrating-cycles-with-langgraph) | Python | — | Callback handler / Decorator |
 | [Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk) | TypeScript | Yes | `reserveForStream` |
 | [Spring AI](/how-to/integrating-cycles-with-spring-ai) | Java | Yes | `@Cycles` annotation |
 | [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) | Python | — | Decorator |
