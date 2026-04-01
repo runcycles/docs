@@ -130,11 +130,11 @@ All three must have sufficient budget for the reservation to succeed.
              └────────┬─────────┘
                       │ BRPOP
                       ▼
-             ┌──────────────────┐
-             │  Events Service  │
-             │  (webhooks, opt.)│
-             │  Port 7980       │
-             └──────────────────┘
+             ┌─────────────────────────┐
+             │  Cycles Events Service  │
+             │  (webhooks, opt.)       │
+             │   Port 7980             │
+             └─────────────────────────┘
 ```
 
 Your application talks to the **Cycles Server** for runtime budget checks. The **Admin Server** manages tenants, API keys, and budget ledgers. The **Events Service** (optional) delivers webhook notifications asynchronously — see [Deploying the Events Service](/quickstart/deploying-the-events-service).
