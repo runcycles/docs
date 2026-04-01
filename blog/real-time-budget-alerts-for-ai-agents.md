@@ -14,7 +14,7 @@ head:
 
 # Real-Time Budget Alerts for AI Agents: Designing Cycles' Webhook Event System
 
-An infrastructure team we work with had budget dashboards. Prometheus scraped every 15 seconds. Grafana panels showed utilization curves. Alert rules fired when thresholds crossed 90%.
+Consider a common scenario: an infrastructure team has budget dashboards. Prometheus scrapes every 15 seconds. Grafana panels show utilization curves. Alert rules fire when thresholds cross 90%.
 
 <!-- more -->
 
@@ -24,10 +24,12 @@ The monitoring worked. The problem was latency. Polling-based alerting has a str
 
 ## The detection gap
 
-| Detection Method | Time to Alert | Time to Human Action |
+Representative detection latencies for a budget exhaustion event:
+
+| Detection Method | Typical Time to Alert | Typical Time to Human Action |
 |---|---|---|
-| Polling dashboard (60s interval) | 30-60s average | 2-5 minutes |
-| Prometheus alert (15s scrape + 1m for-duration) | 75s average | 3-6 minutes |
+| Polling dashboard (60s interval) | 30-60s | 2-5 minutes |
+| Prometheus alert (15s scrape + 1m for-duration) | ~75s | 3-6 minutes |
 | Webhook event (push on state change) | <1s | 1-3 minutes |
 
 The webhook doesn't make humans faster. It eliminates the detection delay entirely. The event fires the instant the budget state changes — not on the next scrape, not after a for-duration averaging window.
@@ -56,7 +58,7 @@ The six events that matter most for incident response:
 | `reservation.denied` | Agent can't reserve budget | Agents are failing — check if budget needs funding or if there's a runaway consumer |
 | `budget.threshold_crossed` | Utilization crosses 80%, 95%, or 100% | Early warning before exhaustion |
 | `api_key.auth_failed` | Authentication attempt with invalid key | Security event — possible credential leak or misconfiguration |
-| `system.store_connection_lost` | Redis connection failed | Infrastructure incident — all enforcement is degraded |
+| `system.store_connection_lost` | Redis connection failed | Infrastructure incident — budget enforcement depends on Redis availability |
 
 Every event includes a standard payload: who caused it (`actor`), what changed (`data`), where it happened (`scope` path like `tenant:acme-corp/workspace:prod/agent:support-bot`), and a millisecond-precision `timestamp`. Events are emitted by both the runtime enforcement server (reserve/commit operations) and the admin control plane (CRUD operations) — a single webhook subscription captures both.
 
@@ -122,7 +124,7 @@ This is the section that matters most for on-call engineers evaluating whether t
 | Endpoint down for hours | Retries exhaust (5 by default) → delivery marked FAILED | Re-enable subscription via API, replay missed events |
 | 10 consecutive failures | Subscription auto-disabled (status → DISABLED) | Fix endpoint, PATCH subscription to ACTIVE (resets counter) |
 | Events service down | Events accumulate in Redis (90-day TTL) | Drains backlog on restart; deliveries older than 24h auto-fail |
-| Redis down | Admin and runtime servers continue operating (fire-and-forget fails silently) | Events resume when Redis recovers |
+| Redis down | Budget enforcement is unavailable; event delivery enqueue fails (logged, does not block API callers) | Enforcement and event delivery resume when Redis recovers |
 
 Two design decisions are worth calling out:
 
@@ -164,7 +166,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 
 The response includes a signing secret (returned once — store it). Your middleware transforms Cycles events into PagerDuty Events API v2 format, mapping `budget.exhausted` to severity `critical` and `reservation.denied` to `warning`. Use the `event_id` as PagerDuty's `dedup_key` to correlate retried deliveries to the same alert.
 
-We have complete integration guides with working code for [PagerDuty, Slack, Datadog, Microsoft Teams, Opsgenie, and ServiceNow](/how-to/webhook-integrations), plus a [custom receiver pattern](/how-to/webhook-integrations#integration-custom-receiver-direct) with signature verification in Python, Node.js, and Go.
+We have full integration guides with code examples for [PagerDuty, Slack, Datadog, Microsoft Teams, Opsgenie, and ServiceNow](/how-to/webhook-integrations), plus a [custom receiver pattern](/how-to/webhook-integrations#integration-custom-receiver-direct) with signature verification in Python, Node.js, and Go.
 
 Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (26 of 40 types). Admin-only events (api_key, policy, system) require admin key access.
 
@@ -172,9 +174,9 @@ Webhook URLs are validated at creation time with SSRF protection enabled by defa
 
 ## What's next
 
-The v0.1.25 event system delivers the foundation: state change notifications with reliable delivery and HMAC signing. Coming next:
+The v0.1.25 event system delivers threshold alerts at the default levels (80%, 95%, 100% utilization). Coming next on the implementation roadmap:
 
-- **Threshold-based alerts**: configure budget utilization thresholds per subscription (e.g., alert at 80% and 95%, not just 100%)
+- **Per-subscription threshold customization**: override the default 80%/95%/100% thresholds for specific subscriptions — e.g., a high-priority workspace that should alert at 50%
 - **Burn rate anomaly detection**: alert when spend rate exceeds the rolling average by a configurable multiplier
 - **Rate spike detection**: alert on reservation denial rate spikes and expiry rate spikes across rolling windows
 
