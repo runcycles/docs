@@ -306,7 +306,7 @@ async def forward_to_pagerduty(request: Request):
     pd_payload = {
         "routing_key": PAGERDUTY_ROUTING_KEY,
         "event_action": "trigger",
-        "dedup_key": event["event_id"],  # Prevents duplicate PD incidents
+        "dedup_key": event["event_id"],  # Correlates retries to the same PD alert
         "payload": {
             "summary": f"[Cycles] {event['event_type']} — tenant: {event['tenant_id']}",
             "severity": severity,
@@ -374,6 +374,17 @@ const EMOJI = {
   'tenant.closed': ':stop_sign:',
 };
 
+// Format amount based on unit type (protocol supports multiple units)
+function formatAmount(amount, unit) {
+  switch (unit) {
+    case 'USD_MICROCENTS': return `$${(amount / 1000000).toFixed(2)}`;
+    case 'TOKENS':         return `${amount.toLocaleString()} tokens`;
+    case 'CREDITS':        return `${amount.toLocaleString()} credits`;
+    case 'RISK_POINTS':    return `${amount.toLocaleString()} risk points`;
+    default:               return `${amount.toLocaleString()} ${unit || 'units'}`;
+  }
+}
+
 app.post('/cycles-to-slack', express.raw({ type: 'application/json' }), async (req, res) => {
   // Verify signature first (see Signature Verification above)
 
@@ -389,7 +400,7 @@ app.post('/cycles-to-slack', express.raw({ type: 'application/json' }), async (r
     text += `Utilization: ${(data.utilization * 100).toFixed(1)}%\n`;
   }
   if (data.remaining !== undefined) {
-    text += `Remaining: ${(data.remaining / 1000000).toFixed(2)} USD\n`;
+    text += `Remaining: ${formatAmount(data.remaining, data.unit)}\n`;
   }
   if (data.reason_code) {
     text += `Reason: ${data.reason_code}\n`;
@@ -415,13 +426,13 @@ app.post('/cycles-to-slack', express.raw({ type: 'application/json' }), async (r
 Tenant: `acme-corp`
 Scope: `tenant:acme-corp/workspace:prod`
 Utilization: 82.0%
-Remaining: 18.00 USD
+Remaining: $18.00
 
 :rotating_light: budget.exhausted
 Tenant: `acme-corp`
 Scope: `tenant:acme-corp/workspace:prod`
 Utilization: 100.0%
-Remaining: 0.00 USD
+Remaining: $0.00
 
 :no_entry: reservation.denied
 Tenant: `acme-corp`
@@ -481,6 +492,10 @@ async def forward_to_snow(request: Request):
 
     event = json.loads(body)
 
+    # NOTE: caller_id and assignment_group are reference fields. The values
+    # below use display values, which requires sysparm_input_display_value=true.
+    # For production, use sys_id values instead (e.g., "caller_id": "6816f79cc0a8016401c5a33be04be441")
+    # or configure the API call with the display_value parameter.
     incident = {
         "short_description": f"Cycles: {event['event_type']} — {event['tenant_id']}",
         "description": json.dumps(event, indent=2),
@@ -496,7 +511,8 @@ async def forward_to_snow(request: Request):
         f"https://{SNOW_INSTANCE}/api/now/table/incident",
         json=incident,
         auth=(SNOW_USER, SNOW_PASS),
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
+        params={"sysparm_input_display_value": "true"}  # Allows display names for reference fields
     )
     return {"ok": True}
 ```
