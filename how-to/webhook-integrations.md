@@ -302,7 +302,6 @@ public class WebhookController {
 ::: tip Raw body required
 Spring Boot parses JSON by default. Use `byte[]` as the parameter type (or configure `HttpMessageConverter`) to get the raw bytes for HMAC verification. If you parse JSON first, whitespace differences will produce a different hash.
 :::
-
 ## Integration: PagerDuty
 
 Route budget alerts to PagerDuty for on-call incident response.
