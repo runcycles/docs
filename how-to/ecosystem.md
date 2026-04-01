@@ -60,6 +60,13 @@ The same LangChain integration, purpose-built for JavaScript and TypeScript envi
 - [LangChain.js integration guide](/how-to/integrating-cycles-with-langchain-js)
 - [js.langchain.com](https://js.langchain.com)
 
+### LangGraph
+
+Budget control for LangGraph stateful agent workflows. Use LangChain's callback handler inside graph nodes, or scope budgets per node with the `@cycles` decorator. Supports conditional routing based on remaining budget.
+
+- [LangGraph integration guide](/how-to/integrating-cycles-with-langgraph)
+- [langchain-ai.github.io/langgraph](https://langchain-ai.github.io/langgraph/)
+
 ### Vercel AI SDK
 
 Add Cycles runtime authority to applications built with the Vercel AI SDK for seamless spending control in Next.js and other Vercel-deployed projects.
