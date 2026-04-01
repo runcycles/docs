@@ -9,6 +9,7 @@ const integrations = [
   { name: 'Anthropic', icon: anthropicPath, link: '/how-to/integrating-cycles-with-anthropic' },
   { name: 'Spring AI', icon: springAiPath, link: '/how-to/integrating-cycles-with-spring-ai' },
   { name: 'LangChain', icon: langchainPath, link: '/how-to/integrating-cycles-with-langchain' },
+  { name: 'LangGraph', icon: langchainPath, link: '/how-to/integrating-cycles-with-langgraph' },
   { name: 'Vercel AI', icon: vercelPath, link: '/how-to/integrating-cycles-with-vercel-ai-sdk' },
   { name: 'MCP', icon: mcpPath, link: '/how-to/integrating-cycles-with-mcp' },
   { name: 'OpenAI Agents', icon: openaiAgentsPath, link: '/how-to/integrating-cycles-with-openai-agents' },
