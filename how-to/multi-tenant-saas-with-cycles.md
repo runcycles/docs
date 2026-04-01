@@ -55,34 +55,38 @@ import httpx
 
 ADMIN_URL = "http://localhost:7979"  # Admin Server
 ADMIN_KEY = "your-admin-api-key"
+CYCLES_KEY = "your-cycles-api-key"   # key with admin:write permission
 
-headers = {"X-Cycles-API-Key": ADMIN_KEY, "Content-Type": "application/json"}
+# Tenant and API key operations use X-Admin-API-Key
+admin_headers = {"X-Admin-API-Key": ADMIN_KEY, "Content-Type": "application/json"}
+# Budget operations use X-Cycles-API-Key with admin:write permission
+budget_headers = {"X-Cycles-API-Key": CYCLES_KEY, "Content-Type": "application/json"}
 
 def onboard_customer(customer_id: str, plan: str) -> dict:
     """Create tenant, API key, and budget for a new customer."""
 
-    # 1. Create the tenant
-    tenant_resp = httpx.post(f"{ADMIN_URL}/v1/admin/tenants", headers=headers, json={
+    # 1. Create the tenant (uses admin key)
+    tenant_resp = httpx.post(f"{ADMIN_URL}/v1/admin/tenants", headers=admin_headers, json={
         "tenant_id": customer_id,
         "name": f"Customer {customer_id}",
         "metadata": {"plan": plan},
     })
     tenant_resp.raise_for_status()
 
-    # 2. Create an API key for the tenant
-    key_resp = httpx.post(f"{ADMIN_URL}/v1/admin/api-keys", headers=headers, json={
+    # 2. Create an API key for the tenant (uses admin key)
+    key_resp = httpx.post(f"{ADMIN_URL}/v1/admin/api-keys", headers=admin_headers, json={
         "tenant_id": customer_id,
         "name": f"{customer_id}-runtime-key",
         "permissions": [
             "reservations:create", "reservations:commit",
             "reservations:release", "reservations:extend",
-            "balances:read", "decide:execute", "events:create",
+            "balances:read",
         ],
     })
     key_resp.raise_for_status()
-    api_key = key_resp.json()["api_key"]
+    api_key = key_resp.json()["key_secret"]
 
-    # 3. Allocate budget based on plan
+    # 3. Create and fund budget ledger (uses cycles key with admin:write)
     budgets = {
         "free":       {"amount": 500_000_000, "overdraft": 0},
         "pro":        {"amount": 5_000_000_000, "overdraft": 500_000_000},
@@ -90,19 +94,35 @@ def onboard_customer(customer_id: str, plan: str) -> dict:
     }
     plan_budget = budgets[plan]
 
-    httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=headers, json={
+    # Create the budget ledger
+    httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=budget_headers, json={
         "scope": f"tenant:{customer_id}",
         "unit": "USD_MICROCENTS",
-        "operation": "CREDIT",
-        "amount": plan_budget["amount"],
+        "allocated": {"amount": 0, "unit": "USD_MICROCENTS"},
     }).raise_for_status()
+
+    # Fund it
+    scope = f"tenant:{customer_id}"
+    httpx.post(
+        f"{ADMIN_URL}/v1/admin/budgets/fund?scope={scope}&unit=USD_MICROCENTS",
+        headers=budget_headers,
+        json={
+            "operation": "CREDIT",
+            "amount": {"amount": plan_budget["amount"], "unit": "USD_MICROCENTS"},
+            "idempotency_key": f"onboard-{customer_id}",
+        },
+    ).raise_for_status()
 
     # Set overdraft limit if applicable
     if plan_budget["overdraft"] > 0:
-        httpx.patch(f"{ADMIN_URL}/v1/admin/budgets", headers=headers, json={
-            "scope": f"tenant:{customer_id}",
-            "overdraft_limit": {"amount": plan_budget["overdraft"], "unit": "USD_MICROCENTS"},
-        }).raise_for_status()
+        httpx.patch(
+            f"{ADMIN_URL}/v1/admin/budgets?scope={scope}&unit=USD_MICROCENTS",
+            headers=budget_headers,
+            json={
+                "overdraft_limit": {"amount": plan_budget["overdraft"], "unit": "USD_MICROCENTS"},
+                "commit_overage_policy": "ALLOW_WITH_OVERDRAFT",
+            },
+        ).raise_for_status()
 
     return {"tenant_id": customer_id, "api_key": api_key, "plan": plan}
 ```
@@ -112,9 +132,16 @@ def onboard_customer(customer_id: str, plan: str) -> dict:
 ```typescript
 const ADMIN_URL = "http://localhost:7979";
 const ADMIN_KEY = "your-admin-api-key";
+const CYCLES_KEY = "your-cycles-api-key"; // key with admin:write permission
 
-const headers = {
-  "X-Cycles-API-Key": ADMIN_KEY,
+// Tenant and API key operations use X-Admin-API-Key
+const adminHeaders = {
+  "X-Admin-API-Key": ADMIN_KEY,
+  "Content-Type": "application/json",
+};
+// Budget operations use X-Cycles-API-Key with admin:write permission
+const budgetHeaders = {
+  "X-Cycles-API-Key": CYCLES_KEY,
   "Content-Type": "application/json",
 };
 
@@ -128,61 +155,81 @@ async function onboardCustomer(
   customerId: string,
   plan: "free" | "pro" | "enterprise",
 ): Promise<OnboardResult> {
-  // 1. Create the tenant
-  await fetch(`${ADMIN_URL}/v1/admin/tenants`, {
+  // 1. Create the tenant (uses admin key)
+  const tenantResp = await fetch(`${ADMIN_URL}/v1/admin/tenants`, {
     method: "POST",
-    headers,
+    headers: adminHeaders,
     body: JSON.stringify({
       tenant_id: customerId,
       name: `Customer ${customerId}`,
       metadata: { plan },
     }),
   });
+  if (!tenantResp.ok) throw new Error(`Tenant creation failed: ${tenantResp.status}`);
 
-  // 2. Create an API key for the tenant
+  // 2. Create an API key for the tenant (uses admin key)
   const keyResp = await fetch(`${ADMIN_URL}/v1/admin/api-keys`, {
     method: "POST",
-    headers,
+    headers: adminHeaders,
     body: JSON.stringify({
       tenant_id: customerId,
       name: `${customerId}-runtime-key`,
       permissions: [
         "reservations:create", "reservations:commit",
         "reservations:release", "reservations:extend",
-        "balances:read", "decide:execute", "events:create",
+        "balances:read",
       ],
     }),
   });
-  const { api_key: apiKey } = await keyResp.json();
+  if (!keyResp.ok) throw new Error(`API key creation failed: ${keyResp.status}`);
+  const { key_secret: apiKey } = await keyResp.json();
 
-  // 3. Allocate budget based on plan
+  // 3. Create and fund budget ledger (uses cycles key with admin:write)
   const budgets = {
     free:       { amount: 500_000_000, overdraft: 0 },
     pro:        { amount: 5_000_000_000, overdraft: 500_000_000 },
     enterprise: { amount: 50_000_000_000, overdraft: 5_000_000_000 },
   };
   const planBudget = budgets[plan];
+  const scope = `tenant:${customerId}`;
 
+  // Create the budget ledger
   await fetch(`${ADMIN_URL}/v1/admin/budgets`, {
     method: "POST",
-    headers,
+    headers: budgetHeaders,
     body: JSON.stringify({
-      scope: `tenant:${customerId}`,
+      scope,
       unit: "USD_MICROCENTS",
-      operation: "CREDIT",
-      amount: planBudget.amount,
+      allocated: { amount: 0, unit: "USD_MICROCENTS" },
     }),
   });
 
-  if (planBudget.overdraft > 0) {
-    await fetch(`${ADMIN_URL}/v1/admin/budgets`, {
-      method: "PATCH",
-      headers,
+  // Fund it
+  await fetch(
+    `${ADMIN_URL}/v1/admin/budgets/fund?scope=${encodeURIComponent(scope)}&unit=USD_MICROCENTS`,
+    {
+      method: "POST",
+      headers: budgetHeaders,
       body: JSON.stringify({
-        scope: `tenant:${customerId}`,
-        overdraft_limit: { amount: planBudget.overdraft, unit: "USD_MICROCENTS" },
+        operation: "CREDIT",
+        amount: { amount: planBudget.amount, unit: "USD_MICROCENTS" },
+        idempotency_key: `onboard-${customerId}`,
       }),
-    });
+    },
+  );
+
+  if (planBudget.overdraft > 0) {
+    await fetch(
+      `${ADMIN_URL}/v1/admin/budgets?scope=${encodeURIComponent(scope)}&unit=USD_MICROCENTS`,
+      {
+        method: "PATCH",
+        headers: budgetHeaders,
+        body: JSON.stringify({
+          overdraft_limit: { amount: planBudget.overdraft, unit: "USD_MICROCENTS" },
+          commit_overage_policy: "ALLOW_WITH_OVERDRAFT",
+        }),
+      },
+    );
   }
 
   return { tenantId: customerId, apiKey, plan };
@@ -196,11 +243,8 @@ Extract the tenant from each request and scope all Cycles operations to that ten
 ### FastAPI
 
 ```python
-from fastapi import Request, Header
-from runcycles import CyclesClient, CyclesConfig, Subject
-
-def get_tenant(x_tenant_id: str = Header(...)) -> str:
-    return x_tenant_id
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 @app.middleware("http")
 async def tenant_context(request: Request, call_next):
@@ -271,12 +315,25 @@ def setup_workspace_budgets(customer_id: str, total_budget: int):
     }
 
     for workspace, amount in allocations.items():
-        httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=headers, json={
-            "scope": f"tenant:{customer_id}/workspace:{workspace}",
+        scope = f"tenant:{customer_id}/workspace:{workspace}"
+
+        # Create the workspace budget ledger
+        httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=budget_headers, json={
+            "scope": scope,
             "unit": "USD_MICROCENTS",
-            "operation": "CREDIT",
-            "amount": amount,
+            "allocated": {"amount": 0, "unit": "USD_MICROCENTS"},
         }).raise_for_status()
+
+        # Fund it
+        httpx.post(
+            f"{ADMIN_URL}/v1/admin/budgets/fund?scope={scope}&unit=USD_MICROCENTS",
+            headers=budget_headers,
+            json={
+                "operation": "CREDIT",
+                "amount": {"amount": amount, "unit": "USD_MICROCENTS"},
+                "idempotency_key": f"ws-{customer_id}-{workspace}",
+            },
+        ).raise_for_status()
 ```
 
 Now development runaway loops burn the dev budget ($0.25), not the production budget ($4.00).
@@ -294,20 +351,26 @@ def upgrade_plan(customer_id: str, old_plan: str, new_plan: str):
         "enterprise": 50_000_000_000,
     }
     difference = budgets[new_plan] - budgets[old_plan]
+    scope = f"tenant:{customer_id}"
 
     if difference > 0:
         # Upgrade: credit the difference
-        httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=headers, json={
-            "scope": f"tenant:{customer_id}",
-            "unit": "USD_MICROCENTS",
-            "operation": "CREDIT",
-            "amount": difference,
-        }).raise_for_status()
+        httpx.post(
+            f"{ADMIN_URL}/v1/admin/budgets/fund?scope={scope}&unit=USD_MICROCENTS",
+            headers=budget_headers,
+            json={
+                "operation": "CREDIT",
+                "amount": {"amount": difference, "unit": "USD_MICROCENTS"},
+                "idempotency_key": f"upgrade-{customer_id}-{new_plan}",
+            },
+        ).raise_for_status()
 
     # Update tenant metadata
-    httpx.patch(f"{ADMIN_URL}/v1/admin/tenants/{customer_id}", headers=headers, json={
-        "metadata": {"plan": new_plan},
-    }).raise_for_status()
+    httpx.patch(
+        f"{ADMIN_URL}/v1/admin/tenants/{customer_id}",
+        headers=admin_headers,
+        json={"metadata": {"plan": new_plan}},
+    ).raise_for_status()
 ```
 
 For downgrades, the remaining budget stays as-is until the billing period resets. Use the `RESET` operation at the start of each billing cycle to set the new plan's allocation.
@@ -320,13 +383,17 @@ At the start of each billing period, reset budgets to the plan allocation:
 def monthly_reset(customer_id: str, plan: str):
     """Reset tenant budget for the new billing cycle."""
     budgets = {"free": 500_000_000, "pro": 5_000_000_000, "enterprise": 50_000_000_000}
+    scope = f"tenant:{customer_id}"
 
-    httpx.post(f"{ADMIN_URL}/v1/admin/budgets", headers=headers, json={
-        "scope": f"tenant:{customer_id}",
-        "unit": "USD_MICROCENTS",
-        "operation": "RESET",
-        "amount": budgets[plan],
-    }).raise_for_status()
+    httpx.post(
+        f"{ADMIN_URL}/v1/admin/budgets/fund?scope={scope}&unit=USD_MICROCENTS",
+        headers=budget_headers,
+        json={
+            "operation": "RESET",
+            "amount": {"amount": budgets[plan], "unit": "USD_MICROCENTS"},
+            "idempotency_key": f"reset-{customer_id}-{plan}-2026-04",
+        },
+    ).raise_for_status()
 ```
 
 Run this from a cron job or billing system webhook. The `RESET` operation sets the allocated budget to the specified amount, clearing prior spend.
@@ -353,9 +420,10 @@ async def usage(request: Request):
         "balances": [
             {
                 "scope": b["scope"],
-                "allocated": b["allocated"],
-                "spent": b["spent"],
-                "remaining": b["remaining"],
+                "allocated": b["allocated"]["amount"],
+                "spent": b["spent"]["amount"],
+                "remaining": b["remaining"]["amount"],
+                "unit": b["allocated"]["unit"],
                 "is_over_limit": b.get("is_over_limit", False),
             }
             for b in balances
@@ -400,13 +468,13 @@ When a customer churns or violates terms, suspend or close their tenant:
 ```python
 def suspend_customer(customer_id: str):
     """Suspend: blocks new reservations, allows existing to complete."""
-    httpx.patch(f"{ADMIN_URL}/v1/admin/tenants/{customer_id}", headers=headers, json={
+    httpx.patch(f"{ADMIN_URL}/v1/admin/tenants/{customer_id}", headers=admin_headers, json={
         "status": "SUSPENDED",
     }).raise_for_status()
 
 def close_customer(customer_id: str):
     """Close: blocks all operations. Irreversible."""
-    httpx.patch(f"{ADMIN_URL}/v1/admin/tenants/{customer_id}", headers=headers, json={
+    httpx.patch(f"{ADMIN_URL}/v1/admin/tenants/{customer_id}", headers=admin_headers, json={
         "status": "CLOSED",
     }).raise_for_status()
 ```
