@@ -242,6 +242,21 @@ services:
       redis:
         condition: service_healthy
 
+  # Optional: async webhook delivery service (uncomment to enable)
+  # See: https://runcycles.io/quickstart/deploying-the-events-service
+  # cycles-events:
+  #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  #   ports:
+  #     - "7980:7980"
+  #   environment:
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     REDIS_PASSWORD: ""
+  #     WEBHOOK_SECRET_ENCRYPTION_KEY: "${WEBHOOK_SECRET_ENCRYPTION_KEY:-}"
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+
 volumes:
   redis-data:
 ```

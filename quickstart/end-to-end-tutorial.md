@@ -393,6 +393,7 @@ docker compose down -v
 
 ## Next steps
 
+- [Deploy the Events Service](/quickstart/deploying-the-events-service) — add webhook notifications for budget alerts (PagerDuty, Slack, etc.)
 - [Python Client Quickstart](/quickstart/getting-started-with-the-python-client) — `@cycles` decorator deep dive
 - [TypeScript Client Quickstart](/quickstart/getting-started-with-the-typescript-client) — `withCycles` wrapper deep dive
 - [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — `@Cycles` annotation deep dive
