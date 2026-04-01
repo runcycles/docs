@@ -519,6 +519,291 @@ async def forward_to_snow(request: Request):
     return {"ok": True}
 ```
 
+## Integration: Datadog
+
+Post budget events as Datadog Events for correlation with infrastructure metrics.
+
+### Setup
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-datadog",
+    "event_types": [
+      "budget.exhausted",
+      "budget.over_limit_entered",
+      "budget.threshold_crossed",
+      "reservation.denied"
+    ],
+    "signing_secret": "dd-webhook-secret"
+  }'
+```
+
+### Middleware (Python)
+
+```python
+import hmac
+import hashlib
+import json
+import requests
+
+DD_API_KEY = "your-datadog-api-key"
+SIGNING_SECRET = "dd-webhook-secret"
+
+ALERT_TYPE_MAP = {
+    "budget.exhausted": "error",
+    "budget.over_limit_entered": "error",
+    "budget.threshold_crossed": "warning",
+    "reservation.denied": "warning",
+}
+
+@app.post("/cycles-to-datadog")
+async def forward_to_datadog(request: Request):
+    body = await request.body()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET.encode("utf-8"), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return Response(status_code=401)
+
+    event = json.loads(body)
+    data = event.get("data", {})
+
+    dd_event = {
+        "title": f"Cycles: {event['event_type']}",
+        "text": f"Tenant: {event['tenant_id']}\nScope: {event.get('scope', 'N/A')}\nSource: {event['source']}",
+        "alert_type": ALERT_TYPE_MAP.get(event["event_type"], "info"),
+        "source_type_name": "cycles",
+        "tags": [
+            f"tenant:{event['tenant_id']}",
+            f"event_type:{event['event_type']}",
+            f"category:{event['category']}",
+            f"source:{event['source']}",
+        ],
+    }
+
+    if data.get("utilization") is not None:
+        dd_event["text"] += f"\nUtilization: {data['utilization'] * 100:.1f}%"
+    if data.get("scope"):
+        dd_event["tags"].append(f"scope:{data['scope']}")
+
+    requests.post(
+        "https://api.datadoghq.com/api/v1/events",
+        json=dd_event,
+        headers={
+            "DD-API-KEY": DD_API_KEY,
+            "Content-Type": "application/json",
+        },
+    )
+    return {"ok": True}
+```
+
+### Grafana annotations (via Datadog)
+
+Budget events posted to Datadog automatically appear as overlays on Datadog dashboards. Use the `tags` for filtering — e.g., show only `budget.exhausted` events on your cost dashboard.
+
+## Integration: Microsoft Teams
+
+Post budget alerts to a Teams channel using incoming webhooks.
+
+### Setup
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-teams",
+    "event_types": [
+      "budget.exhausted",
+      "budget.over_limit_entered",
+      "budget.threshold_crossed",
+      "reservation.denied",
+      "tenant.suspended"
+    ],
+    "signing_secret": "teams-webhook-secret"
+  }'
+```
+
+### Middleware (Python)
+
+Transform Cycles events into [Adaptive Card](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) format for Teams:
+
+```python
+import hmac
+import hashlib
+import json
+import requests
+
+TEAMS_WEBHOOK_URL = "https://your-org.webhook.office.com/webhookb2/..."
+SIGNING_SECRET = "teams-webhook-secret"
+
+COLOR_MAP = {
+    "budget.exhausted": "attention",       # Red
+    "budget.over_limit_entered": "attention",
+    "budget.threshold_crossed": "warning",  # Yellow
+    "reservation.denied": "warning",
+    "tenant.suspended": "accent",           # Blue
+}
+
+def format_amount(amount, unit):
+    if unit == "USD_MICROCENTS":
+        return f"${amount / 1_000_000:.2f}"
+    return f"{amount:,} {unit.lower()}" if unit else f"{amount:,}"
+
+@app.post("/cycles-to-teams")
+async def forward_to_teams(request: Request):
+    body = await request.body()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET.encode("utf-8"), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return Response(status_code=401)
+
+    event = json.loads(body)
+    data = event.get("data", {})
+    color = COLOR_MAP.get(event["event_type"], "default")
+
+    facts = [
+        {"title": "Tenant", "value": event["tenant_id"]},
+        {"title": "Event", "value": event["event_type"]},
+        {"title": "Source", "value": event["source"]},
+    ]
+    if event.get("scope"):
+        facts.append({"title": "Scope", "value": event["scope"]})
+    if data.get("utilization") is not None:
+        facts.append({"title": "Utilization", "value": f"{data['utilization'] * 100:.1f}%"})
+    if data.get("remaining") is not None:
+        facts.append({"title": "Remaining", "value": format_amount(data["remaining"], data.get("unit"))})
+    if data.get("reason_code"):
+        facts.append({"title": "Reason", "value": data["reason_code"]})
+
+    card = {
+        "type": "message",
+        "attachments": [{
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "medium",
+                        "weight": "bolder",
+                        "text": f"Cycles: {event['event_type']}",
+                        "style": color,
+                    },
+                    {
+                        "type": "FactSet",
+                        "facts": facts,
+                    },
+                ],
+            },
+        }],
+    }
+
+    requests.post(TEAMS_WEBHOOK_URL, json=card)
+    return {"ok": True}
+```
+
+### Example Teams card
+
+The card renders as a structured fact table:
+
+```
+┌─────────────────────────────────────┐
+│ ⚠ Cycles: budget.threshold_crossed │
+│                                     │
+│ Tenant:      acme-corp              │
+│ Event:       budget.threshold_crossed│
+│ Source:      cycles-server           │
+│ Scope:       tenant:acme-corp/...   │
+│ Utilization: 82.0%                  │
+│ Remaining:   $18.00                 │
+└─────────────────────────────────────┘
+```
+
+## Integration: Opsgenie
+
+Route alerts to Opsgenie for on-call management (popular with Atlassian/Jira teams).
+
+### Setup
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-middleware.example.com/cycles-to-opsgenie",
+    "event_types": [
+      "budget.exhausted",
+      "budget.over_limit_entered",
+      "reservation.denied",
+      "system.store_connection_lost"
+    ],
+    "signing_secret": "og-webhook-secret"
+  }'
+```
+
+### Middleware (Python)
+
+```python
+import hmac
+import hashlib
+import json
+import requests
+
+OPSGENIE_API_KEY = "your-opsgenie-api-key"
+SIGNING_SECRET = "og-webhook-secret"
+
+PRIORITY_MAP = {
+    "budget.exhausted": "P2",
+    "budget.over_limit_entered": "P1",
+    "system.store_connection_lost": "P1",
+    "reservation.denied": "P3",
+}
+
+@app.post("/cycles-to-opsgenie")
+async def forward_to_opsgenie(request: Request):
+    body = await request.body()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET.encode("utf-8"), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return Response(status_code=401)
+
+    event = json.loads(body)
+
+    alert = {
+        "message": f"Cycles: {event['event_type']} — {event['tenant_id']}",
+        "alias": event["event_id"],  # Dedup key — same event won't create duplicate alerts
+        "description": json.dumps(event, indent=2),
+        "priority": PRIORITY_MAP.get(event["event_type"], "P3"),
+        "source": event["source"],
+        "tags": [event["category"], event["tenant_id"]],
+        "entity": event.get("scope", event["tenant_id"]),
+        "details": event.get("data", {}),
+    }
+
+    requests.post(
+        "https://api.opsgenie.com/v2/alerts",
+        json=alert,
+        headers={
+            "Authorization": f"GenieKey {OPSGENIE_API_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
+    return {"ok": True}
+```
+
+> **Note:** Opsgenie uses `alias` for deduplication — setting it to `event_id` ensures retried webhook deliveries don't create duplicate alerts.
+
 ## Integration: Custom Receiver (Direct)
 
 For simple use cases, receive webhooks directly without middleware.
