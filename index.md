@@ -38,7 +38,7 @@ features:
       src: /icons/wrench.svg
       alt: How-To icon
     title: "How-To Guides"
-    details: "18 integrations: OpenAI, Anthropic, Spring AI, LangChain, LangGraph, Vercel AI, MCP, CrewAI, LlamaIndex, Pydantic AI, Ollama, and more. Budget patterns, estimation, error handling."
+    details: "19 integrations: OpenAI, Anthropic, Spring AI, LangChain, LangGraph, AnyAgent, Vercel AI, MCP, CrewAI, LlamaIndex, Pydantic AI, Ollama, and more. Budget patterns, estimation, error handling."
     link: /how-to/adding-cycles-to-an-existing-application
     linkText: Browse guides
   - icon:

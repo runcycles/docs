@@ -103,6 +103,13 @@ Guard Pydantic AI agent runs and tool calls with the `@cycles` decorator. Works 
 - [Pydantic AI integration guide](/how-to/integrating-cycles-with-pydantic-ai)
 - [ai.pydantic.dev](https://ai.pydantic.dev)
 
+### AnyAgent
+
+Budget governance for AnyAgent's unified agent interface. A single callback covers all seven supported frameworks (OpenAI Agents, LangChain, LlamaIndex, Google, Agno, smolagents, TinyAgent) with no per-framework code.
+
+- [AnyAgent integration guide](/how-to/integrating-cycles-with-anyagent)
+- [mozilla-ai.github.io/any-agent](https://mozilla-ai.github.io/any-agent/)
+
 ## Web Frameworks
 
 ### Express.js

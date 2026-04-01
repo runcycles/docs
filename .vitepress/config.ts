@@ -314,6 +314,7 @@ export default defineConfig({
                 { text: 'LlamaIndex', link: '/how-to/integrating-cycles-with-llamaindex', badge: { text: 'New', type: 'tip' } },
                 { text: 'CrewAI', link: '/how-to/integrating-cycles-with-crewai', badge: { text: 'New', type: 'tip' } },
                 { text: 'Pydantic AI', link: '/how-to/integrating-cycles-with-pydantic-ai', badge: { text: 'New', type: 'tip' } },
+                { text: 'AnyAgent', link: '/how-to/integrating-cycles-with-anyagent', badge: { text: 'New', type: 'tip' } },
               ]
             },
             {

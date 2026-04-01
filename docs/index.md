@@ -22,11 +22,11 @@ description: "Cycles documentation — quickstart guides, integration tutorials,
 
 ## Integrations
 
-18 framework integrations — [view all](/how-to/integrations-overview)
+19 framework integrations — [view all](/how-to/integrations-overview)
 
 **LLM Providers:** [OpenAI](/how-to/integrating-cycles-with-openai) · [Anthropic](/how-to/integrating-cycles-with-anthropic) · [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) · [Google Gemini](/how-to/integrating-cycles-with-google-gemini) · [Ollama](/how-to/integrating-cycles-with-ollama)
 
-**AI Frameworks:** [LangChain](/how-to/integrating-cycles-with-langchain) · [LangChain.js](/how-to/integrating-cycles-with-langchain-js) · [LangGraph](/how-to/integrating-cycles-with-langgraph) · [Spring AI](/how-to/integrating-cycles-with-spring-ai) · [Vercel AI](/how-to/integrating-cycles-with-vercel-ai-sdk) · [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) · [CrewAI](/how-to/integrating-cycles-with-crewai) · [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai)
+**AI Frameworks:** [LangChain](/how-to/integrating-cycles-with-langchain) · [LangChain.js](/how-to/integrating-cycles-with-langchain-js) · [LangGraph](/how-to/integrating-cycles-with-langgraph) · [AnyAgent](/how-to/integrating-cycles-with-anyagent) · [Spring AI](/how-to/integrating-cycles-with-spring-ai) · [Vercel AI](/how-to/integrating-cycles-with-vercel-ai-sdk) · [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) · [CrewAI](/how-to/integrating-cycles-with-crewai) · [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai)
 
 **Agent Platforms:** [MCP](/how-to/integrating-cycles-with-mcp) · [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) · [OpenClaw](/how-to/integrating-cycles-with-openclaw)
 
