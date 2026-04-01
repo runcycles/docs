@@ -34,7 +34,6 @@ Emitted when a reservation or decide request is denied (budget exceeded, overdra
     "requested_amount": 5000000,
     "remaining": 0
   },
-  "correlation_id": null,
   "request_id": "req_abc123"
 }
 ```
@@ -174,7 +173,7 @@ Content-Type: application/json
 X-Cycles-Event-Id: evt_a1b2c3d4e5f67890
 X-Cycles-Event-Type: reservation.denied
 X-Cycles-Signature: sha256=a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
-User-Agent: cycles-server-events/0.1.25.1
+User-Agent: cycles-server-events/0.1.0
 ```
 
 ## Signature Verification
@@ -189,9 +188,7 @@ import hashlib
 
 def verify_webhook(body: bytes, secret: str, signature: str) -> bool:
     expected = "sha256=" + hmac.new(
-        secret.encode("utf-8"),
-        body,
-        hashlib.sha256
+        secret.encode("utf-8"), body, hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(expected, signature)
 
@@ -218,6 +215,7 @@ function verifyWebhook(body, secret, signature) {
     .createHmac('sha256', secret)
     .update(body)
     .digest('hex');
+  if (expected.length !== signature.length) return false;
   return crypto.timingSafeEqual(
     Buffer.from(expected),
     Buffer.from(signature)
@@ -231,7 +229,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
     return res.status(401).send('Invalid signature');
   }
 
-  const event = JSON.parse(req.body);
+  const event = JSON.parse(req.body.toString());
   console.log(`Event: ${event.event_type} for tenant ${event.tenant_id}`);
   res.status(200).json({ received: true });
 });
@@ -240,6 +238,12 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
 ### Go
 
 ```go
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+)
+
 func verifyWebhook(body []byte, secret, signature string) bool {
     mac := hmac.New(sha256.New, []byte(secret))
     mac.Write(body)
@@ -276,6 +280,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 Transform Cycles events into PagerDuty Events API v2 format:
 
 ```python
+import json
 import requests
 
 PAGERDUTY_ROUTING_KEY = "your-pagerduty-integration-key"
@@ -360,9 +365,9 @@ const EMOJI = {
 };
 
 app.post('/cycles-to-slack', express.raw({ type: 'application/json' }), async (req, res) => {
-  // Verify signature first
+  // Verify signature first (see Signature Verification above)
 
-  const event = JSON.parse(req.body);
+  const event = JSON.parse(req.body.toString());
   const emoji = EMOJI[event.event_type] || ':bell:';
   const data = event.data || {};
 
@@ -438,6 +443,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 ### Middleware (Python)
 
 ```python
+import json
 import requests
 
 SNOW_INSTANCE = "yourcompany.service-now.com"
@@ -458,12 +464,12 @@ async def forward_to_snow(request: Request):
     incident = {
         "short_description": f"Cycles: {event['event_type']} — {event['tenant_id']}",
         "description": json.dumps(event, indent=2),
-        "priority": PRIORITY_MAP.get(event["event_type"], "3"),
-        "category": "Budget Governance",
-        "subcategory": event["category"],
+        "urgency": PRIORITY_MAP.get(event["event_type"], "3"),
+        "category": "Software",
+        "subcategory": "Budget Governance",
         "caller_id": "cycles-system",
         "assignment_group": "Platform Engineering",
-        "correlation_id": event["event_id"],
+        "work_notes": f"Cycles event_id: {event['event_id']}\nCategory: {event['category']}",
     }
 
     requests.post(
@@ -492,7 +498,7 @@ def handle():
     body = request.get_data()
     sig = request.headers.get("X-Cycles-Signature", "")
     expected = "sha256=" + hmac.new(
-        SIGNING_SECRET.encode(), body, hashlib.sha256
+        SIGNING_SECRET.encode("utf-8"), body, hashlib.sha256
     ).hexdigest()
     if not hmac.compare_digest(expected, sig):
         return "Unauthorized", 401
