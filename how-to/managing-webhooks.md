@@ -63,7 +63,7 @@ The generated secret (e.g., `whsec_dGVzdC1zZWNy...`) is in the response. Copy it
 
 ### Category-based subscriptions
 
-Subscribe to **all events in a category** using `event_categories`. This is additive with `event_types` — if you specify both, you get the union.
+Subscribe to **all events in a category** using `event_categories`. This is additive with `event_types` — if you specify both, you get the union. Note: `event_types` is always required (at least one), so include a representative type alongside the category wildcard.
 
 ```bash
 # All budget events (15 types) + all reservation events (5 types)
@@ -72,6 +72,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-endpoint.example.com/webhook",
+    "event_types": ["budget.created"],
     "event_categories": ["budget", "reservation"]
   }'
 ```
