@@ -71,7 +71,7 @@ Emitted when remaining budget hits zero.
 
 ### budget.threshold_crossed
 
-Emitted when utilization crosses a configured threshold (e.g., 80%, 95%).
+Emitted when utilization crosses a configured threshold. Default thresholds if not specified on the subscription: **80%, 95%, and 100%** (via `WebhookThresholdConfig.budget_utilization`). The `direction` field is `"rising"` when utilization increases past the threshold and `"falling"` when it drops back below, preventing duplicate alerts.
 
 ```json
 {
@@ -259,7 +259,7 @@ Route budget alerts to PagerDuty for on-call incident response.
 ### Setup
 
 ```bash
-# Create subscription for critical budget events
+# Create subscription for budget alert events
 curl -X POST http://localhost:7979/v1/admin/webhooks \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
@@ -268,7 +268,9 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
     "event_types": [
       "budget.exhausted",
       "budget.over_limit_entered",
-      "reservation.denied"
+      "budget.threshold_crossed",
+      "reservation.denied",
+      "api_key.auth_failed"
     ],
     "signing_secret": "pd-webhook-secret-abc123",
     "disable_after_failures": 20
@@ -327,7 +329,7 @@ async def forward_to_pagerduty(request: Request):
 | Cycles Event | PagerDuty Severity | When |
 |---|---|---|
 | `budget.exhausted` | Critical | Budget remaining = 0, all reservations denied |
-| `budget.over_limit_entered` | Critical | Debt > overdraft limit, scope frozen |
+| `budget.over_limit_entered` | Critical | Debt exceeded overdraft limit; new reservations blocked until debt repaid |
 | `budget.threshold_crossed` (95%) | Warning | Budget nearly depleted |
 | `reservation.denied` | Warning | Agent couldn't reserve budget |
 
@@ -338,17 +340,25 @@ Post budget notifications to a Slack channel.
 ### Setup
 
 ```bash
-# Subscribe to budget and tenant events
+# Subscribe to specific budget and tenant alert events
 curl -X POST http://localhost:7979/v1/admin/webhooks \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-middleware.example.com/cycles-to-slack",
-    "event_categories": ["budget", "tenant"],
-    "event_types": ["budget.threshold_crossed", "budget.exhausted", "budget.over_limit_entered", "tenant.suspended"],
+    "event_types": [
+      "budget.threshold_crossed",
+      "budget.exhausted",
+      "budget.over_limit_entered",
+      "budget.funded",
+      "tenant.suspended",
+      "tenant.closed"
+    ],
     "signing_secret": "slack-webhook-secret-xyz"
   }'
 ```
+
+> **Note:** `event_categories` is additive with `event_types`. If you specify `"event_categories": ["budget"]`, you receive **all** `budget.*` events (15 types including `budget.created`, `budget.debited`, etc.), not just the ones in `event_types`. Use `event_types` alone when you want precise control over which events trigger notifications.
 
 ### Middleware (Node.js)
 
@@ -443,12 +453,15 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 ### Middleware (Python)
 
 ```python
+import hmac
+import hashlib
 import json
 import requests
 
 SNOW_INSTANCE = "yourcompany.service-now.com"
 SNOW_USER = "cycles-integration"
 SNOW_PASS = "..."
+SIGNING_SECRET = "snow-secret-123"
 
 PRIORITY_MAP = {
     "budget.over_limit_entered": "2",   # High
@@ -459,6 +472,13 @@ PRIORITY_MAP = {
 @app.post("/cycles-to-servicenow")
 async def forward_to_snow(request: Request):
     body = await request.body()
+    sig = request.headers.get("X-Cycles-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET.encode("utf-8"), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return Response(status_code=401)
+
     event = json.loads(body)
 
     incident = {
@@ -483,7 +503,13 @@ async def forward_to_snow(request: Request):
 
 ## Integration: Custom Receiver (Direct)
 
-For simple use cases, receive webhooks directly without middleware:
+For simple use cases, receive webhooks directly without middleware.
+
+**Best practices for webhook receivers:**
+- **Acknowledge quickly** — return `200 OK` as fast as possible. The events service treats non-2xx as failure and will retry with exponential backoff.
+- **Queue internally** — if processing takes time, accept the event, enqueue it in your own job queue, and return 200 immediately.
+- **Make handlers idempotent** — delivery is at-least-once, so you may receive the same event more than once. Use `event_id` (via `X-Cycles-Event-Id` header) for deduplication.
+- **Verify signatures** — always check `X-Cycles-Signature` before processing. Never trust unverified payloads.
 
 ```python
 from flask import Flask, request
@@ -526,7 +552,14 @@ def handle():
 
 ## Tenant Self-Service Webhooks
 
-Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events):
+Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 26 of 40 types). Admin-only events (`api_key.*`, `policy.*`, `system.*`) are not available to tenants.
+
+**Required API key permissions:**
+- `webhooks:write` — create, update, delete subscriptions
+- `webhooks:read` — list subscriptions and delivery history
+- `events:read` — query tenant's event stream via `GET /v1/events`
+
+If the API key lacks these permissions, the server returns `403 INSUFFICIENT_PERMISSIONS`.
 
 ```bash
 # Tenant creates their own webhook using their API key
@@ -549,21 +582,50 @@ curl -X POST http://localhost:7979/v1/webhooks \
 # }
 ```
 
+## Webhook URL Security
+
+By default, Cycles blocks webhook URLs that resolve to private IP ranges (SSRF protection):
+
+- **Blocked by default:** `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`
+- **HTTPS required** in production. HTTP URLs are rejected unless explicitly enabled.
+
+To test with local endpoints or internal services:
+
+```bash
+# Enable HTTP and remove CIDR blocks (development only!)
+curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"allow_http": true, "blocked_cidr_ranges": []}'
+```
+
+For production with internal endpoints, use `allowed_url_patterns` to allowlist specific internal domains:
+
+```bash
+curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "allowed_url_patterns": ["https://*.internal.example.com/*"],
+    "blocked_cidr_ranges": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+  }'
+```
+
 ## Event Type Reference
 
-| Event Type | Source | Use Case |
-|---|---|---|
-| `budget.threshold_crossed` | Runtime | Warning: budget nearing limit (e.g., 80%, 95%) |
-| `budget.exhausted` | Runtime | Critical: remaining = 0, all reservations denied |
-| `budget.over_limit_entered` | Runtime | Critical: debt > overdraft limit, scope frozen |
-| `budget.over_limit_exited` | Admin | Recovery: debt repaid below limit |
-| `budget.debt_incurred` | Runtime | Info: commit created debt via overdraft |
-| `reservation.denied` | Runtime | Warning: agent couldn't reserve budget |
-| `reservation.commit_overage` | Runtime | Info: actual spend > estimated |
-| `reservation.expired` | Sweeper | Info: reservation TTL expired |
-| `tenant.suspended` | Admin | Alert: tenant operations paused |
-| `tenant.closed` | Admin | Alert: tenant permanently closed |
-| `api_key.auth_failed` | Admin | Security: authentication failure |
-| `api_key.revoked` | Admin | Security: key access removed |
-| `system.store_connection_lost` | System | Critical: Redis connection failure |
-| `system.webhook_delivery_failed` | Events | Meta: webhook delivery permanently failed |
+| Event Type | Produced By | `source` Field | Use Case |
+|---|---|---|---|
+| `budget.threshold_crossed` | Runtime server | `cycles-server` | Warning: budget nearing limit (default thresholds: 80%, 95%, 100%) |
+| `budget.exhausted` | Runtime server | `cycles-server` | Critical: remaining = 0, all reservations denied |
+| `budget.over_limit_entered` | Runtime server | `cycles-server` | Critical: debt exceeded overdraft limit; new reservations blocked |
+| `budget.over_limit_exited` | Admin server | `cycles-admin` | Recovery: debt repaid below limit |
+| `budget.debt_incurred` | Runtime server | `cycles-server` | Info: commit created debt via ALLOW_WITH_OVERDRAFT |
+| `reservation.denied` | Runtime server | `cycles-server` | Warning: agent couldn't reserve budget |
+| `reservation.commit_overage` | Runtime server | `cycles-server` | Info: actual spend exceeded estimated amount |
+| `reservation.expired` | Expiry sweeper | `expiry-sweeper` | Info: reservation TTL expired without commit/release |
+| `tenant.suspended` | Admin server | `cycles-admin` | Alert: tenant operations paused |
+| `tenant.closed` | Admin server | `cycles-admin` | Alert: tenant permanently closed |
+| `api_key.auth_failed` | Admin server | `cycles-admin` | Security: authentication failure |
+| `api_key.revoked` | Admin server | `cycles-admin` | Security: key access removed |
+| `system.store_connection_lost` | Any service | `cycles-server` | Critical: Redis connection failure |
+| `system.webhook_delivery_failed` | Events service | `cycles-server-events` | Meta: webhook delivery permanently failed after all retries |
