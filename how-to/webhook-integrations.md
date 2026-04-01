@@ -632,7 +632,7 @@ curl -X POST http://localhost:7979/v1/admin/webhooks \
 
 Transform Cycles events into [Adaptive Card](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) format for Teams:
 
-> **Note:** Microsoft deprecated Office 365 Connectors (incoming webhooks via `webhook.office.com` URLs) in 2024. Existing webhooks still work but Microsoft recommends migrating to [Power Automate Workflows](https://learn.microsoft.com/en-us/power-automate/teams/send-a-message-in-teams). The Adaptive Card payload format below works with both the legacy connector and Workflows HTTP triggers.
+> **Note:** Microsoft says Microsoft 365 Connectors are [nearing deprecation](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) and recommends the Workflows app going forward. Incoming Webhooks and Adaptive Card posting are still documented and functional, but new development should prefer [Power Automate Workflows](https://learn.microsoft.com/en-us/power-automate/teams/send-a-message-in-teams) where possible. The Adaptive Card payload format below works with both approaches.
 
 ```python
 import hmac
