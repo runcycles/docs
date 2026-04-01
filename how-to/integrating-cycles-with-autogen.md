@@ -139,16 +139,33 @@ class CyclesBudgetClient:
             )
             raise
 
-    async def create_stream(self, messages, **kwargs):
-        # For streaming, delegate to inner and track usage from the final chunk
+    def create_stream(self, messages, **kwargs):
+        # Streaming calls are delegated without budget governance.
+        # For per-stream budget control, use reserveForStream patterns instead.
         return self._inner.create_stream(messages, **kwargs)
 
     async def close(self):
         await self._inner.close()
 
-    # Delegate remaining protocol methods
-    def __getattr__(self, name):
-        return getattr(self._inner, name)
+    def actual_usage(self):
+        return self._inner.actual_usage()
+
+    def total_usage(self):
+        return self._inner.total_usage()
+
+    def count_tokens(self, messages, *, tools=[]):
+        return self._inner.count_tokens(messages, tools=tools)
+
+    def remaining_tokens(self, messages, *, tools=[]):
+        return self._inner.remaining_tokens(messages, tools=tools)
+
+    @property
+    def capabilities(self):
+        return self._inner.capabilities
+
+    @property
+    def model_info(self):
+        return self._inner.model_info
 ```
 
 ## Using the budget-gated client
