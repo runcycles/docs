@@ -21,11 +21,11 @@ export default defineConfig({
   async buildEnd(config) {
     await generateFeed(config)
   },
-  description: 'Enforce hard limits on agent spend, risk, and actions. Open protocol, multi-language SDKs, Apache 2.0.',
+  description: 'Enforce hard limits on agent spend, risk, and actions before execution. Open protocol, multi-language SDKs, Apache 2.0.',
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Runtime authority for autonomous agents',
-  srcExclude: ['**/README.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
+  srcExclude: ['**/README.md', '**/CLAUDE.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
   head: [
     ['link', { rel: 'preload', href: '/fonts/inter-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
     ['link', { rel: 'preload', href: '/fonts/jetbrains-mono-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
