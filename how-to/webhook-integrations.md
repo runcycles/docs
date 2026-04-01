@@ -986,3 +986,10 @@ curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
 | `api_key.revoked` | Admin server | `cycles-admin` | Security: key access removed |
 | `system.store_connection_lost` | Any service | `cycles-server` | Critical: Redis connection failure |
 | `system.webhook_delivery_failed` | Events service | `cycles-server-events` | Meta: webhook delivery permanently failed after all retries |
+
+## Next steps
+
+- [Managing Webhooks](/how-to/managing-webhooks) — create, test, replay, and monitor webhook subscriptions
+- [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) — full 40-event-type catalog, delivery headers, retry policy, and status lifecycle
+- [Deploying the Events Service](/quickstart/deploying-the-events-service) — deploy the async webhook delivery service
+- [Security](/security#webhook-security) — SSRF protection, signing secret encryption, and deduplication
