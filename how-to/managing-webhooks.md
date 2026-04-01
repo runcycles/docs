@@ -9,7 +9,9 @@ This guide covers the full webhook lifecycle: creating subscriptions, testing co
 
 ## Creating a Webhook Subscription
 
-### Admin subscription (all 40 event types)
+### Admin subscription
+
+Required fields: `url` and `event_types` (at least one event type). All other fields are optional — the server provides sensible defaults.
 
 ```bash
 curl -X POST http://localhost:7979/v1/admin/webhooks \
