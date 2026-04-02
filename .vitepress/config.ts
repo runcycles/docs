@@ -229,6 +229,7 @@ export default defineConfig({
                 { text: 'Overview', link: '/concepts/comparisons' },
                 { text: 'How Cycles Compares', link: '/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers' },
                 { text: 'vs Rate Limiting', link: '/concepts/cycles-vs-rate-limiting' },
+                { text: 'vs LangSmith', link: '/concepts/cycles-vs-langsmith' },
                 { text: 'vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
                 { text: 'vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
                 { text: 'vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
