@@ -48,10 +48,15 @@ When a reservation is denied, `with_cycles()` returns `Err(Error::BudgetExceeded
 ### Basic catch
 
 ```rust
-use runcycles::{with_cycles, Error};
+use runcycles::{with_cycles, WithCyclesConfig, Error, models::Amount};
 
-let result = with_cycles(&client, request, |guard| async move {
-    call_llm(&prompt).await
+let config = WithCyclesConfig::new(Amount::tokens(1000))
+    .action("llm.completion", "gpt-4o");
+
+let result = with_cycles(&client, config, |ctx| async move {
+    let response = call_llm(&prompt).await?;
+    let actual = Amount::tokens(42);
+    Ok((response, actual))
 }).await;
 
 match result {
@@ -63,6 +68,8 @@ match result {
     Err(e) => return Err(e.into()),
 }
 ```
+
+The closure receives a `GuardContext` (with `decision`, `caps`, `reservation_id`, `affected_scopes`) and must return `Result<(T, Amount), Box<dyn Error>>` — the value plus the actual cost for commit.
 
 ### With retry delay
 
@@ -87,16 +94,23 @@ match result {
 ### Degradation pattern
 
 ```rust
-let result = with_cycles(&client, premium_request, |_| async {
-    call_llm_gpt4o(&prompt).await
+let premium = WithCyclesConfig::new(Amount::tokens(2000))
+    .action("llm.completion", "gpt-4o");
+
+let result = with_cycles(&client, premium, |_ctx| async move {
+    let r = call_llm_gpt4o(&prompt).await?;
+    Ok((r, Amount::tokens(1800)))
 }).await;
 
 let response = match result {
     Ok(r) => r,
     Err(Error::BudgetExceeded { .. }) => {
         // Try cheaper model with lower estimate
-        with_cycles(&client, budget_request, |_| async {
-            call_llm_gpt4o_mini(&prompt).await
+        let budget = WithCyclesConfig::new(Amount::tokens(500))
+            .action("llm.completion", "gpt-4o-mini");
+        with_cycles(&client, budget, |_ctx| async move {
+            let r = call_llm_gpt4o_mini(&prompt).await?;
+            Ok((r, Amount::tokens(300)))
         }).await?
     }
     Err(e) => return Err(e.into()),
@@ -228,10 +242,14 @@ match result {
 ## Catching all Cycles errors
 
 ```rust
-use runcycles::{Error, models::ErrorCode};
+use runcycles::{with_cycles, WithCyclesConfig, Error, models::{Amount, ErrorCode}};
 
-let result = with_cycles(&client, request, |guard| async move {
-    do_work().await
+let config = WithCyclesConfig::new(Amount::tokens(1000))
+    .action("llm.completion", "gpt-4o");
+
+let result = with_cycles(&client, config, |ctx| async move {
+    let value = do_work().await?;
+    Ok((value, Amount::tokens(800)))
 }).await;
 
 match result {
