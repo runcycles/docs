@@ -15,6 +15,10 @@ Cycles stores all state in Redis. Redis availability directly determines Cycles 
 
 Cycles stores all state in Redis. Redis availability directly determines Cycles availability.
 
+::: warning Always configure Redis authentication in production
+Set `REDIS_PASSWORD` and provide it to all Cycles services. An unauthenticated Redis instance is a critical security vulnerability — anyone with network access can read budget state, modify reservations, and extract API keys. See [Security Hardening — Redis Authentication](/how-to/security-hardening#authentication) for complete setup including TLS and ACLs.
+:::
+
 ### Persistence
 
 Enable both RDB snapshots and AOF append-only logging:

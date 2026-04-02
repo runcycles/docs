@@ -25,6 +25,16 @@ $ curl -s http://localhost:7878/v1/balances?tenant=acme-corp ...
 <details>
 <summary><strong>TL;DR — Full quickstart in 60 seconds</strong></summary>
 
+::: warning Production security
+The quickstart examples below use empty `REDIS_PASSWORD` and a weak `ADMIN_API_KEY` for fast local development. **For production**, generate strong secrets before deploying:
+```bash
+export REDIS_PASSWORD=$(openssl rand -base64 32)
+export ADMIN_API_KEY=$(openssl rand -base64 32)
+export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
+```
+Store these in a secrets manager, not in docker-compose files. Bind the Admin Server to internal network only (`127.0.0.1:7979:7979`). See [Security Hardening](/how-to/security-hardening) for the full checklist.
+:::
+
 If you have Docker running and just want to try Cycles immediately, copy-paste this entire block:
 
 ```bash
