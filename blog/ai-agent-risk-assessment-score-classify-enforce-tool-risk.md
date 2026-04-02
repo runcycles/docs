@@ -11,7 +11,7 @@ featured: true
 
 # AI Agent Risk Assessment: How to Score, Classify, and Enforce Tool Risk Before Production
 
-A customer-onboarding agent sends 200 collections emails instead of welcome emails. Total model cost: $1.40. Business impact: [$50K+ in lost pipeline](/blog/ai-agent-action-control-hard-limits-side-effects). A coding agent retries an ambiguous error 240 times. Total model cost: [$4,200](/blog/ai-agent-failures-budget-controls-prevent). Both agents passed every test. Both were under their dollar budgets. Neither had undergone a risk assessment.
+A customer-onboarding agent sends 200 collections emails instead of welcome emails. Total model cost: $1.40. Business impact: [$50K+ in lost pipeline](/blog/ai-agent-action-control-hard-limits-side-effects). A coding agent retries an ambiguous error 240 times. Total model cost: [$4,200](/blog/ai-agent-failures-budget-controls-prevent). Both agents passed every test. Both were under their dollar budgets. In both cases, the agent had no tool-level risk assessment.
 
 These are not anomalies. They are what happens when teams deploy agents without classifying what those agents can do. Model risk — bias, hallucination, drift — gets attention. **Tool risk** — what happens when the agent acts on the world — does not.
 
@@ -32,7 +32,7 @@ The distinction is operational:
 
 Model risk produces bad answers. Tool risk produces bad *consequences*. A bad answer can be corrected. A sent email, a triggered deploy, a deleted record, a processed payment — these persist after the agent stops.
 
-The [EU AI Act's Article 9](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires a risk management system that identifies and mitigates foreseeable risks throughout the AI system's lifecycle. The [NIST AI RMF's Map function](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires understanding the AI system's context and potential impacts. Both require risk assessment *before* deployment — not incident review after.
+For AI agents that qualify as high-risk AI systems, the [EU AI Act's Article 9](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires a risk management system that identifies and mitigates foreseeable risks throughout the system's lifecycle. The [NIST AI RMF's Map function](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires understanding the AI system's context and potential impacts. Both require risk assessment *before* deployment — not incident review after.
 
 A tool-level risk assessment is how you satisfy these requirements for agents specifically.
 
@@ -112,6 +112,8 @@ A support agent with 12 tools, classified tool by tool:
 Four Tier 0 tools (read-only), two Tier 1 (reversible local writes), one Tier 2 (external read), three Tier 3 (mutations with customer impact), two Tier 4 (financial/irreversible).
 
 This classification alone tells you something important: **half the agent's tools are Tier 0–1 (safe), but a third are Tier 3–4 (dangerous).** The risk profile is not evenly distributed — the dangerous tools are a minority, but they carry the majority of the blast radius.
+
+**A note on reads in regulated environments.** The tier system isolates side-effect risk — actions that change state in the world. But in regulated or exfiltration-prone environments, sensitive read tools may warrant non-zero risk points or a separate data-access budget. An agent that reads 10,000 customer records in a single run has not changed any state, but it has created a data-exposure surface that [OWASP ASI03 (identity and privilege abuse)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) and NIST's [Map function](https://airc.nist.gov/airmf-resources/playbook/map/) both flag as a risk. If your agent handles PII, financial, or health data, consider assigning 1–2 risk points to sensitive reads or tracking them under a separate `DATA_ACCESS` budget that limits read volume independently of action risk.
 
 ## Assigning Risk Scores: The RISK_POINTS Methodology
 
@@ -195,7 +197,7 @@ Applying the methodology to the 12-tool support agent, assuming: B2B SaaS (500+ 
 | `send_customer_email` | 3 | 20 | 2x (reputational: customer-facing, forwardable) | **40** | Customer sees it, can screenshot/forward — trust at stake |
 | `create_support_ticket` | 3 | 20 | 2x (reputational: visible in customer portal) | **40** | Ticket visible to customer in portal, triggers notifications |
 | `update_crm_record` | 3 | 20 | 2x (PII mutation) | **40** | Modifies customer data, affects downstream systems |
-| `issue_refund` | 4 | 50 | 2x (financial + reputational) | **100** | Financial commitment, irreversible, wrong refund erodes trust |
+| `issue_refund` | 4 | 50 | 2x (reputational: wrong refund erodes customer trust) | **100** | Financial commitment, irreversible — reputational multiplier dominates |
 | `escalate_to_billing` | 4 | 50 | 2x (reputational: customer receives billing communication) | **100** | Triggers billing workflow visible to customer |
 
 Note how reputational exposure shifted two scores: `create_support_ticket` moved from 30 to 40 (the ticket is visible in the customer portal — a wrong ticket title or description is a trust issue, not just an operational one). `escalate_to_billing` moved from 75 to 100 (the customer receives a billing-related communication — a false escalation damages trust in the billing relationship). In both cases, the technical blast radius was unchanged, but the reputational blast radius was higher than the other multipliers.
@@ -291,7 +293,7 @@ tools:
     tier: 4
     risk_points: 100
     enforcement: reserve-commit
-    rationale: "Financial, irreversible — 2x financial + reputational"
+    rationale: "Financial, irreversible — 2x reputational (wrong refund erodes customer trust)"
 
   - name: escalate_to_billing
     tier: 4
@@ -416,7 +418,7 @@ The worksheet is evidence you assessed the risk. The shadow mode report is evide
 4. **Budget** the per-run limit based on what a normal, successful run looks like.
 5. **Validate** with shadow mode, then enforce and calibrate continuously.
 
-The assessment takes an afternoon for a typical agent with 10–20 tools. The enforcement is permanent.
+The assessment can usually be done in an afternoon for a typical agent with 10–20 tools. The enforcement is permanent.
 
 ## Further Reading
 
