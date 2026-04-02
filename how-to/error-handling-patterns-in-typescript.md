@@ -7,6 +7,10 @@ description: "Practical patterns for handling Cycles errors in TypeScript with w
 
 This guide covers practical patterns for handling Cycles errors in TypeScript applications — with `withCycles`, `reserveForStream`, and the programmatic `CyclesClient`.
 
+::: tip Also available
+See [Error Handling in Python](/how-to/error-handling-patterns-in-python) or [Rust](/how-to/error-handling-patterns-in-rust) for equivalent patterns, or the [general Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) for language-agnostic concepts.
+:::
+
 ## Exception hierarchy
 
 The `runcycles` package provides a typed exception hierarchy:
