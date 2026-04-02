@@ -111,31 +111,7 @@ All three must have sufficient budget for the reservation to succeed.
 
 ## Architecture
 
-```
-┌──────────────────────────────┐
-│      Your Application        │
-│ @cycles / withCycles / MCP   │
-└──────────────┬───────────────┘
-               │ HTTP (port 7878)
-               ▼
-┌──────────────────────┐   ┌───────────────────────┐
-│   Cycles Server      │   │  Cycles Admin Server  │
-│ (runtime enforcement)│   │ (tenants/budgets/keys)│
-│  Port 7878           │   │  Port 7979            │
-└──────────┬───────────┘   └──────────┬────────────┘
-           └──────────┬───────────────┘
-                      ▼
-             ┌──────────────────┐
-             │     Redis 7+     │
-             └────────┬─────────┘
-                      │ BRPOP
-                      ▼
-             ┌─────────────────────────┐
-             │  Cycles Events Service  │
-             │  Webhooks (optional)    │
-             │  Port 7980              │
-             └─────────────────────────┘
-```
+<ArchDiagram />
 
 Your application talks to the **Cycles Server** for runtime budget checks. The **Admin Server** manages tenants, API keys, and budget ledgers. The **Events Service** (optional) delivers webhook notifications asynchronously — see [Deploying the Events Service](/quickstart/deploying-the-events-service).
 

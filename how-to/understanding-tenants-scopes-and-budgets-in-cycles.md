@@ -15,33 +15,7 @@ Understanding how these three pieces relate is the foundation for designing effe
 
 ## The three building blocks
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                       TENANT                            │
-│  The isolation boundary. All operations are scoped to   │
-│  exactly one tenant via the API key.                    │
-│                                                         │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │                    SCOPES                          │ │
-│  │  Hierarchical paths derived from the Subject:      │ │
-│  │  tenant:acme → tenant:acme/workspace:prod →        │ │
-│  │  tenant:acme/workspace:prod/app:chatbot            │ │
-│  │                                                    │ │
-│  │  ┌──────────────────────────────────────────────┐  │ │
-│  │  │               BUDGETS                        │  │ │
-│  │  │  An allocation at each scope you want to     │  │ │
-│  │  │  control. Checked atomically on every        │  │ │
-│  │  │  reservation.                                │  │ │
-│  │  │                                              │  │ │
-│  │  │  tenant:acme               → $100 allocated  │  │ │
-│  │  │  tenant:acme/workspace:prod → $60 allocated  │  │ │
-│  │  │  tenant:acme/.../app:chatbot → $20 allocated │  │ │
-│  │  └──────────────────────────────────────────────┘  │ │
-│  └────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-```
-
-Each layer builds on the one above it. Tenants provide isolation. Scopes provide hierarchy within a tenant. Budgets provide enforcement at each scope.
+<ScopeDiagram />
 
 ## Tenants: the isolation boundary
 

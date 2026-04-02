@@ -48,6 +48,14 @@ const layers = [
     <p class="stack-caption">
       Routing and visibility are necessary. They are not sufficient. Neither can prevent the 241st retry or block the 201st email.
     </p>
+    <div class="visually-hidden">
+      AI agent infrastructure stack — three layers:
+      1. Routing layer (which model?) — LiteLLM, Portkey, gateway proxies.
+      2. Visibility layer (what happened?) — LangSmith, Langfuse, Helicone.
+      3. Authority layer (should this happen? — before execution) — Cycles.
+      The Authority layer contains three capabilities: Budget Gate, Action Gate, and Audit Trail.
+      Routing and visibility are necessary but not sufficient. Neither can prevent the 241st retry or block the 201st email. Cycles is the authority layer — the decision point between "the agent wants to do X" and "X happens."
+    </div>
   </div>
 </template>
 

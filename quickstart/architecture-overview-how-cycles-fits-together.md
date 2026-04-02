@@ -15,62 +15,7 @@ This is a reference page. If you haven't set up Cycles yet, start with the [End-
 
 ## System overview
 
-```
-┌──────────────────────────────────────┐  ┌────────────────────────────┐
-│         Your Application             │  │   AI Agent (MCP Host)      │
-│                                      │  │  Claude Desktop / Code /   │
-│  ┌──────────────┐  ┌──────────────┐  │  │  Cursor / Windsurf         │
-│  │  @Cycles     │  │ CyclesClient │  │  │           │                │
-│  │  annotation  │  │   (direct)   │  │  │           ▼                │
-│  └──────┬───────┘  └─────┬────────┘  │  │  ┌──────────────────────┐  │
-│         │                │           │  │  │   Cycles MCP Server  │  │
-│         ▼                ▼           │  │  │   (stdio / HTTP)     │  │
-│  ┌──────────────────────────────┐    │  │  └──────────┬───────────┘  │
-│  │ Java Spring, Other bindings  │    │  └─────────────┼──────────────┘
-│  │     (Cycles Wire Protocol)   │    │                │
-│  └──────────────┬───────────────┘    │                │
-└─────────────────┼────────────────────┘                │
-                  │ HTTP (JSON)                         │ HTTP (JSON)
-                  │ X-Cycles-API-Key                    │ X-Cycles-API-Key
-                  └──────────────┬──────────────────────┘
-                                 ▼
-┌─────────────────────────────────────┐  ┌───────────────────────────────────┐
-│      Cycles Server (port 7878)      │  │  Cycles Admin Server (port 7979)  │
-│     (runtime budget enforcement)    │  │  (tenant, key, budget management) │
-│                                     │  │                                   │
-│  ┌────────────┐  ┌──────────────┐   │  │  ┌─────────────────────────────┐  │
-│  │ Controllers│  │ Auth Filter  │   │  │  │ Tenant CRUD, API Key Mgmt,  │  │
-│  │ (REST API) │  │ (API Key)    │   │  │  │ Budget Ledgers, Policies,   │  │
-│  └─────┬──────┘  └──────────────┘   │  │  │ Audit Logs, Auth Validation │  │
-│        │                            │  │  └──────────────┬──────────────┘  │
-│        ▼                            │  │                 │                 │
-│  ┌──────────────────────────────┐   │  └─────────────────┼─────────────────┘
-│  │ RedisReservationRepository   │   │                    │
-│  │ (Lua scripts for atomicity)  │   │                    │
-│  └──────────────┬───────────────┘   │                    │
-└─────────────────┼───────────────────┘                    │
-                  │                                        │
-                  └──────────────┬─────────────────────────┘
-                                 ▼
-              ┌─────────────────────────────────────┐
-              │            Redis 7+                 │
-              │  (budget state, reservations,       │
-              │   tenants, API keys, audit logs)    │
-              └──────────────────┬──────────────────┘
-                                 │ BRPOP (dispatch:pending)
-                                 ▼
-              ┌─────────────────────────────────────┐
-              │   Cycles Events Service (port 7980) │
-              │   (async webhook delivery, HMAC     │
-              │    signing, retry, auto-disable)    │
-              └──────────────────┬──────────────────┘
-                                 │ HTTP POST + X-Cycles-Signature
-                                 ▼
-              ┌─────────────────────────────────────┐
-              │       External Webhook Endpoints    │
-              │   (PagerDuty, Slack, your app)      │
-              └─────────────────────────────────────┘
-```
+<ArchDiagramFull />
 
 Your application talks to the **Cycles Server** (port 7878) at runtime. The **Cycles Admin Server** (port 7979) is the management plane where you create tenants, generate API keys, and configure budget ledgers. The **Cycles Events Service** (port 7980) delivers webhook notifications asynchronously. All three services share the same Redis instance.
 
@@ -352,36 +297,7 @@ The server authenticates every request via the `X-Cycles-API-Key` header. Each A
 
 A typical deployment:
 
-```
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-│ Agent A  │  │ Agent B  │  │ Agent C  │  │ Agent D  │  │ Agent E  │
-│ (Spring) │  │ (Python) │  │ (Node.js)│  │  (HTTP)  │  │  (MCP)   │
-└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
-     │             │             │             │
-     └──────┬──────┴─────────────┴─────────────┘
-            │
-            ▼
-     ┌──────────────────────────────┐      ┌──────────────────────────┐
-     │       Cycles Server          │      │   Cycles Admin Server    │
-     │    (one or more instances)   │      │   (internal network)     │
-     │         port 7878            │      │      port 7979           │
-     └──────────────┬───────────────┘      └────────────┬─────────────┘
-                    │                                   │
-                    └─────────────┬──────────────────────┘
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │         Redis 7+             │
-                  │   (single instance or        │
-                  │    Redis Cluster)            │
-                  └──────────────┬───────────────┘
-                                │
-                                ▼
-                  ┌──────────────────────────────┐      ┌──────────────────────┐
-                  │   Cycles Events Service      │ ───► │  Webhook Endpoints   │
-                  │   (optional, port 7980)      │      │  (PagerDuty, Slack,  │
-                  └──────────────────────────────┘      │   your app, etc.)    │
-                                                        └──────────────────────┘
-```
+<DeploymentDiagram />
 
 Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines. The events service is optional — if deployed, it consumes delivery jobs from Redis and delivers webhooks with HMAC-SHA256 signatures.
 
