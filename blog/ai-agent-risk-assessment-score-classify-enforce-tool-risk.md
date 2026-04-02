@@ -133,7 +133,7 @@ These are starting points. The [existing examples](/blog/ai-agent-action-control
 
 ### Step 2: Apply Context Multipliers
 
-Base points assume a generic context. Three factors adjust them for your specific deployment:
+Base points assume a generic context. Four factors adjust them for your specific deployment:
 
 **Audience size.** An email to an internal team (10 people) is different from an email to a customer segment (10,000 people). The same action, different blast radius.
 
@@ -342,34 +342,31 @@ A risk assessment without enforcement is documentation. It satisfies a checkbox 
 The worksheet's `budget` section maps directly to a Cycles budget with RISK_POINTS:
 
 ```bash
-# Create a per-run risk-point budget for the support agent
-curl -X POST http://localhost:7878/v1/budgets \
-  -H "Authorization: Bearer $API_KEY" \
+# Create a per-app risk-point budget for the support agent
+# Budget creation uses the Admin API (port 7979), not the runtime API
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
   -d '{
-    "scope": {
-      "tenant": "acme-corp",
-      "app": "support-copilot"
-    },
-    "amount": 200,
-    "unit": "RISK_POINTS"
+    "tenant_id": "acme-corp",
+    "scope": "tenant:acme-corp/app:support-copilot",
+    "unit": "RISK_POINTS",
+    "allocated": 200
   }'
 ```
 
-The cost budget is a separate budget on the same scope, using `USD_MICROCENTS`:
+The cost budget is a separate budget on the same scope, using `USD_MICROCENTS` (1 USD = 100,000,000 microcents):
 
 ```bash
-# Create a per-run cost budget ($5.00 = 5,000,000 microcents)
-curl -X POST http://localhost:7878/v1/budgets \
-  -H "Authorization: Bearer $API_KEY" \
+# Create a per-app cost budget ($5.00 = 500,000,000 microcents)
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
   -d '{
-    "scope": {
-      "tenant": "acme-corp",
-      "app": "support-copilot"
-    },
-    "amount": 5000000,
-    "unit": "USD_MICROCENTS"
+    "tenant_id": "acme-corp",
+    "scope": "tenant:acme-corp/app:support-copilot",
+    "unit": "USD_MICROCENTS",
+    "allocated": 500000000
   }'
 ```
 
@@ -392,7 +389,7 @@ Risk assessments are living documents. Scores should change when:
 
 - **A new tool is added.** Classify it, score it, update the worksheet before deployment.
 - **An incident occurs.** If a tool caused damage, re-evaluate its tier and multiplier. The $50K email incident would justify raising `send_customer_email` from 40 to 60 points.
-- **Usage patterns shift.** If shadow mode shows agents consistently using 140 of 150 points on normal runs, the budget is too tight for safe operation — raise it or optimize the workflow.
+- **Usage patterns shift.** If shadow mode shows agents consistently using 180 of 200 points on normal runs, the budget is too tight for safe operation — raise it or optimize the workflow.
 - **Context changes.** Entering a new market with different regulatory requirements, expanding the customer base, or adding delegation capabilities all change the multipliers.
 
 Document every change in the worksheet with a date and rationale. The change history is itself audit evidence — it demonstrates the "continuous, iterative" risk management that [Article 9 requires](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement).
