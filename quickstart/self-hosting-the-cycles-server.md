@@ -7,8 +7,8 @@ description: "Run the Cycles budget enforcement server locally, with Docker, or 
 
 The Cycles server is a Spring Boot application that enforces budget reservations backed by Redis. This guide covers how to run it locally, with Docker, and in production.
 
-::: tip Looking for the full deployment walkthrough?
-See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for an end-to-end guide that covers the admin server, tenant setup, API key creation, budget allocation, and verification — everything you need from zero to a working deployment.
+::: tip This guide covers the runtime Cycles Server (port 7878) only
+The full Cycles stack includes three services: the **Cycles Server** (runtime enforcement, covered here), the **Admin Server** (port 7979, tenant/budget management), and the optional **Events Service** (port 7980, webhook delivery). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the end-to-end guide covering all components.
 :::
 
 ## Prerequisites

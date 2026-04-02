@@ -1,6 +1,6 @@
 ---
 title: "Monitoring and Alerting"
-description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment. Covers balances, reservations, and budget exhaustion."
+description: "Key metrics, alerting thresholds, and observability patterns for monitoring a production Cycles deployment. Covers balances, reservations, budget exhaustion, and webhook delivery."
 ---
 
 # Monitoring and Alerting
@@ -81,11 +81,17 @@ Track reservation lifecycle events:
 
 ### Server health metrics
 
-The Cycles Server exposes Spring Boot Actuator metrics:
+All three Cycles services expose Spring Boot Actuator metrics:
 
 ```bash
-# Health check
+# Cycles Server
 curl http://localhost:7878/actuator/health
+
+# Admin Server
+curl http://localhost:7979/actuator/health
+
+# Events Service
+curl http://localhost:7980/actuator/health
 
 # JVM metrics (if metrics endpoint is enabled)
 curl http://localhost:7878/actuator/metrics
@@ -93,12 +99,24 @@ curl http://localhost:7878/actuator/metrics
 
 Key server metrics:
 
-| Metric | Threshold |
+| Metric | Component | Threshold |
+|---|---|---|
+| Response latency (p99) | Cycles Server | Alert if > 50ms |
+| Error rate (5xx) | Cycles Server, Admin Server | Alert if > 1% |
+| Redis connection pool usage | All services | Alert if > 80% |
+| JVM heap usage | All services | Alert if > 80% |
+
+### Events Service metrics
+
+The Events Service (port 7980) delivers webhooks asynchronously. Monitor separately:
+
+| Metric | What to watch |
 |---|---|
-| Response latency (p99) | Alert if > 50ms |
-| Error rate (5xx) | Alert if > 1% |
-| Redis connection pool usage | Alert if > 80% |
-| JVM heap usage | Alert if > 80% |
+| **Queue depth** (`redis-cli LLEN dispatch:pending`) | Sustained growth means delivery is falling behind. Should be near zero. |
+| **Delivery success rate** | Percentage of deliveries receiving HTTP 2xx. Drops indicate endpoint issues. |
+| **Retry rate** | High retry rates signal unreliable webhook endpoints or network issues. |
+| **Auto-disabled subscriptions** | Any auto-disabled subscription needs investigation — the endpoint failed repeatedly. |
+| **Delivery latency** | Time from event creation to successful delivery. Growing latency signals backlog. |
 
 ## Alerting rules
 
@@ -149,6 +167,22 @@ groups:
           severity: warning
         annotations:
           summary: "Cycles Server p99 latency above 50ms"
+
+      - alert: CyclesWebhookQueueBacklog
+        expr: cycles_dispatch_pending_length > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Webhook delivery queue depth above 100 — Events Service may be falling behind"
+
+      - alert: CyclesWebhookDeliveryFailures
+        expr: rate(cycles_webhook_deliveries_failed_total[5m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sustained webhook delivery failures — check endpoint availability"
 ```
 
 ### Debt monitoring
@@ -188,10 +222,19 @@ Display for each tenant/scope:
 
 ### Operational health dashboard
 
-- **Server response latency** — p50, p95, p99 time series
-- **Error rate** — 4xx and 5xx rate
+- **Server response latency** — p50, p95, p99 time series (Cycles Server + Admin Server)
+- **Error rate** — 4xx and 5xx rate across all services
 - **Redis connection pool** — active vs available connections
 - **Active reservations** — current count (should be bounded)
+
+### Webhook delivery dashboard
+
+- **Queue depth** — `dispatch:pending` length over time (should trend toward zero)
+- **Delivery rate** — successful deliveries/minute
+- **Retry rate** — retries/minute (indicates endpoint reliability)
+- **Failed deliveries** — failed after max retries
+- **Auto-disabled subscriptions** — count of subscriptions disabled due to consecutive failures
+- **Delivery latency** — time from event to successful delivery (p50, p95)
 
 ## Log-based monitoring
 
@@ -204,8 +247,14 @@ docker compose logs -f cycles-server | grep "BUDGET_EXCEEDED"
 # Watch for reservation expiry
 docker compose logs -f cycles-server | grep "RESERVATION_EXPIRED"
 
-# Watch for errors
-docker compose logs -f cycles-server | grep "ERROR"
+# Watch for webhook delivery failures
+docker compose logs -f cycles-events | grep "DELIVERY_FAILED"
+
+# Watch for auto-disabled subscriptions
+docker compose logs -f cycles-events | grep "SUBSCRIPTION_DISABLED"
+
+# Watch for errors across all services
+docker compose logs -f cycles-server cycles-admin cycles-events | grep "ERROR"
 ```
 
 For structured logging, pipe to your log aggregation system (ELK, Datadog, CloudWatch) and create alerts on log patterns.
