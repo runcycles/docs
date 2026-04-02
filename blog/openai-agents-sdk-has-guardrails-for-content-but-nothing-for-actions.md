@@ -97,41 +97,41 @@ For every handoff:
 
 If budget is exhausted at any point, `BudgetExceededError` is raised. The agent stops. No further tokens are consumed. No further tools execute.
 
-## Tool risk mapping: governance beyond tokens
+## Tool estimate mapping: governance beyond tokens
 
 Token costs are one dimension of the problem. But a `send_email` call and a `search_knowledge_base` call consume roughly the same number of tokens — yet their consequences are vastly different.
 
-`ToolRiskMap` assigns risk-point costs to tools, creating a policy layer on top of the budget:
+`ToolEstimateMap` assigns per-call estimates to tools, creating a policy layer on top of the budget:
 
 ```python
-from runcycles_openai_agents import CyclesRunHooks, ToolRiskMap, ToolRiskConfig
+from runcycles_openai_agents import CyclesRunHooks, ToolEstimateMap
 
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk=ToolRiskMap(
+    tool_estimates=ToolEstimateMap(
         mapping={
-            "send_email": 50,       # high-risk: 50 points per invocation
-            "update_crm": 10,       # medium-risk: 10 points
-            "run_deploy": 100,      # critical: 100 points
-            "search_knowledge": 0,  # free: no reservation, no API call
+            "send_email": 50,       # high-risk: 50 RISK_POINTS per invocation
+            "update_crm": 10,       # medium-risk: 10 RISK_POINTS
+            "run_deploy": 100,      # critical: 100 RISK_POINTS
+            "search_knowledge": 0,  # zero estimate: no reservation, no API call
         },
-        default_risk=1,             # unmapped tools: 1 point
+        default_estimate=1,         # unmapped tools: 1 RISK_POINT
     ),
 )
 ```
 
-Zero-cost tools skip the Cycles API entirely — no network round-trip, no latency overhead for read-only operations. The agent searches and retrieves as fast as the SDK allows.
+Zero-estimate tools skip the Cycles API entirely — no network round-trip, no latency overhead for read-only operations. The agent searches and retrieves as fast as the SDK allows.
 
-High-risk tools consume budget proportional to their consequence, not their token usage. An agent with 500 risk points can send 10 emails (50 × 10 = 500) or make 50 CRM updates (10 × 50 = 500) or trigger 5 deployments (100 × 5 = 500) — but not all three. The budget enforces trade-offs that token counting alone cannot express.
+Higher-estimate tools consume budget proportional to their consequence, not their token usage. An agent with 500 risk points can send 10 emails (50 × 10 = 500) or make 50 CRM updates (10 × 50 = 500) or trigger 5 deployments (100 × 5 = 500) — but not all three. The budget enforces trade-offs that token counting alone cannot express.
 
-The `default_risk` parameter is a safety net. When someone adds a new tool to the agent and forgets to add it to the risk map, it still costs 1 point per invocation. No tool runs completely ungoverned.
+The `default_estimate` parameter is a safety net. When someone adds a new tool to the agent and forgets to add it to the estimate map, it still costs 1 point per invocation. No tool runs completely ungoverned.
 
 This isn't just budgeting — it's a policy layer. Tenant A can send 10 emails per session. Tenant B gets 100. Tenant C gets none. The policy is expressed as budget allocation, enforced at runtime, and audited in the Cycles ledger.
 
-For advanced cases, `ToolRiskConfig` allows custom `action_kind` values per tool, enabling fine-grained filtering in the audit trail:
+For advanced cases, `ToolEstimateConfig` allows custom `action_kind` values per tool, enabling fine-grained filtering in the audit trail:
 
 ```python
-"update_crm": ToolRiskConfig(risk_points=10, action_kind="tool.crm.update"),
+"update_crm": ToolEstimateConfig(estimate=10, action_kind="tool.crm.update"),
 ```
 
 ## Pre-run authorization check
@@ -204,7 +204,7 @@ from runcycles_openai_agents import CyclesRunHooks, cycles_budget_guardrail
 guardrail = cycles_budget_guardrail(tenant="acme", estimate=5_000_000)
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk={"send_email": 50, "search": 0},
+    tool_estimates={"send_email": 50, "search": 0},
 )
 
 agent = Agent(

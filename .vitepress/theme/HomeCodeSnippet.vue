@@ -97,7 +97,7 @@ from runcycles_openai_agents import CyclesRunHooks, cycles_budget_guardrail
 guardrail = cycles_budget_guardrail(tenant="acme", estimate=5_000_000)
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk={"send_email": 50, "search": 0},
+    tool_estimates={"send_email": 50, "search": 0},
 )
 
 agent = Agent(
