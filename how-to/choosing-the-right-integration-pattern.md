@@ -9,26 +9,7 @@ Each Cycles SDK offers multiple integration patterns. This guide helps you pick 
 
 ## Decision tree
 
-```
-Is the agent an MCP-compatible host (Claude Desktop, Claude Code, Cursor, Windsurf)?
-├── Yes → Use the MCP Server (@runcycles/mcp-server) — zero code changes
-└── No
-    Is it an agent framework with lifecycle hooks (OpenAI Agents SDK, OpenClaw)?
-    ├── Yes → Use the framework plugin (runcycles-openai-agents, openclaw-budget-guard)
-    └── No
-        Is the call streaming?
-        ├── Yes → Use reserveForStream (TS) or programmatic client (Python)
-        └── No
-            ├── Is budget logic per-request in a web framework?
-            │   ├── Yes → Use middleware (Express, FastAPI)
-            │   └── No
-            │       ├── Is it a simple function call?
-            │       │   ├── Yes → Use decorator (@cycles / withCycles / @Cycles)
-            │       │   └── No → Use programmatic client
-            │       └── Do you need fine-grained control over commit timing?
-            │           ├── Yes → Use programmatic client
-            │           └── No → Use decorator
-```
+<DecisionTree />
 
 ## Pattern comparison
 

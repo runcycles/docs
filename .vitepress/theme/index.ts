@@ -10,6 +10,10 @@ import Layout from './Layout.vue'
 import BlogIndex from './BlogIndex.vue'
 import BlogPost from './BlogPost.vue'
 import StackDiagram from './StackDiagram.vue'
+import ArchDiagram from './ArchDiagram.vue'
+import ArchDiagramFull from './ArchDiagramFull.vue'
+import DecisionTree from './DecisionTree.vue'
+import ScopeDiagram from './ScopeDiagram.vue'
 
 export default {
   extends: DefaultTheme,
@@ -20,6 +24,10 @@ export default {
     app.component('BlogIndex', BlogIndex)
     app.component('BlogPost', BlogPost)
     app.component('StackDiagram', StackDiagram)
+    app.component('ArchDiagram', ArchDiagram)
+    app.component('ArchDiagramFull', ArchDiagramFull)
+    app.component('DecisionTree', DecisionTree)
+    app.component('ScopeDiagram', ScopeDiagram)
   },
   setup() {
     const route = useRoute()
