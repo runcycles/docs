@@ -64,6 +64,7 @@ export default defineConfig({
       const fallback = new Date().toISOString()
       return items
         .filter((item) => item.url !== '404')
+        .filter((item) => !item.url.includes('/operations/'))
         .map((item) => item.lastmod ? item : { ...item, lastmod: fallback })
     },
   },
