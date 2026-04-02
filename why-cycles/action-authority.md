@@ -44,12 +44,9 @@ hooks = CyclesRunHooks(
 )
 ```
 
-With a budget of 200 risk points per session:
-- The agent can search and read freely (0 points)
-- It can send 4 emails (50 × 4 = 200)
-- It **cannot** send 5 emails — the 5th is denied before it executes
+In the original incident, the agent sent 200 emails unchecked. With risk points, you decide how many is too many. A budget of 200 risk points with 50 points per email means the agent can send 4 emails before it's denied. A budget of 10,000 points with 50 per email caps it at 200 — and blocks email #201 before it executes.
 
-The 201st email never sends. Not because of cost. Because the agent's *action authority* is exhausted.
+The point isn't the specific number. It's that **every action is gated before execution** — not logged after the damage is done.
 
 ## What happens now
 

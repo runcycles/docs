@@ -11,7 +11,7 @@ The model pricing was exactly right. The call volume was not.
 
 ## Why existing controls didn't help
 
-**Provider spending caps** are monthly and org-wide. OpenAI's usage limit doesn't distinguish between your production agent and your staging test. By the time the monthly cap kicked in, the damage was done — and it blocked every other agent on the account too.
+**Provider spending caps** are typically monthly and org-wide. They don't distinguish between your production agent and your staging test. By the time the monthly cap kicks in, the damage is done — and it blocks every other agent on the account too.
 
 **Rate limits** control how fast, not how much. The agent stayed within its requests-per-second limit. It was making perfectly well-formed API calls. Just 240 of them.
 
@@ -20,7 +20,7 @@ The model pricing was exactly right. The call volume was not.
 ## How Cycles fixes it
 
 ```python
-from runcycles import cycles, BudgetExceededError
+from runcycles import cycles
 
 @cycles(estimate=2_000_000, action_kind="llm.completion", action_name="gpt-4o")
 def call_llm(prompt: str) -> str:
@@ -49,7 +49,7 @@ The same agent with a $15 per-run budget stops after 8 iterations and surfaces t
 | Cost | $4,200 | $15 |
 | Time to detect | Next morning | Immediately |
 | Impact on other agents | All blocked by provider cap | None — per-run isolation |
-| Recovery action | Refund negotiation | Fix the prompt |
+| Recovery action | Post-mortem and budget reset | Fix the prompt |
 
 ## Go deeper
 

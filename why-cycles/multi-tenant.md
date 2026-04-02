@@ -13,7 +13,7 @@ This isn't a scaling problem. It's an isolation problem.
 
 ## Why shared controls fail for multi-tenant
 
-**Provider spending caps are org-wide.** OpenAI's monthly limit doesn't know which of your 500 customers triggered the spend. When it fires, it blocks all of them.
+**Provider spending caps are org-wide.** Your provider's monthly limit doesn't know which of your 500 customers triggered the spend. When it fires, it blocks all of them.
 
 **Rate limits are per-key, not per-tenant.** If all customers share an API key (common in SaaS), one customer's burst consumes the rate limit for everyone. If each customer has their own key, you're managing 500 API keys at the provider level — and still have no budget enforcement.
 
@@ -24,8 +24,8 @@ This isn't a scaling problem. It's an isolation problem.
 Each customer maps to a Cycles tenant. Each tenant has its own budget, its own API key, and its own scope hierarchy — enforced atomically by the protocol.
 
 ```python
-# Customer onboarding: create tenant + budget
-onboard_customer("customer-47", plan="pro")  # $50/month budget
+# Your onboarding logic (see Multi-Tenant SaaS Guide for full implementation)
+onboard_customer("customer-47", plan="pro")  # creates tenant + API key + $50/month budget
 
 # Every agent call is scoped to the requesting tenant
 @cycles(
