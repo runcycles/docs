@@ -132,15 +132,7 @@ Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budge
 
 ## Delivery status lifecycle
 
-```
-PENDING ──HTTP 2xx──► SUCCESS (reset consecutive_failures)
-    │
-    └──non-2xx──► RETRYING ──retry──► SUCCESS
-                      │
-                      └──max retries exceeded──► FAILED
-                                                    │
-                                                    └──consecutive >= threshold──► subscription DISABLED
-```
+<DeliveryStateMachine />
 
 | Status | Meaning |
 |--------|---------|
