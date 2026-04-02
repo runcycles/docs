@@ -62,6 +62,16 @@ microcents = price_per_million_tokens × token_count × 100
 | Gemini 2.5 Flash | $0.15 | $0.60 | 15 | 60 |
 | Gemini 2.0 Flash | $0.10 | $0.40 | 10 | 40 |
 
+### Meta (Llama)
+
+| Model | Input (per 1M tokens) | Output (per 1M tokens) | Input (microcents/token) | Output (microcents/token) |
+|---|---|---|---|---|
+| Llama 4 Maverick | $0.20 | $0.60 | 20 | 60 |
+| Llama 4 Scout | $0.15 | $0.40 | 15 | 40 |
+| Llama 3.3 70B | $0.40 | $0.40 | 40 | 40 |
+
+> Llama model pricing varies by hosting provider. The values above are representative of major inference providers (Together AI, Groq, Fireworks). Self-hosted models have no per-token cost — use `TOKENS` or `RISK_POINTS` units instead. See the [Ollama integration guide](/how-to/integrating-cycles-with-ollama) for self-hosted patterns.
+
 ::: info Note
 Prices change. Check your provider's pricing page for current rates. The formulas and approach remain the same regardless of specific prices.
 :::
@@ -106,10 +116,16 @@ with buffer = 5,040,000 microcents
 def estimate_cost(input_tokens: int, max_output_tokens: int, model: str) -> int:
     """Return estimated cost in USD_MICROCENTS with 20% buffer."""
     rates = {
-        "gpt-4o":         (250, 1000),
-        "gpt-4o-mini":    (15, 60),
-        "claude-sonnet":  (300, 1500),
-        "claude-haiku":   (80, 400),
+        "gpt-4o":          (250, 1000),
+        "gpt-4o-mini":     (15, 60),
+        "gpt-4.1":         (200, 800),
+        "gpt-4.1-mini":    (40, 160),
+        "gpt-4.1-nano":    (10, 40),
+        "claude-sonnet":   (300, 1500),
+        "claude-haiku":    (80, 400),
+        "gemini-2.5-pro":  (125, 1000),
+        "gemini-2.5-flash":(15, 60),
+        "llama-4-maverick":(20, 60),
     }
     input_rate, output_rate = rates.get(model, (250, 1000))
     estimate = (input_tokens * input_rate) + (max_output_tokens * output_rate)
@@ -129,10 +145,16 @@ def ask(prompt: str, max_tokens: int = 1000) -> str:
 ```typescript [TypeScript]
 function estimateCost(inputTokens: number, maxOutputTokens: number, model: string): number {
   const rates: Record<string, [number, number]> = {
-    "gpt-4o":        [250, 1000],
-    "gpt-4o-mini":   [15, 60],
-    "claude-sonnet": [300, 1500],
-    "claude-haiku":  [80, 400],
+    "gpt-4o":          [250, 1000],
+    "gpt-4o-mini":     [15, 60],
+    "gpt-4.1":         [200, 800],
+    "gpt-4.1-mini":    [40, 160],
+    "gpt-4.1-nano":    [10, 40],
+    "claude-sonnet":   [300, 1500],
+    "claude-haiku":    [80, 400],
+    "gemini-2.5-pro":  [125, 1000],
+    "gemini-2.5-flash":[15, 60],
+    "llama-4-maverick":[20, 60],
   };
   const [inputRate, outputRate] = rates[model] ?? [250, 1000];
   const estimate = inputTokens * inputRate + maxOutputTokens * outputRate;
@@ -159,8 +181,8 @@ Quick reference for typical operations (including 20% buffer):
 | Short chat reply (500 in / 200 out) | gpt-4o | 390,000 | $0.004 |
 | Long chat reply (2,000 in / 1,000 out) | gpt-4o | 1,800,000 | $0.018 |
 | Document summary (8,000 in / 2,000 out) | gpt-4o | 4,800,000 | $0.048 |
-| Short chat reply (500 in / 200 out) | gpt-4o-mini | 24,000 | $0.0002 |
-| Long chat reply (2,000 in / 1,000 out) | claude-sonnet | 2,880,000 | $0.029 |
+| Short chat reply (500 in / 200 out) | gpt-4o-mini | 23,400 | $0.0002 |
+| Long chat reply (2,000 in / 1,000 out) | claude-sonnet | 2,520,000 | $0.025 |
 | Code generation (4,000 in / 4,000 out) | claude-sonnet | 8,640,000 | $0.086 |
 
 ## When you don't know the exact token count

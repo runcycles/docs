@@ -13,7 +13,8 @@ Cycles integrates with the tools, frameworks, and AI providers you already use. 
 
 Integrate Cycles runtime authority with ChatGPT, GPT-4, GPT-4o, and other OpenAI models. Control per-request and per-session spending when your agents call OpenAI APIs.
 
-- [OpenAI integration guide](/how-to/integrating-cycles-with-openai)
+- [OpenAI integration guide (Python)](/how-to/integrating-cycles-with-openai)
+- [OpenAI integration guide (TypeScript)](/how-to/integrating-cycles-with-openai-typescript)
 - [openai.com](https://openai.com)
 
 ### Anthropic
@@ -140,6 +141,13 @@ Add Cycles middleware to Django applications for budget-checked views, per-tenan
 
 - [Django integration guide](/how-to/integrating-cycles-with-django)
 - [djangoproject.com](https://www.djangoproject.com)
+
+### Flask
+
+Add Cycles budget guards to Flask applications with error handlers, `before_request` hooks, and per-tenant isolation.
+
+- [Flask integration guide](/how-to/integrating-cycles-with-flask)
+- [flask.palletsprojects.com](https://flask.palletsprojects.com)
 
 ### FastAPI
 

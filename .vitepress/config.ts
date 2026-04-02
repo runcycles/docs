@@ -296,7 +296,8 @@ export default defineConfig({
               text: 'LLM Providers',
               collapsed: true,
               items: [
-                { text: 'OpenAI', link: '/how-to/integrating-cycles-with-openai' },
+                { text: 'OpenAI (Python)', link: '/how-to/integrating-cycles-with-openai' },
+                { text: 'OpenAI (TypeScript)', link: '/how-to/integrating-cycles-with-openai-typescript' },
                 { text: 'Anthropic (Python)', link: '/how-to/integrating-cycles-with-anthropic' },
                 { text: 'Anthropic (TypeScript)', link: '/how-to/integrating-cycles-with-anthropic-typescript' },
                 { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
@@ -336,6 +337,7 @@ export default defineConfig({
                 { text: 'Next.js', link: '/how-to/integrating-cycles-with-nextjs' },
                 { text: 'Express', link: '/how-to/integrating-cycles-with-express' },
                 { text: 'Django', link: '/how-to/integrating-cycles-with-django' },
+                { text: 'Flask', link: '/how-to/integrating-cycles-with-flask' },
                 { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
               ]
             },

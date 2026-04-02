@@ -12,7 +12,8 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | Integration | Language | Streaming | Pattern |
 |-------------|----------|-----------|---------|
 | **LLM Providers** | | | |
-| [OpenAI](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
+| [OpenAI (Python)](/how-to/integrating-cycles-with-openai) | Python | Yes | Decorator |
+| [OpenAI (TypeScript)](/how-to/integrating-cycles-with-openai-typescript) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Anthropic (Python)](/how-to/integrating-cycles-with-anthropic) | Python | Yes | Decorator |
 | [Anthropic (TypeScript)](/how-to/integrating-cycles-with-anthropic-typescript) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
@@ -37,6 +38,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [Next.js](/how-to/integrating-cycles-with-nextjs) | TypeScript | Yes | `withCycles` / Middleware |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | Yes | Middleware / `withCycles` |
 | [Django](/how-to/integrating-cycles-with-django) | Python | — | Middleware / Decorator |
+| [Flask](/how-to/integrating-cycles-with-flask) | Python | — | Decorator / `before_request` |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — | Middleware / Decorator |
 
 ## Integration patterns
