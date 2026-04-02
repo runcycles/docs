@@ -1,6 +1,6 @@
 ---
 title: "Why Cycles"
-description: "For B2B SaaS teams shipping AI agents to customers — blast radius containment, auditable event trails, and bounded unit economics per tenant."
+description: "For teams shipping AI agents — to customers or inside the enterprise. Blast radius containment, auditable event trails, bounded unit economics, and governance you can prove to an auditor."
 ---
 
 # Why Cycles
@@ -10,10 +10,11 @@ description: "For B2B SaaS teams shipping AI agents to customers — blast radiu
 - [Stop agents from burning your API budget overnight](/why-cycles/cost-control) — the $4,200 overnight incident
 - [Block the 201st email before it sends](/why-cycles/action-authority) — when the damage isn't cost, it's consequence
 - [One customer's runaway shouldn't affect your other 500](/why-cycles/multi-tenant) — per-tenant isolation for SaaS
+- [Prove to an auditor that your agents are under control](/why-cycles/governance) — auditable enforcement for compliance
 
 ---
 
-If you're a team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
+If you're deploying AI agents — to customers or inside the enterprise — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one runaway agent never blows through another's budget, your feature margin stays predictable, and every action is auditable.
 
 ## What Cycles solves
 
@@ -27,7 +28,28 @@ If you're a team shipping AI agents to customers — support copilots, coding as
 
 ---
 
+## Where Cycles fits
+
+| Layer | What it does | Examples |
+|---|---|---|
+| **Routing** | Sends requests to models | LiteLLM, Portkey, gateway proxies |
+| **Visibility** | Shows what happened | LangSmith, Langfuse, Helicone |
+| **Authority** | Decides what should happen — before execution | **Cycles** |
+
+Routing and visibility are necessary. They are not sufficient. A gateway can route a request. A dashboard can show you the cost. Neither can prevent the 241st retry or block the 201st email. Cycles is the authority layer — the decision point between "the agent wants to do X" and "X happens."
+
+## Why now
+
+Regulatory frameworks are converging on a single requirement: if your AI system acts autonomously, you must be able to prove what it did, why it was allowed to do it, and how you would have stopped it. The EU AI Act's high-risk obligations are currently scheduled to apply from August 2, 2026. NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) in February 2026. Organizations can already pursue [ISO 42001 certification](https://www.iso.org/standard/81230.html). The window between "we should govern our agents" and "we must prove we govern our agents" is closing. [Full regulatory mapping →](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement)
+
+---
+
 ## By role
+
+**For engineering:** Every agent action passes through a reserve-commit gate — budget checked before execution, not after.
+**For security/compliance:** Every reservation, commit, and event creates a structured, queryable audit record with full scope context.
+**For finance:** Per-user budget caps turned a [23% gross margin into 68%](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin) in one analysis, with only 5% of users hitting the limit.
+**For the AI agent itself:** Visible constraints earn trust — teams that see agents self-regulate respond by increasing budgets and granting access to higher-risk tools.
 
 <details>
 <summary><strong>Engineering — Contain blast radius, protect margins</strong></summary>
