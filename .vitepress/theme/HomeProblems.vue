@@ -1,7 +1,7 @@
 <script setup>
 const problems = [
   {
-    icon: '/icons/dollar-off.svg',
+    icon: '/icons/gauge.svg',
     hook: 'Your agent spent $4,200 while you slept.',
     detail: 'It hit an ambiguous error, retried with expanding context, and looped 240 times. Provider caps fired the next morning — blocking every agent on the account.',
     solution: 'Cap it at $15 per run.',
