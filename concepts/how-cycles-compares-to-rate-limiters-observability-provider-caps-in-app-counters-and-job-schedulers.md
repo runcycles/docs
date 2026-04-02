@@ -14,7 +14,7 @@ description: "See how Cycles differs from rate limiters, observability tools, pr
 | **Provider cap** | Org-level spend | No (delayed) | No | Partial | No |
 | **In-app counter** | Custom metric | Partial | Partial | Partial | No |
 | **Job scheduler** | Execution timing | No | No | No | No |
-| **Cycles** | Bounded budget exposure | Yes | Yes | Yes | Yes (three-way) |
+| **Cycles** | Bounded budget, risk exposure | Yes | Yes | Yes | Yes (ALLOW / ALLOW_WITH_CAPS / DENY) |
 
 ---
 
@@ -77,7 +77,7 @@ That means a run cannot quietly accumulate cost beyond its envelope, regardless 
 | | Rate limiter | Cycles |
 |---|---|---|
 | Controls | Requests per time window | Total budgeted exposure |
-| Granularity | Per-caller or per-endpoint | Per-tenant, workspace, workflow, agent |
+| Granularity | Per-caller or per-endpoint | Per-tenant, workspace, app, workflow, agent, toolset |
 | Understands retries | No | Yes (idempotent reservations) |
 | Understands cost | No | Yes (reserve estimated, commit actual) |
 | Pre-execution check | Velocity only | Budget availability across scopes |
@@ -135,7 +135,7 @@ Instead of only explaining what happened afterward, Cycles determines whether wo
 The system asks: is there enough budget remaining for this action?
 
 If yes, budget is reserved and work proceeds.
-If no, the system can deny, degrade, or defer the action.
+If no, the system can DENY, degrade (ALLOW_WITH_CAPS), or defer the action. When degrading, Cycles returns cap fields — `max_tokens`, `max_steps_remaining`, `tool_allowlist`, `tool_denylist`, and `cooldown_ms` — so the caller knows exactly how to constrain the next action.
 
 | | Observability | Cycles |
 |---|---|---|
@@ -194,14 +194,16 @@ It operates at the level your system actually needs:
 
 - per-tenant
 - per-workspace
+- per-app
 - per-workflow
 - per-agent
+- per-toolset
 
 Budget is reserved before execution rather than inferred after usage occurs.
 
 | | Provider budget cap | Cycles |
 |---|---|---|
-| Scope | Organization or API key | Tenant, workspace, workflow, agent |
+| Scope | Organization or API key | Tenant, workspace, app, workflow, agent, toolset |
 | Enforcement | Binary (all-or-nothing) | Three-way (ALLOW / ALLOW_WITH_CAPS / DENY) |
 | Timing | Post-usage counter (often delayed) | Pre-execution reservation |
 | Multi-tenant aware | No | Yes |
@@ -320,8 +322,8 @@ Cycles can tell the scheduler whether the task should proceed, degrade, or be de
 | Controls | When and how work runs | Whether work is allowed given budget |
 | Retry awareness | Max attempts, backoff | Budget remaining across retries |
 | Cost awareness | None | Reserve estimated, commit actual |
-| Scope | Per-job or per-queue | Per-tenant, workspace, workflow, agent |
-| Degradation | Not built-in | Three-way decision (allow / downgrade / deny) |
+| Scope | Per-job or per-queue | Per-tenant, workspace, app, workflow, agent, toolset |
+| Degradation | Not built-in | Three-way (ALLOW / ALLOW_WITH_CAPS / DENY) |
 | Cross-tenant limits | No | Yes |
 | Complements | Execution engine | Runtime authority |
 
@@ -346,7 +348,7 @@ The table below maps specific capabilities against each approach.
 | Hierarchical scopes | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
 | Cost-aware decisions | ✗ | ◐ | ◐ | ◐ | ✗ | ✅ |
 | Retry / idempotency safety | ✗ | ✗ | ✗ | ✗ | ◐ | ✅ |
-| Graceful degradation (three-way) | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
+| Graceful degradation (ALLOW_WITH_CAPS) | ✗ | ✗ | ✗ | ✗ | ✗ | ✅ |
 | Concurrency-safe accounting | ✗ | ✗ | ◐ | ✗ | ◐ | ✅ |
 | Real-time enforcement | ✅ | ✗ | ◐ | ◐ | ✗ | ✅ |
 | Post-hoc analysis and traces | ✗ | ✅ | ◐ | ✗ | ◐ | ◐ |
@@ -407,5 +409,8 @@ To explore the Cycles stack:
 - Integrate with TypeScript using the [TypeScript Client](/quickstart/getting-started-with-the-typescript-client)
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - Browse the full [Integration Ecosystem](/how-to/ecosystem)
+- [At-a-Glance Comparisons](/concepts/comparisons) — quick reference table comparing Cycles to seven alternatives
 - [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](/blog/ai-agent-failures-budget-controls-prevent) — concrete failure scenarios and what each approach prevents
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — how Cycles complements LiteLLM, Portkey, Helicone, and Langfuse
+- [Budget Wrapper vs Budget Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — why wrapping LLM calls is not the same as governing them
+- [AI Agent Cost Management Guide](/blog/ai-agent-cost-management-guide) — comprehensive guide to managing AI agent costs at scale
