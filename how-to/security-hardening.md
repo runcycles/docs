@@ -15,7 +15,7 @@ The Admin Server (port 7979) should **never** be exposed to the public internet.
 
 ### Separate management and runtime planes
 
-The Admin Server (port 7979) manages tenants, API keys, and budgets. The Events Service (port 7980) delivers webhooks asynchronously. Both should **never be accessible from the public internet**.
+All Cycles services — Server, Admin Server, Events Service — run on the internal network. Only a load balancer should be exposed to application traffic. The Admin Server (port 7979), Events Service (port 7980), Cycles Server (port 7878), and Redis (port 6379) should **never be accessible from the public internet**.
 
 <NetworkZones />
 
@@ -23,12 +23,15 @@ The Admin Server (port 7979) manages tenants, API keys, and budgets. The Events 
 
 | Source | Destination | Port | Allow |
 |---|---|---|---|
-| Application servers | Cycles Server | 7878 | Yes |
+| Public internet | Load Balancer | 443 (HTTPS) | Yes |
+| Load Balancer | Cycles Server | 7878 (internal) | Yes |
+| Application servers (internal) | Cycles Server | 7878 | Yes |
 | Operations team (VPN) | Admin Server | 7979 | Yes |
 | Cycles Server | Redis | 6379 | Yes |
 | Admin Server | Redis | 6379 | Yes |
 | Events Service | Redis | 6379 | Yes |
 | Events Service | External webhook endpoints | 443 (HTTPS) | Yes |
+| Public internet | Cycles Server | 7878 | **No** |
 | Public internet | Admin Server | 7979 | **No** |
 | Public internet | Events Service | 7980 | **No** |
 | Public internet | Redis | 6379 | **No** |
