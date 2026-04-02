@@ -297,36 +297,7 @@ The server authenticates every request via the `X-Cycles-API-Key` header. Each A
 
 A typical deployment:
 
-```
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-│ Agent A  │  │ Agent B  │  │ Agent C  │  │ Agent D  │  │ Agent E  │
-│ (Spring) │  │ (Python) │  │ (Node.js)│  │  (HTTP)  │  │  (MCP)   │
-└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
-     │             │             │             │
-     └──────┬──────┴─────────────┴─────────────┘
-            │
-            ▼
-     ┌──────────────────────────────┐      ┌──────────────────────────┐
-     │       Cycles Server          │      │   Cycles Admin Server    │
-     │    (one or more instances)   │      │   (internal network)     │
-     │         port 7878            │      │      port 7979           │
-     └──────────────┬───────────────┘      └────────────┬─────────────┘
-                    │                                   │
-                    └─────────────┬──────────────────────┘
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │         Redis 7+             │
-                  │   (single instance or        │
-                  │    Redis Cluster)            │
-                  └──────────────┬───────────────┘
-                                │
-                                ▼
-                  ┌──────────────────────────────┐      ┌──────────────────────┐
-                  │   Cycles Events Service      │ ───► │  Webhook Endpoints   │
-                  │   (optional, port 7980)      │      │  (PagerDuty, Slack,  │
-                  └──────────────────────────────┘      │   your app, etc.)    │
-                                                        └──────────────────────┘
-```
+<DeploymentDiagram />
 
 Multiple Cycles server instances can run behind a load balancer. All state is in Redis, so the server is stateless. The admin server is typically on an internal network, accessible only to operators and CI/CD pipelines. The events service is optional — if deployed, it consumes delivery jobs from Redis and delivers webhooks with HMAC-SHA256 signatures.
 

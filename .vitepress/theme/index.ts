@@ -14,6 +14,7 @@ import ArchDiagram from './ArchDiagram.vue'
 import ArchDiagramFull from './ArchDiagramFull.vue'
 import DecisionTree from './DecisionTree.vue'
 import ScopeDiagram from './ScopeDiagram.vue'
+import DeploymentDiagram from './DeploymentDiagram.vue'
 
 export default {
   extends: DefaultTheme,
@@ -28,6 +29,7 @@ export default {
     app.component('ArchDiagramFull', ArchDiagramFull)
     app.component('DecisionTree', DecisionTree)
     app.component('ScopeDiagram', ScopeDiagram)
+    app.component('DeploymentDiagram', DeploymentDiagram)
   },
   setup() {
     const route = useRoute()
