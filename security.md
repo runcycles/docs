@@ -62,21 +62,7 @@ Cycles separates the runtime plane from the management plane:
 | Management (Admin Server) | 7979 | Operations team only, via VPN | Create tenants, manage API keys, set budgets |
 | Events (Events Service) | 7980 | Internal only — no inbound traffic needed | Async webhook delivery with HMAC-SHA256 signing |
 
-```
-┌──────────────────────────────────────────────────┐
-│                 Public Network                    │
-│  Your App →                                      │
-│           Load Balancer →                        │
-│                     Cycles Server:7878           │
-└──────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────┐
-│               Internal / VPN Only                │
-│  Admin UI → Admin Server:7979                    │
-│              Events Service:7980 → Webhooks (out)│
-│              Redis:6379                          │
-└──────────────────────────────────────────────────┘
-```
+<NetworkZones />
 
 ### API key security
 

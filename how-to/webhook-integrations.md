@@ -770,7 +770,7 @@ async def forward_to_teams(request: Request):
 
 ### Example Teams card
 
-The card renders as a structured fact table:
+The card renders as a structured fact table showing: event type (budget.threshold_crossed), tenant (acme-corp), source service, scope path, utilization percentage (82.0%), and remaining budget ($18.00).
 
 ```
 ┌─────────────────────────────────────┐
