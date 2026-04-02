@@ -2,7 +2,7 @@
 
 > Runtime authority for autonomous agents. Keep agents within approved spend, risk, and action limits. Open protocol, multi-language SDKs, Apache 2.0.
 
-Cycles is an open-source budget enforcement system for AI agents and autonomous workflows. It prevents runaway spend by requiring agents to reserve budget before execution and commit actual usage afterward. It supports hierarchical scoped budgets (tenant → workspace → project → run), idempotent retries, concurrency-safe reservations, and overage policies.
+Cycles is an open-source budget enforcement system for AI agents and autonomous workflows. It prevents runaway spend by requiring agents to reserve budget before execution and commit actual usage afterward. It supports hierarchical scoped budgets (tenant → workspace → app → workflow → agent → toolset), idempotent retries, concurrency-safe reservations, and overage policies.
 
 Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invocation costs, prevent runaway agent loops, govern multi-tenant AI platforms, or add budget guardrails to any autonomous system.
 
@@ -12,6 +12,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [End-to-End Tutorial](https://runcycles.io/quickstart/end-to-end-tutorial): Zero to a working budget-guarded LLM call in 10 minutes
 - [Python Client](https://runcycles.io/quickstart/getting-started-with-the-python-client): Add budget enforcement to Python apps using the runcycles package
 - [TypeScript Client](https://runcycles.io/quickstart/getting-started-with-the-typescript-client): Add budget enforcement to Node.js apps using the runcycles package
+- [Rust Client](https://runcycles.io/quickstart/getting-started-with-the-rust-client): Add budget enforcement to Rust apps
 - [Spring Boot Starter](https://runcycles.io/quickstart/getting-started-with-the-cycles-spring-boot-starter): Integrate budget enforcement into Spring Boot apps with the @Cycles annotation
 - [Spring AI Integration](https://runcycles.io/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles): Add hard budget limits to Spring AI applications
 - [Choose a First Rollout](https://runcycles.io/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails): Decide between tenant budgets, run budgets, or model call guardrails
@@ -20,11 +21,81 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [MCP Server](https://runcycles.io/quickstart/getting-started-with-the-mcp-server): Add budget enforcement to AI coding tools via the Model Context Protocol
 - [Self-Hosting the Server](https://runcycles.io/quickstart/self-hosting-the-cycles-server): Run the Cycles server in your own infrastructure
 
+## Integration Guides (26 integrations)
+
+### LLM Providers
+
+- [OpenAI (Python)](https://runcycles.io/how-to/integrating-cycles-with-openai): Budget-guarded OpenAI calls with the @cycles decorator
+- [OpenAI (TypeScript)](https://runcycles.io/how-to/integrating-cycles-with-openai-typescript): Budget-guarded OpenAI calls with withCycles and reserveForStream
+- [Anthropic (Python)](https://runcycles.io/how-to/integrating-cycles-with-anthropic): Budget-guarded Anthropic Claude calls with per-tool-call tracking
+- [Anthropic (TypeScript)](https://runcycles.io/how-to/integrating-cycles-with-anthropic-typescript): Budget-guarded Claude calls with withCycles, streaming, and tool-use loops
+- [AWS Bedrock](https://runcycles.io/how-to/integrating-cycles-with-aws-bedrock): Budget enforcement for AWS Bedrock model invocations
+- [Google Gemini](https://runcycles.io/how-to/integrating-cycles-with-google-gemini): Budget enforcement for Google Gemini models
+- [Groq](https://runcycles.io/how-to/integrating-cycles-with-groq): Budget governance for Groq with model-downgrade degradation pattern
+- [Ollama / Local LLMs](https://runcycles.io/how-to/integrating-cycles-with-ollama): Budget control for self-hosted models
+
+### AI Frameworks
+
+- [LangChain (Python)](https://runcycles.io/how-to/integrating-cycles-with-langchain): Callback handler for LangChain Python apps
+- [LangChain (JS)](https://runcycles.io/how-to/integrating-cycles-with-langchain-js): Callback handler for LangChain JavaScript apps
+- [LangGraph](https://runcycles.io/how-to/integrating-cycles-with-langgraph): Budget governance for stateful LangGraph workflows with per-node scoping
+- [AutoGen](https://runcycles.io/how-to/integrating-cycles-with-autogen): Model client wrapper for Microsoft AutoGen multi-agent teams
+- [AnyAgent](https://runcycles.io/how-to/integrating-cycles-with-anyagent): Callback-based governance for Mozilla AnyAgent across 7 frameworks
+- [Vercel AI SDK](https://runcycles.io/how-to/integrating-cycles-with-vercel-ai-sdk): Budget enforcement for Vercel AI SDK streaming
+- [Spring AI](https://runcycles.io/how-to/integrating-cycles-with-spring-ai): @Cycles annotation for Spring AI applications
+- [LlamaIndex](https://runcycles.io/how-to/integrating-cycles-with-llamaindex): Budget governance for LlamaIndex RAG pipelines
+- [CrewAI](https://runcycles.io/how-to/integrating-cycles-with-crewai): Budget governance for CrewAI multi-agent workflows
+- [Pydantic AI](https://runcycles.io/how-to/integrating-cycles-with-pydantic-ai): Budget governance for Pydantic AI agent runs
+
+### Agent Platforms
+
+- [MCP (Claude, Cursor, Windsurf)](https://runcycles.io/how-to/integrating-cycles-with-mcp): Budget enforcement via Model Context Protocol tools
+- [OpenAI Agents SDK](https://runcycles.io/how-to/integrating-cycles-with-openai-agents): RunHooks plugin for OpenAI Agents SDK lifecycle
+- [OpenClaw](https://runcycles.io/how-to/integrating-cycles-with-openclaw): Budget enforcement for OpenClaw agents
+
+### Web Frameworks
+
+- [Next.js](https://runcycles.io/how-to/integrating-cycles-with-nextjs): Route-level guards, server actions, and client-side error handling
+- [Express](https://runcycles.io/how-to/integrating-cycles-with-express): Middleware for Express.js
+- [Django](https://runcycles.io/how-to/integrating-cycles-with-django): Middleware, exception handling, and per-tenant isolation
+- [Flask](https://runcycles.io/how-to/integrating-cycles-with-flask): Error handlers and before_request hooks
+- [FastAPI](https://runcycles.io/how-to/integrating-cycles-with-fastapi): Async middleware for FastAPI
+
+## How-To Guides
+
+- [Multi-Tenant SaaS Guide](https://runcycles.io/how-to/multi-tenant-saas-with-cycles): End-to-end guide for building multi-tenant AI SaaS with per-customer budget isolation
+- [Adding Cycles to an Existing App](https://runcycles.io/how-to/adding-cycles-to-an-existing-application): Step-by-step integration into existing codebases
+- [Choosing the Right Pattern](https://runcycles.io/how-to/choosing-the-right-integration-pattern): Reserve/commit vs events vs decide
+- [Cost Estimation Cheat Sheet](https://runcycles.io/how-to/cost-estimation-cheat-sheet): Provider pricing tables and estimation formulas
+- [Common Budget Patterns](https://runcycles.io/how-to/common-budget-patterns): Patterns for tenant, workflow, and run budgets
+- [Budget Allocation and Management](https://runcycles.io/how-to/budget-allocation-and-management-in-cycles): Fund, adjust, and manage scoped budgets
+- [Model Tenant/Workflow/Run Budgets](https://runcycles.io/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles): Budget hierarchy design patterns
+- [Degradation Paths](https://runcycles.io/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer): Deny, downgrade, disable, or defer when budget is low
+- [Shadow Mode Rollout](https://runcycles.io/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production): Roll out enforcement without breaking production
+- [Streaming Responses](https://runcycles.io/how-to/handling-streaming-responses-with-cycles): Handle streaming LLM responses with reservations
+- [Exposure Estimation](https://runcycles.io/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles): Practical reservation size strategies
+- [Error Handling (Python)](https://runcycles.io/how-to/error-handling-patterns-in-python): Error handling patterns for Python
+- [Error Handling (TypeScript)](https://runcycles.io/how-to/error-handling-patterns-in-typescript): Error handling patterns for TypeScript
+- [Error Handling (Spring)](https://runcycles.io/how-to/error-handling-patterns-in-cycles-client-code): Error handling patterns for Spring Boot
+- [Programmatic Client Usage](https://runcycles.io/how-to/using-the-cycles-client-programmatically): Direct CyclesClient API usage in Python, TypeScript, and Java
+- [API Key Management](https://runcycles.io/how-to/api-key-management-in-cycles): Create, manage, and rotate API keys with tenant isolation
+- [Tenant Creation and Management](https://runcycles.io/how-to/tenant-creation-and-management-in-cycles): Create, list, suspend, close, and organize tenants
+- [Understanding Tenants, Scopes, and Budgets](https://runcycles.io/how-to/understanding-tenants-scopes-and-budgets-in-cycles): How tenants, scopes, and budgets fit together
+- [Webhook Integrations](https://runcycles.io/how-to/webhook-integrations): PagerDuty, Slack, and ServiceNow webhook examples
+- [Managing Webhooks](https://runcycles.io/how-to/managing-webhooks): Webhook subscription management and delivery monitoring
+- [Observability Setup](https://runcycles.io/how-to/observability-setup): Prometheus, Grafana, and Datadog integration
+- [Multi-Agent Shared Budgets](https://runcycles.io/how-to/multi-agent-shared-workspace-budget-patterns): Shared workspace budgets for multi-agent systems
+- [Custom Field Resolvers](https://runcycles.io/how-to/custom-field-resolvers-in-cycles): Dynamically resolve Subject fields at runtime in Spring Boot
+- [Ecosystem](https://runcycles.io/how-to/ecosystem): Full integration ecosystem overview
+- [LangChain Agent Budget Control](https://runcycles.io/how-to/how-to-add-budget-control-to-a-langchain-agent): Per-run budget limits for LangChain AgentExecutor
+- [Choosing the Right Overage Policy](https://runcycles.io/how-to/choosing-the-right-overage-policy): When to use REJECT, ALLOW_IF_AVAILABLE, or ALLOW_WITH_OVERDRAFT
+- [Client Performance Tuning](https://runcycles.io/how-to/client-performance-tuning): Timeout and retry optimization
+
 ## Protocol Reference
 
 - [Reserve → Commit Lifecycle](https://runcycles.io/protocol/how-reserve-commit-works-in-cycles): The core pattern — reserve budget before work, commit actual usage after
 - [Events (Direct Debit)](https://runcycles.io/protocol/how-events-work-in-cycles-direct-debit-without-reservation): Record known-cost usage without a reservation
-- [API Reference](https://runcycles.io/protocol/api-reference-for-the-cycles-protocol): Complete endpoint reference with request/response formats and curl examples
+- [API Reference](https://runcycles.io/protocol/api-reference-for-the-cycles-protocol): Complete endpoint reference with request/response formats
 - [Scope Derivation](https://runcycles.io/protocol/how-scope-derivation-works-in-cycles): How hierarchical budget scopes are derived from subject fields
 - [Reservation TTL, Grace Period, and Extend](https://runcycles.io/protocol/reservation-ttl-grace-period-and-extend-in-cycles): Time-to-live, grace periods, and extending active reservations
 - [Commit Overage Policies](https://runcycles.io/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft): REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT
@@ -38,6 +109,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Querying Balances](https://runcycles.io/protocol/querying-balances-in-cycles-understanding-budget-state): Check remaining budget, reserved amounts, and debt
 - [Standard Metrics and Metadata](https://runcycles.io/protocol/standard-metrics-and-metadata-in-cycles): Attach structured metrics to reservations and events
 - [Reservation Recovery and Listing](https://runcycles.io/protocol/reservation-recovery-and-listing-in-cycles): Query and recover reservations
+- [Webhook Event Delivery](https://runcycles.io/protocol/webhook-event-delivery-protocol): Webhook delivery, retry, and HMAC verification
 
 ## Concepts
 
@@ -47,79 +119,9 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [What Cycles Is Not](https://runcycles.io/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion): Not billing, not rate limiting, not orchestration
 - [Idempotency, Retries, and Concurrency](https://runcycles.io/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes): How Cycles handles real-world failure modes
 - [From Observability to Enforcement](https://runcycles.io/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority): How teams evolve from dashboards to runtime authority
-- [How Cycles Compares](https://runcycles.io/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers): Comparison with rate limiters, observability, provider caps, and counters
-- [Cycles vs Rate Limiting](https://runcycles.io/concepts/cycles-vs-rate-limiting): Why velocity controls fail for AI agents
-- [Cycles vs Guardrails AI](https://runcycles.io/concepts/cycles-vs-guardrails-ai): Runtime authority vs content safety — different problems, complementary solutions
-- [Cycles vs Provider Spending Caps](https://runcycles.io/concepts/cycles-vs-provider-spending-caps): Why platform limits are not enough for per-run budget control
-- [Cycles vs Custom Token Counters](https://runcycles.io/concepts/cycles-vs-custom-token-counters): Build vs buy for agent budget control
-- [Exposure](https://runcycles.io/concepts/exposure-why-rate-limits-leave-agents-unbounded): Why rate limits leave agents with unbounded exposure and how reserve-commit bounds it
+- [Exposure](https://runcycles.io/concepts/exposure-why-rate-limits-leave-agents-unbounded): Why rate limits leave agents with unbounded exposure
 - [Action Authority](https://runcycles.io/concepts/action-authority-controlling-what-agents-do): Controlling what agents do, not just what they spend
-
-## Demos
-
-- [Runaway Agent Demo](https://runcycles.io/demos/): Budget enforcement stops a cost runaway — agent auto-terminates at $1.00 instead of burning ~$6 unchecked
-- [Action Authority Demo](https://runcycles.io/demos/): Toolset-scoped budgets allow internal actions but block a customer email before execution
-
-## Blog
-
-- [What Is Runtime Authority for AI Agents?](https://runcycles.io/blog/what-is-runtime-authority-for-ai-agents): Runtime authority is the pre-execution control layer that decides whether an agent's next action should proceed
-- [AI Agent Action Control: Hard Limits on Side Effects](https://runcycles.io/blog/ai-agent-action-control-hard-limits-side-effects): Why controlling what agents do matters more than controlling what they spend
-- [Action Authority Demo: Blocking a Customer Email](https://runcycles.io/blog/action-authority-demo-support-agent-walkthrough): Walkthrough of the action authority demo with three decorators and one exception
-- [Runtime Authority vs Guardrails vs Observability](https://runcycles.io/blog/runtime-authority-vs-guardrails-vs-observability): What each solves, where each falls short, and why autonomous systems need all three
-- [The True Cost of Uncontrolled AI Agents](https://runcycles.io/blog/true-cost-of-uncontrolled-agents): Real-world costs and failure modes when agents run without budget limits
-- [How Much Do AI Agents Actually Cost?](https://runcycles.io/blog/how-much-do-ai-agents-cost): Cost breakdown by provider and use case
-- [AI Agent Cost Management: The Complete Guide](https://runcycles.io/blog/ai-agent-cost-management-guide): Maturity model from monitoring to enforcement
-- [5 Real-World AI Agent Failures That Budget Controls Would Have Prevented](https://runcycles.io/blog/ai-agent-failures-budget-controls-prevent): Concrete failure scenarios with dollar amounts
-- [AI Agent Budget Control: Enforce Hard Spend Limits](https://runcycles.io/blog/ai-agent-budget-control-enforce-hard-spend-limits): Why cost control must happen before execution and how reserve-commit enforces it
-- [AI Agent Budget Patterns: A Practical Guide](https://runcycles.io/blog/agent-budget-patterns-visual-guide): Tenant isolation, workflow caps, run-level limits, and graceful degradation
-- [AI Agent Unit Economics: Cost and Margin Analysis](https://runcycles.io/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin): Cost per conversation, cost per user, and margin analysis
-- [Budget Limits for Claude Code, Cursor, and Windsurf via MCP](https://runcycles.io/blog/claude-code-cursor-windsurf-budget-limits-mcp): Config-only enforcement via MCP, zero code changes
-- [Cycles vs LLM Proxies and Observability Tools](https://runcycles.io/blog/cycles-vs-llm-proxies-and-observability-tools): Where budget enforcement fits relative to proxies and observability
-- [LangGraph Budget Control for Durable Execution](https://runcycles.io/blog/langgraph-budget-control-durable-execution-retries-fan-out): Per-run and per-node spend limits for durable execution
-- [OpenAI API Budget Limits: Per-User and Per-Tenant](https://runcycles.io/blog/openai-api-budget-limits-per-user-per-run-per-tenant): Per-user, per-run, and per-tenant limits before every API call
-- [Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI](https://runcycles.io/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk): Per-agent budget boundaries in multi-agent frameworks
-- [Multi-Tenant AI Cost Control](https://runcycles.io/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation): Per-tenant budgets and hierarchical limits
-- [Manifest vs Cycles: Routing vs Runtime Authority](https://runcycles.io/blog/manifest-vs-cycles-routing-vs-runtime-authority): Different layers, different problems — model routing vs execution authority
-- [Budget Wrapper vs Runtime Authority](https://runcycles.io/blog/vibe-coding-budget-wrapper-vs-budget-authority): Why a vibe-coded wrapper is not the same as runtime authority
-- [Introducing the Cycles Blog](https://runcycles.io/blog/introducing-cycles-blog): Engineering insights, product updates, and best practices for runtime authority
-
-## Integration Guides
-
-- [Integrations Overview](https://runcycles.io/how-to/integrations-overview): Summary of all supported integrations
-- [OpenAI](https://runcycles.io/how-to/integrating-cycles-with-openai): Budget-guarded OpenAI calls
-- [Anthropic](https://runcycles.io/how-to/integrating-cycles-with-anthropic): Budget-guarded Anthropic calls
-- [LangChain (Python)](https://runcycles.io/how-to/integrating-cycles-with-langchain): Budget enforcement for LangChain Python
-- [LangChain (JS)](https://runcycles.io/how-to/integrating-cycles-with-langchain-js): Budget enforcement for LangChain JS
-- [Vercel AI SDK](https://runcycles.io/how-to/integrating-cycles-with-vercel-ai-sdk): Budget enforcement for Vercel AI SDK
-- [AWS Bedrock](https://runcycles.io/how-to/integrating-cycles-with-aws-bedrock): Budget enforcement for AWS Bedrock
-- [Google Gemini](https://runcycles.io/how-to/integrating-cycles-with-google-gemini): Budget enforcement for Google Gemini
-- [Express](https://runcycles.io/how-to/integrating-cycles-with-express): Middleware for Express.js
-- [FastAPI](https://runcycles.io/how-to/integrating-cycles-with-fastapi): Middleware for FastAPI
-- [OpenClaw](https://runcycles.io/how-to/integrating-cycles-with-openclaw): Budget enforcement for OpenClaw agents
-- [MCP](https://runcycles.io/how-to/integrating-cycles-with-mcp): Budget enforcement via Model Context Protocol
-- [LangChain Agent](https://runcycles.io/how-to/how-to-add-budget-control-to-a-langchain-agent): Per-run budget limits for LangChain AgentExecutor
-
-## How-To Guides
-
-- [Adding Cycles to an Existing App](https://runcycles.io/how-to/adding-cycles-to-an-existing-application): Step-by-step integration into existing codebases
-- [Choosing the Right Pattern](https://runcycles.io/how-to/choosing-the-right-integration-pattern): Reserve/commit vs events vs decide
-- [Cost Estimation Cheat Sheet](https://runcycles.io/how-to/cost-estimation-cheat-sheet): How to estimate costs for common AI operations
-- [Common Budget Patterns](https://runcycles.io/how-to/common-budget-patterns): Patterns for tenant, workflow, and run budgets
-- [Budget Allocation and Management](https://runcycles.io/how-to/budget-allocation-and-management-in-cycles): Fund, adjust, and manage scoped budgets
-- [Model Tenant/Workflow/Run Budgets](https://runcycles.io/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles): Budget hierarchy design patterns
-- [Degradation Paths](https://runcycles.io/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer): Deny, downgrade, disable, or defer when budget is low
-- [Shadow Mode Rollout](https://runcycles.io/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production): Roll out enforcement without breaking production
-- [Streaming Responses](https://runcycles.io/how-to/handling-streaming-responses-with-cycles): Handle streaming LLM responses with reservations
-- [Exposure Estimation](https://runcycles.io/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles): Practical reservation size strategies
-- [Error Handling (Python)](https://runcycles.io/how-to/error-handling-patterns-in-python): Error handling patterns for Python
-- [Error Handling (TypeScript)](https://runcycles.io/how-to/error-handling-patterns-in-typescript): Error handling patterns for TypeScript
-- [Error Handling (Spring)](https://runcycles.io/how-to/error-handling-patterns-in-cycles-client-code): Error handling patterns for Spring Boot
-- [Programmatic Client Usage](https://runcycles.io/how-to/using-the-cycles-client-programmatically): Direct CyclesClient API usage
-- [API Key Management](https://runcycles.io/how-to/api-key-management-in-cycles): Create, manage, and rotate API keys with tenant isolation
-- [Custom Field Resolvers](https://runcycles.io/how-to/custom-field-resolvers-in-cycles): Dynamically resolve Subject fields at runtime in Spring Boot
-- [Tenant Creation and Management](https://runcycles.io/how-to/tenant-creation-and-management-in-cycles): Create, list, suspend, close, and organize tenants with hierarchical structures
-- [Understanding Tenants, Scopes, and Budgets](https://runcycles.io/how-to/understanding-tenants-scopes-and-budgets-in-cycles): How tenants, scopes, and budgets fit together in a multi-tenant deployment
-- [Ecosystem](https://runcycles.io/how-to/ecosystem): Community tools and third-party integrations
+- [Webhooks and Events](https://runcycles.io/concepts/webhooks-and-events): Event-driven notifications for budget state changes
 
 ## Configuration
 
@@ -127,12 +129,13 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Python Client Configuration](https://runcycles.io/configuration/python-client-configuration-reference): Python client configuration options
 - [TypeScript Client Configuration](https://runcycles.io/configuration/typescript-client-configuration-reference): TypeScript client configuration options
 - [Spring Boot Configuration](https://runcycles.io/configuration/client-configuration-reference-for-cycles-spring-boot-starter): Spring Boot starter configuration properties
-- [SpEL Expression Reference](https://runcycles.io/configuration/spel-expression-reference-for-cycles): Writing SpEL expressions in @Cycles annotations for dynamic cost evaluation
+- [SpEL Expression Reference](https://runcycles.io/configuration/spel-expression-reference-for-cycles): Writing SpEL expressions in @Cycles annotations
 
 ## Operations
 
 - [Production Operations Guide](https://runcycles.io/how-to/production-operations-guide): Running Cycles in production
 - [Monitoring and Alerting](https://runcycles.io/how-to/monitoring-and-alerting): Metrics, dashboards, and alerts
+- [Observability Setup](https://runcycles.io/how-to/observability-setup): Prometheus, Grafana, and Datadog integration
 - [Security Hardening](https://runcycles.io/how-to/security-hardening): Security best practices
 - [Testing](https://runcycles.io/how-to/testing-with-cycles): Testing strategies for Cycles integrations
 - [Troubleshooting and FAQ](https://runcycles.io/how-to/troubleshooting-and-faq): Common issues and solutions
@@ -147,24 +150,21 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 ## API Specifications
 
 - [Cycles Protocol OpenAPI Spec](https://runcycles.io/cycles-protocol-v0.yaml): Machine-readable protocol specification
-- [Server OpenAPI Spec](https://runcycles.io/openapi.json): Server API specification
-- [Admin API OpenAPI Spec](https://runcycles.io/admin-openapi.json): Admin API specification
+- [Server OpenAPI Spec](https://runcycles.io/openapi.json): Server API specification (dereferenced)
+- [Admin API OpenAPI Spec](https://runcycles.io/admin-openapi.json): Admin API specification (dereferenced)
 
 ## Source Code
 
 - [Cycles Protocol](https://github.com/runcycles/cycles-protocol): Protocol specification (YAML)
 - [Cycles Server](https://github.com/runcycles/cycles-server): Reference server implementation (Java/Spring Boot)
 - [Cycles Server Admin](https://github.com/runcycles/cycles-server-admin): Admin API for tenant and budget management
-- [Python Client](https://github.com/runcycles/cycles-python-client): Python SDK (runcycles on PyPI)
-- [TypeScript Client](https://github.com/runcycles/cycles-typescript-client): TypeScript SDK (runcycles on npm)
+- [Python Client](https://github.com/runcycles/cycles-client-python): Python SDK (runcycles on PyPI)
+- [TypeScript Client](https://github.com/runcycles/cycles-client-typescript): TypeScript SDK (runcycles on npm)
 - [Spring Boot Starter](https://github.com/runcycles/cycles-spring-boot-starter): Spring Boot integration
+- [OpenAI Agents Plugin](https://github.com/runcycles/cycles-openai-agents): OpenAI Agents SDK plugin
 
 ## Community
 
-- [Built with Cycles Badges](https://runcycles.io/community/badges): Add a "Built with Cycles" badge to your project README or documentation
-
-## Reference
-
-- [Glossary](https://runcycles.io/glossary): Definitions of key terms and concepts used throughout the Cycles documentation
-- [Comparisons](https://runcycles.io/concepts/comparisons): How Cycles differs from rate limiters, provider caps, observability tools, and token counters
-- [Changelog](https://runcycles.io/changelog): Release history and version notes for the Cycles Protocol and reference implementations
+- [Built with Cycles Badges](https://runcycles.io/community/badges): Add a "Built with Cycles" badge to your project
+- [Changelog](https://runcycles.io/changelog): Release history and version notes
+- [Glossary](https://runcycles.io/glossary): Definitions of key terms and concepts
