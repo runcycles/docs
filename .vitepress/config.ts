@@ -192,6 +192,11 @@ export default defineConfig({
         {
           text: 'Why Cycles',
           link: '/why-cycles',
+          items: [
+            { text: 'Cost Control', link: '/why-cycles/cost-control' },
+            { text: 'Action Authority', link: '/why-cycles/action-authority' },
+            { text: 'Multi-Tenant Isolation', link: '/why-cycles/multi-tenant' },
+          ],
         },
         {
           text: 'Quickstart',
