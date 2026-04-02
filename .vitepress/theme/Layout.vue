@@ -4,6 +4,7 @@ import { useData } from 'vitepress'
 import NotFound from './NotFound.vue'
 import HomeCodeSnippet from './HomeCodeSnippet.vue'
 import HomeSocialProof from './HomeSocialProof.vue'
+import HomeProblems from './HomeProblems.vue'
 import HomeIntegrations from './HomeIntegrations.vue'
 import BlogPost from './BlogPost.vue'
 import BlogPostNav from './BlogPostNav.vue'
@@ -19,6 +20,7 @@ const { frontmatter } = useData()
   <Layout>
     <template #home-features-before>
       <HomeSocialProof v-if="frontmatter.layout === 'home'" />
+      <HomeProblems v-if="frontmatter.layout === 'home'" />
       <HomeIntegrations v-if="frontmatter.layout === 'home'" />
       <HomeCodeSnippet v-if="frontmatter.layout === 'home'" />
     </template>
