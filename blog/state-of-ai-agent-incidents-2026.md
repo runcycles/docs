@@ -3,7 +3,7 @@ title: "The State of AI Agent Incidents (2026): Failures, Costs, and What Would 
 date: 2026-04-03
 author: Cycles Team
 tags: [incidents, governance, security, costs, agents, production, MCP, OWASP, multi-agent]
-description: "A comprehensive analysis of 30+ documented AI agent failures — runaway costs, action misfires, security exploits, and multi-agent cascades. Each incident scored by cost, blast radius, and which runtime controls would have prevented it."
+description: "Documented AI agent incidents and recurring failure patterns — runaway costs, action misfires, security exploits, and multi-agent cascades. Each scored by cost, blast radius, and which runtime controls would have prevented it."
 blog: true
 sidebar: false
 featured: true
@@ -13,14 +13,14 @@ featured: true
 
 AI agents are shipping to production faster than the infrastructure to control them. The result is a growing catalogue of incidents — runaway costs, wrong actions, security exploits, and cascading multi-agent failures — that share a common root cause: **no pre-execution enforcement**.
 
-This report catalogues every publicly documented AI agent failure we could find, scores each by cost and blast radius, and maps them to the runtime controls that would have prevented them.
+This report catalogues documented incidents and recurring failure patterns, scores each by cost and blast radius, and maps them to the runtime controls that would have prevented them.
 
 <!-- more -->
 
 ## Key findings
 
-- **30+ documented incidents** across cost, action, security, and multi-agent categories
-- **Documented costs range from $1.40 to $847,000/month** — a single POC-to-production scaling incident exceeded $847K/month, while individual runaway loops cost $4,200–$47,000 per incident
+- **20+ documented incidents and recurring patterns** across cost, action, security, and multi-agent categories
+- **Documented costs range from $1.40 to $12,400 per incident** in direct model spend, with business impact reaching $50,000+ from a single $1.40 agent run
 - **The most expensive incidents cost the least in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.theregister.com/2025/01/31/openai_operator_agent/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
 - **84% of tool poisoning attacks succeed** when agents auto-approve tool calls ([MCP-ITP benchmark](https://arxiv.org/abs/2601.07395))
 - **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.13657))
@@ -44,31 +44,7 @@ Incidents are categorized as:
 
 Agents that spend more than expected — through loops, retries, fan-out, or scope creep.
 
-### A1. POC-to-production cost explosion — $847K/month
-
-A proof-of-concept agent costing $500/month [scaled to $847,000/month](https://medium.com/@klaushofenbitzer/token-cost-trap-why-your-ai-agents-roi-breaks-at-scale-and-how-to-fix-it-4e4a9f6f5b9a) in production. The model pricing was exactly right — the call volume assumptions were not. Context windows grew with conversation history, retries multiplied during degraded service windows, and fan-out across user segments compounded costs exponentially.
-
-| | Detail |
-|---|---|
-| Model cost | $847,000/month at scale |
-| Business impact | Budget blown, project paused |
-| Source | Medium (Klaus Hofenbitzer) |
-| Root cause | No per-run or per-tenant budget cap |
-| Prevention | **Budget gate** — per-run cap stops cost at $X regardless of call volume |
-
-### A2. Data enrichment API loop — $47,000
-
-A data enrichment agent [misinterpreted an API error and ran 2.3 million calls over a weekend](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/), costing $47,000. The API returned a 200 status with an error body — the agent treated it as success and retried the entire batch.
-
-| | Detail |
-|---|---|
-| Model cost | $47,000 |
-| Business impact | Weekend budget consumed |
-| Source | RocketEdge |
-| Root cause | No cumulative spend enforcement; 200 OK masked the failure |
-| Prevention | **Budget gate** — per-workflow cap exhausted long before $47K |
-
-### A3. Coding agent retry loop — $4,200 ⚙️
+### A1. Coding agent retry loop — $4,200 ⚙️
 
 A coding agent hit an ambiguous error, retried with expanding context windows, and [looped 240 times over three hours](/blog/ai-agent-failures-budget-controls-prevent). Total cost: $4,200. Three dashboards showed the spend in real time. None could stop it.
 
@@ -79,7 +55,7 @@ A coding agent hit an ambiguous error, retried with expanding context windows, a
 | Root cause | Provider cap is monthly/org-wide — doesn't enforce per-run |
 | Prevention | **Budget gate** — $15 per-run cap stops at 8 iterations |
 
-### A4. Weekend backlog processing — $12,400 ⚙️
+### A2. Weekend backlog processing — $12,400 ⚙️
 
 A coding agent [deployed Friday afternoon processed a 2,300-item backlog over the weekend](/blog/ai-agent-failures-budget-controls-prevent) without budget enforcement. Context windows grew per item, retries compounded, and nobody checked until Monday.
 
@@ -90,7 +66,7 @@ A coding agent [deployed Friday afternoon processed a 2,300-item backlog over th
 | Root cause | No per-batch or per-task budget limit |
 | Prevention | **Budget gate** — per-task cap of $5 limits total to ~$2,500 |
 
-### A5. Concurrent agent burst — 6.4x overrun ⚙️
+### A3. Concurrent agent burst — 6.4x overrun ⚙️
 
 Twenty concurrent agents [processing 200 documents simultaneously](/blog/ai-agent-failures-budget-controls-prevent) hit a TOCTOU race condition. All read "budget remaining: $500" and all proceeded. Actual spend: $3,200.
 
@@ -101,7 +77,7 @@ Twenty concurrent agents [processing 200 documents simultaneously](/blog/ai-agen
 | Root cause | Application-level counter lacks atomicity |
 | Prevention | **Atomic reservation** — budget locked before execution, concurrent reads see accurate remaining |
 
-### A6. Retry storm during CRM outage — $1,800 ⚙️
+### A4. Retry storm during CRM outage — $1,800 ⚙️
 
 A CRM returns 500 errors for 12 minutes. [Retry logic at tool, step, and orchestration layers compound](/blog/ai-agent-failures-budget-controls-prevent) — 27x multiplication across 45 active conversations. Cost: $1,800 in 12 minutes.
 
@@ -111,6 +87,15 @@ A CRM returns 500 errors for 12 minutes. [Retry logic at tool, step, and orchest
 | Business impact | All tenant budgets affected during the storm |
 | Root cause | Retry multiplier at each layer; no cumulative check |
 | Prevention | **Budget gate** — per-conversation cap ($2) limits total to ~$76 |
+
+::: details Additional anecdotal reports (self-published sources)
+Two widely cited cost incidents come from self-published sources and should be treated as pattern-confirming rather than independently verified:
+
+- **POC-to-production scaling — $847K/month.** A proof-of-concept agent costing $500/month [scaled to $847,000/month](https://medium.com/@klaushofenbitzer/token-cost-trap-why-your-ai-agents-roi-breaks-at-scale-and-how-to-fix-it-4e4a9f6f5b9a) in production due to call volume assumptions that didn't account for context window growth, retries, and fan-out. (Source: Medium, Klaus Hofenbitzer)
+- **Data enrichment API loop — $47,000.** A data enrichment agent [misinterpreted an API error and ran 2.3 million calls over a weekend](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/). The API returned 200 OK with an error body; the agent treated it as success and retried the entire batch. (Source: RocketEdge)
+
+Both illustrate the same failure mode as A1–A4: no cumulative spend enforcement.
+:::
 
 ## Category B: Action Failures
 
@@ -212,25 +197,25 @@ Researchers demonstrated that malicious websites can [hijack locally-running AI 
 | Root cause | No authentication between agent host and tool server |
 | Prevention | **Scope isolation** — per-session budget limits blast radius even if session is compromised |
 
-### C3. MCP tool marketplace — 824 unauthorized capabilities
+### C3. ClawHub malicious skills — 341 credential-stealing tools
 
-An [audit of ClawHub](https://blog.sshh.io/p/everything-wrong-with-mcp) found 824 unauthorized or harmful capabilities out of 10,700 published tools (7.7%). Separately, 1,184 tools were flagged as outright malicious.
+Researchers [found 341 malicious ClawHub skills](https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html) designed to steal credentials, exfiltrate data, or execute unauthorized actions. Separately, the [ClawJacked disclosure](https://blog.sshh.io/p/everything-wrong-with-mcp) identified 71 additional malicious skills using WebSocket hijacking techniques.
 
 | | Detail |
 |---|---|
-| Scale | 824 unauthorized + 1,184 malicious out of 10,700 |
-| Source | ClawHub security audit, 2026 |
+| Scale | 341 malicious skills (Koi Security) + 71 (ClawJacked) |
+| Source | [The Hacker News](https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html), February 2026 |
 | Root cause | No vetting, signing, or sandboxing of community tools |
 | Prevention | **Action gate** — tool allowlist restricts agent to vetted tools only; unknown tools blocked before execution |
 
-### C4. 1,862 unauthenticated MCP servers
+### C4. Exposed MCP servers — zero authentication
 
-Knostic [discovered 1,862 internet-exposed MCP servers](https://blog.sshh.io/p/everything-wrong-with-mcp). All 119 manually verified had **zero authentication**. Separately, Trend Micro found 492 exposed servers.
+Trend Micro [found 492 internet-exposed MCP servers](https://cyberriskleaders.com/mcp-servers-lack-essential-security-measures/) lacking essential security measures. Separately, Knostic-derived analysis identified 1,862 exposed servers, with all 119 manually verified samples having zero authentication.
 
 | | Detail |
 |---|---|
-| Scale | 1,862 exposed (Knostic) + 492 (Trend Micro) |
-| Source | Knostic, Trend Micro, 2026 |
+| Scale | 492 exposed (Trend Micro) + 1,862 (Knostic-derived) |
+| Source | [Cyber Risk Leaders](https://cyberriskleaders.com/mcp-servers-lack-essential-security-measures/) (Trend Micro), 2026 |
 | Root cause | MCP protocol has no built-in authentication |
 | Prevention | **Scope isolation** — even unauthenticated access is bounded by per-tenant budget; blast radius contained |
 
@@ -318,15 +303,15 @@ An agent returns HTTP 200 for every call, but [the underlying data is wrong](/bl
 
 ## Category E: Industry-Scale Evidence
 
-Statistics from research firms and industry surveys that quantify the systemic problem.
+Statistics from research firms and industry surveys that quantify the systemic problem. These are not agent-specific incidents — they are broader AI adoption data points that provide context for the agent failures above.
 
-| Finding | Source | Year |
-|---|---|---|
-| 64% of $1B+ companies lost >$1M to AI failures broadly | [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) | 2024 |
-| 80%+ of AI projects fail to reach production | [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) | 2024 |
-| Only 46% of organizations have implemented an AI governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 |
-| 40% of agentic AI projects will be scrapped by 2027 | Gartner forecast | 2025 |
-| 89% of firms reported zero measurable productivity change from AI adoption | [NBER](https://www.nber.org/papers/w32879) | 2026 |
+| Finding | Source | Year | Notes |
+|---|---|---|---|
+| 64% of $1B+ companies lost >$1M to AI failures | [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) | 2025 | Covers AI broadly, not agent-specific |
+| By some estimates, more than 80% of AI projects fail to reach production | [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) | 2024 | RAND cites the estimate; the underlying rate is debated |
+| 55% of organizations had not yet implemented an AI governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 | 46% had implemented; 55% had not |
+| Over 40% of agentic AI projects will be canceled by end of 2027 | Gartner forecast | 2025 | Forecast, not measured |
+| 89% of firms reported no impact on labor productivity from AI adoption | [NBER](https://www.nber.org/papers/w34836) | 2026 | Broad AI adoption survey, not agent-specific |
 
 ## Control mapping
 
@@ -334,11 +319,11 @@ Every incident maps to one or more runtime controls that would have prevented it
 
 | Control | What it prevents | Incidents prevented |
 |---|---|---|
-| **Budget gate** (pre-execution cost cap) | Runaway spend, loops, retries, fan-out | A1–A6, D1 |
+| **Budget gate** (pre-execution cost cap) | Runaway spend, loops, retries, fan-out | A1–A4, D1 |
 | **Action gate** (RISK_POINTS) | Wrong actions, excessive actions, unauthorized actions | B1–B6, C1, C3, C5, C7 |
-| **Scope isolation** (per-tenant, per-agent) | Cross-tenant blast radius, concurrent overruns, compromised agent containment | A5, C2, C4, C8, D1, D2 |
+| **Scope isolation** (per-tenant, per-agent) | Cross-tenant blast radius, concurrent overruns, compromised agent containment | A3, C2, C4, C8, D1, D2 |
 | **Audit trail** (structured event log) | Undetected failures, compliance gaps, incident reconstruction | C1, C6, D3 |
-| **Atomic reservation** (concurrency-safe) | TOCTOU races, double-spend, concurrent burst | A5, A6 |
+| **Atomic reservation** (concurrency-safe) | TOCTOU races, double-spend, concurrent burst | A3, A4 |
 
 No single control prevents all incidents. The four controls are complementary — cost, action, scope, and audit each address a different failure dimension.
 
