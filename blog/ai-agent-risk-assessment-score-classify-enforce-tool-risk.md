@@ -1,7 +1,7 @@
 ---
 title: "AI Agent Risk Assessment: How to Score, Classify, and Enforce Tool Risk Before Production"
-date: 2026-04-02
-author: Cycles Team
+date: 2026-04-03
+author: Albert Mavashev
 tags: [risk-assessment, risk-scoring, action-control, RISK_POINTS, agents, production, governance]
 description: "A practical guide to assessing AI agent risk at the tool level. Classify actions by blast radius, assign risk scores, and convert assessments into enforceable runtime budgets."
 blog: true
@@ -237,7 +237,7 @@ agent:
   owner: customer-experience-team
   description: "Resolves Tier 1 support tickets via chat and email"
   deployment_date: 2026-04-15
-  assessment_date: 2026-04-02
+  assessment_date: 2026-04-03
   assessor: jane.doe@example.com
 
 tools:
