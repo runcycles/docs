@@ -103,6 +103,27 @@ samp {
   border: 0;
 }
 
+/* ══ Home Feature Cards — match HomeProblems card style ══ */
+
+/* Base: match problem card border, radius, background */
+.VPFeature .box {
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: 12px !important;
+  background: var(--vp-c-bg-soft) !important;
+  transition: border-color 0.2s, background 0.2s !important;
+}
+
+/* Hover: brand border + background shift (matches HomeProblems .card:hover) */
+.VPFeature:hover .box {
+  border-color: var(--vp-c-brand-1) !important;
+  background: var(--vp-c-bg) !important;
+}
+
+/* CTA link text: brand color to match problem card CTA */
+.VPFeature .link-text-value {
+  color: var(--vp-c-brand-1) !important;
+}
+
 /* ══ Hero Image ══ */
 
 /* Hero image — remove VitePress card decoration */
