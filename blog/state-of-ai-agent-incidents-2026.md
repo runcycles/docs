@@ -20,10 +20,10 @@ This report catalogues every publicly documented AI agent failure we could find,
 ## Key findings
 
 - **30+ documented incidents** across cost, action, security, and multi-agent categories
-- **$1M+ in documented direct costs** across the incidents we could attribute dollar amounts to
+- **Documented costs range from $1.40 to $847,000/month** — a single POC-to-production scaling incident exceeded $847K/month, while individual runaway loops cost $4,200–$47,000 per incident
 - **The most expensive incidents cost the least in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.theregister.com/2025/01/31/openai_operator_agent/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
-- **84% of tool poisoning attacks succeed** when agents auto-approve tool calls ([MCP-ITP benchmark](https://arxiv.org/abs/2504.08623))
-- **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.11552))
+- **84% of tool poisoning attacks succeed** when agents auto-approve tool calls ([MCP-ITP benchmark](https://arxiv.org/abs/2601.07395))
+- **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.13657))
 - **64% of $1B+ companies** have already lost >$1M to AI failures broadly ([EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf))
 
 ## How to read this report
@@ -236,7 +236,7 @@ Knostic [discovered 1,862 internet-exposed MCP servers](https://blog.sshh.io/p/e
 
 ### C5. Tool poisoning — 84% success rate
 
-The [MCP-ITP benchmark](https://arxiv.org/abs/2504.08623) measured tool poisoning attacks succeeding 84.2% of the time with auto-approval. Attacks include rug pulls (tool changes behavior post-install), schema poisoning (hidden instructions in descriptions), and tool shadowing (malicious tool overrides legitimate one).
+The [MCP-ITP benchmark](https://arxiv.org/abs/2601.07395) measured tool poisoning attacks succeeding 84.2% of the time with auto-approval. Attacks include rug pulls (tool changes behavior post-install), schema poisoning (hidden instructions in descriptions), and tool shadowing (malicious tool overrides legitimate one).
 
 | | Detail |
 |---|---|
@@ -284,13 +284,13 @@ Failures that emerge from agent interactions, coordination, and systemic propert
 
 ### D1. UC Berkeley MAST — 41–87% failure rates
 
-UC Berkeley's [MAST study](https://arxiv.org/abs/2503.11552) analyzed 1,642 execution traces across 7 multi-agent frameworks and found 14 distinct failure modes with 41–87% failure rates. Failure categories: system design issues (44.2%), inter-agent misalignment (32.3%), task verification failures (23.5%).
+UC Berkeley's [MAST study](https://arxiv.org/abs/2503.13657) analyzed 1,642 execution traces across 7 multi-agent frameworks and found 14 distinct failure modes with 41–87% failure rates. Failure categories: system design issues (44.2%), inter-agent misalignment (32.3%), task verification failures (23.5%).
 
 | | Detail |
 |---|---|
 | Failure rate | 41–87% across frameworks |
 | Cost multiplier | 3–7x for misalignment failures |
-| Source | NeurIPS 2025 Spotlight paper |
+| Source | [UC Berkeley MAST](https://arxiv.org/abs/2503.13657), NeurIPS 2025 Spotlight |
 | Root cause | No per-agent or per-delegation budget enforcement |
 | Prevention | **Scope isolation + budget gate** — hierarchical budgets (tenant → workflow → agent) bound each agent's spend and actions independently |
 
@@ -322,11 +322,11 @@ Statistics from research firms and industry surveys that quantify the systemic p
 
 | Finding | Source | Year |
 |---|---|---|
-| 64% of $1B+ companies lost >$1M to AI failures | [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) | 2024 |
+| 64% of $1B+ companies lost >$1M to AI failures broadly | [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) | 2024 |
 | 80%+ of AI projects fail to reach production | [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) | 2024 |
-| 46% of organizations lack an AI governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 |
+| Only 46% of organizations have implemented an AI governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 |
 | 40% of agentic AI projects will be scrapped by 2027 | Gartner forecast | 2025 |
-| 89% of firms reported zero measurable productivity change from AI | [NBER](https://www.nber.org/papers/w32966) | 2024 |
+| 89% of firms reported zero measurable productivity change from AI adoption | [NBER](https://www.nber.org/papers/w32879) | 2026 |
 
 ## Control mapping
 
