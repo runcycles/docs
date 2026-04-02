@@ -46,6 +46,13 @@ Budget control for local model runners — track GPU time and compute costs for 
 - [Ollama integration guide](/how-to/integrating-cycles-with-ollama)
 - [ollama.com](https://ollama.com)
 
+### Groq
+
+Budget governance for Groq's LPU-accelerated inference. Uses the OpenAI-compatible API with Groq-specific pricing. Includes a model-downgrade degradation pattern — fall back from GPT-4o to Groq when budget runs low.
+
+- [Groq integration guide](/how-to/integrating-cycles-with-groq)
+- [groq.com](https://groq.com)
+
 ## AI Frameworks & SDKs
 
 ### LangChain (Python)
