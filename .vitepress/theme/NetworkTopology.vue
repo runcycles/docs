@@ -1,96 +1,68 @@
 <script setup>
 /**
  * NetworkTopology — recommended network architecture for production operations.
- * Shows: Load Balancer → Cycles Server (HA) → Redis ← Admin Server (internal)
+ * Shows: Load Balancer → Cycles Server (HA) + Admin Server (internal) → shared Redis
  */
 </script>
 
 <template>
-  <div class="net-diagram" role="img" aria-label="Recommended network topology: Load balancer fronts multiple Cycles Server instances, Admin Server on internal network, both backed by shared Redis">
+  <div class="net-diagram" role="img" aria-label="Recommended network topology: Load balancer fronts multiple Cycles Server instances, Admin Server on internal network, both backed by a single shared Redis instance">
+    <!-- Load Balancer -->
+    <div class="net-box net-lb">
+      <span class="net-label">Load Balancer</span>
+      <span class="net-sub">Port 7878 · Application traffic</span>
+      <span class="net-zone-tag">Runtime plane</span>
+    </div>
+
+    <div class="net-connector">
+      <div class="net-line"></div>
+    </div>
+
+    <!-- Server + Admin row -->
     <div class="net-row">
-      <!-- Public/runtime path -->
-      <div class="net-col">
-        <div class="net-box net-lb">
-          <span class="net-label">Load Balancer</span>
-          <span class="net-sub">Port 7878 · Application traffic</span>
-        </div>
-
-        <div class="net-connector">
-          <div class="net-line"></div>
-        </div>
-
-        <div class="net-box net-server">
-          <span class="net-label">Cycles Server</span>
-          <span class="net-sub">Multiple instances for HA</span>
-          <span class="net-note">Stateless — all state in Redis</span>
-        </div>
-
-        <div class="net-connector">
-          <div class="net-line"></div>
-        </div>
-
-        <div class="net-box net-redis">
-          <span class="net-label">Redis</span>
-          <span class="net-sub">Internal network only</span>
-        </div>
+      <div class="net-box net-server">
+        <span class="net-label">Cycles Server</span>
+        <span class="net-sub">Multiple instances for HA</span>
+        <span class="net-note">Stateless — all state in Redis</span>
+        <span class="net-zone-tag">Runtime plane</span>
       </div>
-
-      <!-- Admin/management path -->
-      <div class="net-col">
-        <div class="net-box net-admin">
-          <span class="net-label">Admin Server</span>
-          <span class="net-sub">Port 7979 · Internal/VPN only</span>
-          <span class="net-note">Management plane</span>
-        </div>
-
-        <div class="net-connector">
-          <div class="net-line"></div>
-          <span class="net-connector-label">Same Redis instance</span>
-        </div>
-
-        <div class="net-box net-redis">
-          <span class="net-label">Redis</span>
-          <span class="net-sub">Shared instance</span>
-        </div>
+      <div class="net-box net-admin">
+        <span class="net-label">Admin Server</span>
+        <span class="net-sub">Port 7979 · Internal/VPN only</span>
+        <span class="net-note">Management plane</span>
+        <span class="net-zone-tag net-zone-tag--internal">Management plane</span>
       </div>
     </div>
 
-    <div class="net-zones">
-      <div class="net-zone">
-        <span class="net-zone-label">Runtime plane</span>
-        <span class="net-zone-desc">App-facing, scalable</span>
-      </div>
-      <div class="net-zone net-zone--internal">
-        <span class="net-zone-label">Management plane</span>
-        <span class="net-zone-desc">Internal only, never public</span>
-      </div>
+    <div class="net-connector">
+      <div class="net-line"></div>
+      <span class="net-connector-label">Both connect to the same instance</span>
+    </div>
+
+    <!-- Single shared Redis -->
+    <div class="net-box net-redis">
+      <span class="net-label">Redis 7+</span>
+      <span class="net-sub">Single shared instance (or Redis Cluster) · Port 6379 · Internal network only</span>
     </div>
 
     <div class="visually-hidden">
       Recommended network topology for Cycles production deployment:
-      Runtime plane (application-facing, scalable): Load Balancer (port 7878) receives application traffic and distributes to multiple Cycles Server instances for high availability. The server is stateless — all state lives in Redis. Redis is on the internal network only.
-      Management plane (internal only, never public): Cycles Admin Server (port 7979) is accessible only via internal network or VPN. It manages tenants, API keys, and budgets. It connects to the same Redis instance as the runtime servers.
-      Key rules: Cycles Server (port 7878) — accessible to your application, can be behind an API gateway. Admin Server (port 7979) — internal access only, never expose to public internet. Redis (port 6379) — internal access only, never expose directly.
+      1. Load Balancer (port 7878) receives application traffic and distributes to multiple Cycles Server instances for high availability. This is the runtime plane — app-facing and horizontally scalable.
+      2. Cycles Server (port 7878, runtime enforcement) and Cycles Admin Server (port 7979, management plane, internal/VPN only) run side by side. The server is stateless — all state lives in Redis.
+      3. Both the Cycles Server and Admin Server connect to the SAME shared Redis 7+ instance (or Redis Cluster) on port 6379. Redis is on the internal network only — never exposed directly.
+      Key rules: Cycles Server (port 7878) — accessible to your application, can be behind an API gateway. Admin Server (port 7979) — internal access only, never expose to public internet. Redis (port 6379) — internal access only, never expose directly. All three share one Redis instance.
     </div>
   </div>
 </template>
 
 <style scoped>
 .net-diagram {
-  margin: 24px 0;
-  max-width: 600px;
-}
-
-.net-row {
-  display: flex;
-  gap: 24px;
-}
-
-.net-col {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0;
+  margin: 24px 0;
+  max-width: 600px;
 }
 
 .net-box {
@@ -123,6 +95,24 @@
   font-style: italic;
 }
 
+.net-zone-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 4px;
+  padding: 1px 8px;
+  margin-top: 4px;
+}
+
+.net-zone-tag--internal {
+  color: var(--vp-c-text-3);
+  border-color: var(--vp-c-divider);
+}
+
 .net-server {
   border-color: var(--vp-c-brand-1);
   background: var(--vp-c-brand-soft);
@@ -149,6 +139,16 @@
   background: var(--vp-c-bg-soft);
 }
 
+.net-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.net-row .net-box {
+  flex: 1;
+}
+
 .net-connector {
   display: flex;
   flex-direction: column;
@@ -168,41 +168,7 @@
   color: var(--vp-c-text-3);
 }
 
-.net-zones {
-  display: flex;
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.net-zone {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 8px;
-  border-top: 2px solid var(--vp-c-brand-1);
-}
-
-.net-zone--internal {
-  border-top-color: var(--vp-c-divider);
-}
-
-.net-zone-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--vp-c-text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.net-zone-desc {
-  font-size: 11px;
-  color: var(--vp-c-text-3);
-}
-
 @media (max-width: 480px) {
-  .net-row { flex-direction: column; gap: 16px; }
-  .net-zones { flex-direction: column; gap: 8px; }
+  .net-row { flex-direction: column; }
 }
 </style>
