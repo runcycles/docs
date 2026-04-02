@@ -1,5 +1,7 @@
 ---
 layout: home
+title: "Cycles — Runtime authority for autonomous agents"
+titleTemplate: false
 hero:
   name: "Cycles"
   text: "Runtime authority for autonomous agents"
