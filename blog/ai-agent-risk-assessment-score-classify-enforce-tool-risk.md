@@ -162,13 +162,26 @@ Base points assume a generic context. Three factors adjust them for your specifi
 | Industry-specific (HIPAA, PCI-DSS, SOX) | 2x |
 | Multiple overlapping regulations | 3x |
 
-**Formula:** `Final RISK_POINTS = Base × max(Audience, Sensitivity, Regulatory)`
+**Reputational exposure.** Some actions are disproportionately damaging not because of their technical impact but because of who sees them and how easily the consequences spread. A wrong email to an internal team is a correction. The same wrong email to a customer is a lost deal. The same wrong email screenshotted on social media is a news cycle. The technical action is identical — the reputational blast radius is not.
 
-Use the highest multiplier, not the product — stacking all three would inflate scores beyond useful range. The point is to shift tools that are particularly dangerous in your context above the baseline.
+| Visibility | Multiplier |
+|---|:------:|
+| Internal only (team channels, internal tools) | 1x |
+| Single external party (one customer, one vendor) | 1.5x |
+| Public-facing or shared channel (customer portal, community Slack) | 2x |
+| Press, analysts, social media, or regulatory bodies | 3x |
+
+This multiplier captures a risk dimension the other three miss. Audience size counts heads. Data sensitivity classifies information. Regulatory exposure measures legal consequence. Reputational exposure measures **trust consequence** — how much brand credibility is at stake if this action goes wrong, and how easily the damage amplifies beyond the initial blast radius.
+
+Consider: a support agent that sends a wrong email to one customer (1.5x) versus a support agent that posts a wrong response in a public community forum (2x) versus a support agent whose hallucinated response gets screenshotted in a viral post about AI failures (3x). Same underlying action, same data sensitivity, same regulatory context — but the reputational exposure is the difference between a support ticket and a PR crisis.
+
+**Formula:** `Final RISK_POINTS = Base × max(Audience, Sensitivity, Regulatory, Reputational)`
+
+Use the highest multiplier, not the product — stacking all four would inflate scores beyond useful range. The point is to shift tools that are particularly dangerous in your context above the baseline.
 
 ### Step 3: Score the Support Agent
 
-Applying the methodology to the 12-tool support agent, assuming: B2B SaaS (100+ customers), customer PII in CRM (2x data sensitivity), GDPR-applicable (1.5x regulatory):
+Applying the methodology to the 12-tool support agent, assuming: B2B SaaS (500+ customer accounts), customer PII in CRM (2x data sensitivity), GDPR-applicable (1.5x regulatory), customer emails are forwardable/screenshotable (2x reputational for customer-facing actions):
 
 | Tool | Tier | Base | Multiplier | Final RISK_POINTS | Rationale |
 |------|:----:|:----:|:------:|:------:|-----------|
@@ -176,14 +189,16 @@ Applying the methodology to the 12-tool support agent, assuming: B2B SaaS (100+ 
 | `get_customer_record` | 0 | 0 | — | **0** | Read-only (PII accessed but not modified) |
 | `get_order_history` | 0 | 0 | — | **0** | Read-only |
 | `summarize_conversation` | 0 | 0 | — | **0** | Read-only |
-| `save_draft_response` | 1 | 1 | 1x | **1** | Internal, no PII mutation |
+| `save_draft_response` | 1 | 1 | 1x | **1** | Internal, no PII mutation, no external visibility |
 | `add_internal_note` | 1 | 1 | 2x (PII) | **2** | CRM note may contain customer data |
 | `lookup_shipping_status` | 2 | 5 | 1x | **5** | External read, no state change |
-| `send_customer_email` | 3 | 20 | 2x (PII, external) | **40** | Customer-facing, contains personal data, irreversible |
-| `create_support_ticket` | 3 | 20 | 1.5x (triggers notifications) | **30** | Creates downstream work, notifies team |
+| `send_customer_email` | 3 | 20 | 2x (reputational: customer-facing, forwardable) | **40** | Customer sees it, can screenshot/forward — trust at stake |
+| `create_support_ticket` | 3 | 20 | 2x (reputational: visible in customer portal) | **40** | Ticket visible to customer in portal, triggers notifications |
 | `update_crm_record` | 3 | 20 | 2x (PII mutation) | **40** | Modifies customer data, affects downstream systems |
-| `issue_refund` | 4 | 50 | 2x (financial) | **100** | Financial commitment, irreversible |
-| `escalate_to_billing` | 4 | 50 | 1.5x (financial workflow) | **75** | Triggers financial process |
+| `issue_refund` | 4 | 50 | 2x (financial + reputational) | **100** | Financial commitment, irreversible, wrong refund erodes trust |
+| `escalate_to_billing` | 4 | 50 | 2x (reputational: customer receives billing communication) | **100** | Triggers billing workflow visible to customer |
+
+Note how reputational exposure shifted two scores: `create_support_ticket` moved from 30 to 40 (the ticket is visible in the customer portal — a wrong ticket title or description is a trust issue, not just an operational one). `escalate_to_billing` moved from 75 to 100 (the customer receives a billing-related communication — a false escalation damages trust in the billing relationship). In both cases, the technical blast radius was unchanged, but the reputational blast radius was higher than the other multipliers.
 
 ### Step 4: Set the Per-Run Budget
 
@@ -194,15 +209,16 @@ For the support agent, a typical resolution involves:
 - 1–2 CRM reads (0 points each)
 - 1 internal note (2 points)
 - 1 customer email (40 points)
-- Occasionally: 1 ticket creation (30 points) or 1 CRM update (40 points)
+- Occasionally: 1 ticket creation (40 points) or 1 CRM update (40 points)
 
-**Normal run: ~42–72 points.** Set the per-run budget at **150 points** — enough for a complex resolution (email + ticket + CRM update = 110 points) with headroom for a second email, but not enough for a refund without consuming most of the remaining budget.
+**Normal run: ~42–82 points.** Set the per-run budget at **200 points** — enough for a complex resolution (email + ticket + CRM update = 120 points) with headroom for a second email, but not enough for a refund without consuming most of the remaining budget.
 
 What this prevents:
-- Agent cannot send more than 3 emails in a single run (3 × 40 = 120 points)
-- Agent cannot issue a refund *and* send more than 1 email (100 + 40 = 140 points)
+- Agent cannot send more than 5 emails in a single run (5 × 40 = 200 points) — and in practice, other actions consume budget first
+- Agent cannot issue a refund *and* send more than 2 emails (100 + 80 = 180 points, leaving only 20 for notes)
 - Agent can search and read without limit (0 points each)
-- Agent cannot issue 2 refunds in a single run (2 × 100 = 200 > 150)
+- Agent cannot issue 2 refunds in a single run (2 × 100 = 200, leaving zero for any other action)
+- Agent cannot escalate to billing *and* issue a refund (100 + 100 = 200, consuming the entire budget)
 
 The budget makes risk trade-offs explicit. The agent can reason freely but must prioritize its consequential actions.
 
@@ -257,46 +273,46 @@ tools:
     tier: 3
     risk_points: 40
     enforcement: reserve-commit
-    rationale: "Customer-facing, PII, irreversible — 2x multiplier"
+    rationale: "Customer-facing, forwardable/screenshotable — 2x reputational"
 
   - name: create_support_ticket
     tier: 3
-    risk_points: 30
+    risk_points: 40
     enforcement: reserve-commit
-    rationale: "Triggers team notifications and downstream workflows"
+    rationale: "Visible in customer portal — 2x reputational"
 
   - name: update_crm_record
     tier: 3
     risk_points: 40
     enforcement: reserve-commit
-    rationale: "PII mutation, affects downstream systems — 2x multiplier"
+    rationale: "PII mutation, affects downstream systems — 2x data sensitivity"
 
   - name: issue_refund
     tier: 4
     risk_points: 100
     enforcement: reserve-commit
-    rationale: "Financial, irreversible, regulatory exposure"
+    rationale: "Financial, irreversible — 2x financial + reputational"
 
   - name: escalate_to_billing
     tier: 4
-    risk_points: 75
+    risk_points: 100
     enforcement: reserve-commit
-    rationale: "Triggers financial workflow, irreversible"
+    rationale: "Triggers billing comms visible to customer — 2x reputational"
 
 budget:
-  per_run: 150
+  per_run: 200
   unit: RISK_POINTS
   rationale: >
-    Normal resolution: 42-72 points.
-    Complex resolution (email + ticket + CRM update): 110 points.
-    Budget of 150 allows complex resolutions with headroom
-    but prevents double-refund or email storms.
+    Normal resolution: 42-82 points.
+    Complex resolution (email + ticket + CRM update): 120 points.
+    Budget of 200 allows complex resolutions with headroom
+    but prevents double-refund or refund + billing escalation.
 
   degradation_thresholds:
     - consumed_percent: 50
-      action: "Disable Tier 4 tools (issue_refund, escalate_to_billing)"
+      action: "Disable Tier 4 tools (issue_refund, escalate_to_billing) — remaining budget cannot absorb a reputational misfire on financial actions"
     - consumed_percent: 80
-      action: "Disable Tier 3 tools (send_customer_email, create_support_ticket, update_crm_record)"
+      action: "Disable Tier 3 tools (send_customer_email, create_support_ticket, update_crm_record) — remaining budget too low for customer-facing actions"
     - consumed_percent: 100
       action: "DENY — read-only mode, summarize and stop"
 
@@ -309,6 +325,7 @@ context:
   audience: "B2B SaaS customers (500+ accounts)"
   data_sensitivity: "PII (customer names, emails, order history)"
   regulatory: "GDPR"
+  reputational: "Customer-facing emails and portal tickets are forwardable/screenshotable; wrong communications erode trust in product"
   delegation: "None — single agent, no sub-agent spawning"
 
 review_schedule: "Quarterly, or after any incident involving this agent"
@@ -334,7 +351,7 @@ curl -X POST http://localhost:7878/v1/budgets \
       "tenant": "acme-corp",
       "app": "support-copilot"
     },
-    "amount": 150,
+    "amount": 200,
     "unit": "RISK_POINTS"
   }'
 ```
