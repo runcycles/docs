@@ -95,7 +95,7 @@ The `action.kind` and `action.name` fields give you per-action-type governance. 
 
 A customer support agent can research, draft responses, and search the knowledge base freely. But it can only send 5 emails per session. On the 6th attempt, Cycles returns `DENY`, and the agent queues the email for human review instead.
 
-Without action authority, the agent's retry logic could send the same apology email 47 times before anyone notices.
+Without action authority, the agent's retry logic could send the same apology email dozens of times before anyone notices.
 
 ### Scenario 2: DevOps agent with deployment gates
 
@@ -103,17 +103,19 @@ A DevOps agent can run diagnostics, read logs, and suggest fixes with no limits.
 
 Without action authority, a debugging loop that keeps trying "deploy and check if fixed" could push 12 broken builds in an hour.
 
-### Scenario 3: Research agent with API rate protection
+### Scenario 3: Research agent with API call caps
 
-A research agent calls a third-party API that has a 100-requests-per-minute rate limit. Each API call costs 1 risk point, and the agent has 80 per minute. The Cycles budget acts as an internal rate limit that's 20% below the provider's hard limit — a safety margin that prevents 429 errors without relying on the external rate limiter.
+A research agent calls a third-party API during a research session. Each API call costs 1 risk point, and the agent has 50 points per session. After 50 calls, Cycles denies the 51st — the agent must summarize what it has and stop searching. Without this cap, a recursive research loop could make hundreds of API calls in a single session, burning through external API quotas and producing diminishing returns.
 
 ## Cost and consequence together
 
 The most powerful setup uses both `USD_MICROCENTS` for spend and `RISK_POINTS` for actions on the same agent:
 
 ```python
-# Budget: $5 spend limit AND 200 risk points per session
-# Both must pass for every action
+# Two separate budgets on the same scope:
+# - USD_MICROCENTS budget: $5 spend limit for LLM calls
+# - RISK_POINTS budget: 200 points for tool actions
+# Each reservation checks its own unit's budget independently.
 
 @cycles(estimate=2_000_000, unit="USD_MICROCENTS",
         action_kind="llm.completion", action_name="gpt-4o")
@@ -126,7 +128,7 @@ def send_email(to: str, body: str) -> str:
     ...
 ```
 
-The agent can spend up to $5 on LLM calls. It can send up to 4 emails (200 / 50). Both limits are enforced independently through the same protocol, with the same concurrency safety, the same scope hierarchy, and the same three-way decision model.
+The agent can spend up to $5 on LLM calls (checked against the USD_MICROCENTS budget). It can send up to 4 emails (checked against the RISK_POINTS budget, 200 / 50). Each action checks its own unit's budget — the same protocol, the same concurrency safety, the same scope hierarchy, applied to different dimensions of authority.
 
 ## Why this matters for multi-agent systems
 
@@ -136,7 +138,7 @@ In multi-agent systems — LangGraph workflows, AutoGen teams, CrewAI crews — 
 - The **writer** agent gets LLM budget but zero deployment authority
 - The **executor** agent gets tool authority but limited LLM budget
 
-The scope hierarchy (`tenant → workflow → agent`) means these limits are enforced independently per agent. The researcher cannot borrow the executor's deployment authority. A bug in the writer cannot trigger the executor's tools.
+The scope hierarchy (`tenant → workspace → app → workflow → agent → toolset`) means these limits are enforced independently per agent. The researcher cannot borrow the executor's deployment authority. A bug in the writer cannot trigger the executor's tools.
 
 This is the same hierarchical isolation that prevents one tenant from spending another tenant's budget — applied to actions instead of dollars.
 

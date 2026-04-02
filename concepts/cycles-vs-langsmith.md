@@ -5,7 +5,7 @@ description: "LangSmith traces what happened after execution. Cycles decides whe
 
 # Cycles vs LangSmith: Enforcement vs Observability
 
-LangSmith is the most widely adopted observability platform for LLM applications. If you're building with LangChain or LangGraph, you're probably already using it — or evaluating it.
+LangSmith is one of the most widely adopted observability platforms for LLM applications. If you're building with LangChain or LangGraph, you're probably already using it — or evaluating it.
 
 Cycles and LangSmith operate at different points in the agent lifecycle. Understanding where each fits prevents both gaps and redundancy in your production stack.
 
@@ -20,13 +20,13 @@ Cycles and LangSmith operate at different points in the agent lifecycle. Underst
 | **Action control** | None — records all actions | Denies actions that exceed authority |
 | **Scope** | Per-run, per-chain traces | Per-tenant, per-agent, per-action |
 | **Concurrency** | N/A (read-only) | Atomic reservations (write path) |
-| **Multi-tenant** | Tags and metadata | Cryptographic tenant isolation |
+| **Multi-tenant** | Tags and metadata | API-key-scoped tenant isolation |
 
 ## The fundamental difference
 
 LangSmith tells you that yesterday's agent spent $47 across 312 runs, with an average latency of 2.3 seconds and a 4% error rate. That information is valuable — it drives optimization, debugging, and capacity planning.
 
-But it doesn't prevent tomorrow's agent from spending $470. Or $4,700. LangSmith observes the execution path. It does not control it.
+LangSmith can alert on cost anomalies — but alerting is reactive. By the time the alert fires, the spend has already happened. Cycles operates on the write path, preventing the spend before it occurs.
 
 Cycles operates on the write path. Before an LLM call executes, the agent must reserve budget. If the budget is exhausted, the call is denied — the model is never invoked, no tokens are consumed, no cost is incurred. This is enforcement, not observation.
 
@@ -54,7 +54,8 @@ Cycles does not replace LangSmith. It has no:
 
 - **Trace visualization** — no flame graphs, no chain-of-thought replay
 - **Evaluation framework** — no LLM-as-judge, no dataset management
-- **Prompt debugging** — no prompt versioning, no A/B testing
+- **Prompt management** — no prompt hub, no versioning, no sharing
+- **Prompt debugging** — no A/B testing, no dataset-driven evaluation
 - **Latency profiling** — no per-step timing breakdown
 
 These are observability concerns. Cycles is not an observability tool.
