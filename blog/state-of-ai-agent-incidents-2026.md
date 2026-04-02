@@ -210,12 +210,12 @@ Researchers [found 341 malicious ClawHub skills](https://thehackernews.com/2026/
 
 ### C4. Exposed MCP servers — zero authentication
 
-Trend Micro [found 492 internet-exposed MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) with no client authentication or traffic encryption. Separately, Knostic [reported 1,862 exposed MCP servers](https://blog.sshh.io/p/everything-wrong-with-mcp), sampled 119, and found all 119 allowed access to internal tool listings without authentication.
+Trend Micro [found 492 internet-exposed MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) with no client authentication or traffic encryption. Separately, Knostic reported 1,862 exposed MCP servers, sampled 119, and found all 119 allowed access to internal tool listings without authentication (reported via [secondary coverage](https://blog.sshh.io/p/everything-wrong-with-mcp)).
 
 | | Detail |
 |---|---|
-| Scale | 492 exposed ([Trend Micro](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data)) + 1,862 exposed ([Knostic](https://blog.sshh.io/p/everything-wrong-with-mcp)) |
-| Source | Trend Micro, Knostic, 2026 |
+| Scale | 492 exposed ([Trend Micro, primary](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data)) + 1,862 exposed (Knostic, [secondary source](https://blog.sshh.io/p/everything-wrong-with-mcp)) |
+| Source | Trend Micro (primary), Knostic via sshh.io (secondary), 2026 |
 | Root cause | MCP protocol has no built-in authentication |
 | Prevention | **Scope isolation** — even unauthenticated access is bounded by per-tenant budget; blast radius contained |
 
@@ -237,7 +237,7 @@ Security researchers documented [more than 30 CVEs](https://medium.com/ai-securi
 | | Detail |
 |---|---|
 | Scale | 30+ CVEs, average security score 34/100 |
-| Source | AI Security Hub, 2026 |
+| Source | [AI Security Hub](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f), 2026 (secondary summary) |
 | Root cause | Rapid adoption without security review |
 | Prevention | **Audit trail** — every tool invocation logged; anomalous patterns detectable |
 
@@ -274,7 +274,6 @@ UC Berkeley's [MAST study](https://arxiv.org/abs/2503.13657) analyzed 1,642 exec
 | | Detail |
 |---|---|
 | Failure rate | 41–87% across frameworks |
-| Cost multiplier | 3–7x for misalignment failures |
 | Source | [UC Berkeley MAST](https://arxiv.org/abs/2503.13657), NeurIPS 2025 Spotlight |
 | Root cause | No per-agent or per-delegation budget enforcement |
 | Prevention | **Scope isolation + budget gate** — hierarchical budgets (tenant → workflow → agent) bound each agent's spend and actions independently |
@@ -311,7 +310,7 @@ Statistics from research firms and industry surveys that quantify the systemic p
 | By some estimates, more than 80% of AI projects fail to reach production | [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) | 2024 | RAND cites the estimate; the underlying rate is debated |
 | 55% of organizations had not yet implemented an AI governance framework; among those that had, 46% used either a dedicated framework or extended another governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 | The 46% and 55% are not clean complements — different base populations |
 | Over 40% of agentic AI projects will be canceled by end of 2027 | Gartner forecast | 2025 | Forecast, not measured |
-| 89% of firms reported no impact on labor productivity from AI adoption | [NBER](https://www.nber.org/papers/w34836) | 2026 | Broad AI adoption survey, not agent-specific |
+| Over 80% of firms reported no impact on either employment or productivity over the last 3 years | [NBER](https://www.nber.org/papers/w34836) | 2026 | Broad AI adoption survey, not agent-specific |
 
 ## Control mapping
 
