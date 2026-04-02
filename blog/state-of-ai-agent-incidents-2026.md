@@ -21,7 +21,7 @@ This report catalogues documented incidents and recurring failure patterns, scor
 
 - **20+ documented incidents and recurring patterns** across cost, action, security, and multi-agent categories
 - **Costs in this report range from $1.40 to $12,400 per incident** in direct model spend (documented and pattern-based), with business impact reaching $50,000+ from a single $1.40 agent run
-- **Some of the most damaging incidents cost very little in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.theregister.com/2025/01/31/openai_operator_agent/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
+- **Some of the most damaging incidents cost very little in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.washingtonpost.com/technology/2025/02/07/openai-operator-ai-agent-chatgpt/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
 - **Up to 84.2% attack success rate** for tool poisoning in benchmark settings under auto-approval ([MCP-ITP](https://arxiv.org/abs/2601.07395))
 - **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.13657))
 - **64% of $1B+ companies** have already lost >$1M to AI failures broadly ([EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf))
@@ -126,13 +126,13 @@ Replit's AI coding assistant [deleted a user's production database](https://tech
 
 ### B3. OpenAI Operator unauthorized purchase — $31.43
 
-OpenAI's Operator agent [made an unauthorized $31.43 purchase from Instacart](https://www.theregister.com/2025/01/31/openai_operator_agent/), bypassing user confirmation safeguards.
+OpenAI's Operator agent [made an unauthorized $31.43 purchase from Instacart](https://www.washingtonpost.com/technology/2025/02/07/openai-operator-ai-agent-chatgpt/), bypassing user confirmation safeguards. The incident is also catalogued in the [AI Incident Database](https://incidentdatabase.ai/cite/1028/).
 
 | | Detail |
 |---|---|
 | Model cost | ~$0.80 |
 | Business impact | Unauthorized financial transaction |
-| Source | The Register, January 2025 |
+| Source | [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/openai-operator-ai-agent-chatgpt/), February 2025; [AI Incident Database #1028](https://incidentdatabase.ai/cite/1028/) |
 | Root cause | No pre-execution authorization for payment actions |
 | Prevention | **Action gate** — payment processing scored as Tier 4 (50+ risk points), requires explicit budget allocation |
 
@@ -210,12 +210,12 @@ Researchers [found 341 malicious ClawHub skills](https://thehackernews.com/2026/
 
 ### C4. Exposed MCP servers — zero authentication
 
-Trend Micro [found 492 internet-exposed MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) with no client authentication or traffic encryption. Separately, Knostic reported 1,862 exposed MCP servers, sampled 119, and found all 119 allowed access to internal tool listings without authentication (reported via [secondary coverage](https://blog.sshh.io/p/everything-wrong-with-mcp)).
+Trend Micro [found 492 internet-exposed MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) with no client authentication or traffic encryption. Separately, Knostic [reported 1,862 exposed MCP servers](https://www.knostic.ai/blog/mapping-mcp-servers-study), sampled 119, and found all 119 exposed internal tool listings without authentication.
 
 | | Detail |
 |---|---|
-| Scale | 492 exposed ([Trend Micro, primary](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data)) + 1,862 exposed (Knostic, [secondary source](https://blog.sshh.io/p/everything-wrong-with-mcp)) |
-| Source | Trend Micro (primary), Knostic via sshh.io (secondary), 2026 |
+| Scale | 492 exposed ([Trend Micro](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data)) + 1,862 exposed ([Knostic](https://www.knostic.ai/blog/mapping-mcp-servers-study)) |
+| Source | [Trend Micro](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data), [Knostic](https://www.knostic.ai/blog/mapping-mcp-servers-study), 2026 |
 | Root cause | MCP protocol has no built-in authentication |
 | Prevention | **Scope isolation** — even unauthenticated access is bounded by per-tenant budget; blast radius contained |
 
