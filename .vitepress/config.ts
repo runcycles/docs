@@ -347,6 +347,14 @@ export default defineConfig({
                 { text: 'FastAPI', link: '/how-to/integrating-cycles-with-fastapi' },
               ]
             },
+            {
+              text: 'Rust',
+              collapsed: true,
+              items: [
+                { text: 'Rust Integration Guide', link: '/how-to/integrating-cycles-with-rust' },
+                { text: 'Error Handling in Rust', link: '/how-to/error-handling-patterns-in-rust' },
+              ]
+            },
           ]
         },
         {

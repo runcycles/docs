@@ -22,24 +22,24 @@ const tree = {
     no: {
       question: 'Is the call streaming?',
       yes: {
-        answer: 'Use reserveForStream (TS) or programmatic client (Python)',
-        link: '/how-to/streaming-with-cycles',
+        answer: 'Use reserveForStream (TS), ReservationGuard (Rust), or programmatic client (Python)',
+        link: '/how-to/handling-streaming-responses-with-cycles',
       },
       no: {
         question: 'Is budget logic per-request in a web framework?',
         yes: {
           answer: 'Use middleware',
-          detail: 'Express, FastAPI',
+          detail: 'Express, FastAPI, Axum, Actix',
         },
         no: {
           question: 'Do you need fine-grained control over commit timing?',
           yes: {
-            answer: 'Use programmatic client',
+            answer: 'Use programmatic client or ReservationGuard (Rust)',
             link: '/quickstart/getting-started-with-the-python-client',
           },
           no: {
-            answer: 'Use decorator',
-            detail: '@cycles / withCycles / @Cycles',
+            answer: 'Use decorator / wrapper',
+            detail: '@cycles (Python) / withCycles (TS) / with_cycles (Rust) / @Cycles (Java)',
           },
         },
       },
@@ -104,14 +104,14 @@ const rows = flattenTree(tree)
         Yes → Use the framework plugin (runcycles-openai-agents, openclaw-budget-guard).
         No →
       Q: Is the call streaming?
-        Yes → Use reserveForStream (TS) or programmatic client (Python).
+        Yes → Use reserveForStream (TS), ReservationGuard (Rust), or programmatic client (Python).
         No →
       Q: Is budget logic per-request in a web framework?
-        Yes → Use middleware (Express, FastAPI).
+        Yes → Use middleware (Express, FastAPI, Axum, Actix).
         No →
       Q: Do you need fine-grained control over commit timing?
-        Yes → Use programmatic client.
-        No → Use decorator (@cycles / withCycles / @Cycles).
+        Yes → Use programmatic client or ReservationGuard (Rust).
+        No → Use decorator/wrapper (@cycles Python / withCycles TS / with_cycles Rust / @Cycles Java).
     </div>
   </div>
 </template>
