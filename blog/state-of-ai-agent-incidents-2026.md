@@ -20,9 +20,9 @@ This report catalogues documented incidents and recurring failure patterns, scor
 ## Key findings
 
 - **20+ documented incidents and recurring patterns** across cost, action, security, and multi-agent categories
-- **Documented costs range from $1.40 to $12,400 per incident** in direct model spend, with business impact reaching $50,000+ from a single $1.40 agent run
-- **The most expensive incidents cost the least in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.theregister.com/2025/01/31/openai_operator_agent/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
-- **84% of tool poisoning attacks succeed** when agents auto-approve tool calls ([MCP-ITP benchmark](https://arxiv.org/abs/2601.07395))
+- **Costs in this report range from $1.40 to $12,400 per incident** in direct model spend (documented and pattern-based), with business impact reaching $50,000+ from a single $1.40 agent run
+- **Some of the most damaging incidents cost very little in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.theregister.com/2025/01/31/openai_operator_agent/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
+- **Up to 84.2% attack success rate** for tool poisoning in benchmark settings under auto-approval ([MCP-ITP](https://arxiv.org/abs/2601.07395))
 - **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.13657))
 - **64% of $1B+ companies** have already lost >$1M to AI failures broadly ([EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf))
 
@@ -42,7 +42,7 @@ Incidents are categorized as:
 
 ## Category A: Cost Explosions
 
-Agents that spend more than expected — through loops, retries, fan-out, or scope creep.
+Agents that spend more than expected — through loops, retries, fan-out, or scope creep. These are pattern-based scenarios (⚙️) constructed from real failure modes — see Categories B and C for externally documented incidents from named companies and security researchers.
 
 ### A1. Coding agent retry loop — $4,200 ⚙️
 
@@ -210,18 +210,18 @@ Researchers [found 341 malicious ClawHub skills](https://thehackernews.com/2026/
 
 ### C4. Exposed MCP servers — zero authentication
 
-Trend Micro [found 492 internet-exposed MCP servers](https://cyberriskleaders.com/mcp-servers-lack-essential-security-measures/) lacking essential security measures. Separately, Knostic-derived analysis identified 1,862 exposed servers, with all 119 manually verified samples having zero authentication.
+Trend Micro [found 492 internet-exposed MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) with no client authentication or traffic encryption. Separately, Knostic [reported 1,862 exposed MCP servers](https://blog.sshh.io/p/everything-wrong-with-mcp), sampled 119, and found all 119 allowed access to internal tool listings without authentication.
 
 | | Detail |
 |---|---|
-| Scale | 492 exposed (Trend Micro) + 1,862 (Knostic-derived) |
-| Source | [Cyber Risk Leaders](https://cyberriskleaders.com/mcp-servers-lack-essential-security-measures/) (Trend Micro), 2026 |
+| Scale | 492 exposed ([Trend Micro](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data)) + 1,862 exposed ([Knostic](https://blog.sshh.io/p/everything-wrong-with-mcp)) |
+| Source | Trend Micro, Knostic, 2026 |
 | Root cause | MCP protocol has no built-in authentication |
 | Prevention | **Scope isolation** — even unauthenticated access is bounded by per-tenant budget; blast radius contained |
 
 ### C5. Tool poisoning — 84% success rate
 
-The [MCP-ITP benchmark](https://arxiv.org/abs/2601.07395) measured tool poisoning attacks succeeding 84.2% of the time with auto-approval. Attacks include rug pulls (tool changes behavior post-install), schema poisoning (hidden instructions in descriptions), and tool shadowing (malicious tool overrides legitimate one).
+The [MCP-ITP benchmark](https://arxiv.org/abs/2601.07395) achieved up to 84.2% attack success rate (ASR) in benchmark settings under auto-approval. Attacks include rug pulls (tool changes behavior post-install), schema poisoning (hidden instructions in descriptions), and tool shadowing (malicious tool overrides legitimate one).
 
 | | Detail |
 |---|---|
@@ -309,7 +309,7 @@ Statistics from research firms and industry surveys that quantify the systemic p
 |---|---|---|---|
 | 64% of $1B+ companies lost >$1M to AI failures | [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) | 2025 | Covers AI broadly, not agent-specific |
 | By some estimates, more than 80% of AI projects fail to reach production | [RAND Corporation](https://www.rand.org/pubs/research_reports/RRA2680-1.html) | 2024 | RAND cites the estimate; the underlying rate is debated |
-| 55% of organizations had not yet implemented an AI governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 | 46% had implemented; 55% had not |
+| 55% of organizations had not yet implemented an AI governance framework; among those that had, 46% used either a dedicated framework or extended another governance framework | [Gartner](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) | 2024 | The 46% and 55% are not clean complements — different base populations |
 | Over 40% of agentic AI projects will be canceled by end of 2027 | Gartner forecast | 2025 | Forecast, not measured |
 | 89% of firms reported no impact on labor productivity from AI adoption | [NBER](https://www.nber.org/papers/w34836) | 2026 | Broad AI adoption survey, not agent-specific |
 
