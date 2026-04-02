@@ -283,6 +283,7 @@ export default defineConfig({
                 { text: 'Error Handling Patterns', link: '/how-to/error-handling-patterns-in-cycles-client-code' },
                 { text: 'Error Handling in Python', link: '/how-to/error-handling-patterns-in-python' },
                 { text: 'Error Handling in TypeScript', link: '/how-to/error-handling-patterns-in-typescript' },
+                { text: 'Error Handling in Rust', link: '/how-to/error-handling-patterns-in-rust' },
                 { text: 'Handling Streaming Responses', link: '/how-to/handling-streaming-responses-with-cycles' },
               ]
             },

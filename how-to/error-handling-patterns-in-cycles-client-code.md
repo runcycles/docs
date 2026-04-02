@@ -1,6 +1,6 @@
 ---
 title: "Error Handling Patterns in Cycles Client Code"
-description: "Handle Cycles protocol errors, transport failures, and budget exceeded responses in Python, Java, and TypeScript client code."
+description: "Handle Cycles protocol errors, transport failures, and budget exceeded responses in Python, TypeScript, Rust, and Java client code."
 ---
 
 # Error Handling Patterns in Cycles Client Code
@@ -10,6 +10,8 @@ This guide covers practical patterns for handling Cycles errors in your applicat
 For Python-specific patterns (exception hierarchy, FastAPI integration), see [Error Handling in Python](/how-to/error-handling-patterns-in-python).
 
 For TypeScript-specific patterns (exception hierarchy, Express/Next.js integration), see [Error Handling in TypeScript](/how-to/error-handling-patterns-in-typescript).
+
+For Rust-specific patterns (RAII guard safety, `Error` enum matching, Axum integration), see [Error Handling in Rust](/how-to/error-handling-patterns-in-rust).
 
 ## Protocol error structure
 
