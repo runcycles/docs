@@ -13,7 +13,7 @@ You don't have an answer. The dashboard shows what happened. It does not prevent
 
 **Monitoring dashboards are post-hoc.** They record what happened — after it happened. For AI agents that qualify as high-risk AI systems, the EU AI Act's [Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) requires the ability to interrupt the system's operation via a stop mechanism. A dashboard that shows a cost spike at 2 AM is not a stop mechanism.
 
-**Provider spending caps have no audit trail.** When OpenAI's monthly usage limit fires, it blocks the entire organization. There is no record of which tenant, which workflow, or which agent triggered the limit. An auditor cannot trace a spending event to a responsible scope — because the cap does not know about scopes.
+**Provider spending caps are fragmented and have no audit trail.** A single agent workflow can span multiple providers — OpenAI for reasoning, Anthropic for code generation, Google for search, plus external APIs for tools. Each provider has its own spending cap, but no single cap sees the total workflow cost. When OpenAI's monthly limit fires, it blocks the entire organization — while spend on Anthropic and Google continues unchecked. There is no record of which tenant, which workflow, or which agent triggered the limit. An auditor cannot trace a spending event to a responsible scope — because each provider's cap only sees its own slice.
 
 **Prompt-level guardrails are suggestions, not enforcement.** A system prompt that says "do not send more than 10 emails" is an instruction to a probabilistic model. It is not a control. An auditor asks: "Can the agent violate this rule?" If the answer is "yes, if the model decides to," it is not an auditable control point.
 
@@ -43,6 +43,7 @@ The event log is queryable via REST API. Hot retention is 90 days. Export to S3 
 | | Without Cycles | With Cycles |
 |---|---|---|
 | Audit trail | Reconstructed from scattered logs after incident | Structured record per action, queryable via API |
+| Cost visibility | Fragmented across provider dashboards | Unified budget per tenant/workflow/run, all providers |
 | Stop mechanism | Dashboard alert → human checks Slack | Budget exhaustion → DENY before execution |
 | Scope attribution | "Something spent $4,200" | "tenant:acme/workflow:run-123 spent $4,200" |
 | Auditor evidence | Screenshots of dashboards | API export of enforcement log |
