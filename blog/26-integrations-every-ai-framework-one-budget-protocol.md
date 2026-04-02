@@ -18,7 +18,7 @@ Today the answer is yes — for almost every stack. Cycles now integrates with *
 
 ## What shipped
 
-We added 13 new integration guides in the past month, doubling our coverage:
+We added 9 new integration guides, bringing the total from 17 to 26:
 
 ### LLM Providers (8)
 
