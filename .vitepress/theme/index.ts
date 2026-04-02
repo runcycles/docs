@@ -15,6 +15,9 @@ import ArchDiagramFull from './ArchDiagramFull.vue'
 import DecisionTree from './DecisionTree.vue'
 import ScopeDiagram from './ScopeDiagram.vue'
 import DeploymentDiagram from './DeploymentDiagram.vue'
+import NetworkTopology from './NetworkTopology.vue'
+import EventFlowDiagram from './EventFlowDiagram.vue'
+import DeliveryStateMachine from './DeliveryStateMachine.vue'
 
 export default {
   extends: DefaultTheme,
@@ -30,6 +33,9 @@ export default {
     app.component('DecisionTree', DecisionTree)
     app.component('ScopeDiagram', ScopeDiagram)
     app.component('DeploymentDiagram', DeploymentDiagram)
+    app.component('NetworkTopology', NetworkTopology)
+    app.component('EventFlowDiagram', EventFlowDiagram)
+    app.component('DeliveryStateMachine', DeliveryStateMachine)
   },
   setup() {
     const route = useRoute()

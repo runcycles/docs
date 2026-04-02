@@ -127,30 +127,7 @@ For listing and recovering stale or orphaned reservations after client crashes, 
 
 ### Recommended topology
 
-```
-┌─────────────────┐
-│  Load Balancer   │
-│  (port 7878)     │  ← Application traffic (public or internal)
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │ Cycles  │ ← Multiple instances for HA
-    │ Server  │
-    └────┬────┘
-         │
-    ┌────┴────┐
-    │  Redis  │ ← Internal network only
-    └─────────┘
-
-┌──────────────────┐
-│  Admin Server    │  ← Internal/VPN only (port 7979)
-│  (management)    │
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │  Redis  │ ← Same Redis instance
-    └─────────┘
-```
+<NetworkTopology />
 
 ### Network isolation
 
