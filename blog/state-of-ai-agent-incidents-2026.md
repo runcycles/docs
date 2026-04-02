@@ -1,7 +1,7 @@
 ---
 title: "The State of AI Agent Incidents (2026): Failures, Costs, and What Would Have Prevented Them"
 date: 2026-04-03
-author: Cycles Team
+author: Albert Mavashev
 tags: [incidents, governance, security, costs, agents, production, MCP, OWASP, multi-agent]
 description: "Documented AI agent incidents and recurring failure patterns — runaway costs, action misfires, security exploits, and multi-agent cascades. Each scored by cost, blast radius, and which runtime controls would have prevented it."
 blog: true
