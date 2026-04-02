@@ -5,6 +5,14 @@ description: "For B2B SaaS teams shipping AI agents to customers — blast radiu
 
 # Why Cycles
 
+**Start with the problem that matters to you:**
+
+- [Stop agents from burning your API budget overnight](/why-cycles/cost-control) — the $4,200 overnight incident
+- [Block the 201st email before it sends](/why-cycles/action-authority) — when the damage isn't cost, it's consequence
+- [One customer's runaway shouldn't affect your other 500](/why-cycles/multi-tenant) — per-tenant isolation for SaaS
+
+---
+
 If you're a team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
 
 ## What Cycles solves
