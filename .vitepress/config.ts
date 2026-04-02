@@ -33,20 +33,16 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/runcycles-favicon.ico' }],
     ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/runcycles-logo-192.png' }],
     ['link', { rel: 'manifest', href: '/manifest.json' }],
-    ['meta', { name: 'description', content: 'Enforce hard limits on agent spend, risk, and actions.' }],
-    ['meta', { property: 'og:type', content: 'website' }],
+    /* Per-page description, og:*, and twitter:* tags are injected dynamically
+       in transformPageData below — using frontmatter values per page.
+       Only truly global/static meta tags belong here. */
     ['meta', { property: 'og:site_name', content: 'Cycles' }],
-    ['meta', { property: 'og:title', content: 'Cycles — Runtime authority for autonomous agents' }],
-    ['meta', { property: 'og:description', content: 'Enforce hard limits on agent spend, risk, and actions. Open protocol, multi-language SDKs, Apache 2.0.' }],
     ['meta', { property: 'og:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { property: 'og:image:width', content: '1200' }],
     ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { property: 'og:image:alt', content: 'Cycles logo' }],
-    ['meta', { property: 'og:url', content: 'https://runcycles.io' }],
     ['meta', { name: 'theme-color', content: '#0B0F1A' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'Cycles — Runtime authority for autonomous agents' }],
-    ['meta', { name: 'twitter:description', content: 'Enforce hard limits on agent spend, risk, and actions. Open protocol, multi-language SDKs, Apache 2.0.' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
     ['link', { rel: 'alternate', type: 'application/rss+xml', title: 'Cycles Blog RSS', href: 'https://runcycles.io/feed.xml' }],
@@ -438,27 +434,31 @@ export default defineConfig({
       .replace(/index\.md$/, '')
       .replace(/\.md$/, '')
 
+    const defaultDescription = 'Enforce hard limits on agent spend, risk, and actions before execution. Open protocol, multi-language SDKs, Apache 2.0.'
+    const pageTitle = pageData.frontmatter.title || pageData.title || 'Cycles'
+    const pageDescription = pageData.frontmatter.description || defaultDescription
+
     pageData.frontmatter.head ??= []
-    pageData.frontmatter.head.push([
-      'link',
-      { rel: 'canonical', href: canonicalUrl },
-    ])
+    pageData.frontmatter.head.push(
+      ['link', { rel: 'canonical', href: canonicalUrl }],
+      ['meta', { property: 'og:title', content: pageTitle }],
+      ['meta', { property: 'og:description', content: pageDescription }],
+      ['meta', { property: 'og:url', content: canonicalUrl }],
+      ['meta', { name: 'twitter:title', content: pageTitle }],
+      ['meta', { name: 'twitter:description', content: pageDescription }],
+    )
 
     if (pageData.frontmatter.blog) {
       const ogImage = pageData.frontmatter.image
         ? `https://runcycles.io${pageData.frontmatter.image}`
         : 'https://runcycles.io/runcycles-og.png'
 
+      /* Blog-specific: override og:type, add article metadata, override image if set */
       pageData.frontmatter.head.push(
         ['meta', { property: 'og:type', content: 'article' }],
-        ['meta', { property: 'og:title', content: pageData.frontmatter.title }],
-        ['meta', { property: 'og:description', content: pageData.frontmatter.description }],
-        ['meta', { property: 'og:url', content: canonicalUrl }],
         ['meta', { property: 'og:image', content: ogImage }],
         ['meta', { property: 'og:image:alt', content: pageData.frontmatter.title }],
         ['meta', { property: 'article:published_time', content: pageData.frontmatter.date }],
-        ['meta', { name: 'twitter:title', content: pageData.frontmatter.title }],
-        ['meta', { name: 'twitter:description', content: pageData.frontmatter.description }],
         ['script', { type: 'application/ld+json' }, JSON.stringify({
           "@context": "https://schema.org",
           "@type": "BlogPosting",
