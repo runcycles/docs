@@ -3,7 +3,7 @@ title: "26 Integrations: Every AI Framework, One Budget Protocol"
 date: 2026-04-02
 author: Albert Mavashev
 tags: [announcement, integrations, langchain, langgraph, autogen, openai, anthropic, groq, django, nextjs, flask, anyagent, runtime-authority]
-description: "Cycles now integrates with 26 frameworks across Python, TypeScript, and Java — from OpenAI and Anthropic to LangGraph, AutoGen, AnyAgent, Groq, Django, Next.js, and Flask. One protocol covers every agent stack."
+description: "Cycles now integrates with 26 frameworks across Python, TypeScript, and Java. One protocol enforces spend limits, action boundaries, and risk controls across every agent stack — before execution."
 blog: true
 sidebar: false
 ---
@@ -12,7 +12,7 @@ sidebar: false
 
 When we launched Cycles, the question we heard most was: *"Does this work with my stack?"*
 
-Today the answer is yes — for almost every stack. Cycles now integrates with **26 frameworks** across Python, TypeScript, and Java. Every LLM call, tool execution, and agent workflow in your stack can be budget-governed with the same reserve → commit → release protocol.
+Today the answer is yes — for almost every stack. Cycles now integrates with **26 frameworks** across Python, TypeScript, and Java. Every LLM call, tool invocation, and agent action in your stack can be governed with the same reserve → commit → release protocol — enforcing spend limits, action boundaries, and risk controls before execution.
 
 <!-- more -->
 
@@ -63,11 +63,19 @@ We added 9 new integration guides, bringing the total from 17 to 26:
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | — |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — |
 
-## The pattern that matters: model downgrade
+## The patterns that matter
 
-The most interesting new pattern isn't in the integration guides themselves — it's in the [Groq guide](/how-to/integrating-cycles-with-groq).
+### Action authority across frameworks
 
-Most budget systems have two modes: allow or deny. When your budget runs out, the agent stops. But Cycles gives you a third option: **downgrade**.
+Every integration enforces the same principle: **no agent action executes without authorization**. Whether it's an LLM call in LangGraph, a tool invocation in AutoGen, or an API request in a Django endpoint — the reservation happens before the action, not after.
+
+This matters beyond cost. The same protocol that prevents a $50 runaway spend also prevents an agent from sending 200 emails, hitting a rate-limited API in a retry loop, or executing a high-risk tool without approval. The [OpenAI Agents guide](/how-to/integrating-cycles-with-openai-agents) maps tool risk points to budget — `send_email` costs 50 points while `search_knowledge` costs zero. The budget authority decides which actions are cheap and which are expensive.
+
+### Graceful degradation with model downgrade
+
+Most authorization systems have two modes: allow or deny. Cycles gives you a third: **downgrade**.
+
+The [Groq guide](/how-to/integrating-cycles-with-groq) introduces a pattern where agents switch models based on remaining authority:
 
 ```python
 def chat_with_downgrade(prompt: str) -> dict:
@@ -77,31 +85,20 @@ def chat_with_downgrade(prompt: str) -> dict:
         return fallback_chat(prompt)   # Groq Llama 4: $0.11/$0.34 per 1M tokens
 ```
 
-When your GPT-4o budget runs low, the agent automatically switches to Groq's Llama 4 Scout — 23x cheaper for input, 29x cheaper for output. The user still gets an answer. The agent keeps working. Your costs stay bounded.
-
-This is only possible because Cycles tracks budgets per `action_name`. The budget authority can set different limits for `gpt-4o` and `llama-4-scout`, and your application routes between them based on what's available.
+The agent keeps working. The user still gets an answer. The authority boundary holds — just with a different cost profile. This works because Cycles tracks authority per `action_name`, so the budget authority can set different limits for different models and let the application route between them.
 
 ## Multi-tenant SaaS guide
 
 Beyond integrations, we shipped a comprehensive [Multi-Tenant SaaS Guide](/how-to/multi-tenant-saas-with-cycles) — the single most-requested doc.
 
-It covers the full lifecycle:
+It covers the full lifecycle of per-customer runtime authority:
 - **Customer onboarding** — automated tenant + API key + budget creation
 - **Plan tiers** — Free ($5/mo), Pro ($50/mo), Enterprise ($500/mo) with overdraft limits
-- **Per-tenant middleware** — extract tenant from headers, scope every Cycles call
-- **Monthly budget resets** — `RESET` operation at billing cycle boundaries
-- **Graceful degradation** — upgrade prompts, model downgrade, caching
+- **Per-tenant isolation** — one customer's runaway agent cannot affect others
+- **Graceful degradation** — upgrade prompts, model downgrade, feature disabling
 - **Tenant suspension** — ACTIVE → SUSPENDED → CLOSED lifecycle
 
-All with working Python and TypeScript code.
-
-## What's next
-
-26 integrations covers the vast majority of production AI stacks. We're not chasing more framework checkboxes. Instead, we're focused on:
-
-- **Example repos** — `git clone` and run for every integration guide
-- **Batch/queue patterns** — Celery and Bull with budget governance
-- **Cost estimation improvements** — better defaults, adaptive estimation
+Each customer gets independent spend limits, action boundaries, and risk controls — all enforced at the protocol level with cryptographic tenant isolation.
 
 ## Try it
 
