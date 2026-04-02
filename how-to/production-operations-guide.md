@@ -1,6 +1,6 @@
 ---
 title: "Production Operations Guide"
-description: "Run Cycles reliably in production with Redis configuration, high availability, backup strategies, and operational best practices."
+description: "Run Cycles reliably in production: Redis configuration, Cycles Server HA, Events Service deployment, network architecture, capacity planning, and operational runbooks."
 ---
 
 # Production Operations Guide
@@ -89,7 +89,7 @@ Any load balancing strategy works (round-robin, least-connections). No sticky se
 
 ### Health checks
 
-Both servers expose Spring Boot Actuator health endpoints:
+All three services expose Spring Boot Actuator health endpoints:
 
 ```bash
 # Cycles Server
@@ -97,9 +97,12 @@ curl http://localhost:7878/actuator/health
 
 # Admin Server
 curl http://localhost:7979/actuator/health
+
+# Events Service
+curl http://localhost:7980/actuator/health
 ```
 
-Configure your load balancer or orchestrator to check these endpoints.
+Configure your load balancer or orchestrator to check these endpoints. The Events Service health check verifies Redis connectivity and queue consumption — if it reports unhealthy, webhook deliveries are stalled.
 
 ### JVM tuning
 
@@ -123,6 +126,49 @@ Reduce the interval for tighter TTL enforcement. Increase it to reduce Redis loa
 
 For listing and recovering stale or orphaned reservations after client crashes, see [Reservation Recovery and Listing](/protocol/reservation-recovery-and-listing-in-cycles).
 
+## Events Service configuration
+
+The **Cycles Events Service** (`cycles-server-events`, port 7980) delivers webhook notifications asynchronously. It is optional — if not deployed, admin and runtime servers continue operating normally, and events accumulate in Redis with TTL until the service starts.
+
+### Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Same across all services. Generate: `openssl rand -base64 32` |
+| `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
+| `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
+| `MAX_DELIVERY_AGE_MS` | 86400000 | Stale deliveries auto-fail after this age (24h default) |
+
+### Running multiple instances
+
+The Events Service is safe to run as multiple instances. Each instance consumes from the `dispatch:pending` Redis queue via BRPOP, which is atomic — each delivery job is processed by exactly one instance.
+
+```yaml
+cycles-events-1:
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  environment:
+    REDIS_HOST: redis-primary
+    REDIS_PORT: 6379
+    REDIS_PASSWORD: ${REDIS_PASSWORD}
+    WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY}
+
+cycles-events-2:
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  environment:
+    REDIS_HOST: redis-primary
+    REDIS_PORT: 6379
+    REDIS_PASSWORD: ${REDIS_PASSWORD}
+    WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY}
+```
+
+### Events Service down
+
+If the Events Service is unavailable:
+
+1. Admin and runtime servers are **unaffected** — event dispatch is fire-and-forget
+2. Redis accumulates events with TTL (90-day events, 14-day deliveries)
+3. On restart: stale deliveries older than `MAX_DELIVERY_AGE_MS` (default 24h) auto-fail; fresh ones deliver normally
+
 ## Network architecture
 
 ### Recommended topology
@@ -133,6 +179,7 @@ For listing and recovering stale or orphaned reservations after client crashes, 
 
 - **Cycles Server** (port 7878): Accessible to your application. Can be on an internal network or behind an API gateway.
 - **Admin Server** (port 7979): **Internal access only.** This manages tenants, API keys, and budgets. Never expose to the public internet.
+- **Events Service** (port 7980): **Internal access only.** Consumes from Redis and delivers webhooks outbound. Never needs inbound traffic from applications.
 - **Redis** (port 6379): **Internal access only.** Never expose directly.
 
 ### TLS termination
@@ -165,11 +212,16 @@ server {
 
 ### Scaling triggers
 
-Add more Cycles Server instances when:
+Add more **Cycles Server** instances when:
 - Response latency exceeds 50ms at p99
 - CPU utilization exceeds 70%
 
-Scale Redis when:
+Add more **Events Service** instances when:
+- The `dispatch:pending` queue depth grows consistently (`redis-cli LLEN dispatch:pending`)
+- Webhook delivery latency exceeds acceptable thresholds
+- Multiple instances are safe — BRPOP is atomic, so each delivery is processed exactly once
+
+Scale **Redis** when:
 - Memory utilization exceeds 80%
 - Command latency exceeds 5ms
 
@@ -177,13 +229,15 @@ Scale Redis when:
 
 ### Rolling upgrade
 
-Since the Cycles Server is stateless, you can do rolling upgrades with zero downtime:
+All three services (Cycles Server, Admin Server, Events Service) are stateless — all state lives in Redis. You can do rolling upgrades with zero downtime:
 
 1. Pull the new image: `docker pull ghcr.io/runcycles/cycles-server:NEW_VERSION`
 2. Stop one instance at a time
 3. Start the new version
-4. Verify health check passes
+4. Verify health check passes (`/actuator/health` on ports 7878, 7979, 7980)
 5. Repeat for remaining instances
+
+The Events Service can be upgraded independently. While it is down, webhook deliveries queue in Redis and are processed when the new version starts.
 
 ### Version compatibility
 
@@ -293,39 +347,24 @@ If all retries are exhausted or the client process crashes entirely, the reserva
 
 ### Redis connection loss
 
-**Symptom:** All reservation operations fail with 500 errors.
+**Symptom:** All reservation operations fail with 500 errors. Events Service also stops processing deliveries.
 
 **Response:**
 1. Check Redis connectivity: `redis-cli ping`
-2. Check server logs for connection errors
-3. Restart the Cycles Server if Redis connection pool is exhausted
+2. Check server logs for connection errors on all three services (ports 7878, 7979, 7980)
+3. Restart services if Redis connection pool is exhausted
 4. Active reservations with remaining TTL are preserved in Redis and will resume when connectivity returns
+5. Queued webhook deliveries resume automatically when the Events Service reconnects
 
-## Events Service Deployment
+### Webhook delivery failures
 
-The **events delivery service** (`cycles-server-events`, port 7980) is an optional component that delivers webhook notifications. If not deployed, admin and runtime servers continue operating normally — events and deliveries accumulate in Redis with TTL until the service is started.
+**Symptom:** Webhook endpoints are not receiving events. Queue depth grows.
 
-### Configuration
-
-| Variable | Default | Description |
-|---|---|---|
-| `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Same across all services. Generate: `openssl rand -base64 32` |
-| `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
-| `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
-| `MAX_DELIVERY_AGE_MS` | 86400000 | Stale deliveries auto-fail after this age (24h default) |
-
-### Events service down
-
-1. Admin and runtime servers are **unaffected** (fire-and-forget)
-2. Redis accumulates data with TTL (90d events, 14d deliveries)
-3. On restart: stale deliveries (>24h) auto-fail, fresh ones deliver normally
-
-### Runbook: webhook delivery failures
-
-1. Check health: `GET http://localhost:7980/actuator/health`
+**Response:**
+1. Check Events Service health: `GET http://localhost:7980/actuator/health`
 2. Check queue depth: `redis-cli LLEN dispatch:pending`
-3. Check if subscription auto-disabled: `GET /v1/admin/webhooks/{id}`
-4. Re-enable: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
+3. Check if subscription was auto-disabled: `GET /v1/admin/webhooks/{id}`
+4. Re-enable if needed: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
 5. Verify `WEBHOOK_SECRET_ENCRYPTION_KEY` matches across all services
 
 ## Next steps

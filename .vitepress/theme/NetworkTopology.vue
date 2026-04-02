@@ -1,12 +1,12 @@
 <script setup>
 /**
  * NetworkTopology — recommended network architecture for production operations.
- * Shows: Load Balancer → Cycles Server (HA) + Admin Server (internal) → shared Redis
+ * Shows: Load Balancer → Cycles Server (HA) + Admin Server (internal) → shared Redis → Events Service
  */
 </script>
 
 <template>
-  <div class="net-diagram" role="img" aria-label="Recommended network topology: Load balancer fronts multiple Cycles Server instances, Admin Server on internal network, both backed by a single shared Redis instance">
+  <div class="net-diagram" role="img" aria-label="Recommended network topology: Load balancer fronts Cycles Server instances, Admin Server on internal network, all backed by shared Redis, with Events Service consuming from Redis for webhook delivery">
     <!-- Load Balancer -->
     <div class="net-box net-lb">
       <span class="net-label">Load Balancer</span>
@@ -45,12 +45,26 @@
       <span class="net-sub">Single shared instance (or Redis Cluster) · Port 6379 · Internal network only</span>
     </div>
 
+    <div class="net-connector">
+      <div class="net-line"></div>
+      <span class="net-connector-label">BRPOP (dispatch:pending)</span>
+    </div>
+
+    <!-- Events Service -->
+    <div class="net-box net-events">
+      <span class="net-label">Cycles Events Service</span>
+      <span class="net-sub">Port 7980 · Webhook delivery (optional)</span>
+      <span class="net-note">Multiple instances safe — BRPOP is atomic</span>
+      <span class="net-zone-tag net-zone-tag--internal">Internal only</span>
+    </div>
+
     <div class="visually-hidden">
       Recommended network topology for Cycles production deployment:
       1. Load Balancer (port 7878) receives application traffic and distributes to multiple Cycles Server instances for high availability. This is the runtime plane — app-facing and horizontally scalable.
       2. Cycles Server (port 7878, runtime enforcement) and Cycles Admin Server (port 7979, management plane, internal/VPN only) run side by side. The server is stateless — all state lives in Redis.
-      3. Both the Cycles Server and Admin Server connect to the SAME shared Redis 7+ instance (or Redis Cluster) on port 6379. Redis is on the internal network only — never exposed directly.
-      Key rules: Cycles Server (port 7878) — accessible to your application, can be behind an API gateway. Admin Server (port 7979) — internal access only, never expose to public internet. Redis (port 6379) — internal access only, never expose directly. All three share one Redis instance.
+      3. All services connect to the SAME shared Redis 7+ instance (or Redis Cluster) on port 6379. Redis is on the internal network only — never exposed directly.
+      4. Cycles Events Service (port 7980, optional) consumes webhook delivery jobs from Redis via BRPOP on the dispatch:pending queue. Internal only. Multiple instances are safe because BRPOP is atomic.
+      Key rules: Cycles Server (port 7878) — accessible to your application, can be behind an API gateway. Admin Server (port 7979) — internal access only. Events Service (port 7980) — internal access only. Redis (port 6379) — internal access only. All four components share one Redis instance.
     </div>
   </div>
 </template>
@@ -133,6 +147,15 @@
 
 .net-redis {
   border-style: dashed;
+}
+
+.net-events {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.net-events .net-label {
+  color: var(--vp-c-brand-1);
 }
 
 .net-lb {
