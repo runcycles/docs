@@ -25,6 +25,7 @@ const integrations = [
   { name: 'Next.js', icon: typescriptPath, link: '/how-to/integrating-cycles-with-nextjs' },
   { name: 'Express', icon: typescriptPath, link: '/how-to/integrating-cycles-with-express' },
   { name: 'Django', icon: pythonPath, link: '/how-to/integrating-cycles-with-django' },
+  { name: 'Flask', icon: pythonPath, link: '/how-to/integrating-cycles-with-flask' },
   { name: 'FastAPI', icon: pythonPath, link: '/how-to/integrating-cycles-with-fastapi' },
   { name: 'LangChain.js', icon: typescriptPath, link: '/how-to/integrating-cycles-with-langchain-js' },
 ]

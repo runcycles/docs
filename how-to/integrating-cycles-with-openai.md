@@ -205,7 +205,7 @@ See [`examples/openai_integration.py`](https://github.com/runcycles/cycles-clien
 
 ## Next steps
 
-- [All Integrations](/how-to/integrations-overview) — browse all 17 framework integrations
+- [Integrating with OpenAI (TypeScript)](/how-to/integrating-cycles-with-openai-typescript) — TypeScript version of this guide
 - [Integrating with OpenAI Agents SDK](/how-to/integrating-cycles-with-openai-agents) — budget governance for multi-agent workflows
 - [Error Handling Patterns in Python](/how-to/error-handling-patterns-in-python) — handling budget errors in Python
 - [Handling Streaming Responses](/how-to/handling-streaming-responses-with-cycles) — budget-managed streaming
