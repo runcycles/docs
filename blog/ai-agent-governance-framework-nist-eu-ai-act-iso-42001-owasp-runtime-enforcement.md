@@ -13,7 +13,7 @@ featured: true
 
 Regulations are converging on a single demand: if your AI system acts autonomously, you must be able to prove what it did, why it was allowed to do it, and how you would have stopped it.
 
-The EU AI Act's high-risk obligations [take effect August 2, 2026](https://artificialintelligenceact.eu/high-level-summary/). ISO/IEC 42001 is already certifiable. NIST's AI Risk Management Framework has been in effect since January 2023. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) in late 2025. And in February 2026, NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — a direct signal that autonomous systems need governance infrastructure beyond what model-level controls provide.
+The EU AI Act's high-risk obligations [take effect August 2, 2026](https://eur-lex.europa.eu/eli/reg/2024/1689/oj). ISO/IEC 42001 is already certifiable. NIST's AI Risk Management Framework has been in effect since January 2023. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) in late 2025. And in February 2026, NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — a direct signal that autonomous systems need governance infrastructure beyond what model-level controls provide.
 
 The gap is not awareness. Teams know governance matters. The gap is implementation: **how do you translate regulatory requirements into enforceable runtime controls?**
 
@@ -78,17 +78,19 @@ The [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owa
 | ID | Risk | Governance Implication |
 |---|---|---|
 | **ASI01** | Agent Goal Hijack | Actions must be validated against declared intent |
-| **ASI02** | Tool Misuse | Per-tool permission checks, not blanket access |
-| **ASI03** | Identity & Privilege Abuse | Scoped credentials, least-privilege enforcement |
-| **ASI04** | Supply Chain Vulnerabilities | Tool invocation gated by allow-lists |
-| **ASI05** | Memory Poisoning | Context integrity controls |
-| **ASI06** | Excessive Authority | Action budgets, risk-point caps |
-| **ASI07** | Intent Misalignment | Runtime validation of action scope |
+| **ASI02** | Tool Misuse and Exploitation | Per-tool permission checks, not blanket access |
+| **ASI03** | Identity and Privilege Abuse | Scoped credentials, least-privilege enforcement |
+| **ASI04** | Agentic Supply Chain Vulnerabilities | Tool invocation gated by allow-lists and risk scoring |
+| **ASI05** | Unexpected Code Execution (RCE) | Sandboxed execution environments, tool allowlists |
+| **ASI06** | Memory & Context Poisoning | Context integrity validation, memory access controls |
+| **ASI07** | Insecure Inter-Agent Communication | Authenticated channels, message integrity verification |
 | **ASI08** | Cascading Failures | Per-agent isolation, hierarchical budgets |
-| **ASI09** | Logging & Monitoring Gaps | Structured audit trail for every action |
+| **ASI09** | Human-Agent Trust Exploitation | Explicit consent boundaries, action confirmation for high-risk operations |
 | **ASI10** | Rogue Agents | Runtime detection and blocking of out-of-policy behavior |
 
 OWASP's principle of **least agency** — granting agents only the minimum autonomy required for safe, bounded tasks — is the security analog of budget enforcement. Both constrain what an agent can do before it does it.
+
+Runtime enforcement directly addresses ASI01 (goal hijack via action validation), ASI02 (tool misuse via permission checks), ASI03 (privilege abuse via scoped access), ASI04 (supply chain via tool allow-lists), ASI08 (cascading failures via scope isolation), and ASI10 (rogue agents via policy enforcement). The remaining four — ASI05 (code execution), ASI06 (memory poisoning), ASI07 (inter-agent communication), and ASI09 (human trust exploitation) — require complementary controls at the execution, memory, and interaction layers.
 
 ## The AI Agent Governance Maturity Model
 
@@ -106,7 +108,7 @@ Teams deploy observability tooling — [Langfuse](https://langfuse.com/), [LangS
 
 **What this satisfies:** Partial Article 12 (record-keeping exists, but may lack structured attribution). Partial NIST Measure (you can track metrics, but you cannot act on them in real time).
 
-**What this does not satisfy:** Article 14 (no stop mechanism). Article 9 (no risk mitigation — only risk observation). OWASP ASI09 (logs exist, but may lack scope context for audit). ISO 42001 risk treatment (you identified the risk; you did not treat it).
+**What this does not satisfy:** Article 14 (no stop mechanism). Article 9 (no risk mitigation — only risk observation). ISO 42001 risk treatment (you identified the risk; you did not treat it).
 
 ### Level 2: Policy
 
@@ -120,7 +122,7 @@ Teams define governance policies: "agents should not spend more than $10 per run
 
 Teams implement rate limits, provider spending caps, or application-level counters. These provide some automated constraint but have architectural limitations: rate limits control velocity, not cumulative spend. Provider caps are monthly, not per-run. Application counters [break under concurrency](/blog/vibe-coding-budget-wrapper-vs-budget-authority) — twenty agents reading "remaining: $500" simultaneously will collectively spend $10,000.
 
-**What this satisfies:** Partial Article 9 (some risk mitigation). Partial NIST Manage (some automated response). Better than Level 2 for OWASP ASI06 (some constraint on authority).
+**What this satisfies:** Partial Article 9 (some risk mitigation). Partial NIST Manage (some automated response). Better than Level 2 for OWASP least-agency principle (some constraint on authority).
 
 **What this does not satisfy:** Atomicity requirements for multi-tenant isolation (Article 15). Reliable stop mechanism (Article 14). Comprehensive audit trail with scope attribution (Article 12). The gaps are well-documented in [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
 
@@ -139,7 +141,7 @@ Pre-execution enforcement with atomic budget operations. Every agent action pass
 | Article 15 — Robustness | Atomic operations prevent concurrency violations; tenant isolation prevents cross-contamination |
 | NIST Govern/Map/Measure/Manage | All four functions implemented as runtime infrastructure |
 | ISO 42001 | Controls are automated, documented by the protocol, and auditable via event log |
-| OWASP ASI01–ASI10 | Least agency enforced via budgets, risk points, and tool allowlists |
+| OWASP ASI01–04, ASI08, ASI10 | Least agency enforced via budgets, risk points, and tool allowlists (ASI05–07, ASI09 require complementary controls) |
 
 This is the level where [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) operates — and where Cycles provides the infrastructure.
 
@@ -161,11 +163,11 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 **What happens without it:** A coding agent hit an ambiguous error, retried with expanding context windows, and [looped 240 times over three hours](/blog/ai-agent-failures-budget-controls-prevent), costing $4,200. Three dashboards showed the spend in real time. None could stop it.
 
-**How Cycles implements it:** The [reserve-commit protocol](/protocol/reserve-commit-how-it-works) locks estimated cost before execution and releases unused budget on commit. Budget types include `USD_MICROCENTS`, `TOKENS`, and `CALLS` — enforced per-run, per-workflow, per-tenant, or at any scope in the hierarchy.
+**How Cycles implements it:** The [reserve-commit protocol](/protocol/how-reserve-commit-works-in-cycles) locks estimated cost before execution and releases unused budget on commit. Budget types include `USD_MICROCENTS`, `TOKENS`, and `CALLS` — enforced per-run, per-workflow, per-tenant, or at any scope in the hierarchy.
 
 ### Control 2: Action-Level Risk Scoring
 
-**What regulators require:** Article 9 (identify and score foreseeable risks), OWASP ASI06 (excessive authority), OWASP ASI02 (tool misuse).
+**What regulators require:** Article 9 (identify and score foreseeable risks), OWASP least-agency principle and ASI02 (tool misuse and exploitation).
 
 **What "good" looks like:** Each action type has an assigned risk score. High-consequence actions (email, deploy, delete, payment) consume more risk budget than low-consequence ones (read, search, summarize). An agent can reason freely but is constrained on dangerous operations.
 
@@ -179,13 +181,13 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 **What "good" looks like:** Budgets and policies are hierarchical: tenant → workspace → workflow → run → agent. One tenant's runaway agent cannot exhaust another tenant's allocation. One workflow's failure cannot cascade to other workflows in the same workspace.
 
-**What happens without it:** In a [multi-tenant SaaS deployment](/blog/multi-tenant-ai-cost-control-budgets-isolation), a single power user's agent consumed 72% of shared API capacity over a weekend, degrading service for 500 other customers. The noisy-neighbor problem, applied to AI.
+**What happens without it:** In a [multi-tenant SaaS deployment](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation), a single power user's agent consumed 72% of shared API capacity over a weekend, degrading service for 500 other customers. The noisy-neighbor problem, applied to AI.
 
-**How Cycles implements it:** [Hierarchical scopes](/protocol/how-scopes-work-in-cycles-hierarchical-budget-structure) enforce budgets at every level. A tenant's total allocation is the ceiling; workspaces, workflows, and runs subdivide it. Enforcement is atomic — concurrent agents drawing from the same scope cannot overdraw.
+**How Cycles implements it:** [Hierarchical scopes](/protocol/how-scope-derivation-works-in-cycles) enforce budgets at every level. A tenant's total allocation is the ceiling; workspaces, workflows, and runs subdivide it. Enforcement is atomic — concurrent agents drawing from the same scope cannot overdraw.
 
 ### Control 4: Immutable Audit Trail with Full Attribution
 
-**What regulators require:** Article 12 (automatic logging with traceability), Article 13 (transparency), NIST Measure (track and benchmark), ISO 42001 (auditable controls), OWASP ASI09 (logging gaps).
+**What regulators require:** Article 12 (automatic logging with traceability), Article 13 (transparency), NIST Measure (track and benchmark), ISO 42001 (auditable controls).
 
 **What "good" looks like:** Every action produces a structured record containing: scope hierarchy, amounts reserved and committed, timestamp, status, and metadata. The audit trail is a byproduct of enforcement, not a separate logging system. An auditor can reconstruct what happened, who authorized it, and how much it cost — from the enforcement log alone.
 
@@ -205,7 +207,7 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 ### Control 6: Least-Privilege Access Control
 
-**What regulators require:** OWASP ASI03 (identity and privilege abuse), OWASP ASI06 (excessive authority), ISO 42001 (access management).
+**What regulators require:** OWASP ASI03 (identity and privilege abuse), OWASP least-agency principle, ISO 42001 (access management).
 
 **What "good" looks like:** The runtime enforcement plane and the management plane are separated. Agent-facing API keys have scoped permissions (reserve, commit, check balance) and cannot modify budgets, create tenants, or access other tenants' data. Administrative operations require separate credentials with audit logging.
 
@@ -241,10 +243,10 @@ For teams preparing for audits or certifications, this table maps each regulator
 | ISO 42001 — Risk treatment | All seven controls | Complete enforcement log with scope attribution |
 | ISO 42001 — Lifecycle management | Shadow mode, budget versioning | Shadow mode reports, policy change audit trail |
 | ISO 42001 — Third-party management | Tool allowlists, MCP governance | Tool invocation logs, server authorization records |
-| OWASP ASI02 — Tool misuse | Risk scoring, tool allowlists | Per-tool invocation counts, denied tool call records |
-| OWASP ASI06 — Excessive authority | Risk-point caps, scope budgets | Risk-point budget utilization, cap enforcement logs |
+| OWASP ASI02 — Tool misuse and exploitation | Risk scoring, tool allowlists | Per-tool invocation counts, denied tool call records |
+| OWASP ASI03 — Identity and privilege abuse | Least-privilege access control | API key permission matrix, scope isolation configuration |
 | OWASP ASI08 — Cascading failures | Hierarchical isolation | Per-scope budget utilization, cross-scope denial records |
-| OWASP ASI09 — Logging gaps | Structured event log | Event log completeness metrics, retention configuration |
+| OWASP ASI10 — Rogue agents | Pre-execution enforcement | Out-of-policy action logs, DENY event records |
 | SOC 2 — Security | Runtime/admin plane separation | Network configuration, API key audit, access control matrix |
 | SOC 2 — Availability | Budget-based capacity management | Tenant budget allocation, capacity utilization reports |
 | SOC 2 — Processing Integrity | Atomic reserve-commit operations | Transaction logs, concurrency test evidence |
@@ -282,6 +284,6 @@ Governance is not a feature you add after shipping. It is the infrastructure tha
 - [Zero-Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — why every tool call needs a policy decision
 - [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — RISK_POINTS and tool allowlists
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — the reserve-commit protocol
-- [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-budgets-isolation) — per-tenant enforcement and isolation
+- [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-tenant enforcement and isolation
 - [The AI Agent Production Gap](/blog/ai-agent-production-gap-what-developers-are-saying) — what the community is saying
 - [Security Overview](/security) — architecture, access control, and data handling
