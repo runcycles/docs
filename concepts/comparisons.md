@@ -34,6 +34,8 @@ Teams evaluating Cycles usually already have some controls in place. This page h
 
 - **[Cycles vs Guardrails AI](/concepts/cycles-vs-guardrails-ai)** — Guardrails AI validates content (hallucination, toxicity, PII). Cycles governs budget. They solve different problems and complement each other.
 
+- **[Cycles vs LangSmith](/concepts/cycles-vs-langsmith)** — LangSmith traces what happened after execution. Cycles decides whether execution should happen at all. They complement each other.
+
 - **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — how Cycles complements LiteLLM, Portkey, Helicone, and Langfuse. Proxies route and observe; Cycles enforces.
 
 ### Build vs use
