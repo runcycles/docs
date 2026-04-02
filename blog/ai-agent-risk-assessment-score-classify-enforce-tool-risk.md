@@ -34,7 +34,7 @@ Model risk produces bad answers. Tool risk produces bad *consequences*. A bad an
 
 For AI agents that qualify as high-risk AI systems, the [EU AI Act's Article 9](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires a risk management system that identifies and mitigates foreseeable risks throughout the system's lifecycle. The [NIST AI RMF's Map function](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires understanding the AI system's context and potential impacts. Both require risk assessment *before* deployment — not incident review after.
 
-A tool-level risk assessment is how you satisfy these requirements for agents specifically.
+A tool-level risk assessment is a practical way to operationalize these requirements for agents specifically.
 
 ## The Three Risk Dimensions
 
@@ -131,7 +131,7 @@ Start with a baseline that reflects relative risk. The specific numbers are less
 | 3 | 20 | Customer-facing impact, difficult to reverse |
 | 4 | 50 | Irreversible, financial or production impact |
 
-These are starting points. The [existing examples](/blog/ai-agent-action-control-hard-limits-side-effects) in the Cycles documentation use similar scales — 1 for reads, 20 for emails, 50 for deploys — but your numbers should reflect your organization's risk tolerance, not a universal standard.
+These are starting points. The [existing examples](/blog/ai-agent-action-control-hard-limits-side-effects) in the Cycles documentation use similar scales — 1–2 for low-impact internal actions, 20 for emails, 50 for deploys — but your numbers should reflect your organization's risk tolerance, not a universal standard.
 
 ### Step 2: Apply Context Multipliers
 
@@ -197,10 +197,10 @@ Applying the methodology to the 12-tool support agent, assuming: B2B SaaS (500+ 
 | `send_customer_email` | 3 | 20 | 2x (reputational: customer-facing, forwardable) | **40** | Customer sees it, can screenshot/forward — trust at stake |
 | `create_support_ticket` | 3 | 20 | 2x (reputational: visible in customer portal) | **40** | Ticket visible to customer in portal, triggers notifications |
 | `update_crm_record` | 3 | 20 | 2x (PII mutation) | **40** | Modifies customer data, affects downstream systems |
-| `issue_refund` | 4 | 50 | 2x (reputational: wrong refund erodes customer trust) | **100** | Financial commitment, irreversible — reputational multiplier dominates |
-| `escalate_to_billing` | 4 | 50 | 2x (reputational: customer receives billing communication) | **100** | Triggers billing workflow visible to customer |
+| `issue_refund` | 4 | 50 | 3x (sensitivity: financial data) | **150** | Financial commitment, irreversible — sensitivity multiplier dominates |
+| `escalate_to_billing` | 4 | 50 | 3x (sensitivity: triggers financial workflow) | **150** | Financial data, customer-visible billing communication |
 
-Note how reputational exposure shifted two scores: `create_support_ticket` moved from 30 to 40 (the ticket is visible in the customer portal — a wrong ticket title or description is a trust issue, not just an operational one). `escalate_to_billing` moved from 75 to 100 (the customer receives a billing-related communication — a false escalation damages trust in the billing relationship). In both cases, the technical blast radius was unchanged, but the reputational blast radius was higher than the other multipliers.
+Two things to notice in these scores. First, the Tier 4 tools score highest not because of a single overwhelming multiplier but because financial data sensitivity (3x) outweighs the reputational exposure (2x) — the `max()` function selects the highest. Second, the Tier 3 tools are where reputational exposure is the dominant multiplier: `create_support_ticket` scores 40 (2x reputational, because the ticket is visible in the customer portal) rather than 30 (which 1.5x audience alone would give). The multiplier framework surfaces the risk dimension that matters most for each tool, rather than applying a uniform factor.
 
 ### Step 4: Set the Per-Run Budget
 
@@ -213,14 +213,14 @@ For the support agent, a typical resolution involves:
 - 1 customer email (40 points)
 - Occasionally: 1 ticket creation (40 points) or 1 CRM update (40 points)
 
-**Normal run: ~42–82 points.** Set the per-run budget at **200 points** — enough for a complex resolution (email + ticket + CRM update = 120 points) with headroom for a second email, but not enough for a refund without consuming most of the remaining budget.
+**Normal run: ~42–82 points.** Set the per-run budget at **250 points** — enough for a complex resolution (email + ticket + CRM update = 120 points) with ample headroom, and enough for a single refund plus one email (150 + 40 = 190), but not enough for a refund plus a billing escalation.
 
 What this prevents:
-- Agent cannot send more than 5 emails in a single run (5 × 40 = 200 points) — and in practice, other actions consume budget first
-- Agent cannot issue a refund *and* send more than 2 emails (100 + 80 = 180 points, leaving only 20 for notes)
+- Agent cannot send more than 6 emails in a single run (6 × 40 = 240 points) — and in practice, other actions consume budget first
+- Agent cannot issue a refund *and* send more than 2 emails (150 + 80 = 230 points, leaving only 20 for notes)
 - Agent can search and read without limit (0 points each)
-- Agent cannot issue 2 refunds in a single run (2 × 100 = 200, leaving zero for any other action)
-- Agent cannot escalate to billing *and* issue a refund (100 + 100 = 200, consuming the entire budget)
+- Agent cannot issue 2 refunds in a single run (2 × 150 = 300 > 250)
+- Agent cannot escalate to billing *and* issue a refund (150 + 150 = 300 > 250)
 
 The budget makes risk trade-offs explicit. The agent can reason freely but must prioritize its consequential actions.
 
@@ -291,23 +291,23 @@ tools:
 
   - name: issue_refund
     tier: 4
-    risk_points: 100
+    risk_points: 150
     enforcement: reserve-commit
-    rationale: "Financial, irreversible — 2x reputational (wrong refund erodes customer trust)"
+    rationale: "Financial data, irreversible — 3x sensitivity (financial)"
 
   - name: escalate_to_billing
     tier: 4
-    risk_points: 100
+    risk_points: 150
     enforcement: reserve-commit
-    rationale: "Triggers billing comms visible to customer — 2x reputational"
+    rationale: "Financial workflow, customer-visible — 3x sensitivity (financial)"
 
 budget:
-  per_run: 200
+  per_run: 250
   unit: RISK_POINTS
   rationale: >
     Normal resolution: 42-82 points.
     Complex resolution (email + ticket + CRM update): 120 points.
-    Budget of 200 allows complex resolutions with headroom
+    Budget of 250 allows complex resolutions and a single refund + email,
     but prevents double-refund or refund + billing escalation.
 
   degradation_thresholds:
@@ -353,7 +353,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
     "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp/app:support-copilot",
     "unit": "RISK_POINTS",
-    "allocated": 200
+    "allocated": 250
   }'
 ```
 
@@ -391,10 +391,10 @@ Risk assessments are living documents. Scores should change when:
 
 - **A new tool is added.** Classify it, score it, update the worksheet before deployment.
 - **An incident occurs.** If a tool caused damage, re-evaluate its tier and multiplier. The $50K email incident would justify raising `send_customer_email` from 40 to 60 points.
-- **Usage patterns shift.** If shadow mode shows agents consistently using 180 of 200 points on normal runs, the budget is too tight for safe operation — raise it or optimize the workflow.
+- **Usage patterns shift.** If shadow mode shows agents consistently using 230 of 250 points on normal runs, the budget is too tight for safe operation — raise it or optimize the workflow.
 - **Context changes.** Entering a new market with different regulatory requirements, expanding the customer base, or adding delegation capabilities all change the multipliers.
 
-Document every change in the worksheet with a date and rationale. The change history is itself audit evidence — it demonstrates the "continuous, iterative" risk management that [Article 9 requires](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement).
+Document every change in the worksheet with a date and rationale. The change history is itself audit evidence — it demonstrates the "continuous, iterative" risk management that [Article 9 requires of high-risk AI systems](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement).
 
 ## Risk Assessment and Regulatory Compliance
 
