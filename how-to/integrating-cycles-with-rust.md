@@ -12,7 +12,7 @@ This guide shows how to guard Rust async operations with Cycles budget reservati
 ```toml
 # Cargo.toml
 [dependencies]
-runcycles = "0.1"
+runcycles = "0.2"
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -168,14 +168,14 @@ match result {
 Guard non-monetary actions using risk-point budgets:
 
 ```rust
-use runcycles::models::{Amount, Unit};
+use runcycles::models::*;
 
 // Reserve risk points instead of dollars
 let guard = client.reserve(
     ReservationCreateRequest::builder()
         .subject(Subject { tenant: Some("acme".into()), ..Default::default() })
         .action(Action::new("tool.email", "send_customer_email"))
-        .estimate(Amount { unit: Unit::RiskPoints, amount: 50 })
+        .estimate(Amount::risk_points(50))
         .build()
 ).await?;
 
@@ -185,7 +185,7 @@ send_email(&recipient, &body).await?;
 // Commit
 guard.commit(
     CommitRequest::builder()
-        .actual(Amount { unit: Unit::RiskPoints, amount: 50 })
+        .actual(Amount::risk_points(50))
         .build()
 ).await?;
 ```
@@ -279,11 +279,11 @@ See [Rust Client Configuration](/quickstart/getting-started-with-the-rust-client
 For synchronous Rust applications (not using tokio). The blocking client uses `create_reservation` / `commit_reservation` / `release_reservation` directly — no `ReservationGuard` (guards require async for heartbeat and Drop):
 
 ```rust
-use runcycles::blocking::BlockingCyclesClient;
-use runcycles::{CyclesConfig, models::*};
+use runcycles::{CyclesClient, models::*};
 
-let config = CyclesConfig::from_env()?;
-let client = BlockingCyclesClient::new(config)?;
+let client = CyclesClient::builder("cyc_live_abc123", "http://localhost:7878")
+    .tenant("acme")
+    .build_blocking()?;
 
 let res = client.create_reservation(&ReservationCreateRequest::builder()
     .subject(Subject { tenant: Some("acme".into()), ..Default::default() })
@@ -309,7 +309,7 @@ Enable with:
 
 ```toml
 [dependencies]
-runcycles = { version = "0.1", features = ["blocking"] }
+runcycles = { version = "0.2", features = ["blocking"] }
 ```
 
 ## Error handling
