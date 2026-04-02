@@ -358,7 +358,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }'
 ```
 
-**Per-run budget** — created dynamically when each run starts, scoped to a specific workflow/run ID:
+**Per-run budget** — created dynamically when each run starts. Each execution gets a unique workflow-scoped ID, so the workflow scope acts as the run boundary:
 
 ```bash
 # Create a per-run risk-point budget (250 points per the worksheet)
