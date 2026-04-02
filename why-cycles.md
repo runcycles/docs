@@ -30,13 +30,7 @@ If you're deploying AI agents — to customers or inside the enterprise — Cycl
 
 ## Where Cycles fits
 
-| Layer | What it does | Examples |
-|---|---|---|
-| **Routing** | Sends requests to models | LiteLLM, Portkey, gateway proxies |
-| **Visibility** | Shows what happened | LangSmith, Langfuse, Helicone |
-| **Authority** | Decides what should happen — before execution | **Cycles** |
-
-Routing and visibility are necessary. They are not sufficient. A gateway can route a request. A dashboard can show you the cost. Neither can prevent the 241st retry or block the 201st email. Cycles is the authority layer — the decision point between "the agent wants to do X" and "X happens."
+<StackDiagram />
 
 ## Why now
 

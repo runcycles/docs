@@ -9,6 +9,7 @@ import spec from '../../public/openapi.json'
 import Layout from './Layout.vue'
 import BlogIndex from './BlogIndex.vue'
 import BlogPost from './BlogPost.vue'
+import StackDiagram from './StackDiagram.vue'
 
 export default {
   extends: DefaultTheme,
@@ -18,6 +19,7 @@ export default {
     theme.enhanceApp({ app })
     app.component('BlogIndex', BlogIndex)
     app.component('BlogPost', BlogPost)
+    app.component('StackDiagram', StackDiagram)
   },
   setup() {
     const route = useRoute()
