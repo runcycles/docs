@@ -66,6 +66,7 @@ For the full regulatory mapping — including OWASP Top 10 for Agentic Applicati
 ## Go deeper
 
 - [AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — mapping NIST, EU AI Act, ISO 42001, and OWASP to runtime controls
+- [AI Agent Risk Assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) — tool-level risk scoring methodology with worksheet template
 - [Zero Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — why every tool call needs a policy decision
 - [Security Overview](/security) — audit trail, access control, and data residency
 - [Event Log API](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) — how events and audit records work
