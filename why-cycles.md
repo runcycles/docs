@@ -14,7 +14,7 @@ description: "For teams shipping AI agents — to customers or inside the enterp
 
 ---
 
-If you're a team shipping AI agents to customers — support copilots, coding assistants, document processors, workflow automations — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one customer's runaway agent never blows through another customer's budget, and your feature margin stays predictable.
+If you're deploying AI agents — to customers or inside the enterprise — Cycles is the [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) layer that enforces hard limits on spend and actions before every LLM call, tool invocation, and side effect. Per-tenant, per-workflow, per-run. So one runaway agent never blows through another's budget, your feature margin stays predictable, and every action is auditable.
 
 ## What Cycles solves
 

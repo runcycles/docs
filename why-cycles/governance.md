@@ -38,7 +38,17 @@ The event log is queryable via REST API. Hot retention is 90 days. Export to S3 
 - **Pre-execution denial is provable.** When a budget is exhausted, the reservation is denied and the action never executes. The denial itself is a record — proof the control worked.
 - **Retention and export are built in.** 90-day hot storage, API-queryable, exportable to cold storage. No log pipeline to build.
 
-## The compliance table
+## The difference
+
+| | Without Cycles | With Cycles |
+|---|---|---|
+| Audit trail | Reconstructed from scattered logs after incident | Structured record per action, queryable via API |
+| Stop mechanism | Dashboard alert → human checks Slack | Budget exhaustion → DENY before execution |
+| Scope attribution | "Something spent $4,200" | "tenant:acme/workflow:run-123 spent $4,200" |
+| Auditor evidence | Screenshots of dashboards | API export of enforcement log |
+| Time to produce audit report | Days of log reconstruction | Single API query |
+
+## Regulatory context
 
 The applicability of these frameworks depends on your system's risk classification, jurisdiction, and intended use. Cycles provides the runtime enforcement layer — one component of the governance infrastructure these frameworks require, not the full organizational governance system.
 
