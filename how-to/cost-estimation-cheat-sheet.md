@@ -181,8 +181,8 @@ Quick reference for typical operations (including 20% buffer):
 | Short chat reply (500 in / 200 out) | gpt-4o | 390,000 | $0.004 |
 | Long chat reply (2,000 in / 1,000 out) | gpt-4o | 1,800,000 | $0.018 |
 | Document summary (8,000 in / 2,000 out) | gpt-4o | 4,800,000 | $0.048 |
-| Short chat reply (500 in / 200 out) | gpt-4o-mini | 24,000 | $0.0002 |
-| Long chat reply (2,000 in / 1,000 out) | claude-sonnet | 2,880,000 | $0.029 |
+| Short chat reply (500 in / 200 out) | gpt-4o-mini | 23,400 | $0.0002 |
+| Long chat reply (2,000 in / 1,000 out) | claude-sonnet | 2,520,000 | $0.025 |
 | Code generation (4,000 in / 4,000 out) | claude-sonnet | 8,640,000 | $0.086 |
 
 ## When you don't know the exact token count
