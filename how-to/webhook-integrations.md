@@ -7,6 +7,10 @@ description: Connect Cycles webhook events to PagerDuty, Slack, ServiceNow, and 
 
 Cycles emits webhook events for every state change — budget exhaustion, reservation denials, API key revocations, tenant lifecycle changes, and more. This guide shows concrete examples of webhook payloads and how to integrate with common services.
 
+::: info How webhooks are delivered
+Webhook subscriptions are **configured** via the Admin Server (port 7979). Events are **delivered** by the [Cycles Events Service](/quickstart/deploying-the-events-service) (port 7980) — a separate, optional component that consumes from Redis and posts to your endpoints with HMAC-SHA256 signatures. The Events Service must be deployed for webhook delivery to work.
+:::
+
 ## Webhook Payload Examples
 
 ### reservation.denied
@@ -766,7 +770,7 @@ async def forward_to_teams(request: Request):
 
 ### Example Teams card
 
-The card renders as a structured fact table:
+The card renders as a structured fact table showing: event type (budget.threshold_crossed), tenant (acme-corp), source service, scope path, utilization percentage (82.0%), and remaining budget ($18.00).
 
 ```
 ┌─────────────────────────────────────┐

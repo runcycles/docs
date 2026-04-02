@@ -15,20 +15,9 @@ The Admin Server (port 7979) should **never** be exposed to the public internet.
 
 ### Separate management and runtime planes
 
-The Admin Server (port 7979) manages tenants, API keys, and budgets. It should **never be accessible from the public internet**.
+The Admin Server (port 7979) manages tenants, API keys, and budgets. The Events Service (port 7980) delivers webhooks asynchronously. Both should **never be accessible from the public internet**.
 
-```
-┌─────────────────────────────────────────────────┐
-│                Public Network                   │
-│  Your App → Load Balancer → Cycles Server:7878  │
-└─────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────┐
-│              Internal / VPN Only                │
-│  Admin UI → Admin Server:7979                   │
-│             Redis:6379                          │
-└─────────────────────────────────────────────────┘
-```
+<NetworkZones />
 
 ### Firewall rules
 
@@ -38,7 +27,10 @@ The Admin Server (port 7979) manages tenants, API keys, and budgets. It should *
 | Operations team (VPN) | Admin Server | 7979 | Yes |
 | Cycles Server | Redis | 6379 | Yes |
 | Admin Server | Redis | 6379 | Yes |
+| Events Service | Redis | 6379 | Yes |
+| Events Service | External webhook endpoints | 443 (HTTPS) | Yes |
 | Public internet | Admin Server | 7979 | **No** |
+| Public internet | Events Service | 7980 | **No** |
 | Public internet | Redis | 6379 | **No** |
 
 ## Redis security
