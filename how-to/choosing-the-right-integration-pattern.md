@@ -78,7 +78,7 @@ from runcycles_openai_agents import CyclesRunHooks
 
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk={"send_email": 50, "search": 0},
+    tool_estimates={"send_email": 50, "search": 0},  # default unit: RISK_POINTS
 )
 result = await Runner.run(agent, input="...", hooks=hooks)
 ```

@@ -37,23 +37,23 @@ Cycles' reserve → commit → release lifecycle doesn't care what you're measur
 
 When you use `RISK_POINTS`, you're not tracking cost — you're tracking **consequence**. An agent that reserves 50 risk points for `send_email` and 0 for `search_knowledge` isn't managing a budget. It's managing what the agent is allowed to do.
 
-## How tool risk mapping works
+## How tool estimate mapping works
 
-The [OpenAI Agents SDK integration](/how-to/integrating-cycles-with-openai-agents) implements this directly through `ToolRiskMap`:
+The [OpenAI Agents SDK integration](/how-to/integrating-cycles-with-openai-agents) implements this directly through `ToolEstimateMap`:
 
 ```python
-from runcycles_openai_agents import CyclesRunHooks, ToolRiskMap
+from runcycles_openai_agents import CyclesRunHooks, ToolEstimateMap
 
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk=ToolRiskMap(
+    tool_estimates=ToolEstimateMap(
         mapping={
-            "send_email": 50,        # high-risk: costs 50 points per call
-            "update_crm": 10,        # medium-risk: costs 10 points
-            "deploy_to_prod": 100,   # critical: costs 100 points
-            "search_knowledge": 0,   # free: no reservation, no API call
+            "send_email": 50,        # high-risk: 50 RISK_POINTS per call
+            "update_crm": 10,        # medium-risk: 10 RISK_POINTS
+            "deploy_to_prod": 100,   # critical: 100 RISK_POINTS
+            "search_knowledge": 0,   # zero estimate: no reservation, no API call
         },
-        default_risk=1,              # unmapped tools cost 1 point
+        default_estimate=1,          # unmapped tools: 1 RISK_POINT
     ),
 )
 ```
@@ -153,7 +153,7 @@ This is the same hierarchical isolation that prevents one tenant from spending a
 ## Next steps
 
 - [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — the conceptual foundation
-- [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolRiskMap and per-tool governance
+- [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolEstimateMap and per-tool governance
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what to do when action authority is denied
 - [Multi-Agent Shared Budgets](/how-to/multi-agent-shared-workspace-budget-patterns) — shared and independent budgets across agents

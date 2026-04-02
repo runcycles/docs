@@ -51,7 +51,7 @@ agent = Agent(name="helper", instructions="You are a helpful assistant.")
 result = await Runner.run(agent, input="What is budget authority?", hooks=hooks)
 print(result.final_output)
 ```
-That's it — every LLM call and tool invocation in the agent run is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the call is made. Read on for production patterns with tool risk mapping and pre-run guardrails.
+That's it — every LLM call and tool invocation in the agent run is now budget-guarded. If the budget is exhausted, `BudgetExceededError` is raised _before_ the call is made. Read on for production patterns with tool estimate mapping and pre-run guardrails.
 :::
 
 ## How it works
@@ -60,30 +60,36 @@ The plugin implements the SDK's `RunHooks` interface. Every hook in the agent li
 
 | Hook | Cycles API Call | Blocking | Detail |
 |------|----------------|----------|--------|
-| `on_tool_start` | `create_reservation` (risk points) | Raises on DENY | Budget reserved based on tool risk map |
-| `on_tool_end` | `commit_reservation` | No | Actual risk points committed |
-| `on_llm_start` | `create_reservation` (token/USD budget) | Raises on DENY | Budget reserved before each LLM call |
+| `on_tool_start` | `create_reservation` (tool estimate) | Raises on DENY | Budget reserved based on tool estimate map |
+| `on_tool_end` | `commit_reservation` | No | Actual amount committed |
+| `on_llm_start` | `create_reservation` (LLM estimate) | Raises on DENY | Budget reserved before each LLM call |
 | `on_llm_end` | `commit_reservation` (actual tokens) | No | Real token count from `response.usage` committed |
 | `on_handoff` | `create_event` (audit trail) | No | Handoff recorded in Cycles ledger |
 
 Reservations include automatic heartbeat — long-running tools won't silently expire.
 
-## Tool risk mapping
+## Tool estimate mapping
 
-Assign risk-point costs to tools. High-risk tools (send_email, deploy) consume budget faster. Zero-cost tools skip the Cycles API entirely:
+Assign per-call estimates to tools. Higher-estimate tools (send_email, deploy) consume budget faster. Zero-estimate tools skip the Cycles API entirely:
 
 ```python
-from runcycles_openai_agents import CyclesRunHooks, ToolRiskMap, ToolRiskConfig
+from runcycles import Unit
+from runcycles_openai_agents import CyclesRunHooks, ToolEstimateMap, ToolEstimateConfig
 
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk=ToolRiskMap(
+    tool_estimates=ToolEstimateMap(
         mapping={
-            "send_email": 50,
-            "update_crm": ToolRiskConfig(risk_points=10, action_kind="tool.crm.update"),
-            "search_knowledge": 0,  # free — no reservation, no API call
+            "send_email": 50,                       # 50 RISK_POINTS (default unit)
+            "update_crm": ToolEstimateConfig(
+                estimate=10,
+                action_kind="tool.crm.update",
+                unit=Unit.RISK_POINTS,              # explicit unit
+            ),
+            "search_knowledge": 0,                  # zero estimate — no reservation
         },
-        default_risk=1,  # unmapped tools cost 1 point
+        default_estimate=1,                         # unmapped tools: 1 RISK_POINT
+        default_unit=Unit.RISK_POINTS,              # unit for int shorthand values
     ),
 )
 ```
@@ -93,7 +99,7 @@ Or use a simple dict:
 ```python
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk={"send_email": 50, "search": 0},
+    tool_estimates={"send_email": 50, "search": 0},  # default unit: RISK_POINTS
 )
 ```
 
@@ -107,7 +113,7 @@ from runcycles_openai_agents import cycles_budget_guardrail
 
 guardrail = cycles_budget_guardrail(
     tenant="acme",
-    estimate=5_000_000,       # expected total run cost
+    estimate=5_000_000,       # expected total run estimate
     fail_open=True,           # allow if Cycles server is down
 )
 
@@ -164,9 +170,9 @@ This matches the Cycles philosophy: budget enforcement should be a guardrail, no
 | `workflow` | `str` | `None` | Subject.workflow |
 | `agent` | `str` | `None` | Subject.agent (overridden by actual agent name) |
 | `toolset` | `str` | `None` | Subject.toolset |
-| `tool_risk` | `dict` or `ToolRiskMap` | `{}` | Tool name → risk points |
-| `default_tool_risk` | `int` | `1` | Risk points for unmapped tools |
-| `llm_estimate` | `int` | `500_000` | Per-LLM-call estimate (~$0.005) |
+| `tool_estimates` | `dict` or `ToolEstimateMap` | `{}` | Tool name → per-call estimate (default unit: RISK_POINTS) |
+| `default_tool_estimate` | `int` | `1` | Estimate for unmapped tools |
+| `llm_estimate` | `int` | `500_000` | Per-LLM-call estimate (~$0.005 in USD_MICROCENTS) |
 | `llm_unit` | `Unit` | `USD_MICROCENTS` | Unit for LLM reservations |
 | `fail_open` | `bool` | `True` | Allow execution if Cycles is down |
 | `ttl_ms` | `int` | `60_000` | Reservation TTL (heartbeat extends at half-interval) |
@@ -183,7 +189,7 @@ If you're already using the `@cycles` decorator from the [Python client](/quicks
 | Reserve before tool call | Your code (per function) | Automatic via `on_tool_start` |
 | Commit after completion | Your code (per function) | Automatic via `on_llm_end` / `on_tool_end` |
 | Release on error | Your code | `release_pending()` |
-| Tool risk policies | Not applicable | `ToolRiskMap` with per-tool costs |
+| Tool estimate policies | Not applicable | `ToolEstimateMap` with per-tool estimates |
 | Pre-run guardrail | Not applicable | `cycles_budget_guardrail` |
 | Agent handoff tracking | Not applicable | Automatic audit events via `on_handoff` |
 | Heartbeat for long tools | Not applicable | Automatic TTL extension |
@@ -197,7 +203,7 @@ See the [`examples/`](https://github.com/runcycles/cycles-openai-agents/tree/mai
 | Example | Description |
 |---------|-------------|
 | [`basic_budget.py`](https://github.com/runcycles/cycles-openai-agents/blob/main/examples/basic_budget.py) | LLM token budget enforcement |
-| [`tool_governance.py`](https://github.com/runcycles/cycles-openai-agents/blob/main/examples/tool_governance.py) | Tool risk mapping — high-risk tools cost more |
+| [`tool_governance.py`](https://github.com/runcycles/cycles-openai-agents/blob/main/examples/tool_governance.py) | Tool estimate mapping — higher-estimate tools consume more |
 | [`multi_agent.py`](https://github.com/runcycles/cycles-openai-agents/blob/main/examples/multi_agent.py) | Multi-agent handoff with shared budget |
 
 ## Next steps

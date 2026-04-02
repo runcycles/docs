@@ -69,7 +69,7 @@ We added 9 new integration guides, bringing the total from 17 to 26:
 
 Every integration enforces the same principle: **no agent action executes without authorization**. Whether it's an LLM call in LangGraph, a tool invocation in AutoGen, or an API request in a Django endpoint — the reservation happens before the action, not after.
 
-This matters beyond cost. The same protocol that prevents a $50 runaway spend also prevents an agent from sending 200 emails, hitting a rate-limited API in a retry loop, or executing a high-risk tool without approval. The [OpenAI Agents guide](/how-to/integrating-cycles-with-openai-agents) maps tool risk points to budget — `send_email` costs 50 points while `search_knowledge` costs zero. The budget authority decides which actions are cheap and which are expensive.
+This matters beyond cost. The same protocol that prevents a $50 runaway spend also prevents an agent from sending 200 emails, hitting a rate-limited API in a retry loop, or executing a high-risk tool without approval. The [OpenAI Agents guide](/how-to/integrating-cycles-with-openai-agents) maps tool estimates to budget — `send_email` reserves 50 RISK_POINTS per call while `search_knowledge` uses zero. The budget authority decides which actions are cheap and which are expensive.
 
 ### Graceful degradation with model downgrade
 

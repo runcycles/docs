@@ -28,18 +28,18 @@ These need their own limits, independent of dollar spend.
 Cycles supports `RISK_POINTS` — budgets denominated in consequence, not dollars. Assign a risk cost to each tool based on its blast radius:
 
 ```python
-from runcycles_openai_agents import CyclesRunHooks, ToolRiskMap
+from runcycles_openai_agents import CyclesRunHooks, ToolEstimateMap
 
 hooks = CyclesRunHooks(
     tenant="acme",
-    tool_risk=ToolRiskMap(
+    tool_estimates=ToolEstimateMap(
         mapping={
-            "send_email": 50,        # high consequence
-            "deploy_to_prod": 100,   # critical
+            "send_email": 50,        # high consequence: 50 RISK_POINTS
+            "deploy_to_prod": 100,   # critical: 100 RISK_POINTS
             "search_knowledge": 0,   # safe — no reservation needed
             "read_docs": 0,          # safe
         },
-        default_risk=1,
+        default_estimate=1,
     ),
 )
 ```
@@ -79,6 +79,6 @@ Each action checks its own unit's budget. The LLM call draws from the dollar bud
 
 - [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — the conceptual foundation
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS
-- [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolRiskMap and per-tool governance
+- [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolEstimateMap and per-tool governance
 - [Beyond Budget: Action Authority](/blog/beyond-budget-how-cycles-controls-agent-actions) — real scenarios and multi-agent patterns
 - [5 Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents) — incidents where spend was negligible
