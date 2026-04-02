@@ -7,7 +7,7 @@ description: "An auditor asks how you control your AI agents. You show a dashboa
 
 An auditor asks how you govern your AI agents. You show a monitoring dashboard — cost graphs, token counts, action logs. They ask: "What prevents the agent from taking an unauthorized action before the dashboard updates?"
 
-You don't have an answer. The dashboard shows what happened. It does not prevent what should not happen. For regulatory frameworks that require pre-execution controls, observation is not governance.
+You don't have an answer. The dashboard shows what happened. It does not prevent what should not happen. For high-risk or tightly governed AI uses, observation alone is not governance.
 
 ## Why existing controls don't satisfy auditors
 
@@ -33,7 +33,7 @@ The event log is queryable via REST API. Hot retention is 90 days. Export to S3 
 
 ## What happens now
 
-- **Every action is recorded before execution.** The reservation is the audit record. It exists before the action runs, not after logs are reconstructed.
+- **Every action is recorded before execution.** The reservation creates a pre-execution control record, and the full audit trail is completed by commit, release, and event records. The evidence exists before and after the action runs — not reconstructed from logs after an incident.
 - **Scope hierarchy maps to organizational accountability.** Tenant, workspace, workflow, agent — each level maps to a responsible party. Auditors can trace any action to the budget scope that authorized it.
 - **Pre-execution denial is provable.** When a budget is exhausted, the reservation is denied and the action never executes. The denial itself is a record — proof the control worked.
 - **Retention and export are built in.** 90-day hot storage, API-queryable, exportable to cold storage. No log pipeline to build.
