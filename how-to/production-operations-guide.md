@@ -363,8 +363,8 @@ If all retries are exhausted or the client process crashes entirely, the reserva
 **Response:**
 1. Check Events Service health: `GET http://localhost:7980/actuator/health`
 2. Check queue depth: `redis-cli LLEN dispatch:pending`
-3. Check if subscription was auto-disabled: `GET /v1/admin/webhooks/{id}`
-4. Re-enable if needed: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
+3. Check if subscription was auto-disabled: `GET /v1/admin/webhooks/{subscription_id}`
+4. Re-enable if needed: `PATCH /v1/admin/webhooks/{subscription_id}` with `{"status": "ACTIVE"}`
 5. Verify `WEBHOOK_SECRET_ENCRYPTION_KEY` matches across all services
 
 ## Next steps
