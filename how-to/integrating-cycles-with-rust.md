@@ -29,11 +29,11 @@ export CYCLES_TENANT="acme"
 ## Quick start
 
 ```rust
-use runcycles::{CyclesClient, with_cycles, WithCyclesConfig, models::Amount};
+use runcycles::{CyclesClient, CyclesConfig, with_cycles, WithCyclesConfig, models::Amount};
 
 #[tokio::main]
 async fn main() -> Result<(), runcycles::Error> {
-    let client = CyclesClient::from_env()?;
+    let client = CyclesClient::new(CyclesConfig::from_env()?);
 
     let reply = with_cycles(
         &client,
@@ -138,7 +138,8 @@ let res = client.create_reservation(&ReservationCreateRequest::builder()
     .build()
 ).await?;
 
-let reservation_id = &res.reservation_id;
+let reservation_id = res.reservation_id
+    .expect("ALLOW decision always includes reservation_id");
 
 // Execute
 let result = do_work().await;
@@ -147,7 +148,7 @@ let result = do_work().await;
 match result {
     Ok(value) => {
         client.commit_reservation(
-            reservation_id,
+            &reservation_id,
             &CommitRequest::builder()
                 .actual(Amount::tokens(320))
                 .build()
@@ -155,7 +156,7 @@ match result {
     }
     Err(_) => {
         client.release_reservation(
-            reservation_id,
+            &reservation_id,
             &ReleaseRequest::new(Some("operation_failed".into()))
         ).await?;
     }
@@ -167,12 +168,14 @@ match result {
 Guard non-monetary actions using risk-point budgets:
 
 ```rust
+use runcycles::models::{Amount, Unit};
+
 // Reserve risk points instead of dollars
 let guard = client.reserve(
     ReservationCreateRequest::builder()
         .subject(Subject { tenant: Some("acme".into()), ..Default::default() })
         .action(Action::new("tool.email", "send_customer_email"))
-        .estimate(Amount::risk_points(50))
+        .estimate(Amount { unit: Unit::RiskPoints, amount: 50 })
         .build()
 ).await?;
 
@@ -182,7 +185,7 @@ send_email(&recipient, &body).await?;
 // Commit
 guard.commit(
     CommitRequest::builder()
-        .actual(Amount::risk_points(50))
+        .actual(Amount { unit: Unit::RiskPoints, amount: 50 })
         .build()
 ).await?;
 ```
@@ -253,10 +256,10 @@ async fn chat(
 ## Environment-based configuration
 
 ```rust
-use runcycles::CyclesClient;
+use runcycles::{CyclesClient, CyclesConfig};
 
 // From environment variables (CYCLES_BASE_URL, CYCLES_API_KEY, etc.)
-let client = CyclesClient::from_env()?;
+let client = CyclesClient::new(CyclesConfig::from_env()?);
 
 // From builder
 let client = CyclesClient::builder("cyc_live_abc123", "http://localhost:7878")
@@ -273,18 +276,33 @@ See [Rust Client Configuration](/quickstart/getting-started-with-the-rust-client
 
 ## Blocking client
 
-For synchronous Rust applications (not using tokio):
+For synchronous Rust applications (not using tokio). The blocking client uses `create_reservation` / `commit_reservation` / `release_reservation` directly — no `ReservationGuard` (guards require async for heartbeat and Drop):
 
 ```rust
 use runcycles::blocking::BlockingCyclesClient;
+use runcycles::{CyclesConfig, models::*};
 
-let client = BlockingCyclesClient::builder("key", "http://localhost:7878")
-    .tenant("acme")
-    .build();
+let config = CyclesConfig::from_env()?;
+let client = BlockingCyclesClient::new(config)?;
 
-let guard = client.reserve(request)?;
+let res = client.create_reservation(&ReservationCreateRequest::builder()
+    .subject(Subject { tenant: Some("acme".into()), ..Default::default() })
+    .action(Action::new("llm.completion", "gpt-4o"))
+    .estimate(Amount::usd_microcents(2_000_000))
+    .build()
+)?;
+
+let reservation_id = res.reservation_id
+    .expect("ALLOW decision always includes reservation_id");
+
 // ... do work ...
-guard.commit(commit_req)?;
+
+client.commit_reservation(
+    &reservation_id,
+    &CommitRequest::builder()
+        .actual(Amount::usd_microcents(1_500_000))
+        .build()
+)?;
 ```
 
 Enable with:
