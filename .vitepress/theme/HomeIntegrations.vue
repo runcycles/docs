@@ -21,6 +21,7 @@ const integrations = [
   { name: 'Pydantic AI', icon: pythonPath, link: '/how-to/integrating-cycles-with-pydantic-ai' },
   { name: 'AutoGen', icon: pythonPath, link: '/how-to/integrating-cycles-with-autogen' },
   { name: 'AnyAgent', icon: mozillaPath, link: '/how-to/integrating-cycles-with-anyagent' },
+  { name: 'Groq', icon: pythonPath, link: '/how-to/integrating-cycles-with-groq' },
   { name: 'Ollama', icon: pythonPath, link: '/how-to/integrating-cycles-with-ollama' },
   { name: 'Next.js', icon: typescriptPath, link: '/how-to/integrating-cycles-with-nextjs' },
   { name: 'Express', icon: typescriptPath, link: '/how-to/integrating-cycles-with-express' },

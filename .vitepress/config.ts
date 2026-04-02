@@ -302,6 +302,7 @@ export default defineConfig({
                 { text: 'Anthropic (TypeScript)', link: '/how-to/integrating-cycles-with-anthropic-typescript' },
                 { text: 'AWS Bedrock', link: '/how-to/integrating-cycles-with-aws-bedrock' },
                 { text: 'Google Gemini', link: '/how-to/integrating-cycles-with-google-gemini' },
+                { text: 'Groq', link: '/how-to/integrating-cycles-with-groq' },
                 { text: 'Ollama / Local LLMs', link: '/how-to/integrating-cycles-with-ollama' },
               ]
             },

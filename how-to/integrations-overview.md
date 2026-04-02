@@ -18,6 +18,7 @@ Cycles integrates with LLM providers, agent frameworks, and web servers. Each in
 | [Anthropic (TypeScript)](/how-to/integrating-cycles-with-anthropic-typescript) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) | TypeScript | Yes | `withCycles` / `reserveForStream` |
 | [Google Gemini](/how-to/integrating-cycles-with-google-gemini) | TypeScript | Yes | `withCycles` / `reserveForStream` |
+| [Groq](/how-to/integrating-cycles-with-groq) | Python / TypeScript | — | Decorator / `withCycles` |
 | [Ollama / Local LLMs](/how-to/integrating-cycles-with-ollama) | Python / TypeScript | — | Decorator / `withCycles` |
 | **AI Frameworks** | | | |
 | [LangChain](/how-to/integrating-cycles-with-langchain) | Python | Yes | Callback handler |
