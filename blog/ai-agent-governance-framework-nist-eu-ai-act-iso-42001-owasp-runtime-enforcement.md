@@ -1,5 +1,5 @@
 ---
-title: "The AI Agent Governance Framework: Meeting NIST, EU AI Act, ISO 42001, and OWASP Requirements with Runtime Enforcement"
+title: "The AI Agent Governance Framework: Mapping NIST, EU AI Act, ISO 42001, and OWASP Requirements to Runtime Enforcement Controls"
 date: 2026-04-02
 author: Cycles Team
 tags: [governance, compliance, EU AI Act, NIST, ISO 42001, OWASP, runtime authority, agents]
@@ -9,11 +9,11 @@ sidebar: false
 featured: true
 ---
 
-# The AI Agent Governance Framework: Meeting NIST, EU AI Act, ISO 42001, and OWASP Requirements with Runtime Enforcement
+# The AI Agent Governance Framework: Mapping NIST, EU AI Act, ISO 42001, and OWASP Requirements to Runtime Enforcement Controls
 
 Regulations are converging on a single demand: if your AI system acts autonomously, you must be able to prove what it did, why it was allowed to do it, and how you would have stopped it.
 
-The EU AI Act's high-risk obligations [take effect August 2, 2026](https://eur-lex.europa.eu/eli/reg/2024/1689/oj). ISO/IEC 42001 is already certifiable. NIST's AI Risk Management Framework has been in effect since January 2023. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) in late 2025. And in February 2026, NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — a direct signal that autonomous systems need governance infrastructure beyond what model-level controls provide.
+The EU AI Act's high-risk obligations are [currently scheduled to apply from August 2, 2026](https://eur-lex.europa.eu/eli/reg/2024/1689/oj). ISO/IEC 42001 is already certifiable. NIST's AI Risk Management Framework has been in effect since January 2023. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) in late 2025. And in February 2026, NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — a direct signal that autonomous systems need governance infrastructure beyond what model-level controls provide.
 
 The gap is not awareness. Teams know governance matters. The gap is implementation: **how do you translate regulatory requirements into enforceable runtime controls?**
 
@@ -23,13 +23,13 @@ This post maps specific obligations from each framework to concrete enforcement 
 
 ## The Regulatory Landscape for AI Agents in 2026
 
-Four frameworks define the governance requirements for autonomous AI systems. Each addresses different dimensions, but they share a common requirement: controls must operate at runtime, not just at design time.
+Four frameworks shape the governance requirements for autonomous AI systems. Each addresses different dimensions, but they share a common requirement: controls must operate at runtime, not just at design time.
 
 ### EU AI Act (Regulation 2024/1689)
 
-The EU AI Act entered into force on August 1, 2024. Its high-risk AI system obligations — the articles most relevant to autonomous agents — apply from **August 2, 2026**. The Act does not use the term "AI agent." It regulates "AI systems" — and an autonomous agent that makes decisions, takes actions, and affects people clearly qualifies.
+The EU AI Act entered into force on August 1, 2024. Its high-risk AI system obligations are currently scheduled to apply from **August 2, 2026**, though the Commission has [proposed adjusting the timeline](https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act) while harmonized standards are finalized. The Act does not use the term "AI agent." It regulates "AI systems" — and whether an agent qualifies as high-risk depends on its intended purpose and whether it falls under an [Annex I or Annex III use case](https://ai-act-service-desk.ec.europa.eu/en/faq). AI agents are not a separate legal category.
 
-Five articles create direct obligations for teams deploying AI agents:
+For AI agents that qualify as high-risk AI systems, five articles create direct obligations:
 
 **Article 9 — Risk Management System.** Providers of high-risk AI systems must establish a continuous, iterative risk management system throughout the system's lifecycle. This includes identifying foreseeable risks, estimating their severity, and adopting measures to eliminate or mitigate them. For agents, "foreseeable risks" include runaway cost spirals, unauthorized actions, and cascading failures across multi-agent workflows — precisely the failure modes documented in [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) and [5 Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents).
 
@@ -139,8 +139,8 @@ Pre-execution enforcement with atomic budget operations. Every agent action pass
 | Article 13 — Transparency | Budget state is queryable; agents can check balance and explain constraints |
 | Article 14 — Human oversight | DENY responses stop agents; ALLOW_WITH_CAPS constrains them; budgets can be modified in real time |
 | Article 15 — Robustness | Atomic operations prevent concurrency violations; tenant isolation prevents cross-contamination |
-| NIST Govern/Map/Measure/Manage | All four functions implemented as runtime infrastructure |
-| ISO 42001 | Controls are automated, documented by the protocol, and auditable via event log |
+| NIST Govern/Map/Measure/Manage | Runtime infrastructure operationalizes key parts of all four functions (GOVERN also requires organizational policies, competencies, and lifecycle processes beyond any single runtime mechanism) |
+| ISO 42001 | Runtime controls are automated, documented by the protocol, and auditable via event log (ISO 42001 is an organization-wide management system; runtime enforcement satisfies the technical control requirements, not the full AIMS) |
 | OWASP ASI01–04, ASI08, ASI10 | Least agency enforced via budgets, risk points, and tool allowlists (ASI05–07, ASI09 require complementary controls) |
 
 This is the level where [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) operates — and where Cycles provides the infrastructure.
@@ -268,14 +268,13 @@ Governance is not a feature you add after shipping. It is the infrastructure tha
 
 ## Sources
 
-1. [EU AI Act — Regulation 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) — Entered into force August 1, 2024. High-risk obligations apply from August 2, 2026.
+1. [EU AI Act — Regulation 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) — Entered into force August 1, 2024. High-risk obligations currently scheduled to apply from August 2, 2026.
 2. [NIST AI Risk Management Framework 1.0](https://www.nist.gov/artificial-intelligence/ai-risk-management-framework-ai-rmf-10) — Published January 26, 2023
 3. [NIST AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — Announced February 17, 2026
 4. [ISO/IEC 42001:2023](https://www.iso.org/standard/81230.html) — AI Management System standard, published December 2023
 5. [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) — 2025/2026 edition
-6. [Linux Foundation Agentic AI Foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation) — Announced December 9, 2025
-7. [Gartner AI Governance Survey](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) — 46% of organizations have implemented an AI governance framework
-8. [EY AI Survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) — 64% of $1B+ companies lost >$1M to AI failures
+6. [EU AI Act FAQ — Classification guidance](https://ai-act-service-desk.ec.europa.eu/en/faq) — AI Act Service Desk, European Commission
+7. [Navigating the AI Act — Timeline guidance](https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act) — European Commission Digital Strategy
 
 ## Further Reading
 
