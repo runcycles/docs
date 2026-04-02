@@ -54,13 +54,15 @@ curl -s "http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=50"
 
 ## Access control
 
-Cycles separates the runtime plane from the management plane:
+All Cycles services run on the internal network. Only the load balancer is exposed to application traffic.
 
-| Plane | Port | Access | Purpose |
+| Component | Port | Network | Access |
 |---|---|---|---|
-| Runtime (Cycles Server) | 7878 | Application servers, via load balancer | Reserve, commit, check balances |
-| Management (Admin Server) | 7979 | Operations team only, via VPN | Create tenants, manage API keys, set budgets |
-| Events (Events Service) | 7980 | Internal only — no inbound traffic needed | Async webhook delivery with HMAC-SHA256 signing |
+| Load Balancer | 443 | DMZ / edge | Application traffic (TLS termination) |
+| Cycles Server | 7878 | **Internal only** | Application servers via load balancer — never exposed directly |
+| Admin Server | 7979 | **Internal / VPN only** | Operations team and CI/CD pipelines only |
+| Events Service | 7980 | **Internal only** | No inbound traffic — outbound webhook delivery only |
+| Redis | 6379 | **Internal only** | Shared by all Cycles services — never exposed directly |
 
 <NetworkZones />
 
