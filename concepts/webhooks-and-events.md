@@ -38,15 +38,7 @@ A subscription defines which events to deliver and where:
 
 ## Architecture
 
-```
-Admin server (CRUD) ──┐
-                      ├── event:{id} + delivery:{id} + LPUSH dispatch:pending
-Runtime server (reserve/commit) ──┘
-                              │
-                         Redis ─┤
-                              │
-Events service (port 7980) ─── BRPOP → HTTP POST with X-Cycles-Signature
-```
+<EventFlowDiagram />
 
 The events service is **optional**. If not deployed, events accumulate in Redis with TTL and are delivered when the service starts.
 
