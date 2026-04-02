@@ -1,0 +1,62 @@
+---
+title: "Prove to an Auditor That Your Agents Are Under Control"
+description: "An auditor asks how you control your AI agents. You show a dashboard. They ask what prevents the agent from acting before the dashboard updates. Cycles provides the answer: pre-execution enforcement with a structured audit trail."
+---
+
+# Prove to an Auditor That Your Agents Are Under Control
+
+An auditor asks how you govern your AI agents. You show a monitoring dashboard — cost graphs, token counts, action logs. They ask: "What prevents the agent from taking an unauthorized action before the dashboard updates?"
+
+You don't have an answer. The dashboard shows what happened. It does not prevent what should not happen. For regulatory frameworks that require pre-execution controls, observation is not governance.
+
+## Why existing controls don't satisfy auditors
+
+**Monitoring dashboards are post-hoc.** They record what happened — after it happened. For AI agents that qualify as high-risk AI systems, the EU AI Act's [Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) requires the ability to interrupt the system's operation via a stop mechanism. A dashboard that shows a cost spike at 2 AM is not a stop mechanism.
+
+**Provider spending caps have no audit trail.** When OpenAI's monthly usage limit fires, it blocks the entire organization. There is no record of which tenant, which workflow, or which agent triggered the limit. An auditor cannot trace a spending event to a responsible scope — because the cap does not know about scopes.
+
+**Prompt-level guardrails are suggestions, not enforcement.** A system prompt that says "do not send more than 10 emails" is an instruction to a probabilistic model. It is not a control. An auditor asks: "Can the agent violate this rule?" If the answer is "yes, if the model decides to," it is not an auditable control point.
+
+## How Cycles provides auditable enforcement
+
+Every budget operation in Cycles — every [reservation, commit, release, and event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) — creates a structured record with full scope context: tenant, workspace, app, workflow, agent, toolset, amount, timestamp, and status.
+
+The scope hierarchy maps directly to organizational accountability. Tenant = business unit or customer. Workspace = environment. Workflow = process or run. An auditor can trace any action to the budget scope that authorized it — without reconstructing the chain from scattered application logs.
+
+```bash
+# Which agent spent how much, on what, and when?
+curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=COMMITTED" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY"
+```
+
+The event log is queryable via REST API. Hot retention is 90 days. Export to S3 or GCS for long-term compliance. Self-hosted deployments keep all data within your infrastructure — nothing leaves your network.
+
+## What happens now
+
+- **Every action is recorded before execution.** The reservation is the audit record. It exists before the action runs, not after logs are reconstructed.
+- **Scope hierarchy maps to organizational accountability.** Tenant, workspace, workflow, agent — each level maps to a responsible party. Auditors can trace any action to the budget scope that authorized it.
+- **Pre-execution denial is provable.** When a budget is exhausted, the reservation is denied and the action never executes. The denial itself is a record — proof the control worked.
+- **Retention and export are built in.** 90-day hot storage, API-queryable, exportable to cold storage. No log pipeline to build.
+
+## The compliance table
+
+The applicability of these frameworks depends on your system's risk classification, jurisdiction, and intended use. Cycles provides the runtime enforcement layer — one component of the governance infrastructure these frameworks require, not the full organizational governance system.
+
+| Framework | What it requires | What Cycles provides |
+|---|---|---|
+| EU AI Act Art. 9 (high-risk systems) | Risk management system throughout lifecycle | Hierarchical budgets bound cost and action risk per scope |
+| EU AI Act Art. 12 (high-risk systems) | Automatic logging for traceability | Every reservation/commit/event is a structured audit record |
+| EU AI Act Art. 14 (high-risk systems) | Human oversight with stop mechanism | Budget exhaustion stops execution; DENY triggers graceful degradation |
+| NIST AI RMF — Map | Identify context and risk surfaces | Scope hierarchy + [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) classify tool-level blast radius |
+| NIST AI RMF — Manage | Enforce limits, degrade gracefully | Reserve-commit gate enforces limits before execution |
+| ISO 42001 | AI management system with documented controls | Budget policies and event logs serve as documented, enforceable controls |
+
+For the full regulatory mapping — including OWASP Top 10 for Agentic Applications and SOC 2 Trust Service Criteria — see the [AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement).
+
+## Go deeper
+
+- [AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — mapping NIST, EU AI Act, ISO 42001, and OWASP to runtime controls
+- [AI Agent Risk Assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) — tool-level risk scoring methodology with worksheet template
+- [Zero Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — why every tool call needs a policy decision
+- [Security Overview](/security) — audit trail, access control, and data residency
+- [Event Log API](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) — how events and audit records work

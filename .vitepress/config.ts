@@ -196,6 +196,7 @@ export default defineConfig({
             { text: 'Cost Control', link: '/why-cycles/cost-control' },
             { text: 'Action Authority', link: '/why-cycles/action-authority' },
             { text: 'Multi-Tenant Isolation', link: '/why-cycles/multi-tenant' },
+            { text: 'Governance & Compliance', link: '/why-cycles/governance' },
           ],
         },
         {
