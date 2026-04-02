@@ -90,6 +90,19 @@ samp {
   background-color: #008a74 !important;
 }
 
+/* ══ Accessibility: visually hidden but available to screen readers and scrapers ══ */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ══ Hero Image ══ */
 
 /* Hero image — remove VitePress card decoration */

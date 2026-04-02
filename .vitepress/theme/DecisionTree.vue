@@ -95,6 +95,24 @@ const rows = flattenTree(tree)
         </div>
       </div>
     </template>
+    <div class="visually-hidden">
+      Decision tree for choosing the right Cycles integration pattern:
+      Q: Is the agent an MCP-compatible host (Claude Desktop, Claude Code, Cursor, Windsurf)?
+        Yes → Use the MCP Server (@runcycles/mcp-server) — zero code changes.
+        No →
+      Q: Is it an agent framework with lifecycle hooks (OpenAI Agents SDK, OpenClaw)?
+        Yes → Use the framework plugin (runcycles-openai-agents, openclaw-budget-guard).
+        No →
+      Q: Is the call streaming?
+        Yes → Use reserveForStream (TS) or programmatic client (Python).
+        No →
+      Q: Is budget logic per-request in a web framework?
+        Yes → Use middleware (Express, FastAPI).
+        No →
+      Q: Do you need fine-grained control over commit timing?
+        Yes → Use programmatic client.
+        No → Use decorator (@cycles / withCycles / @Cycles).
+    </div>
   </div>
 </template>
 

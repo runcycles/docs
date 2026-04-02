@@ -53,6 +53,13 @@
     </div>
 
     <p class="scope-caption">Each layer builds on the one above it. Tenants provide isolation. Scopes provide hierarchy within a tenant. Budgets provide enforcement at each scope.</p>
+    <div class="visually-hidden">
+      Cycles scope hierarchy — three nested layers:
+      1. TENANT (outermost) — The isolation boundary. All operations are scoped to exactly one tenant via the API key.
+      2. SCOPES (middle) — Hierarchical paths derived from the Subject: tenant:acme → tenant:acme/workspace:prod → tenant:acme/workspace:prod/app:chatbot.
+      3. BUDGETS (innermost) — An allocation at each scope you want to control. Checked atomically on every reservation. Example allocations: tenant:acme = $100, tenant:acme/workspace:prod = $60, tenant:acme/workspace:prod/app:chatbot = $20.
+      Each layer builds on the one above it. Tenants provide isolation. Scopes provide hierarchy within a tenant. Budgets provide enforcement at each scope.
+    </div>
   </div>
 </template>
 

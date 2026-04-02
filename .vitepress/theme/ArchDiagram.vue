@@ -50,6 +50,14 @@
       <span class="arch-label">Cycles Events Service</span>
       <span class="arch-sub">Webhooks (optional) · Port 7980</span>
     </div>
+
+    <div class="visually-hidden">
+      Cycles architecture diagram — vertical flow:
+      1. Your Application (@cycles / withCycles / MCP) connects via HTTP on port 7878 with X-Cycles-API-Key.
+      2. Cycles Server (port 7878, runtime budget enforcement) and Cycles Admin Server (port 7979, tenant/budget/key management) run side by side.
+      3. Both connect to Redis 7+ which stores budget state, reservations, tenants, and audit logs.
+      4. Redis feeds the Cycles Events Service (port 7980, optional) via BRPOP for async webhook delivery.
+    </div>
   </div>
 </template>
 
@@ -114,7 +122,12 @@
 }
 
 .arch-events {
-  border-style: dashed;
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.arch-events .arch-label {
+  color: var(--vp-c-brand-1);
 }
 
 .arch-row {

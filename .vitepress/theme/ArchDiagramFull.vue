@@ -91,6 +91,20 @@
       <span class="arch-label">External Webhook Endpoints</span>
       <span class="arch-sub">PagerDuty · Slack · your app</span>
     </div>
+
+    <div class="visually-hidden">
+      Full Cycles architecture diagram — vertical flow:
+      1. Client layer (two options side by side):
+         a. Your Application — uses @Cycles annotation or CyclesClient (direct) via Java Spring, Python, TypeScript, or Rust bindings (Cycles Wire Protocol).
+         b. AI Agent (MCP Host) — Claude Desktop, Claude Code, Cursor, or Windsurf, using the Cycles MCP Server (stdio/HTTP).
+      2. Both connect via HTTP (JSON) with X-Cycles-API-Key header.
+      3. Server layer (two services side by side):
+         a. Cycles Server (port 7878) — runtime budget enforcement. Contains REST API controllers, Auth Filter (API Key validation), and RedisReservationRepository (Lua scripts for atomic budget operations).
+         b. Cycles Admin Server (port 7979) — management plane. Handles Tenant CRUD, API Key Management, Budget Ledgers, Policies, Audit Logs, and Auth Validation.
+      4. Both servers connect to Redis 7+ which stores budget state, reservations, tenants, API keys, and audit logs.
+      5. Redis feeds the Cycles Events Service (port 7980) via BRPOP on the dispatch:pending queue. The Events Service handles async webhook delivery with HMAC signing, retry logic, and auto-disable.
+      6. Events Service delivers via HTTP POST with X-Cycles-Signature header to External Webhook Endpoints (PagerDuty, Slack, your app).
+    </div>
   </div>
 </template>
 
@@ -185,7 +199,12 @@
 }
 
 .arch-events {
-  border-style: dashed;
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.arch-events .arch-label {
+  color: var(--vp-c-brand-1);
 }
 
 .arch-external {
