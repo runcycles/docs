@@ -30,10 +30,10 @@ from runcycles import CyclesClient, CyclesConfig, cycles, set_default_client
 set_default_client(CyclesClient(CyclesConfig.from_env()))
 groq = OpenAI(base_url="https://api.groq.com/openai/v1", api_key="gsk_...")
 
-@cycles(estimate=100_000, action_kind="llm.completion", action_name="llama-4-maverick-17b-128e")
+@cycles(estimate=50_000, action_kind="llm.completion", action_name="llama-4-scout")
 def ask(prompt: str) -> str:
     return groq.chat.completions.create(
-        model="llama-4-maverick-17b-128e",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{"role": "user", "content": prompt}],
     ).choices[0].message.content
 
@@ -59,9 +59,9 @@ groq = OpenAI(
     api_key=os.environ["GROQ_API_KEY"],
 )
 
-# Llama 4 Maverick on Groq
-PRICE_PER_INPUT_TOKEN = 20     # $0.20 / 1M tokens
-PRICE_PER_OUTPUT_TOKEN = 60    # $0.60 / 1M tokens
+# Llama 4 Scout on Groq
+PRICE_PER_INPUT_TOKEN = 11     # $0.11 / 1M tokens
+PRICE_PER_OUTPUT_TOKEN = 34    # $0.34 / 1M tokens
 
 @cycles(
     estimate=lambda prompt, **kw: len(prompt.split()) * 2 * PRICE_PER_INPUT_TOKEN
@@ -71,7 +71,7 @@ PRICE_PER_OUTPUT_TOKEN = 60    # $0.60 / 1M tokens
         + result["usage"]["completion_tokens"] * PRICE_PER_OUTPUT_TOKEN
     ),
     action_kind="llm.completion",
-    action_name="llama-4-maverick-17b-128e",
+    action_name="meta-llama/llama-4-scout-17b-16e-instruct",
     unit="USD_MICROCENTS",
 )
 def chat(prompt: str, max_tokens: int = 1024) -> dict:
@@ -80,7 +80,7 @@ def chat(prompt: str, max_tokens: int = 1024) -> dict:
         max_tokens = min(max_tokens, ctx.caps.max_tokens)
 
     response = groq.chat.completions.create(
-        model="llama-4-maverick-17b-128e",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
     )
@@ -113,14 +113,14 @@ const groq = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const INPUT_PRICE = 20;
-const OUTPUT_PRICE = 60;
+const INPUT_PRICE = 11;
+const OUTPUT_PRICE = 34;
 
 const chat = withCycles(
   {
     client: cycles,
     actionKind: "llm.completion",
-    actionName: "llama-4-maverick-17b-128e",
+    actionName: "meta-llama/llama-4-scout-17b-16e-instruct",
     estimate: (prompt: string) => {
       const inputTokens = Math.ceil(prompt.length / 4);
       return inputTokens * INPUT_PRICE + 1024 * OUTPUT_PRICE;
@@ -137,7 +137,7 @@ const chat = withCycles(
     }
 
     return groq.chat.completions.create({
-      model: "llama-4-maverick-17b-128e",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     });
@@ -151,13 +151,11 @@ Groq hosts open-source models on custom LPU hardware. Pricing is significantly l
 
 | Model | Input (per 1M tokens) | Output (per 1M tokens) | Input (microcents/token) | Output (microcents/token) |
 |---|---|---|---|---|
-| Llama 4 Maverick 17B | $0.20 | $0.60 | 20 | 60 |
 | Llama 4 Scout 17B | $0.11 | $0.34 | 11 | 34 |
 | Llama 3.3 70B | $0.59 | $0.79 | 59 | 79 |
-| Gemma 2 9B | $0.20 | $0.20 | 20 | 20 |
-| Mixtral 8x7B | $0.24 | $0.24 | 24 | 24 |
+| Llama 3.1 8B | $0.05 | $0.08 | 5 | 8 |
 
-For comparison, GPT-4o is 250/1,000 microcents per token — **12x more expensive** than Llama 4 Maverick on Groq for input, **17x more** for output.
+For comparison, GPT-4o is 250/1,000 microcents per token — **23x more expensive** than Llama 4 Scout on Groq for input, **29x more** for output.
 
 ::: info Note
 Groq pricing changes. Check [groq.com/pricing](https://groq.com/pricing) for current rates.
@@ -173,7 +171,7 @@ from runcycles import BudgetExceededError
 # Primary: GPT-4o (expensive, high quality)
 primary_client = OpenAI()
 
-# Fallback: Llama 4 Maverick on Groq (cheap, good quality)
+# Fallback: Llama 4 Scout on Groq (cheap, good quality)
 fallback_client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=os.environ["GROQ_API_KEY"],
@@ -192,16 +190,16 @@ def primary_chat(prompt: str) -> dict:
     return {"content": response.choices[0].message.content, "model": "gpt-4o"}
 
 @cycles(
-    estimate=100_000,
+    estimate=50_000,
     action_kind="llm.completion",
-    action_name="llama-4-maverick",
+    action_name="llama-4-scout",
 )
 def fallback_chat(prompt: str) -> dict:
     response = fallback_client.chat.completions.create(
-        model="llama-4-maverick-17b-128e",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{"role": "user", "content": prompt}],
     )
-    return {"content": response.choices[0].message.content, "model": "llama-4-maverick"}
+    return {"content": response.choices[0].message.content, "model": "llama-4-scout"}
 
 def chat_with_downgrade(prompt: str) -> dict:
     """Try GPT-4o first; fall back to Groq if budget is exhausted."""
@@ -213,7 +211,7 @@ def chat_with_downgrade(prompt: str) -> dict:
 
 This pattern gives you:
 - **Full quality** when budget allows (GPT-4o at $2.50/$10 per 1M tokens)
-- **Continued service** when budget is low (Llama 4 Maverick at $0.20/$0.60 per 1M tokens)
+- **Continued service** when budget is low (Llama 4 Scout at $0.11/$0.34 per 1M tokens)
 - **Per-model observability** — Cycles tracks spend separately for each `action_name`
 
 See [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) for more strategies.
