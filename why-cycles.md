@@ -22,7 +22,7 @@ If you're deploying AI agents — to customers or inside the enterprise — Cycl
 
 **Contain cross-tenant blast radius.** A single runaway agent can burn [$4,200 in three hours](/blog/ai-agent-failures-budget-controls-prevent). Cycles enforces hierarchical budgets — tenant, workspace, workflow, run — so one customer's bad agent cannot starve the platform or another customer's allocation.
 
-**Audit every action.** Every reservation, commit, and event creates a structured record with full scope context. Queryable via API, 90-day hot retention, exportable to cold storage. No log reconstruction required — the budget ledger is the audit trail. [Details →](/security)
+**Audit every action.** Every reservation, commit, and event creates a structured record with full scope context. Queryable via API, 90-day hot retention, exportable to cold storage. No log reconstruction required — the budget ledger is the audit trail. When an auditor asks "which agent did what, when, and who authorized it," the answer is a single API query — not a week of log reconstruction. [Details →](/security)
 
 **Gate high-consequence actions.** A support agent [sent 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects). Total model spend: $1.40. Business impact: $50K+ in lost pipeline. No spending limit would have caught it. Cycles supports [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) — budgets denominated in blast radius, not dollars — so agents can read and reason freely while dangerous capabilities (email, deploy, delete) are gated separately.
 
@@ -46,7 +46,7 @@ Regulatory frameworks are converging on a single requirement: if your AI system 
 
 ## By role
 
-**For engineering:** Every agent action passes through a reserve-commit gate — budget checked before execution, not after.
+**For engineering:** A single runaway agent burned [$4,200 in three hours](/blog/ai-agent-failures-budget-controls-prevent). With a $15 per-run budget in Cycles, the same agent stops after 8 iterations.
 **For security/compliance:** Every reservation, commit, and event creates a structured, queryable audit record with full scope context.
 **For finance:** Per-user budget caps turned a [23% gross margin into 68%](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin) in one analysis, with only 5% of users hitting the limit.
 **For the AI agent itself:** Visible constraints earn trust — teams that see agents self-regulate respond by increasing budgets and granting access to higher-risk tools.

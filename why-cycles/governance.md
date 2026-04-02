@@ -11,7 +11,7 @@ You don't have an answer. The dashboard shows what happened. It does not prevent
 
 ## Why existing controls don't satisfy auditors
 
-**Monitoring dashboards are post-hoc.** They record what happened — after it happened. For AI agents that qualify as high-risk AI systems, the EU AI Act's [Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) requires the ability to interrupt the system's operation via a stop mechanism. A dashboard that shows a cost spike at 2 AM is not a stop mechanism.
+**Monitoring dashboards are post-hoc.** They record what happened — after it happened. For AI agents that qualify as high-risk AI systems, the EU AI Act's [Article 14](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires the ability to interrupt the system's operation via a stop mechanism. A dashboard that shows a cost spike at 2 AM is not a stop mechanism.
 
 **Provider spending caps are fragmented and have no audit trail.** A single agent workflow can span multiple providers — OpenAI for reasoning, Anthropic for code generation, Google for search, plus external APIs for tools. Each provider has its own spending cap, but no single cap sees the total workflow cost. When OpenAI's monthly limit fires, it blocks the entire organization — while spend on Anthropic and Google continues unchecked. There is no record of which tenant, which workflow, or which agent triggered the limit. An auditor cannot trace a spending event to a responsible scope — because each provider's cap only sees its own slice.
 
