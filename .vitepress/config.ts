@@ -430,6 +430,20 @@ export default defineConfig({
       pageData.title = pageData.params.pageTitle
     }
 
+    // Prevent redundant "Cycles ... — Cycles" titles
+    const rawTitle = pageData.frontmatter.title || pageData.title || ''
+    if (rawTitle.includes('Cycles')) {
+      pageData.titleTemplate = rawTitle
+    }
+
+    // noindex for auto-generated OpenAPI operation pages (thin content, dilutes crawl budget)
+    if (pageData.relativePath.startsWith('admin-api/operations/') || pageData.relativePath.startsWith('api/operations/')) {
+      pageData.frontmatter.head ??= []
+      pageData.frontmatter.head.push(
+        ['meta', { name: 'robots', content: 'noindex, nofollow' }],
+      )
+    }
+
     const canonicalUrl = `https://runcycles.io/${pageData.relativePath}`
       .replace(/index\.md$/, '')
       .replace(/\.md$/, '')
