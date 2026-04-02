@@ -71,7 +71,7 @@ Every tool your agent can call has a risk profile. Classifying tools by tier is 
 
 | Tier | Class | Examples | Reversibility | Blast Radius | Enforcement Pattern |
 |:----:|-------|---------|---------------|-------------|-------------------|
-| 0 | **Read-only** | Search, retrieve, summarize, vector lookup | No state change | None | [Event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) (post-hoc accounting) |
+| 0 | **Read-only** | Search, retrieve, summarize, vector lookup | No state change | None (side-effect risk only; sensitive-read risk may be [budgeted separately](#a-note-on-reads-in-regulated-environments)) | [Event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) (post-hoc accounting) |
 | 1 | **Write-local** | Save draft, write log, update cache, create temp file | Easy to reverse | Internal only | Event or reserve-commit depending on volume |
 | 2 | **Write-external** | API call to third party, webhook trigger, external query | Possible but not guaranteed | Partner systems affected | [Reserve-commit](/protocol/how-reserve-commit-works-in-cycles) (always) |
 | 3 | **Mutation** | DB write/update/delete, send email, post to Slack, create ticket | Difficult or impossible | Customer-facing | Reserve-commit with caps |
@@ -341,11 +341,12 @@ A risk assessment without enforcement is documentation. It satisfies a checkbox 
 
 ### Step 1: Create the Budget
 
-The worksheet's `budget` section maps directly to a Cycles budget with RISK_POINTS:
+The worksheet's `budget` section translates into Cycles budgets at two levels. The **app-level budget** sets a ceiling for the agent across all runs. The **per-run budget** is created dynamically for each execution and enforces the per-run limit from the worksheet.
+
+**App-level budget** — created once via the Admin API (port 7979):
 
 ```bash
-# Create a per-app risk-point budget for the support agent
-# Budget creation uses the Admin API (port 7979), not the runtime API
+# Create an app-level risk-point ceiling for the support agent
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: $ADMIN_API_KEY" \
@@ -353,26 +354,41 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
     "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp/app:support-copilot",
     "unit": "RISK_POINTS",
-    "allocated": 250
+    "allocated": 10000
   }'
 ```
 
-The cost budget is a separate budget on the same scope, using `USD_MICROCENTS` (1 USD = 100,000,000 microcents):
+**Per-run budget** — created dynamically when each run starts, scoped to a specific workflow/run ID:
 
 ```bash
-# Create a per-app cost budget ($5.00 = 500,000,000 microcents)
+# Create a per-run risk-point budget (250 points per the worksheet)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: $ADMIN_API_KEY" \
   -d '{
     "tenant_id": "acme-corp",
-    "scope": "tenant:acme-corp/app:support-copilot",
+    "scope": "tenant:acme-corp/app:support-copilot/workflow:run-abc-123",
+    "unit": "RISK_POINTS",
+    "allocated": 250
+  }'
+```
+
+The same pattern applies to cost budgets, using `USD_MICROCENTS` (1 USD = 100,000,000 microcents):
+
+```bash
+# Create a per-run cost budget ($5.00 = 500,000,000 microcents)
+curl -s -X POST http://localhost:7979/v1/admin/budgets \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -d '{
+    "tenant_id": "acme-corp",
+    "scope": "tenant:acme-corp/app:support-copilot/workflow:run-abc-123",
     "unit": "USD_MICROCENTS",
     "allocated": 500000000
   }'
 ```
 
-Both budgets enforce independently. The agent can be under its dollar budget but over its risk-point budget — or vice versa. This is the dual-control model: cost authority and [action authority](/concepts/action-authority-controlling-what-agents-do) operating in parallel.
+Both risk-point and cost budgets enforce independently. The agent can be under its dollar budget but over its risk-point budget — or vice versa. This is the dual-control model: cost authority and [action authority](/concepts/action-authority-controlling-what-agents-do) operating in parallel. Budgets at both levels enforce hierarchically — a run cannot exceed its own 250-point limit, and all runs together cannot exceed the app-level ceiling. See [common budget patterns](/how-to/common-budget-patterns) for more examples.
 
 ### Step 2: Validate with Shadow Mode
 
