@@ -214,7 +214,7 @@ Configure per-tool cost estimates via `toolBaseCosts`:
 Any tool not listed defaults to 100,000 units.
 
 ::: warning Type safety note
-Config values in `toolBaseCosts` and `modelBaseCosts` are not runtime-validated. If a value is accidentally a string (e.g., `"500000"` instead of `500000`), cost arithmetic will silently produce `NaN`. Ensure all cost values are numbers, not quoted strings.
+Config values in `toolBaseCosts` and `modelBaseCosts` are validated at startup (v0.7.10+). Non-number values are rejected and negative values throw an error. If using OpenClaw's JSON config, ensure all cost values are numbers, not quoted strings.
 :::
 
 For more accurate cost tracking, provide a `costEstimator` callback programmatically:
@@ -254,7 +254,7 @@ Control which tools can be called using allowlists and blocklists with glob-styl
 ```
 
 - Blocklist takes precedence over allowlist
-- Supports exact names and `*` wildcards (prefix: `code_*`, suffix: `*_tool`, all: `*`)
+- Supports exact names and `*` wildcards anywhere in the pattern (prefix: `code_*`, suffix: `*_tool`, mid: `aws_*_tool`, all: `*`)
 - Tools blocked by access lists are rejected before any budget reservation is attempted
 
 ## Tool call limits
@@ -538,7 +538,7 @@ Surface hierarchical budget information by setting a parent budget ID:
       "openclaw-budget-guard": {
         "config": {
           "tenant": "acme",
-          "budgetId": "team-alpha-agent",
+          "budgetScope": { "app": "team-alpha-agent" },
           "parentBudgetId": "team-alpha"
         }
       }
@@ -595,7 +595,7 @@ The plugin exports two structured error types:
 import { BudgetExhaustedError, ToolBudgetDeniedError } from "@runcycles/openclaw-budget-guard";
 ```
 
-- **`BudgetExhaustedError`** (`code: "BUDGET_EXHAUSTED"`) — thrown when budget is exhausted and `failClosed: true`. Includes `remaining`, `tenant`, and `budgetId` properties. The message includes an actionable hint to increase budget via the Cycles API.
+- **`BudgetExhaustedError`** (`code: "BUDGET_EXHAUSTED"`) — thrown when budget is exhausted and `failClosed: true`. Includes `remaining`, `tenant`, and `budgetId` properties. The error message includes an actionable hint to increase budget via the Cycles API.
 - **`ToolBudgetDeniedError`** (`code: "TOOL_BUDGET_DENIED"`) — structured error type for tool denials. Includes `toolName` property.
 
 ## Verifying the integration
@@ -620,7 +620,7 @@ Set `logLevel: "debug"` to see the plugin's activity:
 On startup, the plugin logs a config summary so you can verify settings at a glance:
 
 ```
-  Cycles Budget Guard for OpenClaw v0.6.1
+  Cycles Budget Guard for OpenClaw v0.8.0
   https://runcycles.io
   tenant: acme
   cyclesBaseUrl: http://localhost:7878
@@ -656,7 +656,8 @@ With `logLevel: "debug"`, you'll see per-call activity:
 | `cyclesBaseUrl` | string | — | Cycles server URL (required) |
 | `cyclesApiKey` | string | — | Cycles API key (required) |
 | `tenant` | string | — | Cycles tenant (required) |
-| `budgetId` | string | — | Optional app-level budget scope |
+| `budgetScope` | object | — | Scope segments for targeting a specific budget (e.g. `{ "workspace": "road", "app": "lane" }`) |
+| `budgetId` | string | — | **Deprecated** — use `budgetScope`. Equivalent to `budgetScope: { "app": "<value>" }` |
 | `currency` | string | `USD_MICROCENTS` | Default budget unit |
 | `failClosed` | boolean | `true` | Block on exhausted budget |
 | `logLevel` | string | `info` | `debug` / `info` / `warn` / `error` |
@@ -763,15 +764,15 @@ With `logLevel: "debug"`, you'll see per-call activity:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `aggressiveCacheInvalidation` | boolean | `false` | Invalidate budget snapshot cache after every mutation |
+| `aggressiveCacheInvalidation` | boolean | `true` | Invalidate budget snapshot cache after every mutation |
 | `heartbeatIntervalMs` | number | `30000` | Interval for reservation TTL heartbeat extensions |
-| `retryableStatusCodes` | number[] | `[429, 502, 503, 504]` | HTTP status codes eligible for transient retry |
+| `retryableStatusCodes` | number[] | `[429, 503, 504]` | HTTP status codes eligible for transient retry |
 | `transientRetryMaxAttempts` | number | `2` | Max retries on transient server errors |
 | `transientRetryBaseDelayMs` | number | `500` | Base delay for transient retries (ms) |
 | `burnRateWindowMs` | number | `60000` | Window for burn-rate anomaly detection |
-| `burnRateAlertThreshold` | number | — | Alert when burn rate exceeds this (per-window) |
+| `burnRateAlertThreshold` | number | `3.0` | Alert when burn rate exceeds this multiple of average |
 | `enableEventLog` | boolean | `false` | Log all budget events for debugging |
-| `exhaustionWarningThresholdMs` | number | — | Warn when time-to-exhaustion falls below this |
+| `exhaustionWarningThresholdMs` | number | `120000` | Warn when time-to-exhaustion falls below this (ms) |
 | `otlpMetricsEndpoint` | string | — | OpenTelemetry OTLP endpoint for budget metrics |
 | `otlpMetricsHeaders` | object | — | Custom headers for OTLP exporter |
 
@@ -963,10 +964,10 @@ The plugin auto-creates a lightweight OTLP HTTP adapter that buffers metrics and
 
 | Metric | Type | Tags | When |
 |--------|------|------|------|
-| `cycles.budget.remaining` | gauge | tenant, budgetId, currency | Every snapshot fetch |
-| `cycles.budget.reserved` | gauge | tenant, budgetId | Every snapshot fetch |
-| `cycles.budget.spent` | gauge | tenant, budgetId | Every snapshot fetch |
-| `cycles.budget.level` | gauge (0/1/2) | tenant, budgetId, level | Every snapshot fetch |
+| `cycles.budget.remaining` | gauge | tenant, budgetScope keys, currency | Every snapshot fetch |
+| `cycles.budget.reserved` | gauge | tenant, budgetScope keys | Every snapshot fetch |
+| `cycles.budget.spent` | gauge | tenant, budgetScope keys | Every snapshot fetch |
+| `cycles.budget.level` | gauge (0/1/2) | tenant, budgetScope keys, level | Every snapshot fetch |
 | `cycles.reservation.created` | counter | tenant, kind, name | On reserve |
 | `cycles.reservation.committed` | counter | tenant, kind, name | On commit |
 | `cycles.reservation.denied` | counter | tenant, kind, name, reason | On deny |
@@ -1007,7 +1008,7 @@ The plugin retries Cycles server requests on transient HTTP errors (429, 503, 50
 }
 ```
 
-With default settings, a 429 response triggers up to 2 retries with 500ms and 1000ms delays. The idempotency key is preserved across retries so the Cycles server deduplicates safely.
+With default settings, a 429 response triggers up to 2 retries with 500ms and 1000ms delays. Each retry generates a fresh idempotency key, creating a separate reservation attempt at the Cycles server.
 
 ### Heartbeat for long-running tools
 
@@ -1126,7 +1127,7 @@ This is intentional. When OpenClaw adds `block` support to `before_model_resolve
      -H "Content-Type: application/json" \
      -d '{"operation": "CREDIT", "amount": 50000000, "idempotency_key": "topup-001"}'
    ```
-   This adds 50,000,000 units ($0.50) to the budget. Adjust the `scope` to match your `tenant` and `budgetId`.
+   This adds 50,000,000 units ($0.50) to the budget. Adjust the `scope` to match your `tenant` and `budgetScope`.
 
 2. **Start a new agent session** — the plugin fetches fresh budget state at the start of each session.
 
@@ -1148,7 +1149,7 @@ For details, see [Budget Allocation and Management](/how-to/budget-allocation-an
 - Add `"tenant": "your-org"` to the plugin config
 
 **Budget always shows "healthy"**
-- Verify `currency`, `tenant`, and `budgetId` match your Cycles setup
+- Verify `currency`, `tenant`, and `budgetScope` match your Cycles setup
 - Set `logLevel: "debug"` to see raw balance responses
 
 **Tools not being blocked**
