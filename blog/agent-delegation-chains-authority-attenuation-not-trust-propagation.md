@@ -15,7 +15,7 @@ A planning agent delegates a research task to a retrieval agent. The retrieval a
 
 <!-- more -->
 
-Google DeepMind researchers proposed an [intelligent delegation framework](https://arxiv.org/abs/2602.11865) in February. CSA warned in March that [delegation chains multiply access](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) unless permissions are scoped. Microsoft shipped a [governance toolkit](https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/) this week with pre-execution policy checks. The gap is no longer awareness. The gap is runtime attenuation: no general-purpose enforcement primitive attenuates **budget, action scope, and delegation depth together** at every hop.
+Google DeepMind researchers proposed an [intelligent delegation framework](https://arxiv.org/abs/2602.11865) in February. CSA warned in March that [delegation chains multiply access](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) unless permissions are scoped. Microsoft shipped a [governance toolkit](https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/) this week with pre-execution policy checks. The gap is no longer awareness. The gap is runtime attenuation: we have yet to see a general-purpose enforcement primitive that attenuates **budget, action scope, and delegation depth together** at every hop.
 
 That primitive is **authority attenuation**: every delegation boundary must narrow what the child agent can spend, do, and access — never widen it. Budget, action permissions, and data scope should decrease monotonically through the chain. If you're unfamiliar with the concept, [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) is the pre-execution control layer that decides whether an agent's next action proceeds. Authority attenuation extends that concept across delegation boundaries. This isn't a new idea in systems design (capability-based security has enforced it for decades), but the agent ecosystem hasn't assembled the pieces into a single enforcement pattern.
 
@@ -90,6 +90,8 @@ Budget attenuation caps spend. Action masks cap capability. At each delegation b
 Cycles supports this through [**toolset-scoped budgets**](/concepts/action-authority-controlling-what-agents-do) — separate `RISK_POINTS` allocations for different tool categories within the same agent:
 
 ```python
+from runcycles import Action  # noqa: E402 (shown separately for clarity)
+
 # The refund agent gets TWO toolset-scoped RISK_POINTS budgets via Admin API:
 #   tenant:acme-corp/workflow:support/agent:refund/toolset:refund  → 20 RISK_POINTS
 #   tenant:acme-corp/workflow:support/agent:refund/toolset:crm     → 5 RISK_POINTS
