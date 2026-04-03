@@ -1,6 +1,6 @@
 ---
 title: "Agent Delegation Chains Need Authority Attenuation, Not Trust Propagation"
-date: 2026-04-04
+date: 2026-04-03
 author: Albert Mavashev
 tags: [delegation, multi-agent, governance, runtime-authority, zero-trust, security, architecture]
 description: "Multi-agent delegation chains propagate full trust by default. Every hop should narrow budget, actions, and scope. Here's the authority attenuation pattern."
@@ -15,9 +15,9 @@ A planning agent delegates a research task to a retrieval agent. The retrieval a
 
 <!-- more -->
 
-DeepMind published delegation rules in February. The Cloud Security Alliance called it "the chain problem" in March. Microsoft shipped a governance toolkit this week. Everyone agrees delegation needs guardrails. Nobody has shipped the enforcement primitive that actually constrains authority at each hop.
+Google DeepMind researchers proposed an [intelligent delegation framework](https://arxiv.org/abs/2602.11865) in February. CSA warned in March that [delegation chains multiply access](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) unless permissions are scoped. Microsoft shipped a [governance toolkit](https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/) this week with pre-execution policy checks. The gap is no longer awareness. The gap is runtime attenuation: no general-purpose enforcement primitive attenuates **budget, action scope, and delegation depth together** at every hop.
 
-That primitive is **authority attenuation**: every delegation boundary must narrow what the child agent can spend, do, and access — never widen it. Budget, action permissions, and data scope should decrease monotonically through the chain. This isn't a new idea in systems design (capability-based security has enforced it for decades), but the agent ecosystem has ignored it entirely.
+That primitive is **authority attenuation**: every delegation boundary must narrow what the child agent can spend, do, and access — never widen it. Budget, action permissions, and data scope should decrease monotonically through the chain. This isn't a new idea in systems design (capability-based security has enforced it for decades), but the agent ecosystem hasn't assembled the pieces into a single enforcement pattern.
 
 ## Why delegation chains are an authority problem, not a trust problem
 
@@ -47,52 +47,74 @@ Authority attenuation requires three enforcement mechanisms at every delegation 
 When Agent A delegates to Agent B, it reserves a portion of its own budget as Agent B's ceiling. Agent B cannot spend more than that sub-budget, regardless of what the parent has available.
 
 ```python
-from cycles import CyclesClient
-
-cycles = CyclesClient()
-
-# Parent agent's run — $50 budget
-parent_run = cycles.reserve(
-    scope="tenant/acme/workflow/support/run/ticket-4821",
-    amount=50_00,  # $50.00 in cents
-    unit="USD_CENTS",
+import uuid
+from runcycles import (
+    CyclesClient, CyclesConfig, ReservationCreateRequest,
+    Subject, Amount, Unit,
 )
 
-# Delegate to refund agent — carve a $5 sub-budget
-refund_run = cycles.reserve(
-    scope="tenant/acme/workflow/support/run/ticket-4821/delegate/refund",
-    amount=5_00,  # $5.00 ceiling
-    unit="USD_CENTS",
-)
+client = CyclesClient(CyclesConfig.from_env())
 
-# The refund agent's entire world is $5.
-# If it's prompt-injected into a loop, damage is capped at $5 — not $50.
+# Orchestrator reserves against the workflow scope — $50 budget allocated there
+orchestrator_res = client.create_reservation(ReservationCreateRequest(
+    idempotency_key=str(uuid.uuid4()),
+    subject=Subject(tenant="acme-corp", workflow="support"),
+    amount=Amount(value=50_000_000, unit=Unit.USD_MICROCENTS),  # $50.00
+))
+
+# Delegate to refund agent — a SEPARATE reservation on a narrower scope.
+# The "agent" field adds a deeper scope: tenant:acme-corp/workflow:support/agent:refund
+# A budget of $5 must be explicitly allocated at that scope via the Admin API.
+refund_res = client.create_reservation(ReservationCreateRequest(
+    idempotency_key=str(uuid.uuid4()),
+    subject=Subject(
+        tenant="acme-corp",
+        workflow="support",
+        agent="refund",
+        dimensions={"run": "ticket-4821"},
+    ),
+    amount=Amount(value=5_000_000, unit=Unit.USD_MICROCENTS),  # $5.00
+))
+
+# The refund agent's world is bounded by BOTH its agent-level budget ($5)
+# AND the parent workflow budget ($50). If either is exhausted, the reservation
+# is denied. A prompt-injected loop burns at most the agent-level allocation.
 ```
 
-This is not a new Cycles feature — hierarchical scopes already enforce it. The point is that **every delegation must create a child scope with a smaller budget**. The protocol handles the rest: the child scope's balance can never exceed what the parent reserved for it.
+The key concept: Cycles budgets are **independent at each scope level** — they do not automatically propagate from parent to child. You must explicitly allocate a budget at the child scope (e.g. `tenant:acme-corp/workflow:support/agent:refund`) via the Admin API. A reservation then checks **every derived scope atomically** — the child scope's allocation and the parent scope's allocation must both have room. This is what makes attenuation enforceable: the child's ceiling is set by its own allocation, not inherited from the parent.
 
 ### 2. Action masks
 
 Budget attenuation caps spend. Action masks cap capability. At each delegation boundary, the parent defines which tool calls the child is allowed to make and with what parameters.
 
 ```python
-# Parent's action authority: full support toolkit
-parent_actions = {
-    "crm.read": {"risk_points": 1},
-    "crm.write": {"risk_points": 5},
-    "email.send": {"risk_points": 10},
-    "refund.issue": {"risk_points": 20, "max_amount": 500},
-}
+from runcycles import Action, Amount, Unit
 
-# Delegated action authority: restricted subset
-refund_agent_actions = {
-    "crm.read": {"risk_points": 1},
-    "refund.issue": {"risk_points": 20, "max_amount": 100},
-    # No crm.write. No email.send. Period.
-}
+# Orchestrator's action authority: full support toolkit
+# Each tool call reserves risk points against the workflow scope budget
+orchestrator_action = Action(kind="tool.call", name="crm.read")  # 1 risk point
+# Also: crm.write (5), email.send (10), refund.issue (20)
+
+# Delegated agent: allocate a RISK_POINTS budget at the agent scope
+# that only accommodates the allowed action mix.
+# Admin API: PUT budget at tenant:acme-corp/workflow:support/agent:refund
+#   → 25 RISK_POINTS (enough for 1× refund.issue + 5× crm.read)
+
+# When the refund agent reserves for a tool call:
+refund_action_res = client.create_reservation(ReservationCreateRequest(
+    idempotency_key=str(uuid.uuid4()),
+    subject=Subject(tenant="acme-corp", workflow="support", agent="refund"),
+    amount=Amount(value=20, unit=Unit.RISK_POINTS),
+    action=Action(kind="tool.call", name="refund.issue"),
+))
+# ✅ Allowed — 20 risk points within the 25-point budget
+
+# If the refund agent tries email.send (not in its risk budget design):
+# The agent scope only has 5 remaining risk points after the refund.
+# email.send needs 10 → DENIED before execution.
 ```
 
-With Cycles' risk-point budgets, you can enforce this by reserving a risk-point budget for the child scope that only accommodates the allowed actions. If the refund agent attempts an `email.send` (10 risk points) but its risk-point budget only has capacity for `crm.read` + `refund.issue`, the call is denied before execution.
+With Cycles' [risk-point budgets](/concepts/action-authority-controlling-what-agents-do), the child scope's `RISK_POINTS` allocation acts as an action mask. You size the allocation to fit exactly the actions the delegated agent should perform. Any action outside that envelope exhausts the budget and is denied — no allowlist configuration needed, just arithmetic.
 
 ### 3. Depth limits
 
@@ -105,7 +127,7 @@ Orchestrator (depth=3)
             └─ [BLOCKED — depth=0, cannot delegate]
 ```
 
-Depth limits are metadata on the delegation, enforced by the runtime. If a depth-0 agent attempts to spin up a sub-agent, the runtime rejects it. No negotiation.
+Depth limits are metadata on the delegation, enforced by your orchestration layer. Pass a `max_depth` integer when spawning each child agent; decrement it at each hop. If a depth-0 agent attempts to spin up a sub-agent, the orchestrator rejects it before the child is created. Cycles doesn't enforce depth natively — this is logic you own — but it pairs naturally with budget attenuation: a depth-0 agent with a tight risk-point allocation has nowhere to go even if the depth check is bypassed.
 
 ## What the architecture looks like
 
@@ -133,7 +155,7 @@ flowchart TD
     style CB fill:#2d5a27,color:#fff
 ```
 
-The orchestrator holds the total budget. Each delegated agent gets a carved sub-budget, a restricted action set, and a decremented depth counter. The runtime (Cycles) enforces all three — the agents themselves don't need to be aware of their constraints. A compromised or misbehaving sub-agent hits a wall, not a suggestion.
+The orchestrator holds the total budget. Each delegated agent gets a carved sub-budget, a restricted action set, and a decremented depth counter. Cycles enforces the first two — spend limits and action authority — at the protocol level before execution. Depth limiting is orchestration logic you pair with Cycles. Together, the three mechanisms mean a compromised or misbehaving sub-agent hits a wall, not a suggestion.
 
 ## Why the industry keeps getting this wrong
 
@@ -151,20 +173,27 @@ Microsoft's new Agent Governance Toolkit addresses credential scoping and action
 
 You don't need to wait for frameworks to ship attenuation primitives. The pattern works with any runtime authority system that supports hierarchical scopes.
 
-**Step 1: Model your delegation tree as a scope hierarchy.**
+**Step 1: Model your delegation tree using Cycles' Subject hierarchy.**
+
+Map each delegation level to a Subject field. The orchestrator operates at the `workflow` level; each delegated agent adds an `agent` field to create a deeper scope:
 
 ```
-tenant/{tenant_id}/workflow/{workflow_id}/run/{run_id}           ← orchestrator
-tenant/{tenant_id}/workflow/{workflow_id}/run/{run_id}/delegate/{agent_name}  ← child
+tenant:acme-corp/workflow:support                          ← orchestrator
+tenant:acme-corp/workflow:support/agent:refund             ← delegated agent
+tenant:acme-corp/workflow:support/agent:lookup             ← delegated agent
 ```
 
-**Step 2: Reserve sub-budgets at delegation time.** Before spawning a child agent, call `reserve` on the child scope with a budget that is strictly less than the parent's remaining balance.
+Use `dimensions` for per-run isolation (e.g. `{"run": "ticket-4821"}`).
 
-**Step 3: Assign risk-point budgets per delegated agent.** Use risk points to cap the *type* and *count* of actions the child can perform. A refund agent with 25 risk points can issue one refund (20 points) and one CRM read (5 points) — then it's done.
+**Step 2: Allocate budgets at each agent scope via the Admin API.** Cycles budgets are independent at each scope level — they do not cascade. Set a `USD_MICROCENTS` budget and a `RISK_POINTS` budget at each agent scope, sized to the maximum the delegated agent should ever spend or do.
 
-**Step 4: Enforce depth in your orchestration logic.** Pass a `max_depth` counter that decrements at each delegation. At depth 0, the agent runs in terminal mode — no sub-agent creation.
+**Step 3: Reserve against the agent scope at delegation time.** Before spawning a child agent, call `create_reservation` with a `Subject` that includes the agent field. The reservation is checked atomically against every derived scope — both the agent-level and workflow-level budgets must have room.
 
-**Step 5: Release unused sub-budgets.** When a delegated agent completes, release its remaining reservation back to the parent scope. This prevents budget fragmentation across deep chains.
+**Step 4: Size risk-point budgets as action masks.** A refund agent with 25 risk points can issue one refund (20 points) and five CRM reads (5 × 1 point) — then every subsequent action is denied. The budget *is* the mask.
+
+**Step 5: Enforce depth in your orchestration logic.** Pass a `max_depth` counter that decrements at each delegation. At depth 0, the agent runs in terminal mode — no sub-agent creation. This is application logic, not a Cycles primitive, but it complements budget attenuation.
+
+**Step 6: Release unused reservations.** When a delegated agent completes, call `release` on its reservation to return unused budget to the pool at every affected scope. This prevents budget fragmentation across deep chains.
 
 ## The Monday morning takeaway
 
@@ -172,7 +201,7 @@ If you're building multi-agent systems, audit your delegation boundaries this we
 
 1. **Does the child agent get a smaller budget than the parent?** If not, a runaway child can drain the entire run.
 2. **Does the child agent have fewer action permissions than the parent?** If not, a compromised child can do everything the parent can.
-3. **Is there a hard depth limit enforced by the runtime — not by a prompt?** If not, recursive delegation can amplify any failure.
+3. **Is there a hard depth limit enforced by your orchestration logic — not by a prompt?** If not, recursive delegation can amplify any failure.
 
 If the answer to any of these is "no," you don't have a delegation chain — you have a trust propagation chain. And trust propagation chains are one prompt injection away from an incident.
 
