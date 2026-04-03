@@ -11,13 +11,13 @@ featured: true
 
 # Agent Delegation Chains Need Authority Attenuation, Not Trust Propagation
 
-A planning agent delegates a research task to a retrieval agent. The retrieval agent delegates a web search to a browsing agent. The browsing agent calls an API with the planning agent's full credentials, its entire budget, and permission to write to any tool the parent could access. Three hops in a multi-agent delegation chain, zero scope reduction. This is how most multi-agent systems work today — and it's why a single compromised sub-agent can drain your budget, exfiltrate data, or trigger actions the original user never authorized.
+A planning agent delegates a research task to a retrieval agent. The retrieval agent delegates a web search to a browsing agent. The browsing agent calls an API with the planning agent's full credentials, its entire budget, and permission to write to any tool the parent could access. Three hops in a multi-agent delegation chain, zero scope reduction. This is how most multi-agent systems work today — and it's why a single compromised sub-agent can drain your budget, exfiltrate data, or trigger actions the original user never authorized. The [documented incident patterns](/blog/state-of-ai-agent-incidents-2026) keep repeating: unchecked authority in delegation chains is the common thread.
 
 <!-- more -->
 
 Google DeepMind researchers proposed an [intelligent delegation framework](https://arxiv.org/abs/2602.11865) in February. CSA warned in March that [delegation chains multiply access](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) unless permissions are scoped. Microsoft shipped a [governance toolkit](https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/) this week with pre-execution policy checks. The gap is no longer awareness. The gap is runtime attenuation: no general-purpose enforcement primitive attenuates **budget, action scope, and delegation depth together** at every hop.
 
-That primitive is **authority attenuation**: every delegation boundary must narrow what the child agent can spend, do, and access — never widen it. Budget, action permissions, and data scope should decrease monotonically through the chain. This isn't a new idea in systems design (capability-based security has enforced it for decades), but the agent ecosystem hasn't assembled the pieces into a single enforcement pattern.
+That primitive is **authority attenuation**: every delegation boundary must narrow what the child agent can spend, do, and access — never widen it. Budget, action permissions, and data scope should decrease monotonically through the chain. If you're unfamiliar with the concept, [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) is the pre-execution control layer that decides whether an agent's next action proceeds. Authority attenuation extends that concept across delegation boundaries. This isn't a new idea in systems design (capability-based security has enforced it for decades), but the agent ecosystem hasn't assembled the pieces into a single enforcement pattern.
 
 ## Why delegation chains are an authority problem, not a trust problem
 
@@ -25,7 +25,7 @@ The industry frames multi-agent delegation as a trust question: *can I trust Age
 
 The real question is: *even if Agent B is perfectly trustworthy, what should it be allowed to do?*
 
-A trusted agent with excessive authority is still dangerous. It can be prompt-injected. Its tool calls can have unintended side effects. Its sub-agents can amplify a small permission into a large blast radius. Trust answers "who" — authority answers "what" and "how much."
+A trusted agent with excessive authority is still dangerous. It can be [prompt-injected via tool poisoning](/blog/mcp-tool-poisoning-why-agent-frameworks-cant-prevent-it). Its tool calls can have [unintended side effects](/blog/ai-agent-action-control-hard-limits-side-effects) that cost more than the tokens. Its sub-agents can amplify a small permission into a large blast radius. Trust answers "who" — authority answers "what" and "how much."
 
 Consider a customer support orchestrator that delegates to a refund agent:
 
@@ -163,9 +163,9 @@ Three architectural defaults push multi-agent systems toward full trust propagat
 
 **1. Credential inheritance.** Most frameworks pass the parent's API keys and tool credentials to child agents by default. LangChain's agent executor and CrewAI's task delegation inherit the parent's tool configuration wholesale. AutoGen supports per-agent tool configs, but scope narrowing is manual and opt-in — the default path is full inheritance. The child agent can typically call anything the parent can call.
 
-**2. No budget hierarchy.** Orchestration frameworks don't model budget as a hierarchical resource. There's no concept of "this sub-agent gets 10% of my remaining budget." Without hierarchical scoping, every agent in the chain competes for the same flat pool — or has no budget at all.
+**2. No budget hierarchy.** Orchestration frameworks don't model budget as a hierarchical resource. There's no concept of "this sub-agent gets 10% of my remaining budget." Without hierarchical scoping, every agent in the chain competes for the same flat pool — or has no budget at all. We covered the framework-specific gaps in [multi-agent budget control for CrewAI, AutoGen, and OpenAI Agents SDK](/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk).
 
-**3. Depth is implicit.** Delegation depth is controlled by prompt instructions ("do not delegate this task further"), not by runtime enforcement. Prompt-based depth limits fail the moment a sub-agent is jailbroken or encounters an edge case the prompt didn't anticipate.
+**3. Depth is implicit.** Delegation depth is controlled by prompt instructions ("do not delegate this task further"), not by runtime enforcement. Prompt-based depth limits fail the moment a sub-agent is jailbroken or encounters an edge case the prompt didn't anticipate. The result is [cascading failures that compound through each layer](/blog/why-multi-agent-systems-fail-87-percent-cost-of-every-coordination-breakdown), turning a $3 run into a $40 recovery sequence.
 
 Microsoft's new Agent Governance Toolkit addresses credential scoping and action policies, but delegates budget enforcement to external systems. DeepMind's delegation framework is a theoretical model without runtime primitives. The CSA's recommendations are policy guidance without enforcement code. Each piece is necessary; none is sufficient alone.
 
@@ -189,7 +189,7 @@ Use `dimensions` for per-run isolation (e.g. `{"run": "ticket-4821"}`).
 
 **Step 3: Reserve against the agent scope at delegation time.** Before spawning a child agent, call `create_reservation` with a `Subject` that includes the agent field. The reservation is checked atomically against every derived scope — both the agent-level and workflow-level budgets must have room.
 
-**Step 4: Size risk-point budgets as action masks.** A refund agent with 25 risk points can issue one refund (20 points) and five CRM reads (5 × 1 point) — then every subsequent action is denied. The budget *is* the mask.
+**Step 4: Size risk-point budgets as action masks.** Use a [risk assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) to score each tool by blast radius, then allocate risk points accordingly. A refund agent with 25 risk points can issue one refund (20 points) and five CRM reads (5 × 1 point) — then every subsequent action is denied. The budget *is* the mask.
 
 **Step 5: Enforce depth in your orchestration logic.** Pass a `max_depth` counter that decrements at each delegation. At depth 0, the agent runs in terminal mode — no sub-agent creation. This is application logic, not a Cycles primitive, but it complements budget attenuation.
 
@@ -199,7 +199,7 @@ Use `dimensions` for per-run isolation (e.g. `{"run": "ticket-4821"}`).
 
 If you're building multi-agent systems, audit your delegation boundaries this week. Ask three questions at every point where one agent spawns or calls another:
 
-1. **Does the child agent get a smaller budget than the parent?** If not, a runaway child can drain the entire run.
+1. **Does the child agent get a smaller budget than the parent?** If not, a [runaway child can drain the entire run](/blog/runaway-demo-agent-cost-blowup-walkthrough).
 2. **Does the child agent have fewer action permissions than the parent?** If not, a compromised child can do everything the parent can.
 3. **Is there a hard depth limit enforced by your orchestration logic — not by a prompt?** If not, recursive delegation can amplify any failure.
 
