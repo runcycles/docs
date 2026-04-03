@@ -59,7 +59,7 @@ client = CyclesClient(CyclesConfig.from_env())
 orchestrator_res = client.create_reservation(ReservationCreateRequest(
     idempotency_key=str(uuid.uuid4()),
     subject=Subject(tenant="acme-corp", workflow="support"),
-    amount=Amount(value=50_000_000, unit=Unit.USD_MICROCENTS),  # $50.00
+    estimate=Amount(unit=Unit.USD_MICROCENTS, amount=50_000_000),  # $50.00
 ))
 
 # Delegate to refund agent — a SEPARATE reservation on a narrower scope.
@@ -73,7 +73,7 @@ refund_res = client.create_reservation(ReservationCreateRequest(
         agent="refund",
         dimensions={"run": "ticket-4821"},
     ),
-    amount=Amount(value=5_000_000, unit=Unit.USD_MICROCENTS),  # $5.00
+    estimate=Amount(unit=Unit.USD_MICROCENTS, amount=5_000_000),  # $5.00
 ))
 
 # The refund agent's world is bounded by BOTH its agent-level budget ($5)
@@ -85,36 +85,42 @@ The key concept: Cycles budgets are **independent at each scope level** — they
 
 ### 2. Action masks
 
-Budget attenuation caps spend. Action masks cap capability. At each delegation boundary, the parent defines which tool calls the child is allowed to make and with what parameters.
+Budget attenuation caps spend. Action masks cap capability. At each delegation boundary, the parent defines which categories of tool calls the child is allowed to make.
+
+Cycles supports this through [**toolset-scoped budgets**](/concepts/action-authority-controlling-what-agents-do) — separate `RISK_POINTS` allocations for different tool categories within the same agent:
 
 ```python
-from runcycles import Action, Amount, Unit
+# The refund agent gets TWO toolset-scoped RISK_POINTS budgets via Admin API:
+#   tenant:acme-corp/workflow:support/agent:refund/toolset:refund  → 20 RISK_POINTS
+#   tenant:acme-corp/workflow:support/agent:refund/toolset:crm     → 5 RISK_POINTS
+#   tenant:acme-corp/workflow:support/agent:refund/toolset:email   → 0 (no budget)
 
-# Orchestrator's action authority: full support toolkit
-# Each tool call reserves risk points against the workflow scope budget
-orchestrator_action = Action(kind="tool.call", name="crm.read")  # 1 risk point
-# Also: crm.write (5), email.send (10), refund.issue (20)
-
-# Delegated agent: allocate a RISK_POINTS budget at the agent scope
-# that only accommodates the allowed action mix.
-# Admin API: PUT budget at tenant:acme-corp/workflow:support/agent:refund
-#   → 25 RISK_POINTS (enough for 1× refund.issue + 5× crm.read)
-
-# When the refund agent reserves for a tool call:
-refund_action_res = client.create_reservation(ReservationCreateRequest(
+# When the refund agent issues a refund:
+refund_res = client.create_reservation(ReservationCreateRequest(
     idempotency_key=str(uuid.uuid4()),
-    subject=Subject(tenant="acme-corp", workflow="support", agent="refund"),
-    amount=Amount(value=20, unit=Unit.RISK_POINTS),
+    subject=Subject(
+        tenant="acme-corp", workflow="support",
+        agent="refund", toolset="refund",
+    ),
+    estimate=Amount(unit=Unit.RISK_POINTS, amount=20),
     action=Action(kind="tool.call", name="refund.issue"),
 ))
-# ✅ Allowed — 20 risk points within the 25-point budget
+# ✅ Allowed — 20 risk points within the refund toolset's budget
 
-# If the refund agent tries email.send (not in its risk budget design):
-# The agent scope only has 5 remaining risk points after the refund.
-# email.send needs 10 → DENIED before execution.
+# When the refund agent tries to send an email:
+email_res = client.create_reservation(ReservationCreateRequest(
+    idempotency_key=str(uuid.uuid4()),
+    subject=Subject(
+        tenant="acme-corp", workflow="support",
+        agent="refund", toolset="email",
+    ),
+    estimate=Amount(unit=Unit.RISK_POINTS, amount=10),
+    action=Action(kind="tool.call", name="email.send"),
+))
+# ❌ DENIED — no RISK_POINTS budget allocated at the email toolset scope
 ```
 
-With Cycles' [risk-point budgets](/concepts/action-authority-controlling-what-agents-do), the child scope's `RISK_POINTS` allocation acts as an action mask. You size the allocation to fit exactly the actions the delegated agent should perform. Any action outside that envelope exhausts the budget and is denied — no allowlist configuration needed, just arithmetic.
+The toolset scope gives you a true action mask: the refund agent has budget on `toolset:refund` and `toolset:crm`, but zero on `toolset:email`. It doesn't matter how many risk points remain overall — the email toolset has no allocation, so `email.send` is denied unconditionally. For constraints at the parameter level (e.g. "refund ≤ $100"), add validation in your orchestration or policy layer — Cycles enforces the category boundary, your code enforces the business rule.
 
 ### 3. Depth limits
 
@@ -138,8 +144,8 @@ flowchart TD
     U[User Request] --> O[Orchestrator Agent]
     O -->|"reserve $50, depth=3"| CB[Cycles Budget]
 
-    O -->|"sub-budget: $5<br/>actions: crm.read, refund ≤$100<br/>depth=1"| RA[Refund Agent]
-    O -->|"sub-budget: $2<br/>actions: crm.read<br/>depth=0"| LA[Lookup Agent]
+    O -->|"sub-budget: $5<br/>toolsets: crm, refund<br/>depth=1"| RA[Refund Agent]
+    O -->|"sub-budget: $2<br/>toolsets: crm<br/>depth=0"| LA[Lookup Agent]
 
     RA -->|"reserve $5 on child scope"| CB
     LA -->|"reserve $2 on child scope"| CB
@@ -161,7 +167,7 @@ The orchestrator holds the total budget. Each delegated agent gets a carved sub-
 
 Three architectural defaults push multi-agent systems toward full trust propagation:
 
-**1. Credential inheritance.** Most frameworks pass the parent's API keys and tool credentials to child agents by default. LangChain's agent executor and CrewAI's task delegation inherit the parent's tool configuration wholesale. AutoGen supports per-agent tool configs, but scope narrowing is manual and opt-in — the default path is full inheritance. The child agent can typically call anything the parent can call.
+**1. Credential inheritance.** Multi-agent frameworks make broad delegation easy; least-privilege narrowing is something you must design explicitly. LangChain, CrewAI, and AutoGen all support per-agent tool configuration, but the path of least resistance is to pass the parent's full tool set to child agents. Dynamic tool switching exists — you *can* restrict what a sub-agent sees — but nothing in these frameworks enforces that you *do*.
 
 **2. No budget hierarchy.** Orchestration frameworks don't model budget as a hierarchical resource. There's no concept of "this sub-agent gets 10% of my remaining budget." Without hierarchical scoping, every agent in the chain competes for the same flat pool — or has no budget at all. We covered the framework-specific gaps in [multi-agent budget control for CrewAI, AutoGen, and OpenAI Agents SDK](/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk).
 
@@ -189,7 +195,7 @@ Use `dimensions` for per-run isolation (e.g. `{"run": "ticket-4821"}`).
 
 **Step 3: Reserve against the agent scope at delegation time.** Before spawning a child agent, call `create_reservation` with a `Subject` that includes the agent field. The reservation is checked atomically against every derived scope — both the agent-level and workflow-level budgets must have room.
 
-**Step 4: Size risk-point budgets as action masks.** Use a [risk assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) to score each tool by blast radius, then allocate risk points accordingly. A refund agent with 25 risk points can issue one refund (20 points) and five CRM reads (5 × 1 point) — then every subsequent action is denied. The budget *is* the mask.
+**Step 4: Use toolset-scoped budgets as action masks.** Use a [risk assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) to score each tool category by blast radius. Allocate `RISK_POINTS` budgets at `toolset` scopes — the refund agent gets budget on `toolset:refund` and `toolset:crm`, but zero on `toolset:email`. No budget at a toolset scope means no actions in that category, period.
 
 **Step 5: Enforce depth in your orchestration logic.** Pass a `max_depth` counter that decrements at each delegation. At depth 0, the agent runs in terminal mode — no sub-agent creation. This is application logic, not a Cycles primitive, but it complements budget attenuation.
 
