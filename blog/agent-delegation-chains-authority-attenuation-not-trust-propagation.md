@@ -6,7 +6,7 @@ tags: [delegation, multi-agent, governance, runtime-authority, zero-trust, secur
 description: "Multi-agent delegation chains propagate full trust by default. Every hop should narrow budget, actions, and scope. Here's the authority attenuation pattern."
 blog: true
 sidebar: false
-featured: true
+featured: false
 ---
 
 # Agent Delegation Chains Need Authority Attenuation, Not Trust Propagation
