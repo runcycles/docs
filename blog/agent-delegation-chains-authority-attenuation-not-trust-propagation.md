@@ -1,6 +1,6 @@
 ---
 title: "Agent Delegation Chains Need Authority Attenuation, Not Trust Propagation"
-date: 2026-04-03
+date: 2026-04-04
 author: Albert Mavashev
 tags: [delegation, multi-agent, governance, runtime-authority, zero-trust, security, architecture]
 description: "Multi-agent delegation chains propagate full trust by default. Every hop should narrow budget, actions, and scope. Here's the authority attenuation pattern."
