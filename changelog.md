@@ -124,7 +124,7 @@ The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVA
 | `runcycles` (TypeScript) | 0.2.0 | v0.1.23+, v0.1.24+ |
 | `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+ |
 | `@runcycles/mcp-server` | 0.2.0 | v0.1.23+, v0.1.24+ |
-| `@runcycles/openclaw-budget-guard` | 0.2.0 | v0.1.23+, v0.1.24+ |
+| `@runcycles/openclaw-budget-guard` | 0.8.1 | v0.1.23+, v0.1.24+ |
 | Cycles Server | v0.1.24 | Protocol v0.1.24 |
 | Cycles Admin Server | v0.1.24 | Protocol v0.1.24 |
 
