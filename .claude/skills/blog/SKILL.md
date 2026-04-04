@@ -1,7 +1,7 @@
 ---
 name: blog
 description: Draft, review, and publish a blog post for runcycles.io with full review cycles, SEO, fact-checking, and external research
-user_invocable: true
+user-invocable: true
 ---
 
 # Blog Post Workflow
