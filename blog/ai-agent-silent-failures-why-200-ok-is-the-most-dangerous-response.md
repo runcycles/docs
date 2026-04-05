@@ -103,7 +103,7 @@ Agent decides → Checkpoint evaluates → Action proceeds (or is blocked)
 
 Each checkpoint creates three things that combat silent failures:
 
-1. **A forced evaluation point** — Before every LLM call, tool invocation, or side effect, the system asks: "Does this action fit within the budget and policy for this run?" This doesn't catch all semantic errors, but it catches the structural ones: unexpected fan-outs, context growth indicating a loop, actions against the wrong scope.
+1. **A forced evaluation point** — Before every LLM call, tool invocation, or side effect, the system asks: "Does this action fit within the budget and policy for this run?" This doesn't catch all semantic errors, but it catches the structural ones: unexpected [fan-outs](/glossary#fan-out), context growth indicating a loop, actions against the wrong scope.
 
 2. **A cost signal for anomaly detection** — Silent failures often have a distinct cost signature. A fabricated tool output costs nothing (no actual API call). A context-loss handoff shows a sudden drop in token usage. A looping agent shows monotonically increasing per-step costs. When you track the _economics_ of every step, anomalies that are invisible in logs become obvious in the spend pattern.
 
@@ -166,14 +166,14 @@ An agent that's working correctly has a predictable cost pattern: consistent per
 | Silent failure type | Cost anomaly signal |
 |---|---|
 | Fabricated tool output | Zero cost for steps that should have external API costs |
-| Context loss / truncation | Sudden drop in input tokens compared to previous steps |
+| Context loss / truncation | Sudden drop in input [tokens](/glossary#tokens) compared to previous steps |
 | Infinite reasoning loop | Monotonically increasing per-step cost (growing context) |
-| Wrong tool selection | Unexpected action kind in the reservation |
+| Wrong tool selection | Unexpected action kind in the [reservation](/glossary#reservation) |
 | Hallucinated completion | Missing commit for reserved steps (agent skipped execution) |
 
 None of these signals are guaranteed catches. But they're signals that _don't exist_ in architectures without per-step checkpoints. And they're automatically generated — no extra instrumentation, no custom logging, no manual review. Every reserve-commit cycle produces the data needed to detect anomalies.
 
-Combined with [per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) that cap total exposure and [atomic reservations](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) that prevent concurrent agents from racing past limits, the checkpoint pattern creates defense in depth against both loud failures (budget exceeded) and quiet ones (cost anomaly detected).
+Combined with [per-run budgets](/blog/ai-agent-budget-control-enforce-hard-spend-limits) that cap total [exposure](/glossary#exposure) and [atomic reservations](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) that prevent concurrent agents from racing past limits, the checkpoint pattern creates defense in depth against both loud failures (budget exceeded) and quiet ones (cost anomaly detected).
 
 ## What To Do Next
 

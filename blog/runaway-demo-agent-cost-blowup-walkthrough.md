@@ -10,7 +10,7 @@ sidebar: false
 
 # Your AI Agent Just Burned $6 in 30 Seconds — Here's the Three-Line Fix
 
-A customer support bot drafts a response, evaluates its quality, and refines it in a loop until the score exceeds 8.0. The bug: the quality evaluator never returns above 6.9. Without a budget boundary, the agent loops for 30 seconds — ~595 calls, ~$5.95 — before a safety timeout kills it. In production, there would be no timeout. With Cycles, the same agent stops cleanly at exactly $1.00 after ~100 calls. The Cycles server returns `409 BUDGET_EXCEEDED`, the decorator raises an exception, and the agent exits gracefully. No call is wasted past the limit.
+A customer support bot drafts a response, evaluates its quality, and refines it in a loop until the score exceeds 8.0. The bug: the quality evaluator never returns above 6.9. Without a budget boundary, the agent loops for 30 seconds — ~595 calls, ~$5.95 — before a safety timeout kills it. In production, there would be no timeout. With Cycles, the same agent stops cleanly at exactly $1.00 after ~100 calls. The [Cycles server](/glossary#cycles-server) returns `409 BUDGET_EXCEEDED`, the decorator raises an exception, and the agent exits gracefully. No call is wasted past the limit.
 
 The LLM calls in this demo are simulated. No API key is required. The budget enforcement is real. This post walks through the [runaway demo](https://github.com/runcycles/cycles-runaway-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
@@ -153,7 +153,7 @@ Three decorators. One except. The loop logic, the simulation functions, the disp
 
 ## How the budget hierarchy works
 
-The Cycles scope hierarchy for this demo is a straight line from tenant to agent:
+The Cycles scope hierarchy for this demo is a straight line from [tenant](/glossary#tenant) to agent:
 
 ```
 tenant:demo-tenant                                    [$1.00]
@@ -181,7 +181,7 @@ for SCOPE in \
 done
 ```
 
-When the `@cycles` decorator calls `POST /v1/reservations`, the server walks from the agent scope up to the tenant root, checking each ancestor's budget. If any scope is exhausted, the server returns `409 BUDGET_EXCEEDED` and the reservation is denied. No partial execution. No overrun.
+When the `@cycles` decorator calls `POST /v1/reservations`, the server walks from the agent scope up to the tenant root, checking each ancestor's budget. If any scope is exhausted, the server returns `409 BUDGET_EXCEEDED` and the [reservation](/glossary#reservation) is denied. No partial execution. No overrun.
 
 In this demo every scope has the same $1.00 limit, so the agent-level budget is the binding constraint. In production, you would set different limits at different levels — a $1.00 per-run budget at the agent level, a $50/day budget at the workspace level, and a $500/month budget at the tenant level. The server enforces whichever limit is hit first.
 
@@ -217,11 +217,11 @@ The `both` mode runs the unguarded agent first, then the guarded agent, back to 
 
 ## Next steps
 
-This demo shows budget enforcement for a single agent in a refinement loop. The same mechanism works for fan-out patterns, multi-agent pipelines, retry storms, and any other scenario where cost accumulates faster than a human can react.
+This demo shows budget enforcement for a single agent in a refinement loop. The same mechanism works for [fan-out](/glossary#fan-out) patterns, multi-agent pipelines, [retry storms](/glossary#retry-storm), and any other scenario where cost accumulates faster than a human can react.
 
 For the cost math and failure modes behind this demo:
 - [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents) — real-world costs when agents run without budget limits
-- [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — the infinite tool loop scenario this demo reproduces
+- [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — the infinite [tool loop](/glossary#tool-loop) scenario this demo reproduces
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — the reserve-commit pattern under the hood
 - [Runaway Agents: Tool Loops and Budget Overruns](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — detailed incident patterns for the six failure modes Cycles prevents
 

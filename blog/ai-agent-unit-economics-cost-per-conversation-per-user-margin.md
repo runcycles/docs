@@ -67,13 +67,13 @@ Four metrics every team running AI features should track:
 
 **1. Cost per unit of work.** For a support copilot, this is cost per conversation. For a code review agent, cost per pull request. Track the median, P90, P95, and P99 — not just the average. The average masks the tail.
 
-**2. Cost per active user per month.** Total spend attributed to a user divided by one month. Break this out by percentile: what does your P50 user cost? Your P90? Your P99? The gap between P50 and P99 is your variance exposure.
+**2. Cost per active user per month.** Total spend attributed to a user divided by one month. Break this out by percentile: what does your P50 user cost? Your P90? Your P99? The gap between P50 and P99 is your variance [exposure](/glossary#exposure).
 
 **3. Variance ratio (P95/Median).** A single number that captures how fat the tail is. If P95/Median < 5, your pricing model can rely on averages. If P95/Median > 10, averages are misleading and you need per-user budget enforcement.
 
 **4. Margin per user cohort.** Revenue minus cost, grouped by usage tier. This reveals whether your product is profitable for all users or subsidized by light users to cover heavy ones.
 
-Cycles' `Subject` hierarchy maps directly to these metrics. Each reservation and commit is tagged with a subject — tenant, workflow, agent — so cost attribution is structural, not inferred from API logs after the fact.
+Cycles' `Subject` hierarchy maps directly to these metrics. Each [reservation](/glossary#reservation) and commit is tagged with a subject — [tenant](/glossary#tenant), workflow, agent — so cost attribution is structural, not inferred from API logs after the fact.
 
 ```python
 from runcycles import CyclesClient, CyclesConfig, Subject
@@ -102,7 +102,7 @@ Three enforcement strategies, each mapped to margin impact:
 
 **Per-conversation cap.** Set a $2.00 hard limit per conversation. Conversations that would have cost $0.45 (P90) pass through unaffected, but the $3.80 outliers (P99) are capped. The agent degrades gracefully — shorter responses, cheaper model fallback, or an explicit "I've reached my limit for this conversation, please start a new one" message. The tail is cut.
 
-**Per-user monthly cap.** Set a $15.00/month ceiling per user — matching the price point. Users who would have cost $80/month are bounded. The feature becomes profitable for every user, by definition. This is the same pattern used in [multi-tenant AI cost control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) for per-tenant isolation.
+**Per-user monthly cap.** Set a $15.00/month ceiling per user — matching the price point. Users who would have cost $80/month are bounded. The feature becomes profitable for every user, by definition. This is the same pattern used in [multi-tenant AI cost control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) for per-[tenant isolation](/glossary#tenant-isolation).
 
 **Tiered budgets by plan.** Free users get $2/month in agent budget. Pro users get $20/month. Enterprise gets custom limits. The budget enforcement implements the pricing model directly — the hard limit and the price point are the same number.
 
@@ -124,7 +124,7 @@ Token pricing is an engineering metric. Cost per conversation is a business KPI.
 
 **Feature-level P&L.** Treat the AI copilot as its own cost center. Track cost per conversation as COGS. Monitor margin weekly. Set alerts when margin drops below threshold. This is [Tier 3 of the cost management maturity model](/blog/ai-agent-cost-management-guide) — alerting on business metrics, not just raw spend.
 
-**Model routing by economics.** Route simple conversations to GPT-4o-mini ($0.15/1M input tokens) and complex conversations to GPT-4o ($2.50/1M input tokens). The routing decision is economic, not just capability-based. A simple "what's my order status?" query does not need a $2.50/1M-token model. A complex debugging session does. [Routing and enforcement complement each other](/blog/manifest-vs-cycles-routing-vs-runtime-authority) — the router picks the model, the runtime authority bounds the cost.
+**Model routing by economics.** Route simple conversations to GPT-4o-mini ($0.15/1M input [tokens](/glossary#tokens)) and complex conversations to GPT-4o ($2.50/1M input tokens). The routing decision is economic, not just capability-based. A simple "what's my order status?" query does not need a $2.50/1M-token model. A complex debugging session does. [Routing and enforcement complement each other](/blog/manifest-vs-cycles-routing-vs-runtime-authority) — the router picks the model, the [runtime authority](/glossary#runtime-authority) bounds the cost.
 
 ## From cost visibility to cost control
 

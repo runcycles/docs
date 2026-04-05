@@ -57,8 +57,8 @@ We added 9 new integration guides, bringing the total from 17 to 26:
 
 | Framework | Language | What's new |
 |-----------|----------|------------|
-| [Next.js](/how-to/integrating-cycles-with-nextjs) | TypeScript | **New** — route-level guards, server actions, per-tenant isolation |
-| [Django](/how-to/integrating-cycles-with-django) | Python | **New** — middleware, exception handling, per-tenant budget dashboard |
+| [Next.js](/how-to/integrating-cycles-with-nextjs) | TypeScript | **New** — route-level guards, server actions, per-[tenant isolation](/glossary#tenant-isolation) |
+| [Django](/how-to/integrating-cycles-with-django) | Python | **New** — middleware, exception handling, per-[tenant](/glossary#tenant) budget dashboard |
 | [Flask](/how-to/integrating-cycles-with-flask) | Python | **New** — error handlers, `before_request` preflight |
 | [Express](/how-to/integrating-cycles-with-express) | TypeScript | — |
 | [FastAPI](/how-to/integrating-cycles-with-fastapi) | Python | — |
@@ -67,9 +67,9 @@ We added 9 new integration guides, bringing the total from 17 to 26:
 
 ### Action authority across frameworks
 
-Every integration enforces the same principle: **no agent action executes without authorization**. Whether it's an LLM call in LangGraph, a tool invocation in AutoGen, or an API request in a Django endpoint — the reservation happens before the action, not after.
+Every integration enforces the same principle: **no agent action executes without authorization**. Whether it's an LLM call in LangGraph, a tool invocation in AutoGen, or an API request in a Django endpoint — the [reservation](/glossary#reservation) happens before the action, not after.
 
-This matters beyond cost. The same protocol that prevents a $50 runaway spend also prevents an agent from sending 200 emails, hitting a rate-limited API in a retry loop, or executing a high-risk tool without approval. The [OpenAI Agents guide](/how-to/integrating-cycles-with-openai-agents) maps tool estimates to budget — `send_email` reserves 50 RISK_POINTS per call while `search_knowledge` uses zero. The budget authority decides which actions are cheap and which are expensive.
+This matters beyond cost. The same protocol that prevents a $50 runaway spend also prevents an agent from sending 200 emails, hitting a rate-limited API in a retry loop, or executing a high-risk tool without approval. The [OpenAI Agents guide](/how-to/integrating-cycles-with-openai-agents) maps tool estimates to budget — `send_email` reserves 50 [RISK_POINTS](/glossary#risk-points) per call while `search_knowledge` uses zero. The [budget authority](/glossary#budget-authority) decides which actions are cheap and which are expensive.
 
 ### Graceful degradation with model downgrade
 
@@ -91,11 +91,11 @@ The agent keeps working. The user still gets an answer. The authority boundary h
 
 Beyond integrations, we shipped a comprehensive [Multi-Tenant SaaS Guide](/how-to/multi-tenant-saas-with-cycles) — the single most-requested doc.
 
-It covers the full lifecycle of per-customer runtime authority:
+It covers the full lifecycle of per-customer [runtime authority](/glossary#runtime-authority):
 - **Customer onboarding** — automated tenant + API key + budget creation
 - **Plan tiers** — Free ($5/mo), Pro ($50/mo), Enterprise ($500/mo) with overdraft limits
 - **Per-tenant isolation** — one customer's runaway agent cannot affect others
-- **Graceful degradation** — upgrade prompts, model downgrade, feature disabling
+- **[Graceful degradation](/glossary#graceful-degradation)** — upgrade prompts, model downgrade, feature disabling
 - **Tenant suspension** — ACTIVE → SUSPENDED → CLOSED lifecycle
 
 Each customer gets independent spend limits, action boundaries, and risk controls — all enforced at the protocol level with cryptographic tenant isolation.

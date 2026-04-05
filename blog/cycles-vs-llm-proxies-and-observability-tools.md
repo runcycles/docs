@@ -10,11 +10,11 @@ sidebar: false
 
 # Cycles vs LLM Proxies and Observability Tools: Where Budget Enforcement Fits
 
-A platform team runs autonomous agents in production. They have a solid stack: LiteLLM routes model calls across OpenAI and Anthropic with automatic fallback. Langfuse traces every request with per-model cost attribution. Provider caps are set at $10,000 per month as a safety net.
+A platform team runs [autonomous agents](/glossary#autonomous-agent) in production. They have a solid stack: LiteLLM routes model calls across OpenAI and Anthropic with automatic fallback. Langfuse traces every request with per-model cost attribution. Provider caps are set at $10,000 per month as a safety net.
 
 <!-- more -->
 
-On Friday afternoon, a customer's document-processing agent enters a tool loop. It calls the LLM, parses the response, calls a tool, gets an error, and retries — hundreds of times.
+On Friday afternoon, a customer's document-processing agent enters a [tool loop](/glossary#tool-loop). It calls the LLM, parses the response, calls a tool, gets an error, and retries — hundreds of times.
 
 LiteLLM routes every call faithfully. That is its job.
 
@@ -26,7 +26,7 @@ By Monday morning, the agent has made 4,700 calls and consumed $2,800. The team 
 
 Every tool in the stack worked exactly as designed. None of them prevented the overspend.
 
-The missing layer was not routing or visibility. It was **runtime authority** — a pre-execution decision about whether the next action should proceed given the remaining budget.
+The missing layer was not routing or visibility. It was **[runtime authority](/glossary#runtime-authority)** — a pre-execution decision about whether the next action should proceed given the remaining budget.
 
 ## Three layers, three questions
 
@@ -70,13 +70,13 @@ The gap appears when you need to **enforce** a budget, not just **track** spend.
 
 **Proxies only see model calls.** An autonomous agent does more than call LLMs. It invokes tools, writes to databases, sends emails, makes API requests, and triggers deployments. A proxy sitting between the app and the model provider has no visibility into these non-LLM actions. If your agent's tool calls cost money — and they often do — the proxy cannot meter them.
 
-**Proxies report after the call completes.** The model call happens. Tokens are consumed. The proxy logs the cost. This is useful for dashboards but cannot prevent the call from happening. By the time the proxy records the expense, the money is already spent.
+**Proxies report after the call completes.** The model call happens. [Tokens](/glossary#tokens) are consumed. The proxy logs the cost. This is useful for dashboards but cannot prevent the call from happening. By the time the proxy records the expense, the money is already spent.
 
-**No atomic budget reservations.** When ten agents share a $100 budget and make concurrent calls, a proxy cannot atomically check-and-decrement the remaining balance. Each call proceeds independently. The total can exceed the budget before any individual call sees the overrun.
+**No atomic budget [reservations](/glossary#reservation).** When ten agents share a $100 budget and make concurrent calls, a proxy cannot atomically check-and-decrement the remaining balance. Each call proceeds independently. The total can exceed the budget before any individual call sees the overrun.
 
-**No hierarchical scopes.** Proxies track spend per API key or per model. They cannot enforce limits at the level your business actually needs: per tenant, per workspace, per workflow, per run. If three tenants share the same API key, the proxy cannot distinguish their budgets.
+**No hierarchical scopes.** Proxies track spend per API key or per model. They cannot enforce limits at the level your business actually needs: per [tenant](/glossary#tenant), per workspace, per workflow, per run. If three tenants share the same API key, the proxy cannot distinguish their budgets.
 
-**No degradation signals.** A proxy can route to a cheaper model when the primary is unavailable. It cannot tell the agent "you are at 80% of your budget — skip the enrichment step and return a basic response." That three-way decision (allow, cap, deny) requires budget awareness that proxies do not have.
+**No degradation signals.** A proxy can route to a cheaper model when the primary is unavailable. It cannot tell the agent "you are at 80% of your budget — skip the enrichment step and return a basic response." That [three-way decision](/glossary#three-way-decision) (allow, cap, deny) requires budget awareness that proxies do not have.
 
 ### Comparison
 
@@ -89,7 +89,7 @@ The gap appears when you need to **enforce** a budget, not just **track** spend.
 | Non-LLM action coverage | ✗ | ✅ (tools, APIs, any action) |
 | Atomic reservations | ✗ | ✅ |
 | Per-tenant / per-agent scopes | ✗ | ✅ |
-| Graceful degradation | ◐ (model fallback only) | ✅ (three-way decision) |
+| [Graceful degradation](/glossary#graceful-degradation) | ◐ (model fallback only) | ✅ (three-way decision) |
 | Caching | ✅ | ✗ |
 | Concurrency-safe accounting | ✗ | ✅ |
 

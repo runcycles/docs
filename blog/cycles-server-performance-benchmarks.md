@@ -56,7 +56,7 @@ For context, a typical LLM API call takes 500ms-30s depending on the model and t
 
 If you just need a quick budget check without reserving (e.g., pre-flight check in a UI), **Decide** gives you a yes/no answer in ~5.5ms.
 
-**Events** (direct debit without reservation) are 5.2ms p50 — useful for logging post-hoc usage where you don't need the reserve-commit guarantee.
+**Events** (direct debit without [reservation](/glossary#reservation)) are 5.2ms p50 — useful for logging post-hoc usage where you don't need the reserve-commit guarantee.
 
 ## Read-Path Latency
 
@@ -156,7 +156,7 @@ Every mutation response includes current balance snapshots for all affected scop
 
 ### Tenant config: in-memory cache
 
-Tenant configuration (default TTLs, overage policies, extension limits) is cached in-memory with a 60s TTL. Config changes propagate within a minute without restart.
+[Tenant](/glossary#tenant) configuration (default TTLs, overage policies, extension limits) is cached in-memory with a 60s TTL. Config changes propagate within a minute without restart.
 
 ### Event emission: async and off the hot path
 
@@ -192,15 +192,15 @@ A full reserve-commit lifecycle adds ~15ms (p50) to your agent's LLM call. Since
 
 ### Does Cycles scale horizontally?
 
-The Cycles server is stateless — all state lives in Redis. You can run multiple server instances behind a load balancer. Redis itself can be scaled with Redis Cluster for sharding across multiple nodes. Our benchmarks show a single instance handling 2,870+ complete lifecycles per second.
+The [Cycles server](/glossary#cycles-server) is stateless — all state lives in Redis. You can run multiple server instances behind a load balancer. Redis itself can be scaled with Redis Cluster for sharding across multiple nodes. Our benchmarks show a single instance handling 2,870+ complete lifecycles per second.
 
 ### What happens if the Cycles server is slow or unavailable?
 
-The protocol is designed for the [reserve-commit pattern](/protocol/how-reserve-commit-works-in-cycles). If a reserve call is slow, the agent waits before making the LLM call (fail-safe). If the server is unavailable, the reserve fails and the agent doesn't proceed — preventing uncontrolled spend. Commits and events can be retried with idempotency keys. Read-only endpoints (balance checks, reservation lookups) are the fastest at 2.8-3.5ms and can be used for status dashboards without concern.
+The protocol is designed for the [reserve-commit pattern](/protocol/how-reserve-commit-works-in-cycles). If a reserve call is slow, the agent waits before making the LLM call (fail-safe). If the server is unavailable, the reserve fails and the agent doesn't proceed — preventing uncontrolled spend. Commits and events can be retried with [idempotency keys](/glossary#idempotency-key). Read-only endpoints (balance checks, reservation lookups) are the fastest at 2.8-3.5ms and can be used for status dashboards without concern.
 
 ### How does this compare to LLM proxy approaches?
 
-LLM proxies add latency on every token streamed. Cycles operates at the action level — one reserve before the call, one commit after — so latency scales with the number of agent actions, not the number of tokens. For a 10,000-token completion, a proxy adds overhead to every chunk; Cycles adds two calls totaling ~15ms.
+LLM proxies add latency on every token streamed. Cycles operates at the action level — one reserve before the call, one commit after — so latency scales with the number of agent actions, not the number of [tokens](/glossary#tokens). For a 10,000-token completion, a proxy adds overhead to every chunk; Cycles adds two calls totaling ~15ms.
 
 ---
 

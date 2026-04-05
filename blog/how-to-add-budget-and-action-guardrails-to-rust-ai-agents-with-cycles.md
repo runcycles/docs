@@ -15,10 +15,10 @@ A retry loop on a Rust agent service hit a transient 503 from the LLM provider. 
 
 <!-- more -->
 
-This is the gap that Cycles fills. It's not just a billing meter — it's a **runtime authority** for both **budget** and **action control**. Before an agent calls an LLM, Cycles answers two questions:
+This is the gap that Cycles fills. It's not just a billing meter — it's a **[runtime authority](/glossary#runtime-authority)** for both **budget** and **action control**. Before an agent calls an LLM, Cycles answers two questions:
 
 1. **Budget:** Does this agent have enough budget for this operation?
-2. **Action:** Is this agent *allowed* to take this action right now? (Which tools? How many tokens? How many steps remaining? Is there a cooldown?)
+2. **Action:** Is this agent *allowed* to take this action right now? (Which tools? How many [tokens](/glossary#tokens)? How many steps remaining? Is there a cooldown?)
 
 The server returns either ALLOW, ALLOW_WITH_CAPS (proceed but with constraints), or DENY — and the client enforces it before the expensive call happens.
 
@@ -33,7 +33,7 @@ But until now, Rust had no budget enforcement library for agent runtimes. Python
 The `runcycles` crate closes this gap with an API that leverages Rust's type system to provide guarantees the other languages can't:
 
 - **`commit(self)` consumes the guard** — double-commit is a compile error, not a runtime check
-- **`#[must_use]`** — the compiler warns if you forget to handle a reservation
+- **`#[must_use]`** — the compiler warns if you forget to handle a [reservation](/glossary#reservation)
 - **`Drop` safety** — an unfinalized guard auto-releases budget via `tokio::spawn`
 - **Newtype IDs** — `ReservationId` and `IdempotencyKey` can't be mixed up
 
@@ -83,7 +83,7 @@ let reply = with_cycles(
 
 What happens under the hood:
 
-1. `with_cycles` reserves 1000 tokens on the Cycles server
+1. `with_cycles` reserves 1000 tokens on the [Cycles server](/glossary#cycles-server)
 2. If the budget is exhausted, it returns `Err(Error::BudgetExceeded)` — the closure never runs
 3. If allowed, the closure executes your LLM call
 4. On success, it commits 420 tokens (the actual usage)
@@ -374,9 +374,9 @@ Add to your project:
 cargo add runcycles
 ```
 
-You'll need a running Cycles server with a tenant and API key. The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) sets up everything in under 5 minutes, or jump straight to the Rust-specific guide:
+You'll need a running Cycles server with a [tenant](/glossary#tenant) and API key. The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) sets up everything in under 5 minutes, or jump straight to the Rust-specific guide:
 
 - [Getting Started with the Rust Client](/quickstart/getting-started-with-the-rust-client) — installation through advanced patterns
 - [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles) — the protocol lifecycle in detail
 - [GitHub: runcycles/cycles-client-rust](https://github.com/runcycles/cycles-client-rust) — source, examples, AUDIT.md
-- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — graceful degradation strategies
+- [Error Handling Patterns](/how-to/error-handling-patterns-in-cycles-client-code) — [graceful degradation](/glossary#graceful-degradation) strategies

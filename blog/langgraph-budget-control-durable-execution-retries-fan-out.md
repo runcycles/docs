@@ -18,7 +18,7 @@ Then it gets worse. Twelve claims trigger the "review" node to fan out into four
 
 The [provider dashboard shows the spike at 6 PM](/blog/cycles-vs-llm-proxies-and-observability-tools) when someone checks. The team's $500/month spending cap hasn't triggered — it's March 4th, and the monthly total is only at $1,410.
 
-Durable execution makes agents more reliable. It also makes cost failures more expensive — because every retry, resume, and fan-out replays work that already cost money.
+Durable execution makes agents more reliable. It also makes cost failures more expensive — because every retry, resume, and [fan-out](/glossary#fan-out) replays work that already cost money.
 
 <!-- more -->
 
@@ -28,13 +28,13 @@ One-shot agents have a simple cost model: one pass through the workflow, one bil
 
 Durable graph agents — whether built on LangGraph, Temporal, or Restate — break this model. Runs checkpoint, pause, resume, retry, and branch. The cost of a single logical run is not "one pass." It is the sum of every attempt, across every checkpoint, across every branch.
 
-Three properties of durable execution change how bounded exposure works:
+Three properties of durable execution change how bounded [exposure](/glossary#exposure) works:
 
-**Checkpoints create replay surfaces.** When a graph resumes from a checkpoint, it can re-execute nodes that already consumed tokens and triggered side effects. If the budget system does not know which nodes already ran, it cannot prevent double-charging.
+**Checkpoints create replay surfaces.** When a graph resumes from a checkpoint, it can re-execute nodes that already consumed [tokens](/glossary#tokens) and triggered side effects. If the budget system does not know which nodes already ran, it cannot prevent double-charging.
 
 **Retries compound across graph depth.** A retry at the graph level replays multiple nodes. A retry at the node level replays multiple LLM calls within that node. If both layers have retry policies, the total cost is the product, not the sum. A 3× graph retry with 3× node retry produces up to 9× the expected cost for a single pass.
 
-**Fan-out multiplies exposure.** Parallel branches in a graph execute concurrently, each consuming budget independently. Four branches sharing a $40 budget can each see "$40 remaining," each proceed, and spend $160 total — because a simple balance check is not an atomic reservation.
+**Fan-out multiplies exposure.** Parallel branches in a graph execute concurrently, each consuming budget independently. Four branches sharing a $40 budget can each see "$40 remaining," each proceed, and spend $160 total — because a simple balance check is not an atomic [reservation](/glossary#reservation).
 
 | Property | One-shot agent | Durable graph agent |
 |---|---|---|
@@ -64,7 +64,7 @@ A graph with 3 retries per node and 3 retries per graph can produce up to 9 exec
 
 These three retry layers operate at different levels of the stack. SDK retries replay a single HTTP call — transparent to the node, cost = one LLM call per attempt. Node retries re-execute the node function, which may contain multiple LLM calls and tool invocations — cost = the full node body per attempt. Graph-level retries resume from a checkpoint and re-enter the node from persisted state, replaying everything above. Each layer compounds the cost of the layers below it.
 
-This is the same geometric multiplication pattern behind the [retry storm failure that cost $1,800 in 12 minutes](/blog/ai-agent-failures-budget-controls-prevent). Durable execution does not prevent retry storms — it makes them more likely, because the framework is designed to keep trying.
+This is the same geometric multiplication pattern behind the [retry storm failure that cost $1,800 in 12 minutes](/blog/ai-agent-failures-budget-controls-prevent). Durable execution does not prevent [retry storms](/glossary#retry-storm) — it makes them more likely, because the framework is designed to keep trying.
 
 ### 3. Fan-out branches racing for shared budget
 
@@ -107,7 +107,7 @@ The [reserve-commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-
 
 ## What This Looks Like in Practice
 
-Cycles — a runtime authority for autonomous agents — integrates with LangGraph through a [LangChain callback handler](/how-to/integrating-cycles-with-langchain) on the model. The handler fires on every LLM call inside every node: it creates a reservation on `on_llm_start`, commits actual cost on `on_llm_end`, and releases on `on_llm_error`. The reservation boundary sits at the model call, not at the graph edge — so a node that makes three LLM calls gets three reservations.
+Cycles — a [runtime authority](/glossary#runtime-authority) for [autonomous agents](/glossary#autonomous-agent) — integrates with LangGraph through a [LangChain callback handler](/how-to/integrating-cycles-with-langchain) on the model. The handler fires on every LLM call inside every node: it creates a reservation on `on_llm_start`, commits actual cost on `on_llm_end`, and releases on `on_llm_error`. The reservation boundary sits at the model call, not at the graph edge — so a node that makes three LLM calls gets three reservations.
 
 ```python
 from langgraph.graph import StateGraph, START, END
@@ -149,7 +149,7 @@ graph.add_edge("enrich", END)
 app = graph.compile(checkpointer=MemorySaver())
 ```
 
-When LangGraph resumes from a checkpoint and re-enters a node, the handler treats it like any other LLM call — the reservation fires again. Idempotency keys on commits (run ID + node ID + attempt number) prevent double-charging: a retried node creates a new reservation, while a replayed-from-checkpoint node that already committed is recognized as settled.
+When LangGraph resumes from a checkpoint and re-enters a node, the handler treats it like any other LLM call — the reservation fires again. [Idempotency keys](/glossary#idempotency-key) on commits (run ID + node ID + attempt number) prevent double-charging: a retried node creates a new reservation, while a replayed-from-checkpoint node that already committed is recognized as settled.
 
 For fan-out, each parallel review node gets its own model instance with a budget-scoped handler:
 
@@ -198,5 +198,5 @@ The insurance claim processor from the opening scenario would have stopped at $1
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern in depth
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
 - **[Budget Wrapper vs Runtime Authority for AI Agents](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a checker is not enough when agents fan out
-- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets for teams running LangGraph in multi-tenant platforms
+- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-[tenant](/glossary#tenant) budgets for teams running LangGraph in multi-tenant platforms
 - **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — why dashboards and proxies cannot prevent the overspend

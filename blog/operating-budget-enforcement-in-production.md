@@ -53,7 +53,7 @@ The event payload tells you who, what, and where:
 }
 ```
 
-Pull recent denial events for this tenant to see if it's a single agent or widespread:
+Pull recent denial events for this [tenant](/glossary#tenant) to see if it's a single agent or widespread:
 
 ```bash
 curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reservation.denied&limit=50" \
@@ -62,7 +62,7 @@ curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reser
 
 ### Step 2: Check the budget
 
-The runtime server and admin server can both answer the budget question, but through different endpoints. Use whichever is available in your environment:
+The runtime server and [admin server](/glossary#admin-server) can both answer the budget question, but through different endpoints. Use whichever is available in your environment:
 
 ```bash
 # Runtime server — protocol spec uses individual subject params
@@ -78,7 +78,7 @@ Look at the response:
 
 - **`remaining` = 0**: Budget exhausted. Needs funding.
 - **`remaining` > 0 but < `requested_amount`**: Agent is requesting more than available. Estimate may be too high.
-- **`is_over_limit` = true**: Debt exceeded overdraft limit. Needs debt repayment before new reservations are allowed.
+- **`is_over_limit` = true**: Debt exceeded overdraft limit. Needs debt repayment before new [reservations](/glossary#reservation) are allowed.
 - **`status` = FROZEN**: Budget was frozen by an operator. Check if intentional.
 
 ### Step 3: Determine root cause
@@ -197,7 +197,7 @@ These are the numbers your budget operations dashboard should show. The threshol
 | **Budget velocity** | $ consumed per hour | > 2x the 7-day rolling average |
 | **Estimate accuracy** | reserved / committed ratio | Outside 0.8 – 2.0 range |
 | **Time to exhaustion** | Hours until remaining = 0 at current velocity | < 4 hours |
-| **Webhook delivery failure rate** | % of deliveries failing | > 10% (your alerting pipeline is degraded) |
+| **[Webhook delivery](/glossary#webhook-delivery) failure rate** | % of deliveries failing | > 10% (your alerting pipeline is degraded) |
 
 **Denial rate** is the most important. A 0% denial rate means budgets are either too generous or enforcement isn't active. A 20% denial rate means agents are routinely failing — either budgets are too tight or there's a systemic issue. Target: < 2% for healthy workloads.
 
@@ -229,4 +229,4 @@ Budget enforcement works best when budgets are calibrated to actual workloads. H
 - [Managing Webhooks](/how-to/managing-webhooks) — create, test, monitor, and troubleshoot subscriptions
 - [Monitoring and Alerting](/how-to/monitoring-and-alerting) — Prometheus metrics and Grafana dashboards
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — pricing reference for estimation
-- [Production Operations Guide](/how-to/production-operations-guide) — deployment, Redis HA, events service
+- [Production Operations Guide](/how-to/production-operations-guide) — deployment, Redis HA, [events service](/glossary#events-service)

@@ -10,7 +10,7 @@ sidebar: false
 
 # Multi-Tenant AI Cost Control: Budgets and Isolation
 
-A platform team runs a SaaS product with AI-powered document analysis. Fifty customers share the same infrastructure. One afternoon, a single customer's integration triggers an agent loop — the same 200-page PDF reprocessed 40 times with increasingly long context windows. In three hours, that one tenant consumes $4,200 of the platform's $5,000 monthly provider budget.
+A platform team runs a SaaS product with AI-powered document analysis. Fifty customers share the same infrastructure. One afternoon, a single customer's integration triggers an agent loop — the same 200-page PDF reprocessed 40 times with increasingly long context windows. In three hours, that one [tenant](/glossary#tenant) consumes $4,200 of the platform's $5,000 monthly provider budget.
 
 The other 49 customers start seeing failures. Model calls return rate-limit errors. Jobs queue indefinitely. The platform's shared spending cap — set at the provider level — does not distinguish between customers. It just shuts everything down when the ceiling is reached.
 
@@ -46,7 +46,7 @@ Every major AI provider offers some form of spending limit — OpenAI monthly ca
 
 **Reactive, not preventive.** Most provider caps operate on billing cycles. They tell you what happened; they do not block the next model call in real time. By the time the cap triggers, the damage is done — and it affects everyone.
 
-The structural problem is clear: provider caps protect the provider's exposure to you, not your exposure to individual customers. For multi-tenant AI platforms, the enforcement boundary must exist **per customer, inside your runtime**. This is the problem [Cycles](/) was built to solve — runtime authority as infrastructure, enforced before execution, scoped to each tenant.
+The structural problem is clear: provider caps protect the provider's [exposure](/glossary#exposure) to you, not your exposure to individual customers. For multi-tenant AI platforms, the enforcement boundary must exist **per customer, inside your runtime**. This is the problem [Cycles](/) was built to solve — [runtime authority](/glossary#runtime-authority) as infrastructure, enforced before execution, scoped to each tenant.
 
 ## What Per-Tenant Budget Enforcement Looks Like
 
@@ -54,10 +54,10 @@ Per-tenant enforcement means treating each customer as an independent budget sco
 
 The core behavior is simple:
 
-1. **Each tenant gets a defined budget** — $500/month, 1M tokens/day, whatever matches your pricing model
+1. **Each tenant gets a defined budget** — $500/month, 1M [tokens](/glossary#tokens)/day, whatever matches your pricing model
 2. **Every agent action reserves budget from the tenant's scope** before execution — not from a shared pool
 3. **When a tenant's budget is exhausted, that tenant is denied** — their agents stop or degrade
-4. **Other tenants are completely unaffected** — their budgets, their reservations, their agent executions continue normally
+4. **Other tenants are completely unaffected** — their budgets, their [reservations](/glossary#reservation), their agent executions continue normally
 
 This is the [reserve-commit pattern](/blog/ai-agent-budget-control-enforce-hard-spend-limits) applied at the tenant boundary. The reservation is atomic and scoped: Tenant A's reservation draws only from Tenant A's balance. Two tenants cannot race on the same budget, and one tenant's exhaustion does not touch another's.
 
@@ -67,7 +67,7 @@ The enforcement point also becomes the [tenancy boundary](/protocol/authenticati
 
 Tenant-level budgets solve the isolation problem. But within a tenant, you still need to control which workflows, agents, and individual runs can spend how much. This is where hierarchical scoping comes in.
 
-The Cycles protocol defines a canonical [scope hierarchy](/protocol/how-scope-derivation-works-in-cycles): **tenant → workspace → app → workflow → agent → toolset**. Each level is a budget scope. You use the levels that match your product model — most multi-tenant platforms start with tenant and workflow, then add finer-grained scopes as needed. Run-level budgets can be modeled through the `dimensions` field (e.g., `dimensions: { "run": "run-7a3f" }`), which provides additional metadata for execution-specific tracking. Note that v0 servers may not enforce budgets on dimensions — check your server's implementation for dimension-based enforcement support.
+The [Cycles protocol](/glossary#cycles-protocol) defines a canonical [scope hierarchy](/protocol/how-scope-derivation-works-in-cycles): **tenant → workspace → app → workflow → agent → toolset**. Each level is a budget scope. You use the levels that match your product model — most multi-tenant platforms start with tenant and workflow, then add finer-grained scopes as needed. Run-level budgets can be modeled through the `dimensions` field (e.g., `dimensions: { "run": "run-7a3f" }`), which provides additional metadata for execution-specific tracking. Note that v0 servers may not enforce budgets on dimensions — check your server's implementation for dimension-based enforcement support.
 
 ```
 Tenant: Acme Corp ($2,000/month)
@@ -148,7 +148,7 @@ You do not need the full hierarchy on day one. The proven path for multi-tenant 
 
 1. **Start with tenant-level budgets.** This is the highest-leverage change — it creates isolation between customers. Every customer gets a defined ceiling. One tenant's behavior can no longer affect others. Start here even if the limits are generous.
 
-2. **Add run-level budgets next.** Per-run caps are the best defense against runaway execution — loops, retry storms, and recursive tool calls. They protect both the tenant and the platform from a single bad execution.
+2. **Add run-level budgets next.** Per-run caps are the best defense against runaway execution — loops, [retry storms](/glossary#retry-storm), and recursive tool calls. They protect both the tenant and the platform from a single bad execution.
 
 3. **Use reporting to refine limits.** Once you have tenant and run budgets, the [balance data](/protocol/querying-balances-in-cycles-understanding-budget-state) tells you how customers actually use the system. Use reservation-vs-commit ratios, rejection rates, and exhaustion events to right-size limits.
 
@@ -163,7 +163,7 @@ For teams introducing enforcement to an existing system, [shadow mode](/how-to/s
 - **[How to Model Tenant, Workflow, and Run Budgets](/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles)** — detailed guide to designing your scope hierarchy
 - **[Scope Derivation](/protocol/how-scope-derivation-works-in-cycles)** — how hierarchical budget paths are built from subject fields
 - **[Common Budget Patterns](/how-to/common-budget-patterns)** — practical recipes for per-user, per-conversation, team rollup, and model-tier budgets
-- **[Authentication and Tenancy](/protocol/authentication-tenancy-and-api-keys-in-cycles)** — how tenant isolation is enforced at the protocol level
+- **[Authentication and Tenancy](/protocol/authentication-tenancy-and-api-keys-in-cycles)** — how [tenant isolation](/glossary#tenant-isolation) is enforced at the protocol level
 - **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — how the reserve-commit pattern works under the hood
 - **[AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide)** — the maturity model from no controls to hard enforcement

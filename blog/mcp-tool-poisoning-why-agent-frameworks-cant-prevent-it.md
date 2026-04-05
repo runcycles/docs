@@ -16,17 +16,17 @@ That's the finding that reframed MCP security in 2026. [Invariant Labs demonstra
 
 <!-- more -->
 
-The scale of exposure is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [reported 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) circulating on OpenClaw's ClawHub marketplace. And in controlled benchmark testing, the [MCP-ITP framework](https://arxiv.org/abs/2601.07395) measured tool poisoning attack success rates **up to 84.2%** when agents auto-approve tool calls — a configuration that is common in demos and many production integrations.
+The scale of [exposure](/glossary#exposure) is staggering. As of early 2026, there are [over 10,000 public MCP servers](https://mcpplaygroundonline.com/blog/mcp-security-tool-poisoning-owasp-top-10-mcp-scan). [Trend Micro found 492 MCP servers](https://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/mcp-security-network-exposed-servers-are-backdoors-to-your-private-data) exposed to the internet with zero authentication. Security researchers [reported 1,184 malicious skills](https://www.cryptonewsz.com/openclaws-clawhub-flags-1184-malicious-skills/) circulating on OpenClaw's ClawHub marketplace. And in controlled benchmark testing, the [MCP-ITP framework](https://arxiv.org/abs/2601.07395) measured tool poisoning attack success rates **up to 84.2%** when agents auto-approve tool calls — a configuration that is common in demos and many production integrations.
 
 OWASP responded by publishing the [MCP Top 10](https://owasp.org/www-project-mcp-top-10/), a dedicated security framework for MCP vulnerabilities (currently in beta) — separate from the broader Agentic AI Top 10 published the same month. Security researchers have [documented more than 30 CVEs](https://medium.com/ai-security-hub/mcps-first-year-what-30-cves-and-500-server-scans-tell-us-about-ai-s-fastest-growing-attack-6d183fc9497f) against MCP implementations in the past 60 days — a pace that prompted a [front-page Hacker News discussion](https://news.ycombinator.com/item?id=47356600) on MCP's expanding attack surface. This isn't a theoretical risk. It's active exploitation in the wild.
 
-Some agent frameworks do offer defenses. OpenAI's Agents SDK provides [`requireApproval`](https://openai.github.io/openai-agents-python/guardrails/) callbacks and tool input/output guardrails with tripwire mechanisms. Claude Desktop and Cursor support per-tool approval prompts. These are real controls — but they are not an independent runtime authority that evaluates each MCP action against policy outside the agent's own reasoning loop. Approval dialogs require human-in-the-loop, which doesn't scale to production workloads. SDK guardrails run inside the agent's trust boundary, meaning a sufficiently poisoned context can influence the guardrail evaluation itself. And none of them enforce budget, scope, or cross-agent policy as a separate enforcement plane.
+Some agent frameworks do offer defenses. OpenAI's Agents SDK provides [`requireApproval`](https://openai.github.io/openai-agents-python/guardrails/) callbacks and tool input/output guardrails with tripwire mechanisms. Claude Desktop and Cursor support per-tool approval prompts. These are real controls — but they are not an independent [runtime authority](/glossary#runtime-authority) that evaluates each MCP action against policy outside the agent's own reasoning loop. Approval dialogs require human-in-the-loop, which doesn't scale to production workloads. SDK guardrails run inside the agent's trust boundary, meaning a sufficiently poisoned context can influence the guardrail evaluation itself. And none of them enforce budget, scope, or cross-agent policy as a separate enforcement plane.
 
 That gap — between the agent's decision and an _external_ policy evaluation before execution — is where tool poisoning lives. And it's the gap that runtime authority closes.
 
 ## What MCP Tool Poisoning Actually Looks Like
 
-The threats above span three distinct risk classes that are related but not identical: **(1) metadata poisoning** — malicious instructions embedded in tool descriptions and schemas (Invariant Labs, CyberArk, MCP-ITP); **(2) supply chain compromise** — poisoned packages distributed through marketplaces and registries (postmark-mcp, ClawHub); and **(3) implementation vulnerabilities** — missing authentication, command injection, and path traversal in MCP server code (Trend Micro, the 30+ CVEs). Each requires different defenses, but all three converge on one architectural gap: no policy evaluation before tool execution.
+The threats above span three distinct risk classes that are related but not identical: **(1) metadata poisoning** — malicious instructions embedded in tool descriptions and schemas (Invariant Labs, CyberArk, MCP-ITP); **(2) supply chain compromise** — poisoned packages distributed through marketplaces and registries (postmark-mcp, ClawHub); and **(3) implementation vulnerabilities** — missing authentication, command injection, and path traversal in [MCP server](/glossary#mcp-server) code (Trend Micro, the 30+ CVEs). Each requires different defenses, but all three converge on one architectural gap: no policy evaluation before tool execution.
 
 The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) catalogs the full attack surface. Three categories of metadata poisoning account for most targeted incidents:
 
@@ -63,7 +63,7 @@ The [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) (currently in 
 
 | ID | Category | What Happens |
 |---|---|---|
-| **MCP01** | Token Mismanagement & Secret Exposure | API keys and tokens leak through tool metadata, logs, or unencrypted transport |
+| **MCP01** | Token Mismanagement & Secret Exposure | API keys and [tokens](/glossary#tokens) leak through tool metadata, logs, or unencrypted transport |
 | **MCP02** | Privilege Escalation via Scope Creep | Tools granted broad permissions accumulate access beyond what's needed |
 | **MCP03** | Tool Poisoning | Rug pulls, schema poisoning, tool shadowing — the attacks described above |
 | **MCP04** | Software Supply Chain Attacks & Dependency Tampering | Community tools installed via npm/pip with no vetting, signing, or sandboxing |
@@ -143,7 +143,7 @@ The critical insight: **tool poisoning succeeds because agents execute tool call
 
 Consider the SSH key exfiltration attack. A poisoned tool description instructs the agent to first read `~/.ssh/id_rsa` and then include the contents in a tool parameter. Without runtime authority, the agent complies — both tool calls execute, and the key is exfiltrated.
 
-With runtime authority, the attack fails before it starts. The poisoned tool tricks the agent into calling a file-read action — but that action requires a reservation against a scope that doesn't permit it:
+With runtime authority, the attack fails before it starts. The poisoned tool tricks the agent into calling a file-read action — but that action requires a [reservation](/glossary#reservation) against a scope that doesn't permit it:
 
 ```python
 # Step 1: Agent tries to read ~/.ssh/id_rsa (as instructed by poisoned tool description)
@@ -175,7 +175,7 @@ The same enforcement pattern prevents the recursive agent loop that generated th
 # Total spend: $50.00 — not $47,000
 ```
 
-The loop still happens. But it's [contained by a hard limit](/blog/ai-agent-failures-budget-controls-prevent) — one the agent can't bypass because the budget authority is external to its reasoning.
+The loop still happens. But it's [contained by a hard limit](/blog/ai-agent-failures-budget-controls-prevent) — one the agent can't bypass because the [budget authority](/glossary#budget-authority) is external to its reasoning.
 
 ## What To Do Now
 
@@ -215,7 +215,7 @@ Research and data referenced in this post:
 
 - [Zero Trust for AI Agents: Why Every Tool Call Needs a Policy Decision](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — The general zero trust framework that runtime authority implements
 - [AI Agent Runtime Permissions: Control Actions Before Execution](/blog/ai-agent-runtime-permissions-control-actions-before-execution) — How the permissions model works in practice
-- [AI Agent Action Control: Hard Limits and Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — Action authority for restricting what agents can do
+- [AI Agent Action Control: Hard Limits and Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — [Action authority](/glossary#action-authority) for restricting what agents can do
 - [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — Including recursive loops and cost blowups
 - [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability) — Why scanning and monitoring aren't enforcement
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — The foundational concept

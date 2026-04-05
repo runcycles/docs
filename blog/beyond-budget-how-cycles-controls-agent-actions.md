@@ -12,7 +12,7 @@ sidebar: false
 
 Most people discover Cycles because they need to stop an agent from burning through their OpenAI bill. Fair enough — that's the most visible problem.
 
-But spend is just one dimension of what an autonomous agent can do wrong. An agent that stays within its token budget can still:
+But spend is just one dimension of what an [autonomous agent](/glossary#autonomous-agent) can do wrong. An agent that stays within its token budget can still:
 
 - Send 200 customer emails in a retry loop
 - Deploy to production without approval
@@ -32,7 +32,7 @@ Cycles' reserve → commit → release lifecycle doesn't care what you're measur
 |------|-----------------|---------|
 | `USD_MICROCENTS` | Dollar cost | LLM token spend |
 | `TOKENS` | Token count | Model-agnostic token budgets |
-| `CREDITS` | Abstract credits | Internal allocation systems |
+| `CREDITS` | Abstract [credits](/glossary#credits) | Internal allocation systems |
 | `RISK_POINTS` | Action risk | Tool calls, API requests, side effects |
 
 When you use `RISK_POINTS`, you're not tracking cost — you're tracking **consequence**. An agent that reserves 50 risk points for `send_email` and 0 for `search_knowledge` isn't managing a budget. It's managing what the agent is allowed to do.
@@ -64,11 +64,11 @@ With a budget of 200 risk points per session:
 - It can deploy to production twice (100 × 2 = 200 points)
 - It **cannot** send 3 emails and deploy once (150 + 100 = 250 > 200)
 
-The budget authority decides the risk allocation. The protocol enforces it. The agent never sees the limits — it just gets `DENY` when it tries to exceed them.
+The [budget authority](/glossary#budget-authority) decides the risk allocation. The protocol enforces it. The agent never sees the limits — it just gets `DENY` when it tries to exceed them.
 
 ## Beyond tool calls: action authority in every integration
 
-You don't need the OpenAI Agents plugin to use action authority. The same pattern works with every integration through the `action` field on reservations:
+You don't need the OpenAI Agents plugin to use [action authority](/glossary#action-authority). The same pattern works with every integration through the `action` field on [reservations](/glossary#reservation):
 
 ```python
 from runcycles import ReservationCreateRequest, Action, Amount, Unit
@@ -128,7 +128,7 @@ def send_email(to: str, body: str) -> str:
     ...
 ```
 
-The agent can spend up to $5 on LLM calls (checked against the USD_MICROCENTS budget). It can send up to 4 emails (checked against the RISK_POINTS budget, 200 / 50). Each action checks its own unit's budget — the same protocol, the same concurrency safety, the same scope hierarchy, applied to different dimensions of authority.
+The agent can spend up to $5 on LLM calls (checked against the [USD_MICROCENTS](/glossary#usd-microcents) budget). It can send up to 4 emails (checked against the [RISK_POINTS](/glossary#risk-points) budget, 200 / 50). Each action checks its own unit's budget — the same protocol, the same concurrency safety, the same scope hierarchy, applied to different dimensions of authority.
 
 ## Why this matters for multi-agent systems
 
@@ -140,7 +140,7 @@ In multi-agent systems — LangGraph workflows, AutoGen teams, CrewAI crews — 
 
 The scope hierarchy (`tenant → workspace → app → workflow → agent → toolset`) means these limits are enforced independently per agent. The researcher cannot borrow the executor's deployment authority. A bug in the writer cannot trigger the executor's tools.
 
-This is the same hierarchical isolation that prevents one tenant from spending another tenant's budget — applied to actions instead of dollars.
+This is the same hierarchical isolation that prevents one [tenant](/glossary#tenant) from spending another tenant's budget — applied to actions instead of dollars.
 
 ## Key points
 
@@ -154,6 +154,6 @@ This is the same hierarchical isolation that prevents one tenant from spending a
 
 - [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — the conceptual foundation
 - [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolEstimateMap and per-tool governance
-- [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS
+- [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, [TOKENS](/glossary#tokens), CREDITS, RISK_POINTS
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what to do when action authority is denied
 - [Multi-Agent Shared Budgets](/how-to/multi-agent-shared-workspace-budget-patterns) — shared and independent budgets across agents

@@ -22,7 +22,7 @@ A team can absolutely use Claude Code or another coding agent to put a thin wrap
 
 But that is not the real question.
 
-The real question is whether you want to **own a runtime authority forever — or use one.**
+The real question is whether you want to **own a [runtime authority](/glossary#runtime-authority) forever — or use one.**
 
 That is a very different thing from generating a wrapper.
 
@@ -36,7 +36,7 @@ That is a reasonable prototype. It can even create the impression that the probl
 
 But production systems do not stay that simple for long.
 
-Agents retry. They fan out. They call multiple tools. They fail halfway through work. They share limits across tenants, teams, users, sessions, and workflows. They run concurrently. They move from "call a model" to "send an email," "modify a record," "trigger a deployment," or "place an order."
+Agents retry. They fan out. They call multiple tools. They fail halfway through work. They share limits across [tenants](/glossary#tenant), teams, users, sessions, and workflows. They run concurrently. They move from "call a model" to "send an email," "modify a record," "trigger a deployment," or "place an order."
 
 Once that happens, you are no longer building a utility function. You are building a control system. The [failure modes are well-documented](/blog/ai-agent-failures-budget-controls-prevent) — and they get worse as concurrency increases.
 
@@ -48,7 +48,7 @@ You have two agents running concurrently for the same tenant. Both check the bal
 
 Nothing malfunctioned. No code was wrong. The logic was perfectly correct in isolation. The problem was that a **checker** reads shared state; it does not hold it.
 
-Now multiply that by ten concurrent agents. Add retries. Add tool fan-out. Add a partial failure that causes one agent to re-run from a checkpoint. Add a policy change that updates limits while work is in flight.
+Now multiply that by ten concurrent agents. Add retries. Add tool [fan-out](/glossary#fan-out). Add a partial failure that causes one agent to re-run from a checkpoint. Add a policy change that updates limits while work is in flight.
 
 The wrapper that looked like it solved the problem in single-threaded testing is not actually enforcing anything under load. It is observing. That is not the same thing. If you want to understand the real cost of this gap, see [The True Cost of Uncontrolled AI Agents](/blog/true-cost-of-uncontrolled-agents).
 
@@ -60,7 +60,7 @@ A lot of internal implementations are really **checkers**. They observe local st
 
 Cycles is built to be an **authority**.
 
-That means the system deciding whether work is allowed is not just another helper library embedded in the runtime. It is the place where budget is **reserved, committed, and released** in a way that remains correct under concurrency, retries, and partial failure. The [reserve/commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-limits) is designed specifically for this — atomic reservations that prevent concurrent actors from claiming the same budget.
+That means the system deciding whether work is allowed is not just another helper library embedded in the runtime. It is the place where budget is **reserved, committed, and released** in a way that remains correct under concurrency, retries, and partial failure. The [reserve/commit lifecycle](/blog/ai-agent-budget-control-enforce-hard-spend-limits) is designed specifically for this — atomic [reservations](/glossary#reservation) that prevent concurrent actors from claiming the same budget.
 
 A checker can say "I think there is still budget available."
 
@@ -84,11 +84,11 @@ The problem is that once the first version exists, they now own a subsystem that
 
 That ownership expands quickly.
 
-Now someone has to reason about idempotency keys. Someone has to define reserve-versus-commit semantics. Someone has to decide what happens when estimated spend was higher than actual spend, or lower. Someone has to handle cancellation, release, and overdraft policy. Someone has to make sure two concurrent agents cannot both pass local checks and collectively exceed a shared budget. Someone has to prove that retries do not double-settle.
+Now someone has to reason about [idempotency keys](/glossary#idempotency-key). Someone has to define reserve-versus-commit semantics. Someone has to decide what happens when estimated spend was higher than actual spend, or lower. Someone has to handle cancellation, release, and overdraft policy. Someone has to make sure two concurrent agents cannot both pass local checks and collectively exceed a shared budget. Someone has to prove that retries do not double-settle.
 
 And once different teams adopt it, the burden grows again.
 
-Now you need policy consistency across services. You need auditability. You need multi-tenant isolation. You need a clean way to evolve enforcement rules without touching every application. You need client behavior that is consistent across languages and runtimes. You need enough determinism that engineers trust it, finance trusts it, and operators trust it.
+Now you need policy consistency across services. You need auditability. You need multi-[tenant isolation](/glossary#tenant-isolation). You need a clean way to evolve enforcement rules without touching every application. You need client behavior that is consistent across languages and runtimes. You need enough determinism that engineers trust it, finance trusts it, and operators trust it.
 
 Eventually the question is no longer "could Claude Code write this?"
 
@@ -116,9 +116,9 @@ There is another reason the objection misses the core issue.
 
 It assumes the problem is mostly about **spend**.
 
-But agents do not only burn dollars. They create **exposure**.
+But agents do not only burn dollars. They create **[exposure](/glossary#exposure)**.
 
-They call APIs. They send emails. They update records. They delete data. They trigger downstream systems. They take actions whose impact is not measured purely in cost — which is why the Cycles protocol supports enforcement in [multiple unit types](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) including tokens, credits, and risk points.
+They call APIs. They send emails. They update records. They delete data. They trigger downstream systems. They take actions whose impact is not measured purely in cost — which is why the [Cycles protocol](/glossary#cycles-protocol) supports enforcement in [multiple unit types](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) including [tokens](/glossary#tokens), [credits](/glossary#credits), and risk points.
 
 That changes the architecture.
 
@@ -136,7 +136,7 @@ But the real choice is not whether to build. It is whether to **keep building** 
 
 The moment a team ships its internal version, it has created a dependency that other workflows will start leaning on. From that point forward, every new agent, toolchain, workflow engine, and policy requirement increases the maintenance surface.
 
-And the harder the organization leans into agents, the more important this layer becomes. The [budget patterns](/blog/agent-budget-patterns-visual-guide) that emerge in production — hierarchical scoping, graceful degradation, multi-tenant isolation — are not things that simplify over time.
+And the harder the organization leans into agents, the more important this layer becomes. The [budget patterns](/blog/agent-budget-patterns-visual-guide) that emerge in production — hierarchical scoping, [graceful degradation](/glossary#graceful-degradation), multi-tenant isolation — are not things that simplify over time.
 
 ## The only honest answer to the objection
 

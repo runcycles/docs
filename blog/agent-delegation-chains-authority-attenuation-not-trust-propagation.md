@@ -25,7 +25,7 @@ The industry frames multi-agent delegation as a trust question: *can I trust Age
 
 The real question is: *even if Agent B is perfectly trustworthy, what should it be allowed to do?*
 
-A trusted agent with excessive authority is still dangerous. It can be [prompt-injected via tool poisoning](/blog/mcp-tool-poisoning-why-agent-frameworks-cant-prevent-it). Its tool calls can have [unintended side effects](/blog/ai-agent-action-control-hard-limits-side-effects) that cost more than the tokens. Its sub-agents can amplify a small permission into a large blast radius. Trust answers "who" — authority answers "what" and "how much."
+A trusted agent with excessive authority is still dangerous. It can be [prompt-injected via tool poisoning](/blog/mcp-tool-poisoning-why-agent-frameworks-cant-prevent-it). Its tool calls can have [unintended side effects](/blog/ai-agent-action-control-hard-limits-side-effects) that cost more than the [tokens](/glossary#tokens). Its sub-agents can amplify a small permission into a large blast radius. Trust answers "who" — authority answers "what" and "how much."
 
 Consider a customer support orchestrator that delegates to a refund agent:
 
@@ -81,7 +81,7 @@ refund_res = client.create_reservation(ReservationCreateRequest(
 # is denied. A prompt-injected loop burns at most the agent-level allocation.
 ```
 
-The key concept: Cycles budgets are **independent at each scope level** — they do not automatically propagate from parent to child. You must explicitly allocate a budget at the child scope (e.g. `tenant:acme-corp/workflow:support/agent:refund`) via the Admin API. A reservation then checks **every derived scope atomically** — the child scope's allocation and the parent scope's allocation must both have room. This is what makes attenuation enforceable: the child's ceiling is set by its own allocation, not inherited from the parent.
+The key concept: Cycles budgets are **independent at each scope level** — they do not automatically propagate from parent to child. You must explicitly allocate a budget at the child scope (e.g. `tenant:acme-corp/workflow:support/agent:refund`) via the Admin API. A [reservation](/glossary#reservation) then checks **every derived scope atomically** — the child scope's allocation and the parent scope's allocation must both have room. This is what makes attenuation enforceable: the child's ceiling is set by its own allocation, not inherited from the parent.
 
 ### 2. Action masks
 
@@ -163,7 +163,7 @@ flowchart TD
     style CB fill:#2d5a27,color:#fff
 ```
 
-The orchestrator holds the total budget. Each delegated agent gets a carved sub-budget, a restricted action set, and a decremented depth counter. Cycles enforces the first two — spend limits and action authority — at the protocol level before execution. Depth limiting is orchestration logic you pair with Cycles. Together, the three mechanisms mean a compromised or misbehaving sub-agent hits a wall, not a suggestion.
+The orchestrator holds the total budget. Each delegated agent gets a carved sub-budget, a restricted action set, and a decremented depth counter. Cycles enforces the first two — spend limits and [action authority](/glossary#action-authority) — at the protocol level before execution. Depth limiting is orchestration logic you pair with Cycles. Together, the three mechanisms mean a compromised or misbehaving sub-agent hits a wall, not a suggestion.
 
 ## Why the industry keeps getting this wrong
 
@@ -179,7 +179,7 @@ Microsoft's new Agent Governance Toolkit addresses credential scoping and action
 
 ## Implementing attenuation today
 
-You don't need to wait for frameworks to ship attenuation primitives. The pattern works with any runtime authority system that supports hierarchical scopes.
+You don't need to wait for frameworks to ship attenuation primitives. The pattern works with any [runtime authority](/glossary#runtime-authority) system that supports hierarchical scopes.
 
 **Step 1: Model your delegation tree using Cycles' Subject hierarchy.**
 

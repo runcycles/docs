@@ -86,7 +86,7 @@ This is [runtime authority](/blog/what-is-runtime-authority-for-ai-agents). Here
 
 *Note: Cost figures below are illustrative estimates based on typical LLM pricing and policy-lookup overhead. Actual costs vary by provider, model, and workload.*
 
-| | Evaluation (evals) | Enforcement (runtime authority) |
+| | Evaluation (evals) | Enforcement ([runtime authority](/glossary#runtime-authority)) |
 |---|---|---|
 | **When** | After execution, on sampled traffic | Before every action, on all traffic |
 | **What it checks** | Output quality (semantic) | Behavioral correctness (structural) |
@@ -135,9 +135,9 @@ These signals are deterministic, generated automatically, and catch structural f
 
 Where evals ask "was the output good?", enforcement asks "was the agent allowed to do this?" — a fundamentally different and complementary question.
 
-A coding agent authorized to read test files and write source files is blocked at the reservation step if it tries to modify tests. A support agent scoped to read customer records is blocked before it can issue a refund above its authority tier. A research agent limited to 10 API calls per run is stopped at call 11.
+A coding agent authorized to read test files and write source files is blocked at the [reservation](/glossary#reservation) step if it tries to modify tests. A support agent scoped to read customer records is blocked before it can issue a refund above its authority tier. A research agent limited to 10 API calls per run is stopped at call 11.
 
-These aren't heuristics. They're deterministic rules evaluated before execution. The agent's non-deterministic reasoning produces a deterministic allow/deny decision at the enforcement layer. For concrete action authority patterns, see [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects).
+These aren't heuristics. They're deterministic rules evaluated before execution. The agent's non-deterministic reasoning produces a deterministic allow/deny decision at the enforcement layer. For concrete [action authority](/glossary#action-authority) patterns, see [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects).
 
 ### 3. Integration testing via budget topology
 
@@ -147,7 +147,7 @@ When a workflow scope allocates budget across child agent scopes, the spending p
 
 - Research agent consumes 15 reserve-commit cycles, analysis agent consumes 9 → **possible handoff loss or workflow mismatch** worth investigating (6 expected items unaccounted for)
 - Three parallel agents each reserve successfully but total exceeds parent scope → **atomic reservation** prevents concurrent overspend
-- Fan-out workflow spawns 50 sub-agents instead of expected 5 → **parent scope budget** caps total exposure regardless of spawn count
+- [Fan-out](/glossary#fan-out) workflow spawns 50 sub-agents instead of expected 5 → **parent scope budget** caps total [exposure](/glossary#exposure) regardless of spawn count
 
 None of these require semantic evaluation. The structural economics of the run surface problems that output-focused testing misses.
 

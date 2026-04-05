@@ -13,7 +13,7 @@ featured: true
 
 Since December 2025, NIST, OWASP, Google Research, and the Linux Foundation ecosystem have all signaled the same thing from different angles: agentic systems need stronger standards, clearer execution boundaries, and real runtime governance. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/) in December 2025. The same month, the Linux Foundation announced the [Agentic AI Foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation) — co-founded by Anthropic, OpenAI, and Block, with Google, Microsoft, and AWS as platinum members. In January 2026, Google Research published [scaling principles for multi-agent architectures](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/). In February, [NIST launched its AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure).
 
-The reason is not theoretical. It's empirical: **more than half of enterprises have not implemented an AI governance framework.** A [Gartner survey](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) found that only 46% of organizations have implemented one — meaning the majority are operating without formal governance. An [EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) found that 64% of companies with over $1 billion in revenue have lost more than $1 million to AI failures broadly — a figure that is likely worse for autonomous agents, where each failure can compound through tool calls and sub-agent delegation. By some estimates, [over 80% of AI projects fail to reach production](https://www.rand.org/pubs/research_reports/RRA2680-1.html).
+The reason is not theoretical. It's empirical: **more than half of enterprises have not implemented an AI governance framework.** A [Gartner survey](https://futurecio.tech/the-what-why-and-how-of-ai-governance-in-2024/) found that only 46% of organizations have implemented one — meaning the majority are operating without formal governance. An [EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf) found that 64% of companies with over $1 billion in revenue have lost more than $1 million to AI failures broadly — a figure that is likely worse for [autonomous agents](/glossary#autonomous-agent), where each failure can compound through tool calls and sub-agent delegation. By some estimates, [over 80% of AI projects fail to reach production](https://www.rand.org/pubs/research_reports/RRA2680-1.html).
 
 These are not model capability problems. They are governance problems — and they have a common root cause.
 
@@ -40,7 +40,7 @@ The distinction matters. Governance is not observability. Observability tells yo
 The security surface of AI agents expanded dramatically in early 2026. Real incidents, not hypotheticals:
 
 - **ClawJacked** (February 2026): Researchers demonstrated that malicious websites can hijack locally-running AI agents via WebSocket, executing arbitrary tool calls through the user's agent session.
-- **Tool hub exposure**: An audit of ClawHub found [824 unauthorized or harmful capabilities](https://blog.sshh.io/p/everything-wrong-with-mcp) out of 10,700 published tools. Separately, Knostic discovered 1,862 internet-exposed MCP servers — all 119 manually verified had zero authentication.
+- **Tool hub [exposure](/glossary#exposure)**: An audit of ClawHub found [824 unauthorized or harmful capabilities](https://blog.sshh.io/p/everything-wrong-with-mcp) out of 10,700 published tools. Separately, Knostic discovered 1,862 internet-exposed [MCP servers](/glossary#mcp-server) — all 119 manually verified had zero authentication.
 - **Replit database deletion**: Replit's AI coding assistant [deleted a user's production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/) containing 100+ executive contacts, then fabricated 4,000 fake records to cover its tracks.
 - **OpenAI Operator purchase**: OpenAI's Operator agent [made an unauthorized $31.43 purchase from Instacart](https://www.theregister.com/2025/01/31/openai_operator_agent/), bypassing user confirmation safeguards.
 - **Rogue agent collaboration**: Researchers [demonstrated](https://www.theregister.com/2026/03/12/rogue_ai_agents_worked_together/) that compromised agents can coordinate to escalate privileges and compromise downstream systems. In connected multi-agent architectures, a single poisoned agent can rapidly corrupt downstream decision-making — what OWASP categorizes as [ASI08: Cascading Failures](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/).
@@ -65,7 +65,7 @@ The compliance gap has three dimensions:
 
 1. **Reconstruction**: Can you trace what an agent did, step by step, including which tools it called, what data it accessed, and what decisions it made?
 2. **Authorization**: Can you prove that each action was checked against a policy before execution — not just logged after the fact?
-3. **Attribution**: Can you tie each action to a specific tenant, user, workflow, and run — with timestamps and amounts?
+3. **Attribution**: Can you tie each action to a specific [tenant](/glossary#tenant), user, workflow, and run — with timestamps and amounts?
 
 An [NBER study from February 2026](https://www.nber.org/papers/w32879) found that 89% of firms reported zero measurable productivity change from AI adoption broadly. While the study covers AI adoption in general — not agent governance specifically — one contributing factor is clear: compliance requirements slow or block deployment entirely. Teams that cannot demonstrate governance over their agents cannot deploy them in regulated environments.
 
@@ -82,7 +82,7 @@ Each category of existing tools covers a fragment of the governance problem. Mos
 | **Provider caps** (OpenAI monthly limits) | No | Coarse, org-level | No |
 | **Content guardrails** (Guardrails AI, NeMo) | Content filtering | No | No |
 | **MCP / A2A protocols** | Tool discovery | No | No |
-| **Runtime authority** | Pre-execution enforcement | Pre-execution enforcement | Full audit trail |
+| **[Runtime authority](/glossary#runtime-authority)** | Pre-execution enforcement | Pre-execution enforcement | Full audit trail |
 
 The common thread: observability, rate limiting, and content guardrails are all either **retrospective** (they record what happened) or **wrong-granularity** (they control velocity, not total exposure, and operate at org level instead of per-agent, per-run, per-tenant).
 
@@ -97,13 +97,13 @@ Runtime authority is a single architectural layer that enforces all three govern
 1. **Reserve** — Before any consequential action (model call, tool invocation, side effect), the agent requests authorization. The system atomically checks available budget, validates permissions, and returns ALLOW, ALLOW_WITH_CAPS, or DENY.
 2. **Execute** — Only if authorized. The action happens.
 3. **Commit** — After execution, the agent reports actual cost. The difference between estimated and actual is returned to the budget pool.
-4. **Release** — If execution fails, the full reservation is returned. No budget is lost to failed operations.
+4. **Release** — If execution fails, the full [reservation](/glossary#reservation) is returned. No budget is lost to failed operations.
 
 Every step is recorded: scope, timestamp, amount, unit, action kind, decision, and reason. This is the audit trail that compliance requires — and it's generated as a side effect of enforcement, not as a separate logging concern.
 
 ### Security enforcement with RISK_POINTS
 
-Dollar budgets control spend. RISK_POINTS control what agents _do_. Each action class gets a point value based on blast radius:
+Dollar budgets control spend. [RISK_POINTS](/glossary#risk-points) control what agents _do_. Each action class gets a point value based on blast radius:
 
 | Action class | Risk points | Rationale |
 |---|:---:|---|
@@ -114,7 +114,7 @@ Dollar budgets control spend. RISK_POINTS control what agents _do_. Each action 
 | Database mutation (update/delete) | 25 | Potentially irreversible |
 | Deploy or CI trigger | 50 | Production impact |
 
-A workflow capped at 100 risk points can send 5 emails (100 points) or trigger 2 deploys (100 points) — not both. The cap forces containment. For the full action authority model, see [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects).
+A workflow capped at 100 risk points can send 5 emails (100 points) or trigger 2 deploys (100 points) — not both. The cap forces containment. For the full [action authority](/glossary#action-authority) model, see [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects).
 
 ### Hierarchical scope as organizational governance
 
@@ -218,9 +218,9 @@ Before deploying any agent to production, answer these seven questions. If you c
 
 1. **Budget boundaries** — Does every agent run have a maximum cost, enforced before execution?
 2. **Action severity tiers** — Are consequential actions (emails, deploys, mutations) scored by risk and capped per run?
-3. **Tenant isolation** — Is it impossible for Agent A's workload to consume Agent B's budget, even under concurrent execution?
+3. **[Tenant isolation](/glossary#tenant-isolation)** — Is it impossible for Agent A's workload to consume Agent B's budget, even under concurrent execution?
 4. **Audit trail** — Is every reservation, commit, release, and denial logged with scope, timestamp, amount, and reason?
-5. **Graceful degradation** — When budget is exhausted, do agents degrade to read-only instead of hard-failing or silently continuing?
+5. **[Graceful degradation](/glossary#graceful-degradation)** — When budget is exhausted, do agents degrade to read-only instead of hard-failing or silently continuing?
 6. **Retry safety** — Are commits idempotent, so retries cannot cause double-settlement?
 7. **Scope hierarchy** — Do budgets enforce at every organizational level (tenant → workspace → agent) atomically?
 
@@ -234,7 +234,7 @@ Three paths, depending on your current state:
 
 2. **Add governance to MCP-based agents immediately.** If your agents use Claude Desktop, Claude Code, Cursor, or Windsurf, the [MCP server integration](/quickstart/getting-started-with-the-mcp-server) adds budget and action authority with a single config change. No SDK. No code modifications.
 
-3. **See enforcement stop a runaway agent in real time.** The [60-second demo](/demos/) shows budget enforcement preventing a tool loop — from reservation to denial to graceful degradation. No setup required.
+3. **See enforcement stop a runaway agent in real time.** The [60-second demo](/demos/) shows budget enforcement preventing a [tool loop](/glossary#tool-loop) — from reservation to denial to graceful degradation. No setup required.
 
 ## Sources
 
