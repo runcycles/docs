@@ -26,6 +26,8 @@ const BLOG_DIR = join(ROOT, 'blog')
 const DIST_DIR = join(ROOT, '.vitepress', 'dist')
 const PDF_OUTPUT_DIR = join(DIST_DIR, 'pdfs')
 const PORT = 4323
+const PRODUCTION_BASE_URL = 'https://runcycles.io'
+const LOCAL_BASE_URL = `http://127.0.0.1:${PORT}`
 
 function extractFrontmatter(content) {
   // Handle both LF and CRLF line endings
@@ -151,6 +153,32 @@ async function renderPdf(browser, post) {
     `
   })
 
+  // Rewrite all link hrefs to use the production domain so that clicking a
+  // link in the generated PDF lands on runcycles.io, not 127.0.0.1:4323.
+  // Puppeteer serializes `href` as the fully resolved URL in the PDF, even
+  // if the attribute was stored as a relative path — so we rewrite the
+  // attribute to an absolute production URL before emitting the PDF.
+  const linkStats = await page.evaluate(({ localBase, prodBase }) => {
+    const anchors = document.querySelectorAll('a[href]')
+    let rewritten = 0
+    let relative = 0
+    for (const a of anchors) {
+      const raw = a.getAttribute('href')
+      if (!raw || raw.startsWith('#') || raw.startsWith('mailto:')) continue
+      // `a.href` returns the *resolved* URL (always absolute)
+      const resolved = a.href
+      if (resolved.startsWith(localBase)) {
+        a.setAttribute('href', prodBase + resolved.slice(localBase.length))
+        rewritten++
+      } else if (raw.startsWith('/')) {
+        // Relative path — rewrite to absolute production URL
+        a.setAttribute('href', prodBase + raw)
+        relative++
+      }
+    }
+    return { rewritten, relative, total: anchors.length }
+  }, { localBase: LOCAL_BASE_URL, prodBase: PRODUCTION_BASE_URL })
+
   // Wait briefly for any lazy content
   await new Promise(r => setTimeout(r, 500))
 
@@ -166,7 +194,7 @@ async function renderPdf(browser, post) {
   })
 
   await page.close()
-  return outputPath
+  return { outputPath, linkStats }
 }
 
 async function main() {
@@ -199,8 +227,8 @@ async function main() {
     for (const post of posts) {
       process.stdout.write(`  rendering ${post.slug}... `)
       try {
-        const outPath = await renderPdf(browser, post)
-        console.log(`✓ ${basename(outPath)}`)
+        const { outputPath, linkStats } = await renderPdf(browser, post)
+        console.log(`✓ ${basename(outputPath)} (${linkStats.rewritten + linkStats.relative}/${linkStats.total} links → prod)`)
       } catch (err) {
         console.log(`✗ failed: ${err.message}`)
       }
