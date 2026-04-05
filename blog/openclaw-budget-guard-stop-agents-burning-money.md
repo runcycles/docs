@@ -28,7 +28,7 @@ If you're running OpenClaw agents in production — or plan to — these will hi
 
 An agent stuck in a retry loop, a quality-check loop, or a recursive research task can burn through your entire API budget in minutes. Provider spending caps (OpenAI, Anthropic) are account-wide, monthly, and react too slowly. By the time the cap kicks in, the damage is done.
 
-**What the plugin does:** Every model call and tool invocation reserves budget *before* execution via a [Cycles server](/quickstart/what-is-cycles). When the budget is exhausted, the next call is blocked — not the one after the alert fires. Burn rate anomaly detection catches sudden spending spikes (like a tool loop) and fires a callback within seconds, before the budget is gone. Predictive exhaustion warnings estimate when the budget will run out and alert you proactively.
+**What the plugin does:** Every model call and tool invocation reserves budget *before* execution via a [Cycles server](/quickstart/what-is-cycles). When the budget is exhausted, the next call is blocked — not the one after the alert fires. Burn rate anomaly detection catches sudden spending spikes (like a [tool loop](/glossary#tool-loop)) and fires a callback within seconds, before the budget is gone. Predictive exhaustion warnings estimate when the budget will run out and alert you proactively.
 
 ### 2. Uncontrolled side-effects
 
@@ -38,7 +38,7 @@ Cost isn't the only risk. An agent can send 100 emails, trigger 50 deployments, 
 
 ### 3. Noisy neighbors
 
-In a multi-tenant platform or a team with shared API keys, one user's runaway agent consumes the entire budget. Other agents — serving other users — start failing because there's nothing left.
+In a multi-[tenant](/glossary#tenant) platform or a team with shared API keys, one user's runaway agent consumes the entire budget. Other agents — serving other users — start failing because there's nothing left.
 
 **What the plugin does:** Budgets are scoped per [user, session, or team](/how-to/integrating-cycles-with-openclaw#per-user-and-per-session-scoping). Each agent draws from its own allocation. One user's spike doesn't affect anyone else.
 
@@ -129,8 +129,8 @@ And continuously, the plugin:
 
 5. **Detects anomalies** — burn rate monitoring catches sudden spending spikes (configurable threshold, default 3x)
 6. **Predicts exhaustion** — estimates when budget will run out and warns before it happens
-7. **Retries through failures** — transient Cycles server errors (429/503) are retried with exponential backoff instead of causing spurious denials
-8. **Keeps long tools alive** — automatic heartbeat extends reservations for tools that run longer than 60 seconds
+7. **Retries through failures** — transient [Cycles server](/glossary#cycles-server) errors (429/503) are retried with exponential backoff instead of causing spurious denials
+8. **Keeps long tools alive** — automatic heartbeat extends [reservations](/glossary#reservation) for tools that run longer than 60 seconds
 
 When budget is exhausted, execution stops with a clear error:
 
@@ -184,7 +184,7 @@ All plugin behavior works identically — model downgrade, tool limits, prompt h
 - **Teams running OpenClaw agents in production** — you need hard limits before an overnight run becomes a $2,000 invoice, and burn rate detection to catch loops before they get there
 - **Multi-tenant platforms** — your users need isolated budgets so one customer's agent doesn't drain another's allocation
 - **Anyone building with consequential tools** — if your agent can send emails, create tickets, trigger deployments, or write to databases, you need call limits, not just cost limits
-- **Cost-conscious teams** — model downgrade and graceful degradation let you ship capable agents on tight budgets
+- **Cost-conscious teams** — model downgrade and [graceful degradation](/glossary#graceful-degradation) let you ship capable agents on tight budgets
 - **Teams that need observability** — pipe budget metrics into Datadog, Prometheus, or Grafana via OTLP, and enable session event logs for full audit trails
 
 ## Get started

@@ -24,7 +24,7 @@ Many large enterprises run both Salesforce and ServiceNow. Salesforce handles cu
 
 Each platform is shipping AI agents aggressively:
 
-- **Salesforce Agentforce** — autonomous agents that handle sales outreach, case resolution, lead nurturing, and customer communications within the Salesforce ecosystem.
+- **Salesforce Agentforce** — [autonomous agents](/glossary#autonomous-agent) that handle sales outreach, case resolution, lead nurturing, and customer communications within the Salesforce ecosystem.
 - **ServiceNow Now Assist** — AI agents that triage incidents, auto-resolve tickets, generate knowledge articles, and manage change requests within ServiceNow.
 - **Custom agents** — LangChain, CrewAI, AutoGen, or bespoke agents that operate outside both platforms, calling APIs, querying databases, and interacting with third-party services.
 
@@ -56,7 +56,7 @@ This is a familiar pattern. No single SaaS platform built cross-platform identit
 
 ## Unified Governance: One Protocol, Every Platform
 
-The Cycles protocol was designed for exactly this problem. A single Cycles tenant spans all platforms. The subject hierarchy maps naturally to enterprise organizational structure:
+The [Cycles protocol](/glossary#cycles-protocol) was designed for exactly this problem. A single Cycles [tenant](/glossary#tenant) spans all platforms. The subject hierarchy maps naturally to enterprise organizational structure:
 
 ```
 tenant:acme-corp                          → $50,000/month total AI budget
@@ -78,9 +78,9 @@ The `tenant:acme-corp` scope acts as a hard cap across all platforms. Even if in
 
 ### Two governance dimensions
 
-**Budget authority (USD_MICROCENTS)** controls how much AI agents can spend across all platforms. Every model call, API invocation, and external service request is governed by a single, unified budget. When the Salesforce Agentforce agent spends $35,000 by the 20th of the month, the ServiceNow Now Assist agents see their remaining budget drop accordingly. Concurrent reservations from both platforms against the same budget are handled atomically by the Cycles server.
+**[Budget authority](/glossary#budget-authority) ([USD_MICROCENTS](/glossary#usd-microcents))** controls how much AI agents can spend across all platforms. Every model call, API invocation, and external service request is governed by a single, unified budget. When the Salesforce Agentforce agent spends $35,000 by the 20th of the month, the ServiceNow Now Assist agents see their remaining budget drop accordingly. Concurrent [reservations](/glossary#reservation) from both platforms against the same budget are handled atomically by the [Cycles server](/glossary#cycles-server).
 
-**Action authority (RISK_POINTS)** controls what agents _do_ across all platforms. A single customer interaction spanning both platforms might look like this:
+**[Action authority](/glossary#action-authority) ([RISK_POINTS](/glossary#risk-points))** controls what agents _do_ across all platforms. A single customer interaction spanning both platforms might look like this:
 
 | Platform | Action | Risk Points |
 |----------|--------|:-----------:|
@@ -93,7 +93,7 @@ The `tenant:acme-corp` scope acts as a hard cap across all platforms. Even if in
 
 The risk budget is scoped to the interaction — via `dimensions.correlation_id` — not to the platform. When the risk budget is exhausted, all platforms stop consequential actions while reads and internal operations continue.
 
-This is action authority applied across platforms. Dollar budgets control cost. RISK_POINTS control behavior. A support agent that sends 200 customer emails costs $1.40 in tokens. The risk is not monetary — it is reputational and operational. RISK_POINTS capture what [money cannot measure](/concepts/action-authority-controlling-what-agents-do).
+This is action authority applied across platforms. Dollar budgets control cost. RISK_POINTS control behavior. A support agent that sends 200 customer emails costs $1.40 in [tokens](/glossary#tokens). The risk is not monetary — it is reputational and operational. RISK_POINTS capture what [money cannot measure](/concepts/action-authority-controlling-what-agents-do).
 
 ### How agents connect: thin connectors, not platform lock-in
 

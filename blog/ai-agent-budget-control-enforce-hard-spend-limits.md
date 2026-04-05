@@ -18,7 +18,7 @@ This is the fundamental gap in how most teams manage AI agent costs today: they 
 
 <!-- more -->
 
-## The Problem: Agents Create Exposure, Not Just Spend
+## The Problem: Agents Create [Exposure](/glossary#exposure), Not Just Spend
 
 A traditional API call is a single request with a predictable cost. An agent is a loop. Each step can trigger more steps — tool calls, sub-agent spawns, retries, chain-of-thought expansions — and each of those steps costs money.
 
@@ -71,7 +71,7 @@ This is the difference between a budget as **billing metadata** (something you r
 
 The mechanism that makes hard budget control work is the **reserve-commit lifecycle**:
 
-1. **Reserve** — before doing anything expensive, the agent requests a budget reservation for the estimated cost. The system atomically checks available budget and, if sufficient, locks that amount. If insufficient, it rejects the reservation.
+1. **Reserve** — before doing anything expensive, the agent requests a budget [reservation](/glossary#reservation) for the estimated cost. The system atomically checks available budget and, if sufficient, locks that amount. If insufficient, it rejects the reservation.
 2. **Execute** — only if the reservation succeeded. The agent makes the model call, runs the tool, or triggers the side effect.
 3. **Commit** — after execution, the agent reports the actual cost. Any difference between the estimated and actual cost is automatically returned to the budget pool.
 4. **Release** — if execution fails or is cancelled before commit, the agent explicitly releases the reservation. The full estimated amount returns to the pool.
@@ -80,17 +80,17 @@ This pattern survives the failure modes that break simpler approaches:
 
 - **Retries**: each retry attempt is a new reservation. The budget tracks cumulative exposure across all attempts, not just the latest one.
 - **Concurrency**: the reservation is atomic. Two workers cannot both claim the last $5 — one gets the reservation, the other is denied with `BUDGET_EXCEEDED`.
-- **Partial failures**: unreported reservations expire after a TTL (default 60 seconds, with a grace period for in-flight commits). Budget is not permanently lost if a process crashes mid-execution.
-- **Fan-out**: sub-agents share the parent scope's budget. The total is enforced across all branches, not per-branch.
+- **Partial failures**: unreported reservations expire after a TTL (default 60 seconds, with a [grace period](/glossary#grace-period) for in-flight commits). Budget is not permanently lost if a process crashes mid-execution.
+- **[Fan-out](/glossary#fan-out)**: sub-agents share the parent scope's budget. The total is enforced across all branches, not per-branch.
 
-When a reservation is denied, the agent has options beyond hard-stopping. It can degrade — use a cheaper model, skip optional steps, reduce context length, or defer the task. The enforcement point gives the agent a structured moment to make that decision, rather than failing silently when it runs out of API credits.
+When a reservation is denied, the agent has options beyond hard-stopping. It can degrade — use a cheaper model, skip optional steps, reduce context length, or defer the task. The enforcement point gives the agent a structured moment to make that decision, rather than failing silently when it runs out of API [credits](/glossary#credits).
 
 ## Why Budget Enforcement Prevents Real Failures
 
 These are not hypothetical scenarios. They are patterns that show up in any team running agents at scale:
 
 - **Runaway loop**: agent retries a failing API call 200 times with expanding context windows — $800 in four minutes. With budget enforcement, the agent is denied after attempt 12 when the reservation exceeds remaining budget.
-- **Retry storm**: a transient backend error triggers retries across 10 concurrent agent workers — $3,200 in aggregate before the error resolves. With atomic reservations, workers are denied as the shared budget depletes.
+- **[Retry storm](/glossary#retry-storm)**: a transient backend error triggers retries across 10 concurrent agent workers — $3,200 in aggregate before the error resolves. With atomic reservations, workers are denied as the shared budget depletes.
 - **Sub-agent fan-out**: an orchestrator spawns 15 research sub-agents, each making 50+ model calls — $1,500 total. With scoped budgets, the orchestrator's budget caps the sum of all sub-agent spend.
 - **Concurrent race**: two workers both check "budget remaining: $10" and both proceed — $20 spent on a $10 budget. Atomic reservations eliminate this: one worker gets the reservation, the other is denied.
 
@@ -105,7 +105,7 @@ Budget enforcement generates data that dashboards alone cannot provide:
 | Reserved vs. committed | How accurate your cost estimates are — tune them over time |
 | Rejection rate | How often agents hit budget limits — too high means budgets are too tight |
 | Budget exhaustion events | How often budgets run dry before tasks complete |
-| Spend by tenant / workflow / run | Where cost concentrates across your system |
+| Spend by [tenant](/glossary#tenant) / workflow / run | Where cost concentrates across your system |
 | Time-to-exhaustion | How quickly budgets are consumed — early warning for runaway patterns |
 | Released reservations | Failed or cancelled operations — indicates error rates and wasted budget |
 
@@ -131,7 +131,7 @@ Cost overruns are a symptom. The root cause is the absence of a pre-execution en
 
 - **[What is Cycles?](/quickstart/what-is-cycles)** — the runtime that implements the reserve-commit enforcement pattern
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the full reserve → execute → commit lifecycle hands-on
-- **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — the maturity curve from dashboards and alerts to runtime authority
+- **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — the maturity curve from dashboards and alerts to [runtime authority](/glossary#runtime-authority)
 - **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets, quotas, and isolation for SaaS platforms
 - **[Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why the gap between a prototype and production enforcement is larger than it looks

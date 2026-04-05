@@ -12,7 +12,7 @@ sidebar: false
 
 A team builds a research pipeline using CrewAI with three agents: a Planner that breaks topics into sub-questions, a Researcher that investigates each one, and a Writer that synthesizes the results. The Planner delegates 5 sub-questions per topic to the Researcher. For complex sub-questions, the Researcher delegates down to a Deep Analyst agent that makes 15 LLM calls per investigation. In development, one topic costs ~$3.50.
 
-In production, a batch of 40 topics kicks off overnight. The Researcher's delegation is non-deterministic — some topics trigger zero Deep Analyst calls, others trigger four. One topic causes all 5 sub-questions to delegate to the Deep Analyst, each triggering its own tool loop with retries. That single topic costs $89.
+In production, a batch of 40 topics kicks off overnight. The Researcher's delegation is non-deterministic — some topics trigger zero Deep Analyst calls, others trigger four. One topic causes all 5 sub-questions to delegate to the Deep Analyst, each triggering its own [tool loop](/glossary#tool-loop) with retries. That single topic costs $89.
 
 | Layer | Calls (expected) | Calls (worst case) | Cost (expected) | Cost (worst case) |
 |---|---|---|---|---|
@@ -28,7 +28,7 @@ The 40-topic batch: $1,740 instead of the projected $140. Most topics cost $15-3
 
 <!-- more -->
 
-## Why Delegation Chains Are Different from Fan-Out
+## Why Delegation Chains Are Different from [Fan-Out](/glossary#fan-out)
 
 [Fan-out](/blog/langgraph-budget-control-durable-execution-retries-fan-out) creates parallel branches from a single parent — the total cost is the sum of the branches. Delegation chains create serial depth — Agent A calls Agent B calls Agent C. The cost is multiplicative because each delegator's retry and loop behavior wraps around the entire subtree below it.
 
@@ -87,13 +87,13 @@ Three design principles make this work:
 
 **Diminishing allocation.** Each delegation level gets a fraction of the parent's budget, not the full remaining balance. The Deep Analyst receives $2.00 carved from the Researcher's $4.00 — not $23.00 from the run's remaining budget. This bounds the blast radius of any single agent regardless of depth.
 
-**Pre-delegation reservation.** Before Agent A delegates to Agent B, Agent A reserves the sub-budget from its own allocation. If Agent A's remaining budget cannot fund the delegation, the delegation does not happen — the agent receives a clear budget-exhausted signal and can take an alternative path. This is enforcement before the action, not observation after.
+**Pre-delegation [reservation](/glossary#reservation).** Before Agent A delegates to Agent B, Agent A reserves the sub-budget from its own allocation. If Agent A's remaining budget cannot fund the delegation, the delegation does not happen — the agent receives a clear budget-exhausted signal and can take an alternative path. This is enforcement before the action, not observation after.
 
 **Commit on return.** When the delegated agent completes, actual cost is committed and unused budget is released back to the parent. The Researcher reserved $2.00 for the Deep Analyst, but if the Deep Analyst only spent $1.30, the remaining $0.70 returns to the Researcher's pool. No budget is permanently locked.
 
 ## What This Looks Like in Practice
 
-Cycles — a runtime authority for autonomous agents — integrates with any multi-agent framework through a budget-scoped handler per agent. Each agent in the delegation chain gets its own `Subject` in the Cycles hierarchy, creating a hard limit that survives across framework boundaries.
+Cycles — a [runtime authority](/glossary#runtime-authority) for [autonomous agents](/glossary#autonomous-agent) — integrates with any multi-agent framework through a budget-scoped handler per agent. Each agent in the delegation chain gets its own `Subject` in the Cycles hierarchy, creating a hard limit that survives across framework boundaries.
 
 For CrewAI, attach a handler to each agent's LLM:
 
@@ -176,13 +176,13 @@ The difference between debugging a $1,740 bill and preventing it.
 | Debugging which agent overspent | Parse API logs, reconstruct delegation chain manually | Per-agent balance queries show where spend accumulated |
 | Non-deterministic delegation depth | Cost variance of 25× between topics | Hard limit per agent regardless of delegation path |
 
-The research pipeline from the opening scenario would have stopped at $25 per topic. The Deep Analyst's tool loop would have hit its $2.00 sub-budget after ~15 calls instead of running to 75+. The overnight batch of 40 topics would have cost at most $1,000 — bounded exposure instead of an open-ended bill.
+The research pipeline from the opening scenario would have stopped at $25 per topic. The Deep Analyst's tool loop would have hit its $2.00 sub-budget after ~15 calls instead of running to 75+. The overnight batch of 40 topics would have cost at most $1,000 — bounded [exposure](/glossary#exposure) instead of an open-ended bill.
 
 ## Next steps
 
 - **[LangGraph Budget Control for Durable Execution, Retries, and Fan-Out](/blog/langgraph-budget-control-durable-execution-retries-fan-out)** — budget enforcement for graph-based fan-out (the parallel counterpart to delegation chains)
 - **[AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)** — the reserve-commit pattern that powers per-agent enforcement
-- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — retry storm and infinite loop cost math
+- **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — [retry storm](/glossary#retry-storm) and infinite loop cost math
 - **[Budget Wrapper vs Runtime Authority for AI Agents](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why a per-agent counter is not the same as a runtime authority
 - **[How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost)** — raw provider pricing behind the cost math in this post
-- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets for teams running multi-agent systems in shared platforms
+- **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-[tenant](/glossary#tenant) budgets for teams running multi-agent systems in shared platforms

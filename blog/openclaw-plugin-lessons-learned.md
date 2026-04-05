@@ -96,7 +96,7 @@ A smaller but confusing runtime behavior: OpenClaw calls the plugin's default ex
 
 ## Lesson 4: process.env triggers a security warning
 
-OpenClaw's plugin installer scans the bundled `dist/index.js` for dangerous code patterns. Our plugin read `process.env.CYCLES_API_KEY` as a config fallback, and the same bundle contained `fetch()` calls for webhook delivery and OTLP metrics.
+OpenClaw's plugin installer scans the bundled `dist/index.js` for dangerous code patterns. Our plugin read `process.env.CYCLES_API_KEY` as a config fallback, and the same bundle contained `fetch()` calls for [webhook delivery](/glossary#webhook-delivery) and OTLP metrics.
 
 The scanner flagged this combination:
 
@@ -106,7 +106,7 @@ Environment variable access combined with network send — possible
 credential harvesting
 ```
 
-This is a false positive — we read the API key to authenticate with the Cycles server, not to exfiltrate it. But users see "dangerous code patterns" during `openclaw plugins install` and understandably hesitate.
+This is a false positive — we read the API key to authenticate with the [Cycles server](/glossary#cycles-server), not to exfiltrate it. But users see "dangerous code patterns" during `openclaw plugins install` and understandably hesitate.
 
 **Workaround:** We removed all `process.env` access from the plugin. Both `cyclesBaseUrl` and `cyclesApiKey` are now required in the plugin config. For secrets management, we document OpenClaw's built-in env var interpolation:
 
@@ -170,6 +170,6 @@ Full integration guide: [Integrating Cycles with OpenClaw](/how-to/integrating-c
 
 ## Related reading
 
-- [We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt](/blog/openclaw-budget-guard-five-dollar-agent) — what graceful degradation looks like in practice
+- [We Gave Our OpenClaw Agent a $5 Budget and Watched It Adapt](/blog/openclaw-budget-guard-five-dollar-agent) — what [graceful degradation](/glossary#graceful-degradation) looks like in practice
 - [Your OpenClaw Agent Has No Spending Limit](/blog/openclaw-budget-guard-stop-agents-burning-money) — the five problems the plugin solves
 - [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — why cost limits alone aren't enough

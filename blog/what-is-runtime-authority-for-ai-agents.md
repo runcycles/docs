@@ -19,9 +19,9 @@ The control problem is no longer just what the model says. It is what the system
 
 In a request-response system, the blast radius of a bad output is a bad output. In an agentic system, the blast radius includes money spent, emails sent, records modified, APIs called, and downstream systems triggered.
 
-That is what runtime authority is for.
+That is what [runtime authority](/glossary#runtime-authority) is for.
 
-Runtime authority governs whether an agent may consume resources, take actions, or create exposure — before the next step executes.
+Runtime authority governs whether an agent may consume resources, take actions, or create [exposure](/glossary#exposure) — before the next step executes.
 
 ## What runtime authority is
 
@@ -35,19 +35,19 @@ It is an enforcement point that sits in the execution path and can make one of t
 - **ALLOW_WITH_CAPS** — proceed, but with constraints (use a cheaper model, skip an optional step, reduce output length)
 - **DENY** — stop this action; the budget or policy does not permit it
 
-That three-way decision is what distinguishes runtime authority from binary on/off switches. It enables **graceful degradation** — an agent that runs out of budget does not crash. It adjusts.
+That [three-way decision](/glossary#three-way-decision) is what distinguishes runtime authority from binary on/off switches. It enables **[graceful degradation](/glossary#graceful-degradation)** — an agent that runs out of budget does not crash. It adjusts.
 
 The key properties of a runtime authority are:
 
 - **Pre-execution.** The decision happens before the action, not after.
 - **Enforcement.** The system can block or constrain, not just observe and report.
-- **Scoped.** Decisions apply at the right level — per tenant, per workflow, per agent, per run — not just globally.
+- **Scoped.** Decisions apply at the right level — per [tenant](/glossary#tenant), per workflow, per agent, per run — not just globally.
 - **Concurrency-safe.** Correct even when multiple agents share the same budget and act simultaneously.
 - **Reconciled.** Estimated cost is reserved before execution; actual cost is committed after. The difference is released.
 
 ## Why runtime authority matters for autonomous systems
 
-In a traditional LLM call, cost is predictable: input tokens plus output tokens, one round trip. Agents break that model. A single user request can trigger chains of model calls, tool invocations, retries, and fan-out — each with its own cost and side effects.
+In a traditional LLM call, cost is predictable: input [tokens](/glossary#tokens) plus output tokens, one round trip. Agents break that model. A single user request can trigger chains of model calls, tool invocations, retries, and [fan-out](/glossary#fan-out) — each with its own cost and side effects.
 
 Four things make agent costs fundamentally harder to predict and control:
 
@@ -106,7 +106,7 @@ Content filters and guardrails govern what a model says. Runtime authority gover
 The mechanism behind runtime authority is the [reserve/commit lifecycle](/protocol/how-reserve-commit-works-in-cycles). Instead of tracking spend after the fact, budget is reserved before execution and actual cost is committed after.
 
 1. **Reserve** — before work starts, the agent declares an estimated cost. The authority checks all applicable scopes (tenant, workflow, run) atomically and either reserves the budget or denies the request.
-2. **Execute** — work proceeds only if the reservation succeeded. The reserved amount is held against the budget, visible to all concurrent actors.
+2. **Execute** — work proceeds only if the [reservation](/glossary#reservation) succeeded. The reserved amount is held against the budget, visible to all concurrent actors.
 3. **Commit** — after work completes, the agent reports the actual cost. If actual cost was lower than the estimate, the unused remainder is released automatically.
 4. **Release** — if work is canceled before completion, the reservation is explicitly released.
 

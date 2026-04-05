@@ -18,7 +18,7 @@ These patterns aren't mutually exclusive — most production systems combine two
 
 > **Note:** Code examples in this post are simplified pseudocode to illustrate the pattern intent. For production-ready implementations using the actual Cycles SDK, see the [Python quickstart](/quickstart/getting-started-with-the-python-client), [TypeScript quickstart](/quickstart/getting-started-with-the-typescript-client), or [common budget patterns](/how-to/common-budget-patterns).
 
-## Pattern 1: Tenant Isolation Budgets
+## Pattern 1: [Tenant](/glossary#tenant)t Isolation](/glossary#tenant-isolation) Budgets
 
 **When to use:** Multi-tenant platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
 
@@ -82,7 +82,7 @@ async def run_workflow(workflow_type, input_data):
 - Requires understanding the cost distribution of each workflow upfront
 - New workflows need budget configuration before deployment
 
-## Pattern 3: Per-Run Budgets with Graceful Degradation
+## Pattern 3: Per-Run Budgets with [Graceful Degradation](/glossary#graceful-degradation)
 
 **When to use:** When you want agents to produce _some_ result even when they hit budget limits, rather than failing entirely.
 
@@ -200,7 +200,7 @@ shadow_report = cycles.get_shadow_report(
 
 Our [shadow mode rollout guide](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) walks through the full process, including how to analyze shadow logs and choose enforcement cutover criteria.
 
-## Pattern 6: Hybrid Model (Tokens + Dollars)
+## Pattern 6: Hybrid Model ([Tokens](/glossary#tokens) + Dollars)
 
 **When to use:** When you need to track both the raw resource consumption (tokens) and the monetary cost (dollars), because they don't always move in lockstep.
 

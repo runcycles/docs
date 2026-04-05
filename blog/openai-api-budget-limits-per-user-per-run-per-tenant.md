@@ -18,7 +18,7 @@ The org-level cap? Still at 60%. It does not trigger. The problem is not that th
 
 ## The Granularity Gap in OpenAI Spending Controls
 
-OpenAI provides three levels of spending controls: organization monthly caps, project-level budgets, and usage tier limits. These are designed to protect OpenAI's billing relationship with you. They are not designed to protect you from individual users, individual agent runs, or individual tenants running up the bill.
+OpenAI provides three levels of spending controls: organization monthly caps, project-level budgets, and usage tier limits. These are designed to protect OpenAI's billing relationship with you. They are not designed to protect you from individual users, individual agent runs, or individual [tenants](/glossary#tenant) running up the bill.
 
 Here is the gap:
 
@@ -26,7 +26,7 @@ Here is the gap:
 - **Project budgets** — closer to useful, but project boundaries do not map to user boundaries or run boundaries. A project can contain thousands of agent runs, and the budget does not distinguish between them.
 - **Usage tiers** — rate-limiting mechanisms tied to your account's trust level. They throttle requests per minute, not spend per user or per run.
 
-The common thread: these controls protect OpenAI's exposure to you. They do not protect your exposure to individual actors within your system.
+The common thread: these controls protect OpenAI's [exposure](/glossary#exposure) to you. They do not protect your exposure to individual actors within your system.
 
 | Control | Granularity | Blocks next call? | Prevents runaway agent? |
 |---|---|---|---|
@@ -37,7 +37,7 @@ The common thread: these controls protect OpenAI's exposure to you. They do not 
 | **Per-run cap** | Single agent execution | **Yes (pre-execution)** | **Yes** |
 | **Per-tenant monthly limit** | Customer / team | **Yes (pre-execution)** | **Yes** |
 
-The bottom three rows require enforcement outside of OpenAI — a runtime authority that sits between your application and the API, making a deterministic allow/deny decision before every call. For the general argument about why post-hoc controls fail, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits). For how this compares to other tools in the stack, see [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools).
+The bottom three rows require enforcement outside of OpenAI — a [runtime authority](/glossary#runtime-authority) that sits between your application and the API, making a deterministic allow/deny decision before every call. For the general argument about why post-hoc controls fail, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits). For how this compares to other tools in the stack, see [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools).
 
 ## Three Budget Patterns for OpenAI Agents
 
@@ -80,7 +80,7 @@ def agent_step(prompt: str) -> str:
     return openai.chat.completions.create(...)
 ```
 
-**When to use:** autonomous agents, CI/CD pipelines, overnight batch jobs, any workload where a single execution can spiral.
+**When to use:** [autonomous agents](/glossary#autonomous-agent), CI/CD pipelines, overnight batch jobs, any workload where a single execution can spiral.
 
 ### Pattern 3: Per-Tenant Monthly Limit
 
@@ -104,14 +104,14 @@ def handle_request(prompt: str) -> str:
 | Pattern | Scope string | What it prevents | Best for |
 |---|---|---|---|
 | Per-user daily | `tenant:acme/app:chatbot/agent:{user_id}` | One user consuming all budget | Consumer apps, internal tools |
-| Per-run cap | `tenant:acme/workflow:{run_id}` | Runaway loops, retry storms | Autonomous agents, batch jobs |
+| Per-run cap | `tenant:acme/workflow:{run_id}` | Runaway loops, [retry storms](/glossary#retry-storm) | Autonomous agents, batch jobs |
 | Per-tenant monthly | `tenant:{customer_id}` | Noisy-neighbor cascading | SaaS, multi-tenant platforms |
 
 For full implementation recipes with admin API setup, reset schedules, and budget creation, see [Common Budget Patterns](/how-to/common-budget-patterns). For how the scope hierarchy works, see [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
 
 ## Why Reserve-Commit Works with OpenAI's Token-Based Billing
 
-OpenAI charges per token, and the challenge is that you do not know the exact output token count before the call. You know your input. You set `max_tokens` for the output ceiling. But the actual output could be 50 tokens or 4,000 tokens. You need to reserve budget before the call — and you need to not permanently lose the difference.
+OpenAI charges per token, and the challenge is that you do not know the exact output token count before the call. You know your input. You set `max_tokens` for the output ceiling. But the actual output could be 50 [tokens](/glossary#tokens) or 4,000 tokens. You need to reserve budget before the call — and you need to not permanently lose the difference.
 
 The reserve-commit lifecycle solves this:
 
@@ -123,7 +123,7 @@ output_cost = 1,024 max output   × 1,000 microcents = 1,024,000
 total       = 1,524,000 microcents (~$0.015)
 ```
 
-2. **Reserve** — lock 1,524,000 microcents from the budget. If insufficient, the reservation is denied and OpenAI is never called.
+2. **Reserve** — lock 1,524,000 microcents from the budget. If insufficient, the [reservation](/glossary#reservation) is denied and OpenAI is never called.
 
 3. **Execute** — make the OpenAI API call. The response comes back with `usage.completion_tokens: 600`.
 
@@ -135,7 +135,7 @@ actual = 2,000 × 250 + 600 × 1,000 = 1,100,000 microcents
 
 5. **Release** — the 424,000 microcent difference is returned to the budget pool automatically.
 
-This pattern works for every OpenAI model — GPT-4o, GPT-4o-mini, o3, o3-mini, GPT-4.1, GPT-4.1-mini, GPT-4.1-nano — because the lifecycle is model-agnostic. Only the pricing constants change. For the full pricing table in USD_MICROCENTS, see [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet). For the production decorator pattern with `tiktoken`, metrics reporting, and caps handling, see [Integrating Cycles with OpenAI](/how-to/integrating-cycles-with-openai). For the protocol-level mechanics, see [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles).
+This pattern works for every OpenAI model — GPT-4o, GPT-4o-mini, o3, o3-mini, GPT-4.1, GPT-4.1-mini, GPT-4.1-nano — because the lifecycle is model-agnostic. Only the pricing constants change. For the full pricing table in [USD_MICROCENTS](/glossary#usd-microcents), see [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet). For the production decorator pattern with `tiktoken`, metrics reporting, and caps handling, see [Integrating Cycles with OpenAI](/how-to/integrating-cycles-with-openai). For the protocol-level mechanics, see [How Reserve/Commit Works](/protocol/how-reserve-commit-works-in-cycles).
 
 ## Combining Patterns: The Hierarchical Budget Stack
 
@@ -154,13 +154,13 @@ When the agent calls `@cycles(tenant="customer-a", app="chatbot", workflow="run-
 - This run has hit its $3 cap? Denied — even if the user has $8 left today.
 - The tenant has reached $500 for the month? Denied — even if the user and run have budget.
 
-Each scope catches a different category of failure. The hierarchy ensures that no single level can override the others. For the full scope derivation model, see [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles). For the multi-tenant deep dive, see [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation).
+Each scope catches a different category of failure. The hierarchy ensures that no single level can override the others. For the full [scope derivation](/glossary#scope-derivation) model, see [Understanding Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles). For the multi-tenant deep dive, see [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation).
 
 ## What Happens When Budget Runs Out
 
 An OpenAI call gets denied — then what? A hard stop is one option, but not the only one.
 
-Cycles returns a three-way decision, not a binary allow/deny:
+Cycles returns a [three-way decision](/glossary#three-way-decision), not a binary allow/deny:
 
 | Decision | What it means | What to do |
 |---|---|---|

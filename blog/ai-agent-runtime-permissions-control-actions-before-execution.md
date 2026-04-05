@@ -36,7 +36,7 @@ When an agent calls a tool, it does not produce a suggestion for a human to revi
 | 4 | **Mutation** | DB deletes, config changes, permission grants, record updates | Often irreversible | System-wide |
 | 5 | **Execution** | Deploys, CI triggers, payment processing, infrastructure changes | Irreversible in practice | Production users affected |
 
-A tier-1 action that goes wrong is invisible. A tier-3 action that goes wrong is a customer-facing incident. A tier-5 action that goes wrong is a production outage. The risk difference between tiers is not about cost — a deploy and a search query may cost the same in tokens. The difference is what happens when the action should not have been taken.
+A tier-1 action that goes wrong is invisible. A tier-3 action that goes wrong is a customer-facing incident. A tier-5 action that goes wrong is a production outage. The risk difference between tiers is not about cost — a deploy and a search query may cost the same in [tokens](/glossary#tokens). The difference is what happens when the action should not have been taken.
 
 Every team building agents implicitly accepts a risk surface defined by which tiers their agents can reach. Most teams have not explicitly decided where that boundary should be — or how to enforce it at runtime.
 
@@ -60,7 +60,7 @@ Teams already have controls. The problem is that none of them govern what an age
 | Observability | Visibility and audit | After execution | No — reports, does not enforce |
 | **Runtime permissions** | **Action authorization** | **Before each action** | **Yes** |
 
-The gap is clear. No existing layer provides AI agent action control at the moment it matters — before execution. None of these controls make a pre-execution decision about whether a specific action should proceed given the current runtime context: how many actions have already been taken, which tools have already been used, and what the cumulative exposure looks like right now.
+The gap is clear. No existing layer provides AI agent action control at the moment it matters — before execution. None of these controls make a pre-execution decision about whether a specific action should proceed given the current runtime context: how many actions have already been taken, which tools have already been used, and what the cumulative [exposure](/glossary#exposure) looks like right now.
 
 ## Runtime permissions: the missing layer for AI agent action control
 
@@ -68,24 +68,24 @@ Runtime permissions are pre-execution decisions about whether an agent may invok
 
 This is different from static configuration. A static tool allowlist says "this agent can send emails" — a decision made at deploy time. A runtime permission says "this agent can send emails, but it has already sent 5 in this run, and its action budget for external writes is exhausted, so the next email is denied." The first is a capability declaration. The second is a live enforcement decision that adapts as the agent acts.
 
-Runtime permissions use the same three-way decision model as budget enforcement:
+Runtime permissions use the same [three-way decision](/glossary#three-way-decision) model as budget enforcement:
 
 - **ALLOW** — the action is within limits; proceed normally
 - **ALLOW_WITH_CAPS** — the action is allowed but should be constrained (disable certain tools, limit remaining steps)
 - **DENY** — the action is not permitted; the agent must stop or degrade
 
-The three-way model is what makes runtime permissions practical. A binary allow/deny forces hard stops. ALLOW_WITH_CAPS enables graceful degradation — the agent loses dangerous capabilities while retaining useful ones.
+The three-way model is what makes runtime permissions practical. A binary allow/deny forces hard stops. ALLOW_WITH_CAPS enables [graceful degradation](/glossary#graceful-degradation) — the agent loses dangerous capabilities while retaining useful ones.
 
 ### Tool allowlists and denylists
 
-Runtime permissions can control which tools are available to an agent at any point during execution. When a reservation returns ALLOW_WITH_CAPS, the response includes a `caps` object that may contain:
+Runtime permissions can control which tools are available to an agent at any point during execution. When a [reservation](/glossary#reservation) returns ALLOW_WITH_CAPS, the response includes a `caps` object that may contain:
 
 - **`tool_allowlist`** — only these tools may be used (everything else is implicitly denied)
 - **`tool_denylist`** — these specific tools are blocked (everything else is allowed)
 
 This is not static configuration. The allowlist or denylist is computed at decision time based on remaining budget, consumed risk points, and configured policy. An agent that starts with full tool access may lose access to high-risk tools mid-run — not because the code changed, but because the runtime state changed.
 
-### RISK_POINTS: a non-monetary unit for action risk
+### [RISK_POINTS](/glossary#risk-points): a non-monetary unit for action risk
 
 Dollar budgets measure financial exposure. But the opening scenario shows that the costliest incidents are not the most expensive in token terms. Two hundred wrong emails cost $1.40 in model calls and $34,000 in business damage.
 
@@ -122,9 +122,9 @@ The agent does not crash. It does not throw an unhandled exception. It continues
 
 This is the "disable" degradation strategy applied to actions rather than cost. The same agent, the same code, the same tools — but the runtime determines which tools are reachable at each step.
 
-## Scoped action authority
+## Scoped [action authority](/glossary#action-authority)
 
-Action permissions are hierarchical. The Cycles scope hierarchy — tenant, workspace, app, workflow, agent, toolset — applies to action authority the same way it applies to budget authority.
+Action permissions are hierarchical. The Cycles scope hierarchy — [tenant](/glossary#tenant), workspace, app, workflow, agent, toolset — applies to action authority the same way it applies to [budget authority](/glossary#budget-authority).
 
 ```
 tenant:acme
@@ -141,7 +141,7 @@ The scoping model enables three patterns that flat permission systems cannot:
 
 **Per-workflow policies.** A billing-dispute workflow blocks autonomous email; a shipping-update workflow allows it. Same agent, same tools, different runtime permissions depending on the workflow context.
 
-**Per-tenant isolation.** Customer A's agents can call external APIs; Customer B's cannot. Same codebase, same deployment, different action surfaces configured through budget provisioning — not code changes.
+**Per-[tenant isolation](/glossary#tenant-isolation).** Customer A's agents can call external APIs; Customer B's cannot. Same codebase, same deployment, different action surfaces configured through budget provisioning — not code changes.
 
 **Scope isolation.** One agent's actions do not erode another agent's permissions. If Agent A exhausts its email budget, Agent B's email budget is unaffected. Each scope path has its own independent ledger.
 
@@ -161,7 +161,7 @@ Design-time controls answer "can this agent ever send emails?" Runtime controls 
 
 Only runtime controls can distinguish the agent's 1st email from its 50th. Only runtime controls can adapt as the agent acts. And only runtime controls can make a decision that changes based on cumulative exposure rather than static policy.
 
-An agent that was correctly configured at design time — with the right tools, the right prompt, the right model — can still produce a catastrophic outcome at runtime when conditions diverge from expectations. This is why AI agent permissions must be enforced at runtime, not just at deploy time. The opening scenario is exactly this: a correctly configured agent operating on unexpected input, with no runtime authority to constrain its actions when they became inappropriate.
+An agent that was correctly configured at design time — with the right tools, the right prompt, the right model — can still produce a catastrophic outcome at runtime when conditions diverge from expectations. This is why AI agent permissions must be enforced at runtime, not just at deploy time. The opening scenario is exactly this: a correctly configured agent operating on unexpected input, with no [runtime authority](/glossary#runtime-authority) to constrain its actions when they became inappropriate.
 
 ## Practical patterns
 
@@ -237,7 +237,7 @@ Same agent code, same deployment. The runtime determines what each tenant's agen
 
 ## What this looks like with Cycles
 
-Cycles enforces action authority through the same [reserve-commit protocol](/protocol/how-reserve-commit-works-in-cycles) used for budget authority. RISK_POINTS is a first-class unit alongside USD_MICROCENTS and TOKENS. The reserve-commit lifecycle works identically:
+Cycles enforces action authority through the same [reserve-commit protocol](/protocol/how-reserve-commit-works-in-cycles) used for budget authority. RISK_POINTS is a first-class unit alongside [USD_MICROCENTS](/glossary#usd-microcents) and TOKENS. The reserve-commit lifecycle works identically:
 
 1. **Reserve** — before the tool call, request permission by reserving RISK_POINTS
 2. **Execute** — only if the reservation succeeds (ALLOW or ALLOW_WITH_CAPS)
@@ -267,5 +267,5 @@ For agent frameworks (LangGraph, CrewAI, custom loops) and coding agents (Claude
 - **[Action Authority Demo: Blocking a Customer Email](/blog/action-authority-demo-support-agent-walkthrough)** — hands-on walkthrough of a support agent where Cycles blocks email before execution
 - **[Runtime Authority vs Guardrails vs Observability](/blog/runtime-authority-vs-guardrails-vs-observability)** — how runtime authority complements guardrails and observability
 - **[What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents)** — foundational explainer on pre-execution enforcement
-- **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, USD_MICROCENTS, TOKENS, and CREDITS reference
+- **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, USD_MICROCENTS, TOKENS, and [CREDITS](/glossary#credits) reference
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — zero to a working budget-guarded app in 10 minutes

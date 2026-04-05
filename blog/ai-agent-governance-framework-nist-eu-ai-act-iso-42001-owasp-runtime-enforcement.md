@@ -33,13 +33,13 @@ For AI agents that qualify as high-risk AI systems, five articles create direct 
 
 **Article 9 — Risk Management System.** Providers of high-risk AI systems must establish a continuous, iterative risk management system throughout the system's lifecycle. This includes identifying foreseeable risks, estimating their severity, and adopting measures to eliminate or mitigate them. For agents, "foreseeable risks" include runaway cost spirals, unauthorized actions, and cascading failures across multi-agent workflows — precisely the failure modes documented in [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) and [5 Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents).
 
-**Article 12 — Record-Keeping.** High-risk AI systems must have automatic logging capabilities that enable monitoring of operation and traceability of decisions. Logs must record periods of use, input data, and identification of persons involved in verification. For agents, this means every tool call, every budget reservation, every action decision must be recorded with full context — not reconstructed from scattered application logs after an incident.
+**Article 12 — Record-Keeping.** High-risk AI systems must have automatic logging capabilities that enable monitoring of operation and traceability of decisions. Logs must record periods of use, input data, and identification of persons involved in verification. For agents, this means every tool call, every budget [reservation](/glossary#reservation), every action decision must be recorded with full context — not reconstructed from scattered application logs after an incident.
 
 **Article 13 — Transparency.** Systems must operate with sufficient transparency that deployers can interpret and use the system's output appropriately. For agents, this means the human operator must be able to understand what the agent is doing, why it was allowed to do it, and what constraints are in effect.
 
 **Article 14 — Human Oversight.** High-risk AI systems must be designed to allow effective human oversight, including the ability to understand capabilities and limitations, monitor operation, interpret outputs, and — critically — **interrupt the system's operation via a stop mechanism.** An agent that cannot be stopped mid-execution, or that degrades catastrophically when stopped, fails this requirement.
 
-**Article 15 — Accuracy, Robustness, and Cybersecurity.** Systems must achieve appropriate levels of resilience to errors, faults, and inconsistencies, and must be protected against unauthorized manipulation. For agents operating in multi-tenant environments, this means one tenant's agent cannot compromise another tenant's data or budget.
+**Article 15 — Accuracy, Robustness, and Cybersecurity.** Systems must achieve appropriate levels of resilience to errors, faults, and inconsistencies, and must be protected against unauthorized manipulation. For agents operating in multi-[tenant](/glossary#tenant) environments, this means one tenant's agent cannot compromise another tenant's data or budget.
 
 ### NIST AI Risk Management Framework (AI RMF 1.0)
 
@@ -52,11 +52,11 @@ For agent deployments, the four functions translate to:
 | RMF Function | Agent Governance Requirement |
 |---|---|
 | **Govern** | Define who can deploy agents, what budgets apply, what actions are allowed |
-| **Map** | Identify risk surfaces: tool access, cost exposure, multi-tenant blast radius |
+| **Map** | Identify risk surfaces: tool access, cost [exposure](/glossary#exposure), multi-tenant blast radius |
 | **Measure** | Track cost variance, action frequency, budget utilization, policy violations |
 | **Manage** | Enforce limits, degrade gracefully under constraint, stop agents when necessary |
 
-The February 2026 [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) extends this further, signaling that NIST considers autonomous agents a distinct governance challenge that existing frameworks address only partially.
+The February 2026 [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) extends this further, signaling that NIST considers [autonomous agents](/glossary#autonomous-agent) a distinct governance challenge that existing frameworks address only partially.
 
 ### ISO/IEC 42001:2023 — AI Management System
 
@@ -124,9 +124,9 @@ Teams implement rate limits, provider spending caps, or application-level counte
 
 **What this satisfies:** Partial Article 9 (some risk mitigation). Partial NIST Manage (some automated response). Better than Level 2 for OWASP least-agency principle (some constraint on authority).
 
-**What this does not satisfy:** Atomicity requirements for multi-tenant isolation (Article 15). Reliable stop mechanism (Article 14). Comprehensive audit trail with scope attribution (Article 12). The gaps are well-documented in [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
+**What this does not satisfy:** Atomicity requirements for multi-[tenant isolation](/glossary#tenant-isolation) (Article 15). Reliable stop mechanism (Article 14). Comprehensive audit trail with scope attribution (Article 12). The gaps are well-documented in [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
 
-### Level 4: Runtime Authority
+### Level 4: [Runtime Authority](/glossary#runtime-authority)
 
 Pre-execution enforcement with atomic budget operations. Every agent action passes through a reserve-commit gate before execution. Budgets are hierarchical (tenant → workspace → workflow → run). Actions are scored by risk. The audit trail is a byproduct of enforcement, not a separate logging system.
 
@@ -171,7 +171,7 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 **What "good" looks like:** Each action type has an assigned risk score. High-consequence actions (email, deploy, delete, payment) consume more risk budget than low-consequence ones (read, search, summarize). An agent can reason freely but is constrained on dangerous operations.
 
-**What happens without it:** A support agent [sent 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects). Total model cost: $1.40. Business impact: $50K+ in lost pipeline. No spending limit would have prevented this — the damage was in the action, not the tokens.
+**What happens without it:** A support agent [sent 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects). Total model cost: $1.40. Business impact: $50K+ in lost pipeline. No spending limit would have prevented this — the damage was in the action, not the [tokens](/glossary#tokens).
 
 **How Cycles implements it:** [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) — budgets denominated in blast radius, not dollars. A `send_email` tool might cost 20 risk points; a `search_knowledge_base` tool costs 1. The agent exhausts its action budget before it can send the 201st email.
 
@@ -193,9 +193,9 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 **What happens without it:** After an incident, teams spend days reconstructing what happened from scattered application logs, provider billing dashboards, and Slack messages. The [production gap](/blog/ai-agent-production-gap-what-developers-are-saying) is not just operational — it is evidentiary.
 
-**How Cycles implements it:** Every reservation, commit, release, and [event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) creates a structured, queryable record via the REST API. Retention is 90 days in hot storage, with export to cold storage for long-term compliance. The admin server records all administrative operations separately.
+**How Cycles implements it:** Every reservation, commit, release, and [event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) creates a structured, queryable record via the REST API. Retention is 90 days in hot storage, with export to cold storage for long-term compliance. The [admin server](/glossary#admin-server) records all administrative operations separately.
 
-### Control 5: Graceful Degradation Under Constraint
+### Control 5: [Graceful Degradation](/glossary#graceful-degradation) Under Constraint
 
 **What regulators require:** Article 14 (human oversight, ability to interrupt), Article 15 (resilience to faults), NIST Manage (proportionate response).
 
@@ -281,7 +281,7 @@ Governance is not a feature you add after shipping. It is the infrastructure tha
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational concept
 - [AI Agent Governance: Runtime Enforcement for Security, Cost, and Compliance](/blog/ai-agent-governance-runtime-enforcement-security-cost-compliance) — incidents and the three-pillar framework
 - [Zero-Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — why every tool call needs a policy decision
-- [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — RISK_POINTS and tool allowlists
+- [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — [RISK_POINTS](/glossary#risk-points) and tool allowlists
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — the reserve-commit protocol
 - [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-tenant enforcement and isolation
 - [The AI Agent Production Gap](/blog/ai-agent-production-gap-what-developers-are-saying) — what the community is saying

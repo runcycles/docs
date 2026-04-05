@@ -65,7 +65,7 @@ Each approach has a specific failure mode when it comes to controlling spend:
 
 **System prompts** are suggestions, not constraints. An LLM can and does ignore them — especially under complex reasoning chains, tool-use loops, or adversarial inputs. You cannot enforce a budget by asking a probabilistic system to count. A [$12,400 weekend batch run](/blog/true-cost-of-uncontrolled-agents) doesn't happen because the agent decided to ignore its instructions. It happens because the agent was doing exactly what it was told — just more times than anyone anticipated.
 
-**Proxy rate limits** manage request and spend controls well at the LLM layer — but they don't unify into a general action-governance layer for the entire agent runtime. If your agent calls OpenAI for reasoning, Stable Diffusion for images, and a paid data API for stock quotes, no single proxy sees the aggregate cost across all of them. Rate limits also throttle everything equally — they can't distinguish between a $0.03 lookup and a $7.20 multi-step research chain. And they typically operate per-key, not per-agent, per-tenant, or per-workflow.
+**Proxy rate limits** manage request and spend controls well at the LLM layer — but they don't unify into a general action-governance layer for the entire agent runtime. If your agent calls OpenAI for reasoning, Stable Diffusion for images, and a paid data API for stock quotes, no single proxy sees the aggregate cost across all of them. Rate limits also throttle everything equally — they can't distinguish between a $0.03 lookup and a $7.20 multi-step research chain. And they typically operate per-key, not per-agent, per-[tenant](/glossary#tenant), or per-workflow.
 
 **Framework guards** are tightly coupled to one orchestration layer. A max-iteration count in LangGraph doesn't protect you if the agent makes an expensive external API call on iteration one. And if you switch frameworks — or run agents across multiple frameworks — each guard is framework-specific and none of them compose.
 
@@ -83,7 +83,7 @@ Risk is different.
 
 Cost measures how much an agent spends. Risk measures what an agent does — and the security implications of those actions. The gap in agent risk management is wider than the cost gap, because most teams haven't built any risk controls at all.
 
-Consider an agent with tool access to send emails. It enters a loop and sends 200 messages to customers. The token cost is $1.40. The business damage — customer trust, support escalation, potential regulatory exposure — could be $50,000 or more. No cost cap in the world prevents that, because the cost was trivial. The harm was in the action.
+Consider an agent with tool access to send emails. It enters a loop and sends 200 messages to customers. The token cost is $1.40. The business damage — customer trust, support escalation, potential regulatory [exposure](/glossary#exposure) — could be $50,000 or more. No cost cap in the world prevents that, because the cost was trivial. The harm was in the action.
 
 This is where every approach listed above fails simultaneously:
 
@@ -133,7 +133,7 @@ The shift isn't conceptual — it's architectural. Instead of hoping guardrails 
 | Proxy rate limit per provider | Cross-provider budget scope: one enforcement point across all models and tools |
 | Framework max-iteration count | [Action authority with RISK_POINTS](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk): per-tool limits scored by blast radius, not just iteration count |
 | Spend dashboard + alert | Pre-execution DENY: the call doesn't happen, not "we'll tell you it happened" |
-| Custom rate limiter across providers | [Reserve-commit](/blog/what-is-runtime-authority-for-ai-agents) with built-in action authority: one system for both cost and risk, no custom integration per provider |
+| Custom rate limiter across providers | [Reserve-commit](/blog/what-is-runtime-authority-for-ai-agents) with built-in [action authority](/glossary#action-authority): one system for both cost and risk, no custom integration per provider |
 | Inherited permissions in delegation | [Authority attenuation](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation): each sub-agent gets a carved-out sub-budget and restricted action mask |
 
 The pattern is the same in every row: move the decision upstream, from after execution to before it. From semantic to structural. From observation to enforcement.

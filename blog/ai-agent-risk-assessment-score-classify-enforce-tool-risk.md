@@ -38,13 +38,13 @@ A tool-level risk assessment is a practical way to operationalize these requirem
 
 ## The Three Risk Dimensions
 
-Agent risk is not one-dimensional. Teams that assess only cost exposure miss the two dimensions where the worst incidents happen.
+Agent risk is not one-dimensional. Teams that assess only cost [exposure](/glossary#exposure) miss the two dimensions where the worst incidents happen.
 
 ### Dimension 1: Cost Risk
 
-The agent spends more than expected. Runaway loops, retry storms, expanding context windows, concurrent agent bursts. The failure mode is financial — unexpected invoices, blown budgets, margin erosion.
+The agent spends more than expected. Runaway loops, [retry storms](/glossary#retry-storm), expanding context windows, concurrent agent bursts. The failure mode is financial — unexpected invoices, blown budgets, margin erosion.
 
-**Unit of measurement:** Dollars, tokens, API calls.
+**Unit of measurement:** Dollars, [tokens](/glossary#tokens), API calls.
 **Existing coverage:** Most teams assess this first. See [How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost) and [AI Agent Cost Management](/blog/ai-agent-cost-management-guide) for detailed analysis.
 
 ### Dimension 2: Action Risk
@@ -115,7 +115,7 @@ This classification alone tells you something important: **half the agent's tool
 
 **A note on reads in regulated environments.** The tier system isolates side-effect risk — actions that change state in the world. But in regulated or exfiltration-prone environments, sensitive read tools may warrant non-zero risk points or a separate data-access budget. An agent that reads 10,000 customer records in a single run has not changed any state, but it has created a data-exposure surface that [OWASP ASI03 (identity and privilege abuse)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) and NIST's [Map function](https://airc.nist.gov/airmf-resources/playbook/map/) both flag as a risk. If your agent handles PII, financial, or health data, consider assigning 1–2 risk points to sensitive reads or tracking them under a separate `DATA_ACCESS` budget that limits read volume independently of action risk.
 
-## Assigning Risk Scores: The RISK_POINTS Methodology
+## Assigning Risk Scores: The [RISK_POINTS](/glossary#risk-points) Methodology
 
 Classification tells you *which* tools are dangerous. Risk scoring tells you *how much* danger to allow per run. [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) are budgets denominated in blast radius, not dollars — the mechanism that turns a risk assessment into an enforceable limit.
 
@@ -443,5 +443,5 @@ The assessment can usually be done in an afternoon for a typical agent with 10�
 - [5 Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents) — incident math for action failures
 - [Shadow Mode](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — validating enforcement without blocking production
 - [The AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — mapping regulatory requirements to runtime controls
-- [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS
+- [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — [USD_MICROCENTS](/glossary#usd-microcents), TOKENS, [CREDITS](/glossary#credits), and RISK_POINTS
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — DENY, downgrade, disable, or defer

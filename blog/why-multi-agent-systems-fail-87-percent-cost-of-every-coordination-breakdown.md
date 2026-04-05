@@ -18,7 +18,7 @@ The published MAST and SEMAP literature explains how multi-agent systems fail, b
 
 That's the gap between failure *rate* research and failure *cost* research. UC Berkeley's [MAST taxonomy](https://arxiv.org/abs/2503.13657) — the first systematic study of multi-agent LLM failures — analyzed 1,642 execution traces across seven frameworks and found failure rates ranging from 41% to 86.7%. The taxonomy identifies 14 distinct failure modes in three categories. It tells you *how* multi-agent systems break. It doesn't model what each break costs.
 
-This post fills that gap. The MAST paper explains how multi-agent systems fail; we model what those failures cost in production. We map each MAST failure category to an illustrative cost signature — the mechanism by which a coordination breakdown becomes a line item on your invoice — and show where runtime authority prevents the cost from compounding. The dollar figures in this post are scenario models based on published token pricing, not measured production data.
+This post fills that gap. The MAST paper explains how multi-agent systems fail; we model what those failures cost in production. We map each MAST failure category to an illustrative cost signature — the mechanism by which a coordination breakdown becomes a line item on your invoice — and show where [runtime authority](/glossary#runtime-authority) prevents the cost from compounding. The dollar figures in this post are scenario models based on published token pricing, not measured production data.
 
 ## The Numbers: 14 Failure Modes, Three Categories, 41–87% Failure Rates
 
@@ -42,7 +42,7 @@ The following cost models are illustrative scenarios based on published per-toke
 
 ### Category 1: Inter-Agent Misalignment (32.3% of failures)
 
-**What happens:** Agent A passes context to Agent B. Agent B misinterprets it, proceeds with wrong assumptions, and produces output that Agent C builds on. The error propagates through the chain. By the time it surfaces — if it surfaces at all — three agents have consumed tokens based on a wrong premise.
+**What happens:** Agent A passes context to Agent B. Agent B misinterprets it, proceeds with wrong assumptions, and produces output that Agent C builds on. The error propagates through the chain. By the time it surfaces — if it surfaces at all — three agents have consumed [tokens](/glossary#tokens) based on a wrong premise.
 
 **Cost signature: Token multiplication through error propagation.**
 
@@ -130,7 +130,7 @@ Observability tells you the temperature of the room. It doesn't stop the thermos
 
 ## How Runtime Authority Contains the Blast Radius
 
-Runtime authority doesn't fix coordination — it bounds the cost of coordination failures. Every agent call requires a budget reservation *before* execution. When the budget is exhausted, the next call is denied. The failure still occurs, but the cost is capped.
+Runtime authority doesn't fix coordination — it bounds the cost of coordination failures. Every agent call requires a budget [reservation](/glossary#reservation) *before* execution. When the budget is exhausted, the next call is denied. The failure still occurs, but the cost is capped.
 
 Here's how each MAST failure category maps to runtime authority enforcement:
 

@@ -43,11 +43,11 @@ Every observable state change in the system produces an event. We organized them
 | Category | Count | Covers |
 |---|---|---|
 | **budget** | 15 | Created, funded, debited, frozen, closed, threshold crossed, exhausted, over-limit, debt incurred, burn rate anomaly |
-| **reservation** | 5 | Denied, denial rate spike, expired, expiry rate spike, commit overage |
-| **tenant** | 6 | Created, updated, suspended, reactivated, closed, settings changed |
+| **[reservation](/glossary#reservation)** | 5 | Denied, denial rate spike, expired, expiry rate spike, commit overage |
+| **[tenant](/glossary#tenant)** | 6 | Created, updated, suspended, reactivated, closed, settings changed |
 | **api_key** | 6 | Created, revoked, expired, permissions changed, auth failed, auth failure rate spike |
 | **policy** | 3 | Created, updated, deleted |
-| **system** | 5 | Store connection lost/restored, high latency, webhook delivery failed, webhook test |
+| **system** | 5 | Store connection lost/restored, high latency, [webhook delivery](/glossary#webhook-delivery) failed, webhook test |
 
 The six events that matter most for incident response:
 
@@ -60,7 +60,7 @@ The six events that matter most for incident response:
 | `api_key.auth_failed` | Authentication attempt with invalid key | Security event — possible credential leak or misconfiguration |
 | `system.store_connection_lost` | Redis connection failed | Infrastructure incident — budget enforcement depends on Redis availability |
 
-Every event includes a standard payload: who caused it (`actor`), what changed (`data`), where it happened (`scope` path like `tenant:acme-corp/workspace:prod/agent:support-bot`), and a millisecond-precision `timestamp`. Events are emitted by both the runtime enforcement server (reserve/commit operations) and the admin control plane (CRUD operations) — a single webhook subscription captures both.
+Every event includes a standard payload: who caused it (`actor`), what changed (`data`), where it happened (`scope` path like `tenant:acme-corp/workspace:prod/agent:support-bot`), and a millisecond-precision `timestamp`. Events are emitted by both the runtime enforcement server (reserve/commit operations) and the admin control plane (CRUD operations) — a single [webhook subscription](/glossary#webhook-subscription) captures both.
 
 ## Architecture: why a separate delivery service
 
@@ -86,9 +86,9 @@ Three services, three workloads, three scaling profiles:
 
 Why not embed delivery in the runtime server? Webhook endpoints are external HTTP services with unpredictable latency. A slow endpoint or DNS timeout would add hundreds of milliseconds to the reserve/commit path. For a system designed to enforce budgets at sub-10ms latency, that's unacceptable. Even running delivery on a background thread doesn't help — thread pool exhaustion from slow endpoints would eventually affect the main request threads.
 
-Why not embed in the admin server? Same problem, different magnitude. Admin API latency matters less (operators tolerate 200ms), but a webhook endpoint that hangs for 30 seconds ties up a thread pool slot. Multiply by 50 subscriptions and a burst of events, and the admin API becomes unresponsive for tenant management.
+Why not embed in the [admin server](/glossary#admin-server)? Same problem, different magnitude. Admin API latency matters less (operators tolerate 200ms), but a webhook endpoint that hangs for 30 seconds ties up a thread pool slot. Multiply by 50 subscriptions and a burst of events, and the admin API becomes unresponsive for tenant management.
 
-The shared Redis queue solves both problems. Admin and runtime servers fire-and-forget — LPUSH a delivery ID to `dispatch:pending` and return immediately. The events service does the slow work: load the event, look up the subscription, compute the HMAC signature, make the HTTP call, handle retries. If the events service falls behind, the queue buffers. If the events service is down entirely, events accumulate in Redis with a 90-day TTL and drain when it restarts.
+The shared Redis queue solves both problems. Admin and runtime servers fire-and-forget — LPUSH a delivery ID to `dispatch:pending` and return immediately. The [events service](/glossary#events-service) does the slow work: load the event, look up the subscription, compute the HMAC signature, make the HTTP call, handle retries. If the events service falls behind, the queue buffers. If the events service is down entirely, events accumulate in Redis with a 90-day TTL and drain when it restarts.
 
 Multiple events service instances can run concurrently. BRPOP is atomic — each delivery is processed by exactly one consumer. No distributed locking, no coordination, no split-brain risk. Scale horizontally by adding instances.
 
@@ -98,7 +98,7 @@ We chose at-least-once delivery over exactly-once. In a distributed system where
 
 Every delivery includes an `X-Cycles-Event-Id` header containing the event's unique ID. Receivers store processed event IDs and skip duplicates. This is the same pattern used by Stripe, GitHub, and every other webhook system at scale.
 
-### Why HMAC-SHA256?
+### Why [HMAC-SHA256](/glossary#hmac-sha256)?
 
 We evaluated four approaches for webhook payload verification:
 
@@ -111,7 +111,7 @@ We evaluated four approaches for webhook payload verification:
 
 HMAC-SHA256 proves both identity (the sender knows the shared secret) and integrity (the body hasn't been modified in transit). It requires no certificate infrastructure, no IP management, and no special HTTP client configuration. Receivers verify with 3 lines of code in any language.
 
-The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. Signing secrets can be encrypted at rest in Redis using AES-256-GCM (enabled via the `WEBHOOK_SECRET_ENCRYPTION_KEY` environment variable). When configured, a compromise of the Redis data store doesn't expose the signing secrets.
+The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. [Signing secrets](/glossary#signing-secret) can be encrypted at rest in Redis using AES-256-GCM (enabled via the `WEBHOOK_SECRET_ENCRYPTION_KEY` environment variable). When configured, a compromise of the Redis data store doesn't expose the signing secrets.
 
 ## Failure handling: what happens when things break
 

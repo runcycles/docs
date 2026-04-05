@@ -18,7 +18,7 @@ This post is a reference guide. We break down current per-token pricing across t
 
 ## Per-Token Pricing by Provider
 
-All prices below are per 1 million tokens. Every provider charges separately for input tokens (what you send) and output tokens (what the model generates). Agents are output-heavy relative to simple completions, because they generate tool calls, reasoning chains, and structured responses.
+All prices below are per 1 million [tokens](/glossary#tokens). Every provider charges separately for input tokens (what you send) and output tokens (what the model generates). Agents are output-heavy relative to simple completions, because they generate tool calls, reasoning chains, and structured responses.
 
 ### OpenAI
 
@@ -73,7 +73,7 @@ For an 8-turn conversation where each turn adds 2,000 tokens of new content:
 - Turn 8 input: 16,000 tokens
 - **Total input tokens across all 8 turns: 72,000** (not 16,000)
 
-### Fan-Out
+### [Fan-Out](/glossary#fan-out)
 
 Multi-agent architectures multiply everything. A coordinator dispatching to 5 sub-agents turns a single request into 30-50 calls — and each sub-agent has its own retry logic and growing context. See [the cost amplification math](/blog/true-cost-of-uncontrolled-agents#the-math-how-agents-amplify-api-costs) for the full breakdown.
 

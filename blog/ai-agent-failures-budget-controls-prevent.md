@@ -10,13 +10,13 @@ sidebar: false
 
 # 5 AI Agent Failures Budget Controls Would Prevent
 
-Every team running AI agents in production has at least one horror story. The details vary — a runaway loop, a retry storm, a weekend deployment nobody was watching — but the punchline is always the same: a surprising number on an invoice and a postmortem that concludes with "we need better controls." We've collected these stories from teams across the industry, and five patterns come up again and again. Each one is preventable. Each one keeps happening because the same architectural gap — no pre-execution budget check — exists in most agent systems.
+Every team running AI agents in production has at least one horror story. The details vary — a runaway loop, a [retry storm](/glossary#retry-storm), a weekend deployment nobody was watching — but the punchline is always the same: a surprising number on an invoice and a postmortem that concludes with "we need better controls." We've collected these stories from teams across the industry, and five patterns come up again and again. Each one is preventable. Each one keeps happening because the same architectural gap — no pre-execution budget check — exists in most agent systems.
 
 <!-- more -->
 
 These aren't edge cases. They're the predictable consequences of running autonomous systems that can spend money without asking permission first. Here are five failures, the math behind each one, and the specific mechanism that would have prevented them.
 
-## Failure 1: The Infinite Tool Loop — $4,200 in 3 Hours
+## Failure 1: The Infinite [Tool Loop](/glossary#tool-loop) — $4,200 in 3 Hours
 
 **The scenario:**
 
@@ -36,7 +36,7 @@ The agent doesn't give up because it's not designed to. Its instructions say "it
 | Total iterations | 240 |
 | Total LLM calls | 960 |
 | Model | gpt-4o |
-| Avg input tokens per call (growing context) | 12,000 |
+| Avg input [tokens](/glossary#tokens) per call (growing context) | 12,000 |
 | Avg output tokens per call | 2,500 |
 
 Context growth is the killer here. Each iteration appends the previous attempt and the test output to the conversation. By iteration 50, the agent is sending 25,000 input tokens per call. By iteration 200, it's sending 40,000+. The average across all iterations works out to about 12,000 input tokens — heavily weighted toward the later, more expensive calls.
@@ -191,7 +191,7 @@ The customer's budget was $500. The actual spend was 6.4x the budget. The applic
 
 **How budget enforcement prevents this:**
 
-Cycles uses atomic reservations. When an agent requests permission to spend, Cycles atomically decrements the balance. There is no window between checking and spending — they're the same operation.
+Cycles uses atomic [reservations](/glossary#reservation). When an agent requests permission to spend, Cycles atomically decrements the balance. There is no window between checking and spending — they're the same operation.
 
 With a $500 customer budget and atomic reservations:
 - Agents 1-31 get approved (31 documents x ~$16.20 = ~$502)
@@ -239,7 +239,7 @@ Five months of $8,500/month overspend from the ML workspace (relative to the $3,
 | Per-workflow | Workflow-level anomalies | Cross-workflow accumulation |
 | Per-run | Individual runaway runs | Gradual accumulation from many normal runs |
 
-The right answer is hierarchical scoping: tenant > workspace > app > workflow > agent > toolset. Each level has its own budget. A single agent can't blow through the workflow budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
+The right answer is hierarchical scoping: [tenant](/glossary#tenant) > workspace > app > workflow > agent > toolset. Each level has its own budget. A single agent can't blow through the workflow budget. A single workspace can't consume the tenant budget. Each scope catches a different category of failure.
 
 **How budget enforcement prevents this:**
 
@@ -277,7 +277,7 @@ The pattern is simple. Budget enforcement is a pre-execution check. It asks one 
 
 The five failures above are all denominated in dollars. But agents also fail by *doing the wrong thing* — and those failures can cost far more than any token bill. A support agent that [sends 200 collections emails instead of welcome emails](/blog/ai-agent-action-control-hard-limits-side-effects) costs $1.40 in model spend. The business impact: $50K+ in lost pipeline. No spending limit would have caught it.
 
-This is why Cycles is positioned as [runtime authority](/blog/what-is-runtime-authority-for-ai-agents), not just budget authority. Budget authority caps what agents spend (the five scenarios above). [Action authority](/concepts/action-authority-controlling-what-agents-do) caps what agents *do* — gating high-consequence operations like email, deploy, and delete with risk-point budgets per toolset. Both dimensions use the same reserve-commit protocol and the same infrastructure.
+This is why Cycles is positioned as [runtime authority](/blog/what-is-runtime-authority-for-ai-agents), not just [budget authority](/glossary#budget-authority). Budget authority caps what agents spend (the five scenarios above). [Action authority](/concepts/action-authority-controlling-what-agents-do) caps what agents *do* — gating high-consequence operations like email, deploy, and delete with risk-point budgets per toolset. Both dimensions use the same reserve-commit protocol and the same infrastructure.
 
 ## Next steps
 
@@ -292,7 +292,7 @@ If these failure modes look familiar — or if you'd rather prevent them than ex
 For failures where the risk is action rather than cost:
 
 - **[5 AI Agent Failures Only Action Controls Would Prevent](/blog/ai-agent-action-failures-runtime-authority-prevents)** — the companion post for action failures
-- **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — RISK_POINTS, toolset budgets, and progressive capability narrowing
+- **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — [RISK_POINTS](/glossary#risk-points), toolset budgets, and progressive capability narrowing
 - **[Action Authority](/concepts/action-authority-controlling-what-agents-do)** — risk-point budgets and toolset-scoped controls
 
 The cheapest incident is the one that never happens. The second cheapest is the one that's capped at $15 instead of $4,200.
