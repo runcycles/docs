@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "devDependencies": {
+    "finalhandler": "^1.3.2",
     "png-to-ico": "^3.0.1",
+    "puppeteer": "^23.11.1",
+    "serve-static": "^1.16.3",
     "sharp": "^0.34.5",
     "to-ico": "^1.1.5",
     "vitepress": "^1.6.3",
@@ -12,6 +15,8 @@
   "scripts": {
     "convert-spec": "node scripts/convert-spec.js",
     "build": "npm run convert-spec && bash scripts/generate-llms-full.sh && vitepress build",
+    "build:with-pdfs": "npm run build && node scripts/generate-pdfs.js",
+    "pdfs": "node scripts/generate-pdfs.js",
     "dev": "npm run convert-spec && vitepress dev",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
