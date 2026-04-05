@@ -129,7 +129,7 @@ In multi-agent systems, a single user request can fan out into dozens of sub-age
 
 ### Where you need degradation paths
 
-Shadow mode doesn't just tell you *whether* to enforce. It tells you *where you need* [graceful degradation](/blog/when-budget-runs-out-graceful-degradation-patterns-for-ai-agents). If shadow data shows repeated denials at a specific workflow step, the answer isn't always "raise the budget." Sometimes it's "this workflow needs a model downgrade path" or "this action should be deferred when budget is tight." Shadow mode reveals the shape of those needs before enforcement surfaces them as user-facing failures.
+Shadow mode doesn't just tell you *whether* to enforce. It tells you *where you need graceful degradation*. If shadow data shows repeated denials at a specific workflow step, the answer isn't always "raise the budget." Sometimes it's "this workflow needs a model downgrade path" or "this action should be deferred when budget is tight." Shadow mode reveals the shape of those needs before enforcement surfaces them as user-facing failures.
 
 ## Common Shadow Mode Mistakes
 
@@ -154,7 +154,6 @@ Most importantly: **don't skip it**. The teams that skip shadow mode and go stra
 ---
 
 - [What Is Runtime Authority for AI Agents](/blog/what-is-runtime-authority-for-ai-agents)
-- [When Budget Runs Out: AI Agent Degradation Patterns](/blog/when-budget-runs-out-graceful-degradation-patterns-for-ai-agents)
 - [How Teams Control AI Agents Today — And Where It Breaks](/blog/how-teams-control-ai-agents-today-and-where-it-breaks)
 - [Risk Assessment: Score, Classify, and Enforce Tool Risk](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk)
 - [Budget Patterns Visual Guide](/blog/agent-budget-patterns-visual-guide)
