@@ -28,13 +28,13 @@ The 40-topic batch: $1,740 instead of the projected $140. Most topics cost $15-3
 
 <!-- more -->
 
-## Why Delegation Chains Are Different from [Fan-Out](/glossary#fan-out)
+## Why Delegation Chains Are Different from Fan-Out
 
 [Fan-out](/blog/langgraph-budget-control-durable-execution-retries-fan-out) creates parallel branches from a single parent — the total cost is the sum of the branches. Delegation chains create serial depth — Agent A calls Agent B calls Agent C. The cost is multiplicative because each delegator's retry and loop behavior wraps around the entire subtree below it.
 
 If the Planner retries a failed topic, it re-executes the Researcher, which re-executes every Deep Analyst delegation. A single retry at the top of the chain replays every agent below it. This is the recursive version of the [retry storm pattern](/blog/ai-agent-failures-budget-controls-prevent) — except the blast radius grows with delegation depth, not retry count.
 
-| Property | Fan-out (parallel) | Delegation chain (serial depth) |
+| Property | [Fan-out](/glossary#fan-out) (parallel) | Delegation chain (serial depth) |
 |---|---|---|
 | Cost structure | Additive — sum of branches | Multiplicative — product of depths |
 | Concurrency risk | Branches race on shared budget | Child inherits parent's remaining budget |

@@ -101,9 +101,9 @@ Runtime authority is a single architectural layer that enforces all three govern
 
 Every step is recorded: scope, timestamp, amount, unit, action kind, decision, and reason. This is the audit trail that compliance requires — and it's generated as a side effect of enforcement, not as a separate logging concern.
 
-### Security enforcement with [RISK_POINTS](/glossary#risk-points)
+### Security enforcement with RISK_POINTS
 
-Dollar budgets control spend. RISK_POINTS control what agents _do_. Each action class gets a point value based on blast radius:
+Dollar budgets control spend. [RISK_POINTS](/glossary#risk-points) control what agents _do_. Each action class gets a point value based on blast radius:
 
 | Action class | Risk points | Rationale |
 |---|:---:|---|

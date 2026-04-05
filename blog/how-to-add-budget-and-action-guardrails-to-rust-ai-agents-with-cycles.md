@@ -249,7 +249,7 @@ match with_cycles(&client, config, |ctx| async move {
 
 The error type is an enum, not an exception hierarchy — you get exhaustive matching for free.
 
-## [Action authority](/glossary#action-authority): caps, tool control, and step limits
+## Action authority: caps, tool control, and step limits
 
 Budget is only half the story. Cycles also governs **what an agent can do** through caps — runtime constraints returned alongside the budget decision. When the server returns `ALLOW_WITH_CAPS`, it's saying: "you have budget, but here are the rules."
 

@@ -85,11 +85,11 @@ Runtime permissions can control which tools are available to an agent at any poi
 
 This is not static configuration. The allowlist or denylist is computed at decision time based on remaining budget, consumed risk points, and configured policy. An agent that starts with full tool access may lose access to high-risk tools mid-run — not because the code changed, but because the runtime state changed.
 
-### [RISK_POINTS](/glossary#risk-points): a non-monetary unit for action risk
+### RISK_POINTS: a non-monetary unit for action risk
 
 Dollar budgets measure financial exposure. But the opening scenario shows that the costliest incidents are not the most expensive in token terms. Two hundred wrong emails cost $1.40 in model calls and $34,000 in business damage.
 
-RISK_POINTS is a unit designed for this problem. Instead of denominating action budgets in dollars, teams assign point values to each action class based on blast radius and reversibility:
+[RISK_POINTS](/glossary#risk-points) is a unit designed for this problem. Instead of denominating action budgets in dollars, teams assign point values to each action class based on blast radius and reversibility:
 
 | Action | Risk points | Rationale |
 |--------|:----------:|-----------|
@@ -122,9 +122,9 @@ The agent does not crash. It does not throw an unhandled exception. It continues
 
 This is the "disable" degradation strategy applied to actions rather than cost. The same agent, the same code, the same tools — but the runtime determines which tools are reachable at each step.
 
-## Scoped [action authority](/glossary#action-authority)
+## Scoped action authority
 
-Action permissions are hierarchical. The Cycles scope hierarchy — [tenant](/glossary#tenant), workspace, app, workflow, agent, toolset — applies to action authority the same way it applies to [budget authority](/glossary#budget-authority).
+Action permissions are hierarchical. The Cycles scope hierarchy — [tenant](/glossary#tenant), workspace, app, workflow, agent, toolset — applies to [action authority](/glossary#action-authority) the same way it applies to [budget authority](/glossary#budget-authority).
 
 ```
 tenant:acme

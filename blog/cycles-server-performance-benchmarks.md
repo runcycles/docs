@@ -154,9 +154,9 @@ All mutations are atomic Lua scripts executed via `EVALSHA` (sends a 40-characte
 
 Every mutation response includes current balance snapshots for all affected scopes. These are collected **inside** the Lua script after mutations complete — no separate Java-side Redis calls. This is what gives you the `balances` array in every response without additional latency.
 
-### [Tenant](/glossary#tenant) config: in-memory cache
+### Tenant config: in-memory cache
 
-Tenant configuration (default TTLs, overage policies, extension limits) is cached in-memory with a 60s TTL. Config changes propagate within a minute without restart.
+[Tenant](/glossary#tenant) configuration (default TTLs, overage policies, extension limits) is cached in-memory with a 60s TTL. Config changes propagate within a minute without restart.
 
 ### Event emission: async and off the hot path
 

@@ -18,9 +18,9 @@ These five patterns come up across teams deploying agents with tool-calling capa
 
 <!-- more -->
 
-## How [Action Authority](/glossary#action-authority) Works
+## How Action Authority Works
 
-Action authority uses the same reserve-commit lifecycle as [budget authority](/glossary#budget-authority), but with a different unit: **[RISK_POINTS](/glossary#risk-points)** instead of dollars. Teams assign point values to each action class based on blast radius — a read costs 1 point, an email costs 20, a deploy costs 50. A workflow gets a fixed risk-point budget. Every consequential action deducts from it. When the budget is exhausted, the agent can still read and reason, but it cannot act.
+[Action authority](/glossary#action-authority) uses the same reserve-commit lifecycle as [budget authority](/glossary#budget-authority), but with a different unit: **[RISK_POINTS](/glossary#risk-points)** instead of dollars. Teams assign point values to each action class based on blast radius — a read costs 1 point, an email costs 20, a deploy costs 50. A workflow gets a fixed risk-point budget. Every consequential action deducts from it. When the budget is exhausted, the agent can still read and reason, but it cannot act.
 
 For the full mechanism, see [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do). For the unit system, see [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
 
@@ -164,7 +164,7 @@ In every case, the agent was allowed to act without asking permission. The syste
 
 Total model spend across all five scenarios: **under $8.** No dollar budget — $100, $50, $10, even $5 — would have prevented any of them. The common thread is not cost. It is **consequence**.
 
-## From cost control to [runtime authority](/glossary#runtime-authority)
+## From cost control to runtime authority
 
 Budget authority and action authority are two dimensions of the same architecture. Both use the reserve-commit lifecycle. Both enforce limits before execution, not after. Both support hierarchical scoping (tenant, workspace, workflow, run). Both degrade gracefully when budgets are exhausted.
 

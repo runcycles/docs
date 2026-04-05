@@ -64,11 +64,11 @@ The key insight is that **the choice between these two patterns is not about tec
 
 For the full reserve-commit lifecycle, see [How Reserve-Commit Works in Cycles](/protocol/how-reserve-commit-works-in-cycles). For the event pattern, see [How Events Work in Cycles](/protocol/how-events-work-in-cycles-direct-debit-without-reservation).
 
-## [RISK_POINTS](/glossary#risk-points) — Budgeting What Money Cannot Measure
+## RISK_POINTS — Budgeting What Money Cannot Measure
 
 Dollar budgets are the wrong unit for action authority. The opening scenario makes this clear: 200 emails cost $1.40 in model spend. A per-run budget of $100, $50, even $5 would not have stopped a single email. The risk was not monetary. It was reputational, operational, and ultimately commercial — $50,000 in lost pipeline from a $1.40 agent run.
 
-Cycles supports a **RISK_POINTS** unit specifically for this problem. Instead of denominating budgets in dollars or tokens, teams assign point values to each action class based on blast radius. A workflow gets a fixed risk-point budget, and every consequential action deducts from it.
+Cycles supports a **[RISK_POINTS](/glossary#risk-points)** unit specifically for this problem. Instead of denominating budgets in dollars or tokens, teams assign point values to each action class based on blast radius. A workflow gets a fixed risk-point budget, and every consequential action deducts from it.
 
 | Action class | Risk points | Rationale |
 |-------------|:----------:|-----------|

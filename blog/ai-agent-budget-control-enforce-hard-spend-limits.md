@@ -18,7 +18,7 @@ This is the fundamental gap in how most teams manage AI agent costs today: they 
 
 <!-- more -->
 
-## The Problem: Agents Create [Exposure](/glossary#exposure), Not Just Spend
+## The Problem: Agents Create Exposure, Not Just Spend
 
 A traditional API call is a single request with a predictable cost. An agent is a loop. Each step can trigger more steps — tool calls, sub-agent spawns, retries, chain-of-thought expansions — and each of those steps costs money.
 
@@ -35,7 +35,7 @@ Consider what a single "summarize this repository" task can produce:
 
 That looks manageable. Now imagine the agent hits a rate limit on step 2 and retries all 12 reads with exponential backoff. Or decides to spawn sub-agents for each file. Or loops on step 4 because the output doesn't pass its own quality check. A 23-call task becomes a 200-call task, and the cost grows by 10×.
 
-The problem is not the cost of any single call. It is that **agents create unbounded economic exposure** — and the exposure compounds with every step.
+The problem is not the cost of any single call. It is that **agents create unbounded economic [exposure](/glossary#exposure)** — and the exposure compounds with every step.
 
 Side effects make this worse. An agent that sends emails, writes database records, triggers deployments, or calls external APIs creates consequences that cannot be reversed by cutting off the budget after the fact.
 

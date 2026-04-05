@@ -115,7 +115,7 @@ This classification alone tells you something important: **half the agent's tool
 
 **A note on reads in regulated environments.** The tier system isolates side-effect risk — actions that change state in the world. But in regulated or exfiltration-prone environments, sensitive read tools may warrant non-zero risk points or a separate data-access budget. An agent that reads 10,000 customer records in a single run has not changed any state, but it has created a data-exposure surface that [OWASP ASI03 (identity and privilege abuse)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) and NIST's [Map function](https://airc.nist.gov/airmf-resources/playbook/map/) both flag as a risk. If your agent handles PII, financial, or health data, consider assigning 1–2 risk points to sensitive reads or tracking them under a separate `DATA_ACCESS` budget that limits read volume independently of action risk.
 
-## Assigning Risk Scores: The [RISK_POINTS](/glossary#risk-points) Methodology
+## Assigning Risk Scores: The RISK_POINTS Methodology
 
 Classification tells you *which* tools are dangerous. Risk scoring tells you *how much* danger to allow per run. [RISK_POINTS](/concepts/action-authority-controlling-what-agents-do) are budgets denominated in blast radius, not dollars — the mechanism that turns a risk assessment into an enforceable limit.
 
@@ -123,7 +123,7 @@ Classification tells you *which* tools are dangerous. Risk scoring tells you *ho
 
 Start with a baseline that reflects relative risk. The specific numbers are less important than the ratios between tiers.
 
-| Tier | Base RISK_POINTS | Rationale |
+| Tier | Base [RISK_POINTS](/glossary#risk-points) | Rationale |
 |:----:|:------:|-----------|
 | 0 | 0 | No side effects — reads should be free |
 | 1 | 1 | Low impact, easily reversible |

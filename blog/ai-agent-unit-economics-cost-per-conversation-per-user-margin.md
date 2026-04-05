@@ -18,7 +18,7 @@ The company's overall gross margin on the AI feature in month three: **23%** —
 
 <!-- more -->
 
-## From [Tokens](/glossary#tokens) to Business Metrics
+## From Tokens to Business Metrics
 
 Most engineering teams track cost at the wrong level of abstraction. They know their [per-token price](/blog/how-much-do-ai-agents-cost). They know their monthly API bill. They cannot answer: "What does it cost us to resolve one support ticket?" or "What is our cost per active user this month?"
 
@@ -124,7 +124,7 @@ Token pricing is an engineering metric. Cost per conversation is a business KPI.
 
 **Feature-level P&L.** Treat the AI copilot as its own cost center. Track cost per conversation as COGS. Monitor margin weekly. Set alerts when margin drops below threshold. This is [Tier 3 of the cost management maturity model](/blog/ai-agent-cost-management-guide) — alerting on business metrics, not just raw spend.
 
-**Model routing by economics.** Route simple conversations to GPT-4o-mini ($0.15/1M input tokens) and complex conversations to GPT-4o ($2.50/1M input tokens). The routing decision is economic, not just capability-based. A simple "what's my order status?" query does not need a $2.50/1M-token model. A complex debugging session does. [Routing and enforcement complement each other](/blog/manifest-vs-cycles-routing-vs-runtime-authority) — the router picks the model, the [runtime authority](/glossary#runtime-authority) bounds the cost.
+**Model routing by economics.** Route simple conversations to GPT-4o-mini ($0.15/1M input [tokens](/glossary#tokens)) and complex conversations to GPT-4o ($2.50/1M input tokens). The routing decision is economic, not just capability-based. A simple "what's my order status?" query does not need a $2.50/1M-token model. A complex debugging session does. [Routing and enforcement complement each other](/blog/manifest-vs-cycles-routing-vs-runtime-authority) — the router picks the model, the [runtime authority](/glossary#runtime-authority) bounds the cost.
 
 ## From cost visibility to cost control
 

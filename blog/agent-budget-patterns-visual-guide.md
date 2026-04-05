@@ -18,9 +18,9 @@ These patterns aren't mutually exclusive — most production systems combine two
 
 > **Note:** Code examples in this post are simplified pseudocode to illustrate the pattern intent. For production-ready implementations using the actual Cycles SDK, see the [Python quickstart](/quickstart/getting-started-with-the-python-client), [TypeScript quickstart](/quickstart/getting-started-with-the-typescript-client), or [common budget patterns](/how-to/common-budget-patterns).
 
-## Pattern 1: [Tenant](/glossary#tenant)t Isolation](/glossary#tenant-isolation) Budgets
+## Pattern 1: Tenant Isolation Budgets
 
-**When to use:** Multi-tenant platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
+**When to use:** Multi-[tenant](/glossary#tenant) platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
 
 The simplest and most common starting point. Each tenant gets an independent budget that cannot be exceeded, regardless of what other tenants are doing.
 
@@ -82,7 +82,7 @@ async def run_workflow(workflow_type, input_data):
 - Requires understanding the cost distribution of each workflow upfront
 - New workflows need budget configuration before deployment
 
-## Pattern 3: Per-Run Budgets with [Graceful Degradation](/glossary#graceful-degradation)
+## Pattern 3: Per-Run Budgets with Graceful Degradation
 
 **When to use:** When you want agents to produce _some_ result even when they hit budget limits, rather than failing entirely.
 
@@ -200,9 +200,9 @@ shadow_report = cycles.get_shadow_report(
 
 Our [shadow mode rollout guide](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) walks through the full process, including how to analyze shadow logs and choose enforcement cutover criteria.
 
-## Pattern 6: Hybrid Model ([Tokens](/glossary#tokens) + Dollars)
+## Pattern 6: Hybrid Model (Tokens + Dollars)
 
-**When to use:** When you need to track both the raw resource consumption (tokens) and the monetary cost (dollars), because they don't always move in lockstep.
+**When to use:** When you need to track both the raw resource consumption ([tokens](/glossary#tokens)) and the monetary cost (dollars), because they don't always move in lockstep.
 
 Token counts and dollar costs diverge when you use multiple models, when pricing changes, or when non-LLM tools (web search, code execution) are part of the agent's toolkit.
 
@@ -242,9 +242,9 @@ async def execute_hybrid(task):
 
 Most production systems layer two or three of these patterns. A common combination:
 
-1. **Tenant isolation** (Pattern 1) as the outer boundary
+1. **[Tenant isolation](/glossary#tenant-isolation)** (Pattern 1) as the outer boundary
 2. **Workflow caps** (Pattern 2) within each tenant
-3. **Graceful degradation** (Pattern 3) within each workflow run
+3. **[Graceful degradation](/glossary#graceful-degradation)** (Pattern 3) within each workflow run
 4. **Shadow mode** (Pattern 5) for rollout
 
 This gives you hard isolation between customers, right-sized limits per use case, user-friendly behavior at the limits, and a safe path to enforcement.

@@ -145,7 +145,7 @@ This flow happens within the agent's normal tool-calling loop. The developer see
 
 For the six MCP integration patterns (simple reserve/commit, preflight, [graceful degradation](/glossary#graceful-degradation), long-running, fire-and-forget, multi-step), see [Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp). For per-run and per-conversation budget recipes, see [Common Budget Patterns](/how-to/common-budget-patterns).
 
-## The [Three-Way Decision](/glossary#three-way-decision): What Happens When Budget Gets Tight
+## The Three-Way Decision: What Happens When Budget Gets Tight
 
 This is where MCP-based enforcement becomes more useful than a simple kill switch.
 
@@ -171,7 +171,7 @@ Without enforcement, the agent would have kept going — researching, generating
 | `ALLOW_WITH_CAPS` | Budget getting tight, caps returned | Shorter responses, fewer tools, plan to wrap up |
 | `DENY` | Budget exhausted | Stop gracefully, summarize work done, inform developer |
 
-For the full protocol reference on the three-way decision model, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For designing degradation strategies, see [Degradation Paths: Deny, Downgrade, Disable, or Defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
+For the full protocol reference on the [three-way decision](/glossary#three-way-decision) model, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For designing degradation strategies, see [Degradation Paths: Deny, Downgrade, Disable, or Defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
 ## Wrapper vs. Authority: Why Config Beats Code
 

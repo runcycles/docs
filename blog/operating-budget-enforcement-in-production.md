@@ -35,11 +35,11 @@ Not every webhook event is a page. Map events to severity and expected response 
 
 Route critical events to PagerDuty. Route warnings to a Slack channel. Send info to a dashboard or email digest. See the [webhook integrations guide](/how-to/webhook-integrations) for setup.
 
-## Diagnostic decision tree: [reservation](/glossary#reservation).denied
+## Diagnostic decision tree: reservation.denied
 
 `reservation.denied` is the most common operational event. An agent tried to reserve budget and was refused. Here's how to diagnose why.
 
-### Step 1: Identify scope and [tenant](/glossary#tenant)
+### Step 1: Identify scope and tenant
 
 The event payload tells you who, what, and where:
 
@@ -53,7 +53,7 @@ The event payload tells you who, what, and where:
 }
 ```
 
-Pull recent denial events for this tenant to see if it's a single agent or widespread:
+Pull recent denial events for this [tenant](/glossary#tenant) to see if it's a single agent or widespread:
 
 ```bash
 curl "http://localhost:7979/v1/admin/events?tenant_id=acme-corp&event_type=reservation.denied&limit=50" \
@@ -78,7 +78,7 @@ Look at the response:
 
 - **`remaining` = 0**: Budget exhausted. Needs funding.
 - **`remaining` > 0 but < `requested_amount`**: Agent is requesting more than available. Estimate may be too high.
-- **`is_over_limit` = true**: Debt exceeded overdraft limit. Needs debt repayment before new reservations are allowed.
+- **`is_over_limit` = true**: Debt exceeded overdraft limit. Needs debt repayment before new [reservations](/glossary#reservation) are allowed.
 - **`status` = FROZEN**: Budget was frozen by an operator. Check if intentional.
 
 ### Step 3: Determine root cause

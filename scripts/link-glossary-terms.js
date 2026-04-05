@@ -102,11 +102,10 @@ function extractProtectedRanges(body) {
     ranges.push([m.index, m.index + m[0].length])
   }
 
-  // H1 heading (skip linking in title)
-  const h1Match = body.match(/^# .+$/m)
-  if (h1Match) {
-    const idx = body.indexOf(h1Match[0])
-    ranges.push([idx, idx + h1Match[0].length])
+  // All headings (H1-H6) — don't link inside headings
+  const headingRegex = /^#{1,6} .+$/gm
+  while ((m = headingRegex.exec(body)) !== null) {
+    ranges.push([m.index, m.index + m[0].length])
   }
 
   // Final resource links section (after last ---)
@@ -147,11 +146,16 @@ function processPost(filePath, terms, dryRun) {
   const { frontmatter, body } = extractFrontmatter(content)
   const protectedRanges = extractProtectedRanges(body)
 
+  // Terms are pre-sorted longest-first. As we accept matches, we treat their
+  // ranges as protected so shorter overlapping terms (e.g. "tenant" inside
+  // "tenant isolation") won't also match.
   const replacements = []
+  const allProtected = [...protectedRanges]
   for (const { term, anchor } of terms) {
-    const found = findFirstMatch(body, term, protectedRanges)
+    const found = findFirstMatch(body, term, allProtected)
     if (!found) continue
     replacements.push({ term, anchor, ...found })
+    allProtected.push([found.index, found.index + found.match.length])
   }
 
   if (replacements.length === 0) return { changed: false, replacements: [] }

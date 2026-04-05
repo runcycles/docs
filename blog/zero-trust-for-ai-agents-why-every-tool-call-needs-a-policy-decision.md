@@ -97,9 +97,9 @@ In any non-trivial deployment, multiple agents run simultaneously against shared
 
 Zero trust without an audit trail is unverifiable trust. Every policy decision — allow, deny, escalate — must be recorded with the full context: which agent, which tool, which arguments, which scope, how much budget remained, and why the decision was made. This is what compliance teams need, and it's what [OWASP's observability principle](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) demands.
 
-## How [Runtime Authority](/glossary#runtime-authority) Implements Zero Trust
+## How Runtime Authority Implements Zero Trust
 
-If you've read the Cycles documentation, these five requirements should sound familiar. Runtime authority is zero trust applied to AI agent actions.
+If you've read the Cycles documentation, these five requirements should sound familiar. [Runtime authority](/glossary#runtime-authority) is zero trust applied to AI agent actions.
 
 Here's how the mapping works:
 

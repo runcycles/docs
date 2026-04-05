@@ -66,9 +66,9 @@ With a budget of 200 risk points per session:
 
 The [budget authority](/glossary#budget-authority) decides the risk allocation. The protocol enforces it. The agent never sees the limits — it just gets `DENY` when it tries to exceed them.
 
-## Beyond tool calls: [action authority](/glossary#action-authority) in every integration
+## Beyond tool calls: action authority in every integration
 
-You don't need the OpenAI Agents plugin to use action authority. The same pattern works with every integration through the `action` field on [reservations](/glossary#reservation):
+You don't need the OpenAI Agents plugin to use [action authority](/glossary#action-authority). The same pattern works with every integration through the `action` field on [reservations](/glossary#reservation):
 
 ```python
 from runcycles import ReservationCreateRequest, Action, Amount, Unit

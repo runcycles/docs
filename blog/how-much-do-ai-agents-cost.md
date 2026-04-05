@@ -73,7 +73,7 @@ For an 8-turn conversation where each turn adds 2,000 tokens of new content:
 - Turn 8 input: 16,000 tokens
 - **Total input tokens across all 8 turns: 72,000** (not 16,000)
 
-### [Fan-Out](/glossary#fan-out)
+### Fan-Out
 
 Multi-agent architectures multiply everything. A coordinator dispatching to 5 sub-agents turns a single request into 30-50 calls — and each sub-agent has its own retry logic and growing context. See [the cost amplification math](/blog/true-cost-of-uncontrolled-agents#the-math-how-agents-amplify-api-costs) for the full breakdown.
 

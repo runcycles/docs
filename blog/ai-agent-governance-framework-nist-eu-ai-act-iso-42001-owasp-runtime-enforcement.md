@@ -126,7 +126,7 @@ Teams implement rate limits, provider spending caps, or application-level counte
 
 **What this does not satisfy:** Atomicity requirements for multi-[tenant isolation](/glossary#tenant-isolation) (Article 15). Reliable stop mechanism (Article 14). Comprehensive audit trail with scope attribution (Article 12). The gaps are well-documented in [Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems) and [Cycles vs. Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
 
-### Level 4: [Runtime Authority](/glossary#runtime-authority)
+### Level 4: Runtime Authority
 
 Pre-execution enforcement with atomic budget operations. Every agent action passes through a reserve-commit gate before execution. Budgets are hierarchical (tenant → workspace → workflow → run). Actions are scored by risk. The audit trail is a byproduct of enforcement, not a separate logging system.
 
@@ -195,7 +195,7 @@ Every regulatory framework cited above converges on the same set of runtime cont
 
 **How Cycles implements it:** Every reservation, commit, release, and [event](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) creates a structured, queryable record via the REST API. Retention is 90 days in hot storage, with export to cold storage for long-term compliance. The [admin server](/glossary#admin-server) records all administrative operations separately.
 
-### Control 5: [Graceful Degradation](/glossary#graceful-degradation) Under Constraint
+### Control 5: Graceful Degradation Under Constraint
 
 **What regulators require:** Article 14 (human oversight, ability to interrupt), Article 15 (resilience to faults), NIST Manage (proportionate response).
 
@@ -234,7 +234,7 @@ For teams preparing for audits or certifications, this table maps each regulator
 | EU AI Act Art. 9 — Risk management | Pre-execution budgets, risk scoring | Budget policies, risk-point configuration, shadow mode reports |
 | EU AI Act Art. 12 — Record-keeping | Immutable audit trail | Event log API output, cold storage exports |
 | EU AI Act Art. 13 — Transparency | Queryable budget state | Balance check API, agent decision logs |
-| EU AI Act Art. 14 — Human oversight | Graceful degradation, real-time budget controls | DENY/ALLOW_WITH_CAPS response logs, budget modification audit trail |
+| EU AI Act Art. 14 — Human oversight | [Graceful degradation](/glossary#graceful-degradation), real-time budget controls | DENY/ALLOW_WITH_CAPS response logs, budget modification audit trail |
 | EU AI Act Art. 15 — Robustness | Scope isolation, atomic operations | Tenant isolation configuration, concurrency test results |
 | NIST AI RMF — Govern | Scope hierarchy, access control | Tenant/workspace/workflow configuration, API key permission matrix |
 | NIST AI RMF — Map | Risk-point taxonomy, tool classification | Risk-point assignments per tool, tool allowlists/denylists |
@@ -254,7 +254,7 @@ For teams preparing for audits or certifications, this table maps each regulator
 
 ## From Framework to Implementation
 
-Governance frameworks tell you what to control. They do not tell you how to build the controls. That gap is where most teams stall — and where runtime authority infrastructure closes the loop.
+Governance frameworks tell you what to control. They do not tell you how to build the controls. That gap is where most teams stall — and where [runtime authority](/glossary#runtime-authority) infrastructure closes the loop.
 
 Three starting points, depending on where you are today:
 

@@ -98,7 +98,7 @@ We chose at-least-once delivery over exactly-once. In a distributed system where
 
 Every delivery includes an `X-Cycles-Event-Id` header containing the event's unique ID. Receivers store processed event IDs and skip duplicates. This is the same pattern used by Stripe, GitHub, and every other webhook system at scale.
 
-### Why [HMAC-SHA256](/glossary#hmac-sha256)?
+### Why HMAC-SHA256?
 
 We evaluated four approaches for webhook payload verification:
 
@@ -107,7 +107,7 @@ We evaluated four approaches for webhook payload verification:
 | Bearer token in header | Yes | No | Low | Common but incomplete |
 | IP allowlisting | Partial | No | Medium | Brittle with CDNs/proxies |
 | mTLS | Yes | Yes | High | Heavy for webhook receivers |
-| **HMAC-SHA256** | **Yes** | **Yes** | **Low** | **GitHub, Stripe, Slack** |
+| **[HMAC-SHA256](/glossary#hmac-sha256)** | **Yes** | **Yes** | **Low** | **GitHub, Stripe, Slack** |
 
 HMAC-SHA256 proves both identity (the sender knows the shared secret) and integrity (the body hasn't been modified in transit). It requires no certificate infrastructure, no IP management, and no special HTTP client configuration. Receivers verify with 3 lines of code in any language.
 

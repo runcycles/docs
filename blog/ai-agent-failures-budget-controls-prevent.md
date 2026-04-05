@@ -16,7 +16,7 @@ Every team running AI agents in production has at least one horror story. The de
 
 These aren't edge cases. They're the predictable consequences of running autonomous systems that can spend money without asking permission first. Here are five failures, the math behind each one, and the specific mechanism that would have prevented them.
 
-## Failure 1: The Infinite [Tool Loop](/glossary#tool-loop) — $4,200 in 3 Hours
+## Failure 1: The Infinite Tool Loop — $4,200 in 3 Hours
 
 **The scenario:**
 
@@ -257,7 +257,7 @@ For more on this failure pattern, see [Scope Misconfiguration and Budget Leaks](
 
 ## The Common Pattern
 
-Five different failures. Five different root causes — tool loops, retry cascades, unsupervised batch processing, concurrency races, scope misconfiguration. But they all share one architectural gap: **no pre-execution budget check**.
+Five different failures. Five different root causes — [tool loops](/glossary#tool-loop), retry cascades, unsupervised batch processing, concurrency races, scope misconfiguration. But they all share one architectural gap: **no pre-execution budget check**.
 
 In every case, the agent was allowed to spend money without asking permission. The system learned about the spend after the fact — through dashboards, alerts, or invoices. By then, the money was gone.
 

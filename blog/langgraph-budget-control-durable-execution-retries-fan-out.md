@@ -56,7 +56,7 @@ A graph resumes from a checkpoint after a transient failure. The upstream nodes 
 
 This is invisible in simple testing because you rarely resume from checkpoints during development. It surfaces in production when your persistence layer is doing exactly what it should: recovering gracefully from failures.
 
-### 2. [Retry storms](/glossary#retry-storm) at graph depth
+### 2. Retry storms at graph depth
 
 LangGraph supports retry policies at multiple levels: individual tool calls, node-level retries, and graph-level restarts. Each layer is reasonable in isolation. Together, they multiply.
 
@@ -64,7 +64,7 @@ A graph with 3 retries per node and 3 retries per graph can produce up to 9 exec
 
 These three retry layers operate at different levels of the stack. SDK retries replay a single HTTP call — transparent to the node, cost = one LLM call per attempt. Node retries re-execute the node function, which may contain multiple LLM calls and tool invocations — cost = the full node body per attempt. Graph-level retries resume from a checkpoint and re-enter the node from persisted state, replaying everything above. Each layer compounds the cost of the layers below it.
 
-This is the same geometric multiplication pattern behind the [retry storm failure that cost $1,800 in 12 minutes](/blog/ai-agent-failures-budget-controls-prevent). Durable execution does not prevent retry storms — it makes them more likely, because the framework is designed to keep trying.
+This is the same geometric multiplication pattern behind the [retry storm failure that cost $1,800 in 12 minutes](/blog/ai-agent-failures-budget-controls-prevent). Durable execution does not prevent [retry storms](/glossary#retry-storm) — it makes them more likely, because the framework is designed to keep trying.
 
 ### 3. Fan-out branches racing for shared budget
 

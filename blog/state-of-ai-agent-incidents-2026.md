@@ -77,7 +77,7 @@ Twenty concurrent agents [processing 200 documents simultaneously](/blog/ai-agen
 | Root cause | Application-level counter lacks atomicity |
 | Prevention | **Atomic [reservation](/glossary#reservation)** — budget locked before execution, concurrent reads see accurate remaining |
 
-### A4. [Retry storm](/glossary#retry-storm) during CRM outage — $1,800 ⚙️
+### A4. Retry storm during CRM outage — $1,800 ⚙️
 
 A CRM returns 500 errors for 12 minutes. [Retry logic at tool, step, and orchestration layers compound](/blog/ai-agent-failures-budget-controls-prevent) — 27x multiplication across 45 active conversations. Cost: $1,800 in 12 minutes.
 
