@@ -20,7 +20,7 @@ The answer depends on what failure modes you're trying to prevent.
 | **Rate limiting** | RPM, TPM per key/team/user | Not a rate limiter — enforces per-action authority |
 | **Action control** | Model access lists (which models a key can call) | [RISK_POINTS](/glossary#risk-points) — per-tool risk scoring and limits |
 | **Multi-tenant** | Team/user isolation via `team_id` | Tenant-scoped API keys with hierarchical budget derivation |
-| **Concurrency safety** | Eventually consistent (~10 request drift at high traffic) | Atomic Lua-scripted reservations (zero drift) |
+| **Concurrency safety** | Eventually consistent (~10 request drift at high traffic) | Atomic Lua-scripted reservations (zero TOCTOU drift) |
 
 ## Where LiteLLM's budgets work well
 
@@ -40,9 +40,9 @@ For teams that need basic cost control at the LLM proxy layer, this covers the c
 
 LiteLLM tracks spend via an in-memory cache synced to Redis every ~10ms. Under high concurrency, budget enforcement is eventually consistent — their docs note approximately 10 requests of drift at 100 RPS across 3 instances.
 
-For a single-agent prototype, this is fine. For 20 concurrent agents sharing a $5 budget, 10 requests of drift at $0.50 each means $5 of overspend — a 100% overrun on a $5 budget. This is the [TOCTOU race condition](/glossary#) that atomic reservation systems are designed to prevent.
+For a single-agent prototype, this is fine. For concurrent agents sharing a budget, 10 requests of drift means 10 unaccounted charges — the overrun depends on per-request cost ($0.50-$5 at the high end for expensive models). On a small budget, this can be significant. This is the [TOCTOU race condition](/blog/we-built-a-custom-agent-rate-limiter-heres-why-we-stopped) that atomic reservation systems are designed to prevent.
 
-Cycles uses atomic Lua-scripted reservations: the budget check and the decrement happen in a single Redis operation. Zero drift, regardless of concurrency.
+Cycles uses atomic Lua-scripted reservations: the budget check and the decrement happen in a single Redis operation. Zero TOCTOU drift, regardless of concurrency. (Overages can still occur when actual cost exceeds the estimate — these are tracked as debt and surfaced immediately, not silently absorbed.)
 
 ### 2. Action-level control
 
@@ -60,7 +60,7 @@ This matters for multi-agent systems where a single user request fans out into d
 
 LiteLLM tracks spend after the fact — the cost is recorded when the model response arrives. If the response is expensive (long output, many tokens), the budget is already spent before LiteLLM knows the cost.
 
-Cycles [reserves budget before the action](/blog/what-is-runtime-authority-for-ai-agents), executes only if approved, and commits the actual cost after. The unused difference is released. This means the budget is never unknowingly exceeded — the worst case is that reserved-but-uncommitted budget temporarily reduces available capacity.
+Cycles [reserves budget before the action](/blog/what-is-runtime-authority-for-ai-agents) based on an estimate, executes only if approved, and commits the actual cost after. The unused difference is released. The budget cannot be silently drained by concurrent requests. If actual cost exceeds the estimate, the overage is tracked as debt and surfaced via webhook events — not silently absorbed.
 
 ## When you need both
 
@@ -77,6 +77,10 @@ Request flow:
 ```
 
 LiteLLM is the **routing and model-access layer**. Cycles is the **authority and enforcement layer**. You can run both — LiteLLM handles model selection and provider fallback, Cycles handles budget authority and action control.
+
+## What Cycles does not do
+
+Cycles is not a proxy, router, or model-access layer. It doesn't handle provider failover, model selection, or RPM/TPM rate limiting. If you need those (and most production stacks do), you need LiteLLM or a comparable tool alongside Cycles. LiteLLM is also open-source and self-hostable with a large community — a significant advantage for teams that want full control and auditability at the proxy layer. The reserve-commit lifecycle adds ~15ms latency per action — negligible against multi-second LLM calls, but present.
 
 ## When LiteLLM alone is enough
 

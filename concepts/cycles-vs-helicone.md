@@ -45,7 +45,7 @@ Cycles tracks cumulative budget state with a balance that decreases with each re
 
 ### 2. Rate limit headers vs. persistent budgets
 
-Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`). There's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
+Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`) and use the Generic Cell Rate Algorithm (GCRA) for smooth traffic shaping with burst tolerance — more sophisticated than a simple window counter. However, there's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
 
 Cycles budgets are persistent objects created via the admin API. They exist independently of any request. Every reservation checks against the budget state — there's no way to "forget" to enforce.
 
@@ -61,7 +61,7 @@ Helicone controls request volume and cost. It cannot distinguish between a $0.01
 
 Cycles' [RISK_POINTS](/how-to/assigning-risk-points-to-agent-tools) budget scores actions by consequence, not cost. An agent can search freely (0 points) while being limited to 2 customer emails per run (40 points each × 2 = 80 of a 100-point budget).
 
-### 5. No multi-tenant budget management
+### 5. No hierarchical budget management
 
 Helicone can segment rate limits by user ID or custom property, but there's no tenant-level budget management — no per-customer spending pools, no hierarchical budget derivation, no team budgets.
 
@@ -82,6 +82,10 @@ Request flow:
 ```
 
 Helicone optimizes cost (caching, routing). Cycles enforces limits (budgets, action authority). Helicone tells you what happened. Cycles decides what's allowed to happen.
+
+## What Cycles does not do
+
+Cycles is not an observability platform, a caching layer, or a router. It doesn't trace requests, deduplicate responses, or select the cheapest provider. If you need those things (and most production stacks do), you need Helicone or a comparable tool alongside Cycles. The reserve-commit lifecycle also adds ~15ms latency per action — negligible against multi-second LLM calls, but present.
 
 ## When Helicone alone is enough
 

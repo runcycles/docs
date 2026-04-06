@@ -21,8 +21,8 @@ If you're already routing through OpenRouter, you have some cost control built i
 | **Action control** | None — controls which models, not what actions | [RISK_POINTS](/glossary#risk-points) — per-tool risk scoring and limits |
 | **Multi-tenant** | Per-user and per-key enforcement | Tenant-scoped API keys with hierarchical budgets |
 | **Budget hierarchy** | Multiple guardrails checked independently; lowest limit wins | Hierarchical scopes — tenant, workspace, workflow, agent, toolset |
-| **Alerts** | None documented | Webhook events on budget state transitions |
-| **Concurrency safety** | Not documented | Atomic Lua-scripted reservations (zero drift) |
+| **Alerts** | Dashboard usage alerts per key | Webhook events on budget state transitions (programmatic, PagerDuty/Slack) |
+| **Concurrency safety** | Not documented | Atomic Lua-scripted reservations (zero TOCTOU drift) |
 
 ## Where OpenRouter's guardrails work well
 
@@ -53,17 +53,17 @@ OpenRouter controls which **models** a key can access. It cannot control what **
 
 An agent routed through OpenRouter that sends 200 customer emails costs pennies in tokens. OpenRouter's spending cap wouldn't trigger. Cycles' [RISK_POINTS](/how-to/assigning-risk-points-to-agent-tools) budget would — because each `send_email` costs 40 risk points regardless of token cost.
 
-### 3. No soft limits or alerts
+### 3. No graduated enforcement or programmatic alerts
 
-OpenRouter's enforcement is binary: under the cap (allowed) or over the cap (rejected). There's no soft warning, no graduated threshold notification, no webhook event system.
+OpenRouter offers dashboard-level usage alerts and per-key activity logs. But enforcement is binary: under the cap (allowed) or over the cap (rejected). There's no graduated middle ground — no "proceed but with constraints" response, no threshold-triggered webhook events for programmatic automation.
 
-Cycles provides [three-way decisions](/glossary#three-way-decision): ALLOW, ALLOW_WITH_CAPS (proceed with constraints like model downgrade or tool restrictions), and DENY. Plus webhook events on budget state transitions (`budget.exhausted`, `budget.over_limit_entered`) that integrate with PagerDuty, Slack, and custom systems.
+Cycles provides [three-way decisions](/glossary#three-way-decision): ALLOW, ALLOW_WITH_CAPS (proceed with constraints like model downgrade or tool restrictions), and DENY. Plus webhook events on budget state transitions (`budget.exhausted`, `budget.over_limit_entered`) that integrate with PagerDuty, Slack, and automated remediation pipelines.
 
 ### 4. No reserve-commit lifecycle
 
 OpenRouter tracks spend based on completed requests. The cost is known after the response arrives, not before. If a long response exceeds the remaining budget, the spend has already happened.
 
-Cycles [reserves budget before the action](/blog/what-is-runtime-authority-for-ai-agents) based on an estimate, executes only if approved, and commits the actual cost after. This means the budget is never unknowingly exceeded.
+Cycles [reserves budget before the action](/blog/what-is-runtime-authority-for-ai-agents) based on an estimate, executes only if approved, and commits the actual cost after. The budget cannot be silently drained by concurrent requests. If actual cost exceeds the estimate, the overage is tracked as debt and surfaced immediately.
 
 ### 5. Rate limits are global, not configurable
 
@@ -92,6 +92,10 @@ Request flow:
 ```
 
 OpenRouter selects the model and provider. Cycles decides whether the action should happen at all. They're complementary, not competing.
+
+## What Cycles does not do
+
+Cycles is not a router or model aggregator. It doesn't provide access to hundreds of models from a single API, handle provider selection, or manage credits across providers. If you need unified multi-model access (and most teams using OpenRouter do), you need OpenRouter or a comparable tool alongside Cycles. The reserve-commit lifecycle adds ~15ms latency per action and requires cost estimation upfront — the estimate can be wrong, and overages are tracked as debt rather than prevented.
 
 ## When OpenRouter alone is enough
 
