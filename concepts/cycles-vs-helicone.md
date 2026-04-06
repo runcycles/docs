@@ -31,7 +31,7 @@ Helicone's strengths are real:
 - **Cost-based rate limiting** — `Helicone-RateLimit-Policy: 500;w=3600;u=cents;s=user` caps spend per user per window
 - **Caching** — deduplicates identical requests, significantly reducing costs
 - **Smart routing** — selects the cheapest provider for equivalent models
-- **Threshold alerts** — graduated notifications at 50%, 80%, 95% of budget
+- **Configurable alerts** — cost and error threshold notifications via email and Slack
 
 For teams that need visibility and basic cost guardrails, Helicone covers the common case.
 
@@ -45,7 +45,7 @@ Cycles tracks cumulative budget state with a balance that decreases with each re
 
 ### 2. Rate limit headers vs. persistent budgets
 
-Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`) with Cloudflare-backed low-latency enforcement. However, there's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
+Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`) with low-latency enforcement and immediate 429 feedback. However, there's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
 
 Cycles budgets are persistent objects created via the admin API. They exist independently of any request. Every reservation checks against the budget state — there's no way to "forget" to enforce.
 

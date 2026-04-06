@@ -21,7 +21,7 @@ If you're already routing through OpenRouter, you have some cost control built i
 | **Action control** | None — controls which models, not what actions | [RISK_POINTS](/glossary#risk-points) — per-tool risk scoring and limits |
 | **Multi-tenant** | Per-user and per-key enforcement | Tenant-scoped API keys with hierarchical budgets |
 | **Budget hierarchy** | Multiple guardrails checked independently; lowest limit wins | Hierarchical scopes — tenant, workspace, workflow, agent, toolset |
-| **Alerts** | Dashboard usage alerts per key | Webhook events on budget state transitions (programmatic, PagerDuty/Slack) |
+| **Alerts** | Usage dashboard + key credit/usage introspection | Webhook events on budget state transitions (programmatic, PagerDuty/Slack) |
 | **Concurrency safety** | Not documented | Atomic Lua-scripted reservations (zero TOCTOU drift) |
 
 ## Where OpenRouter's guardrails work well
