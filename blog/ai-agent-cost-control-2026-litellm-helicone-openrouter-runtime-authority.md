@@ -57,7 +57,7 @@ Helicone's strength is that it optimizes cost from multiple angles: caching redu
 - **Per-key spending caps** with daily, weekly, or monthly reset
 - **Guardrails** — model allowlists, provider allowlists, data privacy policies per key
 - **Budget hierarchy** — multiple guardrails stack; the strictest limit wins
-- **Per-user and per-key enforcement** — budgets are scoped, not shared
+- **Per-member and per-key enforcement** — budgets are scoped, not shared
 - **Usage dashboard** with key credit and usage introspection
 - **Hard enforcement** — requests rejected when key limit reached
 
@@ -76,7 +76,7 @@ These tools are more similar than different. They all operate at the **proxy/gat
 | Alerts/notifications | Webhooks (configurable) | Email, Slack | Usage dashboard |
 | Open source | Yes (self-hostable) | Yes (MIT license + hosted service) | No |
 
-If your agents only make LLM calls — no tool invocations, no side effects, no multi-agent delegation — one of these three tools, configured well, covers the cost control problem.
+If your agents only make LLM calls — no tool invocations, no side effects, no multi-agent delegation — one of these three tools, configured well, can cover most of the cost control problem.
 
 ## Where all three stop
 
