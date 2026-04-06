@@ -44,7 +44,11 @@ curl -X POST http://localhost:7979/v1/admin/tenants \
 curl -X POST http://localhost:7979/v1/admin/api-keys \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"tenant_id": "acme-corp", "name": "app-server"}'
+  -d '{
+    "tenant_id": "acme-corp",
+    "name": "app-server",
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read", "decide:create", "events:create"]
+  }'
 # Save the returned api_key value — it won't be shown again
 ```
 
@@ -58,6 +62,7 @@ curl -X POST http://localhost:7979/v1/admin/budgets \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
   -d '{
+    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
     "allocated": 50000000
@@ -117,8 +122,8 @@ def check_and_charge(user_id, estimated_cost):
 ```python
 import redis
 from runcycles import (
-    CyclesConfig, CyclesClient, ReservationCreateRequest,
-    CommitRequest, Subject, Action, Amount, Unit
+    CyclesConfig, CyclesClient, DecisionRequest,
+    Subject, Action, Amount, Unit
 )
 import uuid
 
@@ -129,7 +134,7 @@ config = CyclesConfig(
     api_key="cyc_live_...",
     tenant="acme-corp",
 )
-cycles = CyclesClient(config)
+client = CyclesClient(config)
 
 def check_and_charge(user_id, estimated_cost):
     # Your existing limiter still enforces
@@ -138,21 +143,19 @@ def check_and_charge(user_id, estimated_cost):
     if balance + estimated_cost > cap:
         raise Exception("Budget exceeded")
 
-    # Cycles runs in shadow mode (dry_run=True) — logs decision, doesn't block
-    idempotency_key = str(uuid.uuid4())
+    # Cycles shadow check — decide() evaluates without creating a reservation
     try:
-        response = cycles.create_reservation(ReservationCreateRequest(
-            idempotency_key=idempotency_key,
+        response = client.decide(DecisionRequest(
+            idempotency_key=str(uuid.uuid4()),
             subject=Subject(tenant="acme-corp", workspace="production", agent=user_id),
             action=Action(kind="llm.completion", name="gpt-4o"),
             estimate=Amount(unit=Unit.USD_MICROCENTS, amount=estimated_cost),
-            dry_run=True,
         ))
         # Log: would Cycles have allowed or denied this?
         decision = response.get_body_attribute("decision")
         print(f"Cycles decision: {decision} for {user_id}")
     except Exception as e:
-        # Shadow mode failure should never block your app
+        # Shadow check failure should never block your app
         print(f"Cycles shadow error (non-blocking): {e}")
 
     # ... do the LLM call ...
@@ -179,11 +182,13 @@ If agreement is <90%, your Cycles budget needs adjusting before cut-over.
 
 When shadow mode looks good (>95% agreement, no surprises), switch Cycles from shadow to enforcement:
 
-### Step 1: Remove dry_run flag
+### Step 1: Replace decide() with create_reservation()
 
 ```python
-# Change dry_run=True to remove it (defaults to False)
-response = cycles.create_reservation(ReservationCreateRequest(
+# Switch from shadow decide() to enforcing create_reservation()
+from runcycles import ReservationCreateRequest, CommitRequest
+
+response = client.create_reservation(ReservationCreateRequest(
     idempotency_key=idempotency_key,
     subject=Subject(tenant="acme-corp", workspace="production", agent=user_id),
     action=Action(kind="llm.completion", name="gpt-4o"),
@@ -201,7 +206,7 @@ reservation_id = response.get_body_attribute("reservation_id")
 
 ```python
 # After the LLM call, commit actual cost
-cycles.commit_reservation(reservation_id, CommitRequest(
+client.commit_reservation(reservation_id, CommitRequest(
     idempotency_key=f"commit-{idempotency_key}",
     actual=Amount(unit=Unit.USD_MICROCENTS, amount=actual_cost),
 ))
@@ -219,7 +224,7 @@ def check_and_charge(user_id, estimated_cost):
 
     # Cycles enforcing
     idempotency_key = str(uuid.uuid4())
-    response = cycles.create_reservation(ReservationCreateRequest(
+    response = client.create_reservation(ReservationCreateRequest(
         idempotency_key=idempotency_key,
         subject=Subject(tenant="acme-corp", workspace="production", agent=user_id),
         action=Action(kind="llm.completion", name="gpt-4o"),
@@ -234,7 +239,7 @@ def check_and_charge(user_id, estimated_cost):
     # ... do the LLM call ...
     actual_cost = get_actual_cost()
 
-    cycles.commit_reservation(reservation_id, CommitRequest(
+    client.commit_reservation(reservation_id, CommitRequest(
         idempotency_key=f"commit-{idempotency_key}",
         actual=Amount(unit=Unit.USD_MICROCENTS, amount=actual_cost),
     ))
@@ -243,9 +248,10 @@ def check_and_charge(user_id, estimated_cost):
 ### Or use the decorator (cleaner)
 
 ```python
+import openai
 from runcycles import cycles, set_default_client
 
-set_default_client(cycles_client)
+set_default_client(client)
 
 @cycles(
     estimate=lambda prompt, max_tokens: max_tokens * 10,
@@ -277,7 +283,7 @@ The decorator handles reserve, commit, release (on failure), and idempotency aut
 At **any phase**, you can revert to your old limiter:
 
 1. Re-enable old limiter code (uncomment)
-2. Set Cycles calls to `dry_run=True` (or remove them entirely)
+2. Switch Cycles calls back to `client.decide()` (shadow mode) or remove them entirely
 3. No data migration needed — both systems track state independently
 
 The migration is safe because:
@@ -296,7 +302,7 @@ The migration is safe because:
 | Webhook alerts | Custom implementation | Built-in (6 event types, PagerDuty/Slack) |
 | Multi-tenant isolation | Manual Redis key prefixing | Built-in scope hierarchy |
 | Delegation attenuation | No | Sub-budget carving for sub-agents |
-| Shadow mode validation | No | `dry_run: true` on any reservation |
+| Shadow mode validation | No | `decide()` endpoint for shadow evaluation |
 | Graceful degradation | No | ALLOW_WITH_CAPS with tool denylists |
 
 ## Common migration questions
