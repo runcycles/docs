@@ -5,18 +5,25 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 # Admin API Guide
 
-The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies. All requests use the `X-Admin-API-Key` header.
+The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
+
+**Authentication:** Budget endpoints (create, fund, list) use `X-Cycles-API-Key` with `admin:write` permission. Budget patch and all other admin endpoints (tenants, API keys, policies, webhooks, events) use `X-Admin-API-Key`. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
 ## Authentication
 
+The admin API uses two authentication mechanisms:
+
 ```bash
-# All admin requests use this header
--H "X-Admin-API-Key: admin-bootstrap-key"
+# Tenant/key/policy/webhook management + budget PATCH
+-H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Budget create, fund, list (tenant-scoped operations)
+-H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires admin:write permission
 ```
 
-The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server.
+The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server. Budget endpoints (except PATCH) authenticate via tenant API keys with `admin:write` permission — the tenant is derived from the key, so no `tenant_id` is needed in request bodies.
 
 ## Tenant management
 
@@ -28,8 +35,7 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "tenant_id": "acme-corp",
-    "name": "Acme Corporation",
-    "status": "ACTIVE"
+    "name": "Acme Corporation"
   }' | jq .
 ```
 
@@ -106,24 +112,26 @@ curl -s -X DELETE http://localhost:7979/v1/admin/api-keys/{key_id} \
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
-    "allocated": 100000000
+    "allocated": { "amount": 100000000, "unit": "USD_MICROCENTS" }
   }' | jq .
 ```
+
+The tenant is derived from the authenticated API key — no `tenant_id` field in the request body.
 
 ### Fund an existing budget (CREDIT)
 
 ```bash
-curl -s -X POST http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "CREDIT",
-    "amount": 50000000
+    "amount": { "amount": 50000000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "fund-acme-001"
   }' | jq .
 ```
 
@@ -136,10 +144,10 @@ Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (reset to spec
 ```bash
 curl -s -X PATCH 'http://localhost:7979/v1/admin/budgets?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
   -d '{
     "commit_overage_policy": "REJECT",
-    "overdraft_limit": 10000000
+    "overdraft_limit": { "amount": 10000000, "unit": "USD_MICROCENTS" }
   }' | jq .
 ```
 
