@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs LiteLLM: Budget Authority vs Proxy Budgets"
-description: "LiteLLM has team budgets and rate limits. Cycles adds atomic reservations, action authority, and delegation attenuation. See where each fits in your stack."
+description: "LiteLLM routes and rate-limits. Cycles enforces budget authority and action control. See where each fits, where they overlap, and how they work together."
 ---
 
 # Cycles vs LiteLLM: Budget Authority vs Proxy Budgets
@@ -62,9 +62,9 @@ LiteLLM tracks spend after the fact — the cost is recorded when the model resp
 
 Cycles [reserves budget before the action](/blog/what-is-runtime-authority-for-ai-agents) based on an estimate, executes only if approved, and commits the actual cost after. The unused difference is released. The budget cannot be silently drained by concurrent requests. If actual cost exceeds the estimate, the overage is tracked as debt and surfaced via webhook events — not silently absorbed.
 
-## When you need both
+## Better together: LiteLLM + Cycles
 
-LiteLLM and Cycles solve different problems at different layers:
+LiteLLM and Cycles solve different problems at different layers. Running both gives you capabilities neither provides alone:
 
 ```
 Request flow:
@@ -76,7 +76,24 @@ Request flow:
     → Cycles: Commit actual cost, release unused reservation
 ```
 
-LiteLLM is the **routing and model-access layer**. Cycles is the **authority and enforcement layer**. You can run both — LiteLLM handles model selection and provider fallback, Cycles handles budget authority and action control.
+**What this stack gives you:**
+
+| Capability | Who provides it |
+|---|---|
+| Model routing and provider fallback | LiteLLM |
+| RPM/TPM rate limiting | LiteLLM |
+| Pre-execution budget authority | Cycles |
+| Action-level RISK_POINTS control | Cycles |
+| Team-level cost visibility | LiteLLM |
+| Atomic per-action budget enforcement | Cycles |
+| Model access restrictions (which models) | LiteLLM |
+| Tool access restrictions (which actions) | Cycles |
+| Delegation attenuation for sub-agents | Cycles |
+| Provider failover and retry | LiteLLM |
+
+**Concrete integration scenario:** Your agent gets ALLOW_WITH_CAPS from Cycles (budget is low). The caps include a model downgrade hint. Your application passes that hint to LiteLLM, which routes to a cheaper model (GPT-4o-mini instead of GPT-4o). The agent completes the task at lower cost, and both systems record the outcome. Neither tool alone enables this graceful degradation pattern — Cycles decides the constraint, LiteLLM executes the downgrade.
+
+LiteLLM is the **routing and model-access layer**. Cycles is the **authority and enforcement layer**. They're complementary by design.
 
 ## What Cycles does not do
 

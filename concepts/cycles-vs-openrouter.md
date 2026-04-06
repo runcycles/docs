@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs OpenRouter: Runtime Authority vs Routing with Guardrails"
-description: "OpenRouter routes to the best model and caps per-key spend. Cycles enforces pre-execution budget authority with atomic reservations and action control."
+description: "OpenRouter routes to the best model with per-key caps. Cycles enforces budget authority and action control. See where each fits and how they complement each other."
 ---
 
 # Cycles vs OpenRouter: Runtime Authority vs Routing with Guardrails
@@ -77,9 +77,9 @@ When agent A spawns sub-agent B via an LLM call, OpenRouter sees both as indepen
 
 Cycles' [authority attenuation](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation) ensures sub-agents always get narrower authority — smaller sub-budgets, restricted action masks, limited delegation depth.
 
-## When you need both
+## Better together: OpenRouter + Cycles
 
-OpenRouter and Cycles operate at different layers:
+OpenRouter and Cycles operate at different layers. Running both gives you capabilities neither provides alone:
 
 ```
 Request flow:
@@ -90,6 +90,25 @@ Request flow:
     → OpenRouter: Track cost, check key cap
     → Cycles: Commit actual cost, release unused reservation
 ```
+
+**What this stack gives you:**
+
+| Capability | Who provides it |
+|---|---|
+| Unified access to hundreds of models | OpenRouter |
+| Automatic provider selection and pricing | OpenRouter |
+| Pre-execution budget authority | Cycles |
+| Action-level RISK_POINTS control | Cycles |
+| Per-key spending caps with reset | OpenRouter |
+| Hierarchical tenant/workflow/agent budgets | Cycles |
+| Model and provider allowlists | OpenRouter |
+| Tool allowlists and denylists | Cycles |
+| Credit management | OpenRouter |
+| Delegation attenuation for sub-agents | Cycles |
+
+**Concrete integration scenario:** OpenRouter provides your agents with access to 200+ models through a single API. Cycles decides whether each action should proceed based on the agent's remaining budget and risk profile. When Cycles returns ALLOW_WITH_CAPS (budget is running low), your application asks OpenRouter for a cheaper model variant. OpenRouter handles the routing; Cycles handles the authority. OpenRouter's per-key cap is the safety net; Cycles' reserve-commit is the precision control.
+
+**Another scenario:** OpenRouter guardrails restrict a key to only GPT-4o-mini and Claude Haiku (cheaper models). Cycles' RISK_POINTS budget independently restricts the same agent to 2 emails and 0 deploys per run. Model access (OpenRouter) and action access (Cycles) are enforced independently — both constraints must pass.
 
 OpenRouter selects the model and provider. Cycles decides whether the action should happen at all. They're complementary, not competing.
 

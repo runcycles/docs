@@ -1,6 +1,6 @@
 ---
 title: "Cycles vs Helicone: Enforcement vs Observability and Rate Limiting"
-description: "Helicone tracks costs and rate-limits requests. Cycles enforces cumulative budgets and action authority. See how they differ and where they complement each other."
+description: "Helicone optimizes cost with caching and observability. Cycles enforces budgets and action authority. See how they differ and how they work better together."
 ---
 
 # Cycles vs Helicone: Enforcement vs Observability and Rate Limiting
@@ -67,9 +67,9 @@ Helicone can segment rate limits by user ID or custom property, but there's no t
 
 Cycles provides per-tenant isolation with hierarchical scopes (tenant → workspace → workflow → agent), where each level can have its own budget and the enforcement is derived from all applicable scopes atomically.
 
-## When you need both
+## Better together: Helicone + Cycles
 
-Helicone and Cycles complement each other:
+Helicone and Cycles complement each other. Running both gives you capabilities neither provides alone:
 
 ```
 Request flow:
@@ -81,7 +81,24 @@ Request flow:
     → Cycles: Commit actual cost, release unused reservation
 ```
 
-Helicone optimizes cost (caching, routing). Cycles enforces limits (budgets, action authority). Helicone tells you what happened. Cycles decides what's allowed to happen.
+**What this stack gives you:**
+
+| Capability | Who provides it |
+|---|---|
+| LLM response caching (deduplicate identical calls) | Helicone |
+| Cheapest-provider routing | Helicone |
+| Pre-execution budget authority | Cycles |
+| Action-level RISK_POINTS control | Cycles |
+| Cost attribution per trace/session | Helicone |
+| Cumulative budget enforcement per tenant | Cycles |
+| Rate limiting per time window | Helicone |
+| Per-action reserve-commit lifecycle | Cycles |
+| Cost anomaly dashboard | Helicone |
+| Webhook events for automated response | Cycles |
+
+**Concrete integration scenario:** Helicone's cache serves 73% of repeated requests at zero cost — this reduces the total number of actions that even reach Cycles. For the remaining 27%, Cycles enforces budget authority. Meanwhile, Helicone's per-session cost tracking lets you correlate Cycles' `reservation_id` with trace data for unified debugging. Helicone reduces what you spend. Cycles limits what you're allowed to spend. Together, they form both the optimization and the enforcement layer.
+
+**Another scenario:** Helicone's cost alert fires at 80% of a soft threshold — your team sees the Slack notification. Cycles' budget enforcement fires at 100% — the agent gets ALLOW_WITH_CAPS or DENY. The alert gives you time to intervene. The enforcement guarantees the budget holds even if you don't.
 
 ## What Cycles does not do
 
