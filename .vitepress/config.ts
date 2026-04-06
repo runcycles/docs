@@ -235,6 +235,9 @@ export default defineConfig({
                 { text: 'vs Rate Limiting', link: '/concepts/cycles-vs-rate-limiting' },
                 { text: 'vs LangSmith', link: '/concepts/cycles-vs-langsmith' },
                 { text: 'vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
+                { text: 'vs LiteLLM', link: '/concepts/cycles-vs-litellm' },
+                { text: 'vs Helicone', link: '/concepts/cycles-vs-helicone' },
+                { text: 'vs OpenRouter', link: '/concepts/cycles-vs-openrouter' },
                 { text: 'vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
                 { text: 'vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
               ]
