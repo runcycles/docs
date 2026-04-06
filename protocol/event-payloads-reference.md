@@ -46,7 +46,7 @@ Every event shares this envelope structure. The `data` field varies by event typ
 | `timestamp` | string | Yes | ISO 8601 UTC timestamp |
 | `tenant_id` | string | Yes | Tenant ID (system events use `__system__`) |
 | `scope` | string | When applicable | Full scope path (e.g., `tenant:acme-corp/workspace:prod`) |
-| `source` | string | Yes | Emitting service: `cycles-server`, `cycles-admin`, `expiry-sweeper` |
+| `source` | string | Yes | Emitting service. Currently all events use `cycles-server`. Future releases may add `cycles-admin`. |
 | `actor` | object | When applicable | Who triggered: `type` (`api_key`, `admin`, `system`), `key_id`, `source_ip` |
 | `data` | object | Varies | Event-specific payload (see below). Some events emit `null`. |
 | `correlation_id` | string | When provided | Links related events across a workflow |
@@ -101,27 +101,25 @@ The `reservation.denied` event model defines 7 fields, but the current server em
   "event_type": "reservation.commit_overage",
   "data": {
     "reservation_id": "res_a1b2c3d4",
-    "scope": "tenant:acme-corp/workspace:prod",
-    "unit": "USD_MICROCENTS",
-    "estimated_amount": 300000,
-    "actual_amount": 480000,
-    "overage": 180000,
-    "overage_policy": "ALLOW_WITH_OVERDRAFT",
-    "debt_incurred": 80000
+    "actual_amount": 480000
   }
 }
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `reservation_id` | string | The reservation that exceeded its estimate |
-| `scope` | string | Affected scope path |
-| `unit` | string | Budget unit |
-| `estimated_amount` | number | Original reservation estimate |
-| `actual_amount` | number | Actual cost committed |
-| `overage` | number | Amount by which actual exceeded estimate (`actual - estimated`) |
-| `overage_policy` | string | Policy applied: `REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT` |
-| `debt_incurred` | number | Debt created (only for `ALLOW_WITH_OVERDRAFT`) |
+::: tip Fields populated at emission time
+The `reservation.commit_overage` event model defines 8 fields, but the current server emission populates `reservation_id` and `actual_amount`. The remaining 6 fields are defined in the model and may be populated in future releases. Note: the envelope `scope` field is also not set for this event — scope-filtered subscriptions will not match `commit_overage` events.
+:::
+
+| Field | Type | Populated | Description |
+|---|---|---|---|
+| `reservation_id` | string | Yes | The reservation that exceeded its estimate |
+| `actual_amount` | number | Yes | Actual cost committed |
+| `scope` | string | Not yet | Affected scope path |
+| `unit` | string | Not yet | Budget unit |
+| `estimated_amount` | number | Not yet | Original reservation estimate |
+| `overage` | number | Not yet | Amount by which actual exceeded estimate |
+| `overage_policy` | string | Not yet | Policy applied: `REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT` |
+| `debt_incurred` | number | Not yet | Debt created (only for `ALLOW_WITH_OVERDRAFT`) |
 
 ---
 
@@ -155,7 +153,7 @@ The `reservation.denied` event model defines 7 fields, but the current server em
 | `estimated_amount` | number | Amount that was held by the reservation |
 | `created_at` | string | When the reservation was created (ISO 8601) |
 | `expired_at` | string | When the reservation expired (ISO 8601) |
-| `ttl_ms` | number | Configured TTL in milliseconds |
+| `ttl_ms` | number | Effective TTL in milliseconds (computed as `expired_at - created_at`; includes extensions) |
 | `extensions_used` | number | How many times the reservation was extended before expiry |
 
 ---

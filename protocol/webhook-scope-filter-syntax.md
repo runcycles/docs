@@ -131,7 +131,17 @@ This delivers only `budget.exhausted` **or** `budget.over_limit_entered` events 
 
 ## Events without scope
 
-Some events (particularly system events like `system.store_connection_lost`) may not have a `scope` field. When `scope_filter` is set on a subscription and an event has a null scope, the event is **not delivered** to that subscription. Use a separate subscription without a scope filter to capture unscoped events.
+Some events may not have a `scope` field (null). When `scope_filter` is set on a subscription and an event has a null scope, the event is **not delivered** to that subscription. Use a separate subscription without a scope filter to capture unscoped events.
+
+::: tip Note on `reservation.commit_overage`
+As of v0.1.25, the `reservation.commit_overage` event is emitted with a null envelope scope. Scope-filtered subscriptions will not match this event. Use a subscription without a scope filter (or filtered by event type only) to capture commit overage events.
+:::
+
+## Edge cases
+
+- **Whitespace-only filter** (e.g., `"   "`): Treated the same as null — matches all events.
+- **Filter `"*"` alone**: Matches all events that have a non-null scope (equivalent to "has any scope").
+- **Events with some scope fields emitted as null**: Only `null` scope is checked — an empty string scope (`""`) is not treated as missing.
 
 ## Related
 

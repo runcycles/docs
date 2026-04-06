@@ -438,7 +438,7 @@ See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents
 
 **Checklist:**
 
-1. **Is the events service running?** Webhook delivery requires the events service (`cycles-server-events`) to be deployed and connected to the same Redis instance. Check with `curl http://localhost:7980/health`.
+1. **Is the events service running?** Webhook delivery requires the events service (`cycles-server-events`) to be deployed and connected to the same Redis instance. Check with `curl http://localhost:7980/actuator/health`.
 2. **Is the subscription active?** Subscriptions are auto-disabled after 10 consecutive delivery failures. Check status: `GET /v1/admin/webhooks/{id}` — look for `"status": "DISABLED"`.
 3. **Does the subscription match the event type?** Check the `event_types` array in your subscription. If it's empty, the subscription receives all event types. If it lists specific types, the event must match.
 4. **Does the scope filter match?** If you set a `scope_filter`, only events whose scope matches the filter will be delivered. See [Scope Filter Syntax](/protocol/webhook-scope-filter-syntax) for matching rules.
