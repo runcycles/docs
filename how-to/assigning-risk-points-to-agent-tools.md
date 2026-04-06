@@ -1,11 +1,13 @@
 ---
-title: "How to Assign RISK_POINTS to Agent Tools"
-description: "Step-by-step guide to classifying your agent's tools into risk tiers and assigning RISK_POINTS scores — with a reference table of 25+ common tools."
+title: "How to Assign RISK_POINTS to AI Agent Tools"
+description: "Step-by-step risk scoring guide: classify your AI agent's tools into risk tiers, assign RISK_POINTS scores, and set per-run budgets. Includes 25+ tool reference table."
 ---
 
-# How to Assign RISK_POINTS to Agent Tools
+# How to Assign RISK_POINTS to AI Agent Tools
 
-This guide walks you through scoring your agent's tools with [RISK_POINTS](/glossary#risk-points) — the unit Cycles uses for action authority enforcement. By the end, you'll have a scored tool list and a per-run budget you can configure directly.
+This guide walks you through risk scoring for your AI agent's tools with [RISK_POINTS](/glossary#risk-points) — the unit Cycles uses for [action authority](/concepts/action-authority-controlling-what-agents-do) enforcement. By the end, you'll have a scored tool list and a per-run budget you can configure directly.
+
+For the full risk assessment framework and regulatory context, see [AI Agent Risk Assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk). This page is the implementation-focused quick reference.
 
 **Prerequisites:**
 - You know what RISK_POINTS are ([protocol reference](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points))
@@ -29,10 +31,10 @@ Example inventory for a customer support agent:
 | `call_crm_api` | Reads customer data from CRM | External API (read) |
 | `send_customer_email` | Sends email to customer's inbox | External, hard to reverse |
 | `update_crm_status` | Updates customer status in CRM | External, hard to reverse |
-| `create_jira_ticket` | Creates a Jira ticket | External API call |
+| `create_jira_ticket` | Creates a Jira ticket (triggers notifications) | External, customer-visible |
 | `issue_refund` | Processes a financial refund | Irreversible |
 
-## Step 2: Classify each tool into a tier
+## Step 2: Classify each tool into a risk tier
 
 Use these three questions to classify:
 
@@ -67,11 +69,15 @@ Each tier has a **base RISK_POINTS score**:
 | 3 | Mutation | 20 | Customer-facing impact, difficult to reverse |
 | 4 | Execution | 50 | Irreversible, financial or production impact |
 
-::: tip Edge cases
-A "file write" could be Tier 1 (temp log) or Tier 4 (production config overwrite). Use the three questions above — they resolve ambiguity better than the action name alone. The same tool in different deployments can have different tiers based on what it connects to.
+::: tip Edge cases and rules of thumb
+- **If a tool matches multiple tiers, assign the highest.** A generic API tool that can both read and write should be scored at the write tier.
+- **If a tool's risk varies by parameter** (e.g., a generic `call_api` used for both reads and writes), score at the highest tier it can reach, or split it into separate tool definitions.
+- **If unsure, score one tier higher and validate in shadow mode.** It's cheaper to loosen a tight score than to recover from an under-scored tool causing an incident.
+- **When multiplied scores produce decimals** (e.g., 5 × 1.5 = 7.5), round up to the next integer.
+- The same tool in different deployments can have different tiers based on what it connects to.
 :::
 
-## Step 3: Apply context multipliers
+## Step 3: Apply risk scoring multipliers
 
 Base points assume a generic context. Four factors adjust them for your specific deployment. **Take the maximum** of all four — they don't stack multiplicatively.
 
@@ -139,17 +145,17 @@ Sum the expected tool calls for a **typical** run, then add buffer:
 |---|:---:|:---:|:---:|
 | `search_knowledge` | 0 | 4-6 | 0 |
 | `get_customer` | 0 | 1-2 | 0 |
-| `save_draft_note` | 2 | 1 | 2 |
+| `save_draft_note` | 1 | 1 | 1 |
 | `call_crm_api` | 5 | 1 | 5 |
 | `send_customer_email` | 40 | 1 | 40 |
 | `update_crm_status` | 40 | 1 | 40 |
-| `create_jira_ticket` | 5 | 0-1 | 0-5 |
+| `create_jira_ticket` | 20 | 0-1 | 0-20 |
 | `issue_refund` | 150 | 0 (rare) | 0 |
-| **Normal run total** | | | **87-92** |
+| **Normal run total** | | | **86-106** |
 
 Set per-run budget to **250 RISK_POINTS**:
-- Normal resolution: ~90 points (comfortable headroom)
-- Complex resolution (email + ticket + CRM update): ~90 points
+- Normal resolution: ~86-106 points (comfortable headroom)
+- Complex resolution (email + ticket + CRM update): ~106 points
 - Single refund + email: 150 + 40 = 190 points (fits)
 - Two refunds: 300 points (does **not** fit — requires escalation)
 
@@ -157,7 +163,7 @@ This budget lets the agent handle any normal support interaction while preventin
 
 ## Step 5: Validate with shadow mode
 
-Before enforcing, run with [`dry_run: true`](/protocol/webhook-scope-filter-syntax) for 1-2 weeks:
+Before enforcing, run with [`dry_run: true`](/protocol/dry-run-shadow-mode-evaluation-in-cycles) for 1-2 weeks:
 
 1. Create the RISK_POINTS budget via admin API
 2. Set reservations to dry-run mode
@@ -170,7 +176,7 @@ Before enforcing, run with [`dry_run: true`](/protocol/webhook-scope-filter-synt
 
 See the [shadow mode rollout guide](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) for the full process.
 
-## Common tool classifications
+## Common AI agent tool classifications
 
 Reference table for 25+ common tools. **These are starting points** — adjust based on your deployment context using the multiplier framework above.
 
@@ -205,7 +211,6 @@ If your agent handles PII, financial, or health data, consider assigning 1-2 poi
 |---|---|:---:|
 | `call_external_api` | Generic third-party API call | 5-10 |
 | `webhook_post` | Fire a webhook | 5-10 |
-| `create_jira_ticket` | Create a ticket in external tracker | 5-10 |
 | `post_to_internal_slack` | Post to an internal Slack channel | 5 |
 | `generate_image` | Generate image via API (Stable Diffusion, DALL-E) | 5-10 |
 | `generate_video` | Generate video via API | 10-15 |
@@ -215,6 +220,7 @@ If your agent handles PII, financial, or health data, consider assigning 1-2 poi
 | Tool | Description | Typical final score |
 |---|---|:---:|
 | `send_email` / `send_customer_email` | Send email to customer | 40-60 |
+| `create_jira_ticket` / `create_support_ticket` | Create ticket (triggers customer-visible notifications) | 20-40 |
 | `send_external_slack` | Post to customer-shared Slack channel | 40-60 |
 | `update_record` / `update_crm` | Update database/CRM record | 20-40 |
 | `delete_record` | Delete a database record | 40-60 |
@@ -232,7 +238,7 @@ If your agent handles PII, financial, or health data, consider assigning 1-2 poi
 | `delete_database` | Drop a table or database | 150 |
 | `modify_infrastructure` | Change cloud infrastructure (scaling, networking) | 100-150 |
 
-## Worked example: Scoring from scratch
+## Worked example: Risk scoring an AI agent from scratch
 
 A data analysis agent with these tools:
 
@@ -247,7 +253,7 @@ Typical run: 10 queries (0) + 3 searches (0) + 2 charts (10) + 1 email (40) + 1 
 
 Set run budget: **100 RISK_POINTS** — allows a normal run with room for a second email or extra charts, but prevents sending 3+ reports in a loop.
 
-## When to recalibrate
+## When to recalibrate risk scores
 
 Review your scores when:
 
@@ -258,7 +264,9 @@ Review your scores when:
 
 ## Next steps
 
-- [AI Agent Risk Assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) — the full framework deep-dive
-- [AI Agent Action Control](/blog/ai-agent-action-control-hard-limits-side-effects) — why action authority matters beyond cost
+- [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles) — configure your scored tool list and budget via the admin API
+- [Common Budget Patterns](/how-to/common-budget-patterns) — per-tenant, per-workflow, per-run budget structures
 - [Shadow Mode Rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production) — validating scores before enforcing
+- [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what agents should do when risk budget runs low
+- [AI Agent Risk Assessment](/blog/ai-agent-risk-assessment-score-classify-enforce-tool-risk) — the full framework deep-dive with regulatory context
 - [Event Payloads Reference](/protocol/event-payloads-reference) — monitoring commit overage and denial events
