@@ -61,7 +61,7 @@ The split matters. If you page on every commit overage, on-call will learn to ig
 Was spend rate normal until recently?
 ├── YES → Budget is undersized for actual workload
 │         → Fund via admin API: POST /v1/admin/budgets/fund?scope={scope}&unit={unit}
-│           (CREDIT operation, authenticated with X-Admin-API-Key)
+│           (CREDIT operation, authenticated with X-Cycles-API-Key)
 │         → Review budget sizing for next period
 │
 └── NO → Check for burst pattern
