@@ -379,6 +379,8 @@ export default defineConfig({
             { text: 'Metrics and Metadata', link: '/protocol/standard-metrics-and-metadata-in-cycles' },
             { text: 'Error Codes and Error Handling', link: '/protocol/error-codes-and-error-handling-in-cycles' },
             { text: 'Webhook Event Delivery Protocol', link: '/protocol/webhook-event-delivery-protocol' },
+            { text: 'Event Payloads Reference', link: '/protocol/event-payloads-reference' },
+            { text: 'Webhook Scope Filter Syntax', link: '/protocol/webhook-scope-filter-syntax' },
           ]
         },
         {
