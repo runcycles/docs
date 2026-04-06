@@ -7,7 +7,7 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
 
-**Authentication:** Budget endpoints (create, fund, list) use `X-Cycles-API-Key` with `admin:write` permission. Budget patch and all other admin endpoints (tenants, API keys, policies, webhooks, events) use `X-Admin-API-Key`. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
+**Authentication:** Budget create, fund, and list use `X-Cycles-API-Key` with `admin:write` permission (tenant manages own budgets). Budget patch uses `X-Admin-API-Key` per the protocol spec (admin-only control over overdraft settings). Other admin endpoints (tenants, API keys, policies, webhooks, events) use `X-Admin-API-Key`. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
@@ -23,7 +23,7 @@ The admin API uses two authentication mechanisms:
 -H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires admin:write permission
 ```
 
-The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server. Budget endpoints (except PATCH) authenticate via tenant API keys with `admin:write` permission — the tenant is derived from the key, so no `tenant_id` is needed in request bodies.
+The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server. Budget create, fund, and list authenticate via tenant API keys with `admin:write` permission — the tenant is derived from the key, so no `tenant_id` is needed in request bodies. Budget patch requires the admin bootstrap key.
 
 ## Tenant management
 
