@@ -40,7 +40,7 @@ echo "=== Creating tenant ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/tenants" \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"tenant_id\": \"$TENANT\", \"name\": \"My Company\", \"status\": \"ACTIVE\"}"
+  -d "{\"tenant_id\": \"$TENANT\", \"name\": \"My Company\"}"
 echo
 
 echo "=== Creating API key ==="
@@ -148,7 +148,7 @@ echo "--- Creating tenant ---"
 curl -s -X POST "$ADMIN_URL/v1/admin/tenants" \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"tenant_id\": \"$CUSTOMER_ID\", \"name\": \"$CUSTOMER_ID\", \"status\": \"ACTIVE\"}"
+  -d "{\"tenant_id\": \"$CUSTOMER_ID\", \"name\": \"$CUSTOMER_ID\"}"
 echo
 
 echo "--- Creating API key ---"
@@ -176,7 +176,7 @@ echo
 if [ "$OVERDRAFT" -gt 0 ]; then
   echo "--- Setting overdraft policy ---"
   curl -s -X PATCH "$ADMIN_URL/v1/admin/budgets?scope=tenant:$CUSTOMER_ID&unit=USD_MICROCENTS" \
-    -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+    -H "X-Admin-API-Key: $ADMIN_KEY" \
     -H "Content-Type: application/json" \
     -d "{
       \"overdraft_limit\": {\"amount\": $OVERDRAFT, \"unit\": \"USD_MICROCENTS\"},
@@ -230,7 +230,7 @@ echo "=== Creating tenant ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/tenants" \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"tenant_id\": \"$TENANT\", \"name\": \"My Company\", \"status\": \"ACTIVE\"}"
+  -d "{\"tenant_id\": \"$TENANT\", \"name\": \"My Company\"}"
 echo
 
 echo "=== Creating API key ==="

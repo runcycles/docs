@@ -35,8 +35,7 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "tenant_id": "acme-corp",
-    "name": "Acme Corporation",
-    "status": "ACTIVE"
+    "name": "Acme Corporation"
   }' | jq .
 ```
 
