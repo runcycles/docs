@@ -117,6 +117,10 @@ Cycles is not a proxy, router, or model-access layer. It doesn't handle provider
 - Multi-agent delegation chains requiring authority attenuation
 - Zero-tolerance for budget overruns (financial, compliance)
 
+## Sources
+
+Feature claims verified against [docs.litellm.ai](https://docs.litellm.ai/docs/proxy/users) as of April 2026. Cycles claims based on v0.1.25. These tools evolve quickly — check the linked docs for the latest.
+
 ## Related
 
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — broader comparison

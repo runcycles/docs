@@ -133,6 +133,10 @@ Cycles is not a router or model aggregator. It doesn't provide access to hundred
 - Multi-agent delegation chains requiring authority attenuation
 - Webhook events for operational alerting and automated response
 
+## Sources
+
+Feature claims verified against [openrouter.ai/docs](https://openrouter.ai/docs/guides/features/guardrails) as of April 2026. Cycles claims based on v0.1.25. These tools evolve quickly — check the linked docs for the latest.
+
 ## Related
 
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — broader comparison

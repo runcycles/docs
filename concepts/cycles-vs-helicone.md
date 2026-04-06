@@ -120,6 +120,10 @@ Cycles is not an observability platform, a caching layer, or a router. It doesn'
 - You need atomic budget enforcement under concurrent agent load
 - You need delegation attenuation for multi-agent systems
 
+## Sources
+
+Feature claims verified against [docs.helicone.ai](https://docs.helicone.ai) as of April 2026. Cycles claims based on v0.1.25. These tools evolve quickly — check the linked docs for the latest.
+
 ## Related
 
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — broader comparison
