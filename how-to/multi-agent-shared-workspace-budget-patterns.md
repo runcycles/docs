@@ -21,7 +21,7 @@ The simplest pattern. All agents draw from a single workspace-level budget. The 
 # Create a shared $50 budget for the workspace
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp/workspace:project-alpha",
     "unit": "USD_MICROCENTS",
@@ -65,7 +65,7 @@ tenant:acme-corp/workspace:project-alpha          → $50 (hard cap)
 # Workspace-level cap
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp/workspace:project-alpha",
     "unit": "USD_MICROCENTS",
@@ -78,7 +78,7 @@ for agent_budget in "planner:2000000000" "executor:3000000000" "reviewer:1000000
   amount="${agent_budget##*:}"
   curl -s -X POST http://localhost:7979/v1/admin/budgets \
     -H "Content-Type: application/json" \
-    -H "X-Admin-API-Key: admin-bootstrap-key" \
+    -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
     -d "{
       \"scope\": \"tenant:acme-corp/workspace:project-alpha/agent:${agent}\",
       \"unit\": \"USD_MICROCENTS\",
@@ -131,7 +131,7 @@ Give expensive agents (e.g. those using GPT-4) smaller budgets than cheap agents
 # Expensive planner agent — small budget, large model
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod/agent:planner",
     "unit": "USD_MICROCENTS",
@@ -141,7 +141,7 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # Cheap executor agent — larger budget, smaller model
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "scope": "tenant:acme-corp/workspace:prod/agent:executor",
     "unit": "USD_MICROCENTS",

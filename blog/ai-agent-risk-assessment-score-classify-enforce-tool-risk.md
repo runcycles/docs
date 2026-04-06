@@ -349,12 +349,11 @@ The worksheet's `budget` section translates into Cycles budgets at two levels. T
 # Create an app-level risk-point ceiling for the support agent
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp/app:support-copilot",
     "unit": "RISK_POINTS",
-    "allocated": 10000
+    "allocated": { "amount": 10000, "unit": "RISK_POINTS" }
   }'
 ```
 
@@ -364,12 +363,11 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
 # Create a per-run risk-point budget (250 points per the worksheet)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp/app:support-copilot/workflow:run-abc-123",
     "unit": "RISK_POINTS",
-    "allocated": 250
+    "allocated": { "amount": 250, "unit": "RISK_POINTS" }
   }'
 ```
 
@@ -379,12 +377,11 @@ The same pattern applies to cost budgets, using `USD_MICROCENTS` (1 USD = 100,00
 # Create a per-run cost budget ($5.00 = 500,000,000 microcents)
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp/app:support-copilot/workflow:run-abc-123",
     "unit": "USD_MICROCENTS",
-    "allocated": 500000000
+    "allocated": { "amount": 500000000, "unit": "USD_MICROCENTS" }
   }'
 ```
 
