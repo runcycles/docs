@@ -57,15 +57,14 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 Map your existing rate limit to a Cycles budget:
 
 ```bash
-# If your current cap is $50/month per user → 50,000,000 USD_MICROCENTS
+# If your current cap is $50/month per user (1 USD = 100,000,000 microcents)
 curl -X POST http://localhost:7979/v1/admin/budgets \
-  -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
-    "allocated": 50000000
+    "allocated": { "amount": 5000000000, "unit": "USD_MICROCENTS" }
   }'
 ```
 
