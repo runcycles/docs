@@ -175,6 +175,17 @@ The moment your agents start calling tools that send emails, write databases, tr
 
 That's the gap runtime authority fills. Not instead of proxy tools — underneath them.
 
+## Sources and versions
+
+Feature claims in this post were verified against the following documentation as of April 2026:
+
+- **LiteLLM** — [docs.litellm.ai/docs/proxy/users](https://docs.litellm.ai/docs/proxy/users) (budgets, rate limits, team management)
+- **Helicone** — [docs.helicone.ai](https://docs.helicone.ai) (cost tracking, rate limiting, caching, alerts)
+- **OpenRouter** — [openrouter.ai/docs/guides/features/guardrails](https://openrouter.ai/docs/guides/features/guardrails) (guardrails, spending limits, model restrictions)
+- **Cycles** — [runcycles.io](https://runcycles.io) v0.1.25 (runtime authority, reserve-commit, RISK_POINTS)
+
+These tools evolve quickly. If a claim looks outdated, check the linked docs for the latest.
+
 ---
 
 - [Cycles vs LiteLLM](/concepts/cycles-vs-litellm) — detailed comparison
