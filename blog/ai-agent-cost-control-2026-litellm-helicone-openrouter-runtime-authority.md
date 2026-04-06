@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Cost Control in 2026: A Landscape Guide"
-date: 2026-04-07
+date: 2026-04-06
 author: Albert Mavashev
 tags: [engineering, production, costs, agents, best-practices, governance, architecture]
 description: "LiteLLM, Helicone, and OpenRouter each solve part of agent cost control. What each does, where they stop, and the layer none of them cover."
