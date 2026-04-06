@@ -32,9 +32,9 @@ TENANT="my-company"
 MONTHLY_BUDGET_USD=100    # $100/month total
 PROD_BUDGET_USD=80        # $80/month for production
 
-# Convert to microcents (1 USD = 1,000,000 microcents)
-TENANT_BUDGET=$((MONTHLY_BUDGET_USD * 1000000))
-PROD_BUDGET=$((PROD_BUDGET_USD * 1000000))
+# Convert to microcents (1 USD = 100,000,000 microcents)
+TENANT_BUDGET=$((MONTHLY_BUDGET_USD * 100000000))
+PROD_BUDGET=$((PROD_BUDGET_USD * 100000000))
 
 echo "=== Creating tenant ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/tenants" \
@@ -54,7 +54,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/api-keys" \
   }"
 echo -e "\n>>> Save the api_key value above — it won't be shown again\n"
 
-echo "=== Creating tenant-level budget ($${MONTHLY_BUDGET_USD}/month) ==="
+echo "=== Creating tenant-level budget (\$${MONTHLY_BUDGET_USD}/month) ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/budgets" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -H "Content-Type: application/json" \
@@ -65,7 +65,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/budgets" \
   }"
 echo
 
-echo "=== Creating production workspace budget ($${PROD_BUDGET_USD}/month) ==="
+echo "=== Creating production workspace budget (\$${PROD_BUDGET_USD}/month) ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/budgets" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -H "Content-Type: application/json" \
@@ -92,7 +92,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/budgets/fund?scope=tenant:my-company&unit=U
   -H "Content-Type: application/json" \
   -d "{
     \"operation\": \"RESET\",
-    \"amount\": {\"amount\": 100000000, \"unit\": \"USD_MICROCENTS\"},
+    \"amount\": {\"amount\": 10000000000, \"unit\": \"USD_MICROCENTS\"},
     \"idempotency_key\": \"reset-$(date +%Y-%m)\",
     \"reason\": \"Monthly budget reset\"
   }"
@@ -122,18 +122,18 @@ PLAN="${2:?Usage: $0 <customer-id> <plan>}"  # free | pro | enterprise
 # Plan tier budgets (microcents)
 case "$PLAN" in
   free)
-    BUDGET=500000000        # $500
+    BUDGET=500000000        # $5
     OVERDRAFT=0
     OVERAGE_POLICY="REJECT"
     ;;
   pro)
-    BUDGET=5000000000       # $5,000
-    OVERDRAFT=500000000     # $500 overdraft
+    BUDGET=5000000000       # $50
+    OVERDRAFT=500000000     # $5 overdraft
     OVERAGE_POLICY="ALLOW_WITH_OVERDRAFT"
     ;;
   enterprise)
-    BUDGET=50000000000      # $50,000
-    OVERDRAFT=5000000000    # $5,000 overdraft
+    BUDGET=50000000000      # $500
+    OVERDRAFT=5000000000    # $50 overdraft
     OVERAGE_POLICY="ALLOW_WITH_OVERDRAFT"
     ;;
   *)
@@ -199,9 +199,9 @@ echo "=== Customer $CUSTOMER_ID onboarded (plan: $PLAN) ==="
 
 | Plan | Monthly budget | Overdraft | Overage policy |
 |---|---|---|---|
-| Free | $500 | $0 | REJECT |
-| Pro | $5,000 | $500 | ALLOW_WITH_OVERDRAFT |
-| Enterprise | $50,000 | $5,000 | ALLOW_WITH_OVERDRAFT |
+| Free | $5 | $0 | REJECT |
+| Pro | $50 | $5 | ALLOW_WITH_OVERDRAFT |
+| Enterprise | $500 | $50 | ALLOW_WITH_OVERDRAFT |
 
 ---
 
@@ -223,7 +223,7 @@ echo "=== Customer $CUSTOMER_ID onboarded (plan: $PLAN) ==="
 
 ADMIN_URL="http://localhost:7979"
 TENANT="my-company"
-USD_BUDGET=100000000       # $100/month in microcents
+USD_BUDGET=10000000000     # $100/month in microcents (1 USD = 100,000,000)
 RISK_BUDGET_PER_RUN=250    # 250 RISK_POINTS per agent run
 
 echo "=== Creating tenant ==="
@@ -244,7 +244,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/api-keys" \
   }"
 echo -e "\n>>> Save the api_key value above\n"
 
-echo "=== Creating USD cost budget ($((USD_BUDGET / 1000000))/month) ==="
+echo "=== Creating USD cost budget ($((USD_BUDGET / 100000000))/month) ==="
 curl -s -X POST "$ADMIN_URL/v1/admin/budgets" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -H "Content-Type: application/json" \
@@ -288,7 +288,7 @@ echo "    Full scoring guide: https://runcycles.io/how-to/assigning-risk-points-
 echo
 
 echo "=== Done ==="
-echo "USD budget: \$$(( USD_BUDGET / 1000000 ))/month (tenant-level)"
+echo "USD budget: \$$(( USD_BUDGET / 100000000 ))/month (tenant-level)"
 echo "RISK_POINTS budget: $RISK_BUDGET_PER_RUN points per run (create per run)"
 ```
 
