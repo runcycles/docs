@@ -176,7 +176,7 @@ echo
 if [ "$OVERDRAFT" -gt 0 ]; then
   echo "--- Setting overdraft policy ---"
   curl -s -X PATCH "$ADMIN_URL/v1/admin/budgets?scope=tenant:$CUSTOMER_ID&unit=USD_MICROCENTS" \
-    -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+    -H "X-Admin-API-Key: $ADMIN_KEY" \
     -H "Content-Type: application/json" \
     -d "{
       \"overdraft_limit\": {\"amount\": $OVERDRAFT, \"unit\": \"USD_MICROCENTS\"},
