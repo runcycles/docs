@@ -47,7 +47,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "acme-corp",
     "name": "app-server",
-    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read", "decide:create", "events:create"]
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "reservations:extend", "reservations:list", "balances:read", "events:create"]
   }'
 # Save the returned api_key value — it won't be shown again
 ```
@@ -174,7 +174,7 @@ Run for **1-2 weeks** and compare:
 | **Agreement rate** | How often does Cycles agree with your limiter? (should be >95%) |
 | **False denials** | Did Cycles deny something your limiter allowed? (indicates budget too tight) |
 | **Missed denials** | Did your limiter deny something Cycles would have allowed? (indicates your limiter is tighter) |
-| **Decision latency** | How much time does the Cycles call add? (expect <15ms p50) |
+| **Decision latency** | How much time does the Cycles call add? (expect ~5ms p50 for decide) |
 
 If agreement is <90%, your Cycles budget needs adjusting before cut-over.
 
@@ -186,7 +186,10 @@ When shadow mode looks good (>95% agreement, no surprises), switch Cycles from s
 
 ```python
 # Switch from shadow decide() to enforcing create_reservation()
-from runcycles import ReservationCreateRequest, CommitRequest
+from runcycles import (
+    ReservationCreateRequest, CommitRequest,
+    Subject, Action, Amount, Unit
+)
 
 response = client.create_reservation(ReservationCreateRequest(
     idempotency_key=idempotency_key,
@@ -215,6 +218,9 @@ client.commit_reservation(reservation_id, CommitRequest(
 ### Step 3: Disable old limiter
 
 ```python
+# Uses imports and client setup from Phase 3 + Phase 4 Step 1
+import uuid
+
 def check_and_charge(user_id, estimated_cost):
     # OLD LIMITER — disabled, kept as comment for rollback
     # balance = int(r.get(f"budget:{user_id}") or 0)
@@ -299,7 +305,7 @@ The migration is safe because:
 | Cross-provider budget | Manual per-provider tracking | Single scope hierarchy |
 | Retry deduplication | No | Idempotency keys on every operation |
 | Action-level risk control | No | RISK_POINTS budgets |
-| Webhook alerts | Custom implementation | Built-in (6 event types, PagerDuty/Slack) |
+| Webhook alerts | Custom implementation | Built-in (40 event types across 6 categories, PagerDuty/Slack) |
 | Multi-tenant isolation | Manual Redis key prefixing | Built-in scope hierarchy |
 | Delegation attenuation | No | Sub-budget carving for sub-agents |
 | Shadow mode validation | No | `decide()` endpoint for shadow evaluation |
