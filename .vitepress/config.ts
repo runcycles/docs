@@ -42,6 +42,7 @@ export default defineConfig({
     ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { property: 'og:image:alt', content: 'Cycles logo' }],
     ['meta', { name: 'theme-color', content: '#0B0F1A' }],
+    ['meta', { name: 'twitter:site', content: '@runcycles_io' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
