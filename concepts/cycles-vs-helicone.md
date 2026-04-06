@@ -20,7 +20,7 @@ The question is whether visibility and rate limiting are enough — or whether y
 | **Alerts** | Threshold notifications (email, Slack) | Webhook events on budget state transitions |
 | **Action control** | None — all actions pass if under rate limit | [RISK_POINTS](/glossary#risk-points) — per-tool risk scoring |
 | **Multi-tenant** | Per-user/per-property rate limit segmentation | Tenant-scoped API keys with hierarchical budgets |
-| **Caching** | Built-in LLM response caching (73% hit rate cited) | Not a caching layer |
+| **Caching** | Built-in LLM response caching | Not a caching layer |
 | **Smart routing** | Cheapest-provider selection | Not a routing layer |
 
 ## Where Helicone works well
@@ -45,7 +45,7 @@ Cycles tracks cumulative budget state with a balance that decreases with each re
 
 ### 2. Rate limit headers vs. persistent budgets
 
-Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`) and use the Generic Cell Rate Algorithm (GCRA) for smooth traffic shaping with burst tolerance — more sophisticated than a simple window counter. However, there's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
+Helicone rate limits are configured per-request via HTTP headers (`Helicone-RateLimit-Policy`) with Cloudflare-backed low-latency enforcement. However, there's no persistent budget object that lives independently of the requests. If you change the header value, the limit changes. If you forget the header, there's no limit.
 
 Cycles budgets are persistent objects created via the admin API. They exist independently of any request. Every reservation checks against the budget state — there's no way to "forget" to enforce.
 
@@ -61,11 +61,11 @@ Helicone controls request volume and cost. It cannot distinguish between a $0.01
 
 Cycles' [RISK_POINTS](/how-to/assigning-risk-points-to-agent-tools) budget scores actions by consequence, not cost. An agent can search freely (0 points) while being limited to 2 customer emails per run (40 points each × 2 = 80 of a 100-point budget).
 
-### 5. No hierarchical budget management
+### 5. Segmented window limits, not hierarchical cumulative budgets
 
-Helicone can segment rate limits by user ID or custom property, but there's no tenant-level budget management — no per-customer spending pools, no hierarchical budget derivation, no team budgets.
+Helicone supports rate-limit segmentation by user, organization, custom property, or globally — meaningful isolation for many use cases. But these are window-based limits (reset per time period), not persistent hierarchical cumulative budgets with a reserve-commit ledger.
 
-Cycles provides per-tenant isolation with hierarchical scopes (tenant → workspace → workflow → agent), where each level can have its own budget and the enforcement is derived from all applicable scopes atomically.
+Cycles provides per-tenant isolation with hierarchical scopes (tenant → workspace → workflow → agent), where each level has its own cumulative budget with `allocated`, `remaining`, `reserved`, `spent`, and `debt` balances — derived atomically across the full scope hierarchy on every reservation.
 
 ## Better together: Helicone + Cycles
 
@@ -96,13 +96,13 @@ Request flow:
 | Cost anomaly dashboard | Helicone |
 | Webhook events for automated response | Cycles |
 
-**Concrete integration scenario:** Helicone's cache serves 73% of repeated requests at zero cost — this reduces the total number of actions that even reach Cycles. For the remaining 27%, Cycles enforces budget authority. Meanwhile, Helicone's per-session cost tracking lets you correlate Cycles' `reservation_id` with trace data for unified debugging. Helicone reduces what you spend. Cycles limits what you're allowed to spend. Together, they form both the optimization and the enforcement layer.
+**Concrete integration scenario:** Helicone's cache deduplicates repeated requests at zero cost — this reduces the total number of actions that even reach Cycles. For uncached requests, Cycles enforces budget authority. Meanwhile, Helicone's per-session cost tracking lets you correlate Cycles' `reservation_id` with trace data for unified debugging. Helicone reduces what you spend. Cycles limits what you're allowed to spend. Together, they form both the optimization and the enforcement layer.
 
 **Another scenario:** Helicone's cost alert fires at 80% of a soft threshold — your team sees the Slack notification. Cycles' budget enforcement fires at 100% — the agent gets ALLOW_WITH_CAPS or DENY. The alert gives you time to intervene. The enforcement guarantees the budget holds even if you don't.
 
 ## What Cycles does not do
 
-Cycles is not an observability platform, a caching layer, or a router. It doesn't trace requests, deduplicate responses, or select the cheapest provider. If you need those things (and most production stacks do), you need Helicone or a comparable tool alongside Cycles. The reserve-commit lifecycle also adds ~15ms latency per action — negligible against multi-second LLM calls, but present.
+Cycles is not an observability platform, a caching layer, or a router. It doesn't trace requests, deduplicate responses, or select the cheapest provider. If you need those things (and most production stacks do), you need Helicone or a comparable tool alongside Cycles. The reserve-commit lifecycle also adds [~15ms latency per action](/blog/cycles-server-performance-benchmarks) (p50) — negligible against multi-second LLM calls, but present.
 
 ## When Helicone alone is enough
 

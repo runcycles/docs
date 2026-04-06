@@ -15,7 +15,7 @@ The answer depends on what failure modes you're trying to prevent.
 |---|---|---|
 | **Primary role** | LLM proxy — routing, fallback, cost tracking | Runtime authority — pre-execution enforcement |
 | **When it acts** | At the model-call layer | At the agent-action layer |
-| **Budget model** | Per-key and per-team spend limits | Per-tenant, per-workflow, per-run, per-action scope hierarchy |
+| **Budget model** | Per-key, per-team, per-user, per-customer, per-model spend limits | Per-tenant, per-workflow, per-run, per-action hierarchical scope derivation |
 | **Enforcement** | Block when `max_budget` exceeded | Atomic reserve-commit — budget locked before action |
 | **Rate limiting** | RPM, TPM per key/team/user | Not a rate limiter — enforces per-action authority |
 | **Action control** | Model access lists (which models a key can call) | [RISK_POINTS](/glossary#risk-points) — per-tool risk scoring and limits |
@@ -52,9 +52,11 @@ An agent that sends 200 emails costs $1.40 in tokens. LiteLLM's budget wouldn't 
 
 ### 3. Scope hierarchy and delegation
 
-LiteLLM's budget model is two levels: team → key. Cycles supports arbitrary scope depth: tenant → workspace → app → workflow → agent → toolset. Each level can have its own budget, and [authority attenuates](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation) at each delegation hop — a sub-agent always gets less authority than its parent.
+LiteLLM supports budgets across multiple proxy-layer scopes: keys, teams, internal users, end users/customers, and model/provider/tag dimensions. This is meaningful coverage for proxy-level cost governance.
 
-This matters for multi-agent systems where a single user request fans out into dozens of sub-agent calls. LiteLLM sees each call as an independent model request. Cycles sees the delegation chain and enforces aggregate limits across it.
+However, these are proxy-layer spend-tracking scopes, not runtime authority scopes. Cycles supports hierarchical scope derivation (tenant → workspace → app → workflow → agent → toolset) where each level can have its own persistent cumulative budget and [authority attenuates](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation) at each delegation hop — a sub-agent always gets less authority than its parent.
+
+The difference matters in multi-agent systems where a single user request fans out into dozens of sub-agent calls. LiteLLM sees each call as an independent model request at the proxy layer. Cycles sees the delegation chain and enforces aggregate limits across the full scope hierarchy.
 
 ### 4. Reserve-commit lifecycle
 
@@ -97,7 +99,7 @@ LiteLLM is the **routing and model-access layer**. Cycles is the **authority and
 
 ## What Cycles does not do
 
-Cycles is not a proxy, router, or model-access layer. It doesn't handle provider failover, model selection, or RPM/TPM rate limiting. If you need those (and most production stacks do), you need LiteLLM or a comparable tool alongside Cycles. LiteLLM is also open-source and self-hostable with a large community — a significant advantage for teams that want full control and auditability at the proxy layer. The reserve-commit lifecycle adds ~15ms latency per action — negligible against multi-second LLM calls, but present.
+Cycles is not a proxy, router, or model-access layer. It doesn't handle provider failover, model selection, or RPM/TPM rate limiting. If you need those (and most production stacks do), you need LiteLLM or a comparable tool alongside Cycles. LiteLLM is also open-source and self-hostable with a large community — a significant advantage for teams that want full control and auditability at the proxy layer. The reserve-commit lifecycle adds [~15ms latency per action](/blog/cycles-server-performance-benchmarks) (p50) — negligible against multi-second LLM calls, but present.
 
 ## When LiteLLM alone is enough
 

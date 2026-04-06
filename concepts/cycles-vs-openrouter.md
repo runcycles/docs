@@ -39,13 +39,13 @@ For teams routing all LLM calls through OpenRouter, this provides meaningful cos
 
 ## Where the gaps appear
 
-### 1. Per-key caps vs. hierarchical budgets
+### 1. Organization/key caps vs. hierarchical runtime budgets
 
-OpenRouter enforces budgets per-key and per-user. There's no concept of shared team budgets, workspace-level pools, or organizational rollup.
+OpenRouter provides budget controls at the organization, member, and API key level — with guardrails that stack (strictest wins). This is meaningful governance for teams managing API access centrally.
 
-In a multi-agent system, you might have 10 agents sharing a $100 workspace budget. With OpenRouter, you'd need to pre-allocate $10 per key and hope usage is evenly distributed. If agent A uses $2 and agent B needs $15, B is blocked even though the workspace has $83 remaining.
+However, these are gateway-layer caps, not runtime authority scopes. In a multi-agent system, you might have 10 agents sharing a $100 workspace budget. With OpenRouter, you'd need to pre-allocate per key and hope usage is evenly distributed. If agent A uses $2 and agent B needs $15, B is blocked even though the overall allocation has capacity remaining.
 
-Cycles' hierarchical scopes solve this: a workspace budget is shared across all agents in the workspace, with per-agent sub-budgets optionally carved out. The scope hierarchy handles aggregation automatically.
+Cycles' hierarchical scopes handle this differently: a workspace budget is shared across all agents in the workspace, with per-agent sub-budgets optionally carved out. The scope hierarchy (tenant → workspace → workflow → agent) derives enforcement atomically at every reservation.
 
 ### 2. No action-level control
 
@@ -114,7 +114,7 @@ OpenRouter selects the model and provider. Cycles decides whether the action sho
 
 ## What Cycles does not do
 
-Cycles is not a router or model aggregator. It doesn't provide access to hundreds of models from a single API, handle provider selection, or manage credits across providers. If you need unified multi-model access (and most teams using OpenRouter do), you need OpenRouter or a comparable tool alongside Cycles. The reserve-commit lifecycle adds ~15ms latency per action and requires cost estimation upfront — the estimate can be wrong, and overages are tracked as debt rather than prevented.
+Cycles is not a router or model aggregator. It doesn't provide access to hundreds of models from a single API, handle provider selection, or manage credits across providers. If you need unified multi-model access (and most teams using OpenRouter do), you need OpenRouter or a comparable tool alongside Cycles. The reserve-commit lifecycle adds [~15ms latency per action](/blog/cycles-server-performance-benchmarks) (p50) and requires cost estimation upfront — the estimate can be wrong, and overages are tracked as debt rather than prevented.
 
 ## When OpenRouter alone is enough
 
