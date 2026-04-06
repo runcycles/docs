@@ -430,6 +430,96 @@ See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents
 
 **Fix:** Check that the scope path on the budget matches the scopes derived from the reservation subject. Use the [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) reference to understand which scopes are derived. See also [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
 
+## Webhook and event delivery issues
+
+### Webhook endpoint not receiving events
+
+**Symptom:** You created a webhook subscription and events are occurring (e.g., reservations being denied), but your endpoint isn't receiving HTTP requests.
+
+**Checklist:**
+
+1. **Is the events service running?** Webhook delivery requires the events service (`cycles-server-events`) to be deployed and connected to the same Redis instance. Check with `curl http://localhost:7980/health`.
+2. **Is the subscription active?** Subscriptions are auto-disabled after 10 consecutive delivery failures. Check status: `GET /v1/admin/webhooks/{id}` — look for `"status": "DISABLED"`.
+3. **Does the subscription match the event type?** Check the `event_types` array in your subscription. If it's empty, the subscription receives all event types. If it lists specific types, the event must match.
+4. **Does the scope filter match?** If you set a `scope_filter`, only events whose scope matches the filter will be delivered. See [Scope Filter Syntax](/protocol/webhook-scope-filter-syntax) for matching rules.
+5. **Is the endpoint reachable from the events service?** The events service makes outbound HTTP POST requests. Verify network connectivity, DNS resolution, and firewall rules.
+6. **Is the endpoint returning 2xx?** Non-2xx responses trigger retries. After 5 retries (exponential backoff: 1s, 2s, 4s, 8s, 16s), the delivery is marked FAILED. After 10 consecutive failures, the subscription is disabled.
+
+**Diagnostic:** Test the subscription manually:
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/{id}/test \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+This sends a `system.webhook_test` event to your endpoint. If it arrives, the delivery pipeline works and the issue is in event matching (types or scope filter).
+
+### Events received but signature verification fails
+
+**Symptom:** Your endpoint receives events but HMAC signature verification fails.
+
+**Common causes:**
+
+1. **Wrong signing secret.** The secret must match the one returned when you created the subscription. It cannot be retrieved again — only rotated.
+2. **Reading parsed body instead of raw bytes.** Signature is computed over the **raw request body bytes**, not a re-serialized JSON object. Middleware that parses JSON before your verification code runs will produce different bytes.
+3. **Encoding mismatch.** The signature is a hex-encoded HMAC-SHA256 digest. Verify you're comparing hex strings, not raw bytes.
+
+**Fix for common frameworks:**
+- **Express:** Use `express.raw({ type: 'application/json' })` on the webhook route, not `express.json()`
+- **Flask:** Use `request.get_data()`, not `request.json`
+- **Spring Boot:** Inject `HttpServletRequest` and read `getInputStream()` before any `@RequestBody` binding
+
+### Subscription auto-disabled
+
+**Symptom:** Events stop arriving. The subscription status is `DISABLED`.
+
+**Cause:** 10 consecutive delivery attempts failed (non-2xx response, timeout, or DNS error). This is a safety mechanism to prevent hammering a broken endpoint.
+
+**Fix:**
+1. Fix the underlying endpoint issue (check logs for the failure reason)
+2. Re-enable the subscription: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
+3. Optionally replay missed events: `POST /v1/admin/webhooks/{id}/replay` with a time range
+
+### Duplicate events received
+
+**Symptom:** Your endpoint processes the same event twice.
+
+**Cause:** Cycles delivers events **at-least-once**. Network timeouts or slow responses can cause the events service to retry a delivery that your endpoint actually processed.
+
+**Fix:** Deduplicate by `event_id`. Track processed event IDs (e.g., in a Redis SET with 24-hour TTL) and skip duplicates:
+
+```python
+def handle_webhook(event):
+    event_id = event["event_id"]
+    if redis.sismember("processed_events", event_id):
+        return  # Already processed
+    redis.sadd("processed_events", event_id)
+    redis.expire("processed_events", 86400)  # 24h TTL
+    # Process event...
+```
+
+### Events delayed or arriving out of order
+
+**Symptom:** Events arrive minutes after the triggering action, or events from different actions arrive in unexpected order.
+
+**Causes:**
+
+1. **Normal delivery latency.** Events are dispatched asynchronously. Under normal load, latency is sub-second. Under high load or after retries, latency can increase.
+2. **Retry backoff.** If your endpoint returned a non-2xx response, the next retry is delayed by exponential backoff (1s → 2s → 4s → 8s → 16s).
+3. **Stale delivery protection.** Deliveries older than 24 hours are auto-failed on pickup. If the events service was down for 24+ hours, events from that period are not delivered — use the replay API to recover them.
+
+**Ordering guarantee:** Events for the same tenant are dispatched in order. Cross-tenant ordering is not guaranteed.
+
+### Expected event type not firing
+
+**Symptom:** You expect a `budget.threshold_crossed` or `tenant.suspended` event but it never arrives.
+
+**Cause:** As of v0.1.25, only **6 event types** are actively emitted by the Cycles server. See the [Event Payloads Reference](/protocol/event-payloads-reference) for the current list. The remaining 34 event types are defined in the protocol but not yet emitted.
+
+**Currently emitted:**
+- `reservation.denied`, `reservation.commit_overage`, `reservation.expired`
+- `budget.exhausted`, `budget.over_limit_entered`, `budget.debt_incurred`
+
+If you're subscribed to an event type that isn't in this list, no events will arrive because the server doesn't emit them yet.
+
 ## Debugging production incidents
 
 For deeper incident analysis, the Incident Patterns section documents common production failures with root cause analysis and prevention strategies:
