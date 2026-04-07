@@ -424,13 +424,14 @@ export default defineConfig({
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Managing Webhooks', link: '/how-to/managing-webhooks' },
             { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },
-            { text: 'Changelog', link: '/changelog' },
           ]
         },
         {
-          text: 'Community',
-          collapsed: true,
+          text: 'Help',
+          collapsed: false,
           items: [
+            { text: 'Troubleshooting & FAQ', link: '/how-to/troubleshooting-and-faq' },
+            { text: 'Changelog', link: '/changelog' },
             { text: 'Built with Cycles Badges', link: '/community/badges' },
           ]
         }
