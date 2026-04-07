@@ -21,7 +21,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [MCP Server](https://runcycles.io/quickstart/getting-started-with-the-mcp-server): Add budget enforcement to AI coding tools via the Model Context Protocol
 - [Self-Hosting the Server](https://runcycles.io/quickstart/self-hosting-the-cycles-server): Run the Cycles server in your own infrastructure
 
-## Integration Guides (26 integrations)
+## Integration Guides (27 integrations)
 
 ### LLM Providers
 

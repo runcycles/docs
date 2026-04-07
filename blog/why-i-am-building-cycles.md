@@ -59,7 +59,7 @@ That's it. One question, answered deterministically, at every tool call, for eve
 
 ## The Road Ahead
 
-Cycles is early and open source under [Apache 2.0](https://github.com/runcycles). The protocol, server, and client SDKs are available across Python, TypeScript, Java, and Rust. We integrate with [26 frameworks and LLM providers](/blog/26-integrations-every-ai-framework-one-budget-protocol).
+Cycles is early and open source under [Apache 2.0](https://github.com/runcycles). The protocol, server, and client SDKs are available across Python, TypeScript, Java, and Rust. We integrate with [27 frameworks and LLM providers](/blog/26-integrations-every-ai-framework-one-budget-protocol).
 
 I've seen this movie before. I know how the first act goes — the technology is exciting, adoption outpaces governance, incidents accumulate, and eventually the industry builds the enforcement layer it should have built from the start.
 
