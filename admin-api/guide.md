@@ -7,7 +7,7 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
 
-**Authentication:** Budget create and list use `X-Cycles-API-Key` with `budgets:write` / `budgets:read` permission. Budget fund accepts either `X-Cycles-API-Key` or `X-Admin-API-Key` (with `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
+**Authentication:** Budget create uses `X-Cycles-API-Key` with `budgets:write` permission. Budget list and fund accept either `X-Cycles-API-Key` or `X-Admin-API-Key` (admin requires `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
@@ -87,8 +87,7 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
       "reservations:release",
       "reservations:extend",
       "reservations:list",
-      "balances:read",
-      "events:create"
+      "balances:read"
     ]
   }' | jq .
 ```
@@ -206,18 +205,18 @@ curl -s "http://localhost:7979/v1/admin/budgets/lookup?scope=tenant:acme-corp/wo
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
 ```
 
-Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` with `tenant_id` query param.
+Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` — no `tenant_id` needed because the budget is uniquely identified by the (scope, unit) pair.
 
 ### Dashboard overview
 
 *New in v0.1.25.5:*
 
 ```bash
-curl -s "http://localhost:7979/v1/admin/overview?tenant_id=acme-corp" \
+curl -s "http://localhost:7979/v1/admin/overview" \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns a summary view of budgets, active reservations, and recent events for a tenant. Designed for admin dashboard UIs.
+Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs.
 
 ### API key introspection
 
@@ -225,10 +224,10 @@ Returns a summary view of budgets, active reservations, and recent events for a 
 
 ```bash
 curl -s "http://localhost:7979/v1/auth/introspect" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns the authenticated key's tenant, permissions, and expiration. Useful for debugging auth issues.
+Returns server-level auth introspection. Useful for debugging auth configuration. Admin-key only.
 
 ## Policy management
 

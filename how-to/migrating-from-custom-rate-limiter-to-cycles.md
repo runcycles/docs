@@ -47,7 +47,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "acme-corp",
     "name": "app-server",
-    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "reservations:extend", "reservations:list", "balances:read", "events:create"]
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "reservations:extend", "reservations:list", "balances:read"]
   }'
 # Save the returned api_key value — it won't be shown again
 ```
