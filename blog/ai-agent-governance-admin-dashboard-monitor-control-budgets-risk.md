@@ -76,7 +76,7 @@ If the webhook needs maintenance downtime, **Pause** it from the list view — e
 
 ## At scale
 
-The screenshots above show an environment with 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
+The screenshots above show a demo environment with 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
 
 In practice, that means you can freeze a runaway scope, credit risk points, rotate a webhook secret, revoke and replace a key, replay missed events, and export audit evidence — without touching a terminal.
 
