@@ -38,7 +38,7 @@ See the [full deployment guide](/quickstart/deploying-the-full-cycles-stack) for
 curl -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"tenant_id": "acme-corp"}'
+  -d '{"tenant_id": "acme-corp", "name": "Acme Corp"}'
 
 # Create an API key for your application
 curl -X POST http://localhost:7979/v1/admin/api-keys \
@@ -47,7 +47,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   -d '{
     "tenant_id": "acme-corp",
     "name": "app-server",
-    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "reservations:extend", "reservations:list", "balances:read", "events:create"]
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "reservations:extend", "reservations:list", "balances:read"]
   }'
 # Save the returned api_key value — it won't be shown again
 ```

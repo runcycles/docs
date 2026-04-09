@@ -47,15 +47,17 @@ Budget allocation is managed through the [Cycles Admin Server](https://github.co
 
 ### Authentication
 
-Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate admin permissions:
+Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate permissions:
 
-- **`admin:write`** — required for creating budgets, funding, resetting, updating budgets, and managing policies
-- **`admin:read`** — required for querying budgets and policies
+- **`budgets:write`** — required for creating budgets, funding, and resetting (or `admin:write` as wildcard)
+- **`budgets:read`** — required for listing and querying budgets (or `admin:read` as wildcard)
+- **`policies:write`** — required for creating and updating policies (or `admin:write` as wildcard)
+- **`policies:read`** — required for listing and querying policies (or `admin:read` as wildcard)
 
-Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error on budget endpoints. You must explicitly include `admin:write` and/or `admin:read` when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
+Default API keys (created without explicit permissions) include `budgets:write` and `budgets:read` as of v0.1.25.6 and will work for budget operations. Keys created before v0.1.25.6 with explicitly specified permission sets may need `budgets:write` and/or `budgets:read` added. See [API Key Management](/how-to/api-key-management-in-cycles#available-permissions) for the full permission list.
 
 ::: warning X-Admin-API-Key vs X-Cycles-API-Key
-The bootstrap admin key (`X-Admin-API-Key`) is used for tenant management, API key management, audit log access, **and budget PATCH** (overdraft settings are admin-only). Budget create, fund, and list require `X-Cycles-API-Key` with admin permissions.
+The bootstrap admin key (`X-Admin-API-Key`) is used for tenant management, API key management, audit log access, **and budget PATCH/freeze/unfreeze** (admin-only operations). Budget create, fund, and list require `X-Cycles-API-Key` with `budgets:write` / `budgets:read` permissions.
 :::
 
 ### Using the Cycles Admin API
@@ -237,7 +239,7 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme
   -d '{"reason": "Investigating runaway agent in support workflow"}' | jq .
 ```
 
-All new reservations return `DENY` with reason code `BUDGET_FROZEN`, and fund operations return 409. Existing active reservations continue until they commit or expire. Emits a `budget.frozen` webhook event.
+All new reservations return `DENY` with reason code `BUDGET_FROZEN`. Commits and fund operations return 409. Existing active reservations can only be released, not committed. Emits a `budget.frozen` webhook event.
 
 ### Unfreeze
 

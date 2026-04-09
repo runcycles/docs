@@ -7,7 +7,7 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
 
-**Authentication:** Budget create and list use `X-Cycles-API-Key` with `budgets:write` / `budgets:read` permission. Budget fund accepts either `X-Cycles-API-Key` or `X-Admin-API-Key` (with `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
+**Authentication:** Budget create uses `X-Cycles-API-Key` with `budgets:write` permission. Budget list and fund accept either `X-Cycles-API-Key` or `X-Admin-API-Key` (admin requires `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
@@ -87,8 +87,7 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
       "reservations:release",
       "reservations:extend",
       "reservations:list",
-      "balances:read",
-      "events:create"
+      "balances:read"
     ]
   }' | jq .
 ```
@@ -101,6 +100,22 @@ The response includes `key_secret` (e.g., `cyc_live_abc123...`). **Save it immed
 curl -s http://localhost:7979/v1/admin/api-keys?tenant_id=acme-corp \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
+
+### Update a key
+
+*New in v0.1.25.7:*
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/api-keys/{key_id} \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read", "budgets:write"],
+    "name": "support-bot-v2"
+  }' | jq .
+```
+
+Updates key permissions, scope_filter, name, description, or metadata without rotating the secret. Emits `api_key.permissions_changed` when permissions or scope_filter change. Returns 400 for invalid permission names, 409 for revoked or expired keys.
 
 ### Revoke a key
 
@@ -168,7 +183,7 @@ curl -s -X POST 'http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme
   -d '{"reason": "Investigating runaway agent"}' | jq .
 ```
 
-Transitions budget status from ACTIVE → FROZEN. All new reservations and fund operations against this budget will be denied (reservations return `BUDGET_FROZEN`, fund returns 409). Existing active reservations are unaffected until they commit or expire. Emits a `budget.frozen` event.
+Transitions budget status from ACTIVE → FROZEN. All new reservations, commits, and fund operations against this budget will be blocked (reservations return `BUDGET_FROZEN`, commits and fund return 409). Existing active reservations can only be released, not committed. Emits a `budget.frozen` event.
 
 ### Unfreeze a budget
 
@@ -190,18 +205,18 @@ curl -s "http://localhost:7979/v1/admin/budgets/lookup?scope=tenant:acme-corp/wo
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
 ```
 
-Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` with `tenant_id` query param.
+Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` — no `tenant_id` needed because the budget is uniquely identified by the (scope, unit) pair.
 
 ### Dashboard overview
 
 *New in v0.1.25.5:*
 
 ```bash
-curl -s "http://localhost:7979/v1/admin/overview?tenant_id=acme-corp" \
+curl -s "http://localhost:7979/v1/admin/overview" \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns a summary view of budgets, active reservations, and recent events for a tenant. Designed for admin dashboard UIs.
+Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs.
 
 ### API key introspection
 
@@ -209,10 +224,10 @@ Returns a summary view of budgets, active reservations, and recent events for a 
 
 ```bash
 curl -s "http://localhost:7979/v1/auth/introspect" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns the authenticated key's tenant, permissions, and expiration. Useful for debugging auth issues.
+Returns server-level auth introspection. Useful for debugging auth configuration. Admin-key only.
 
 ## Policy management
 
@@ -225,13 +240,12 @@ In v0, policies are **stored but not yet enforced at runtime**. The protocol ser
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/policies \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "name": "limit-gpt4",
     "scope_pattern": "tenant:acme-corp/agent:*",
     "caps": {"max_tokens": 4096},
-    "overage_policy": "REJECT",
+    "commit_overage_policy": "REJECT",
     "priority": 100
   }' | jq .
 ```
@@ -243,7 +257,7 @@ curl -s -X POST http://localhost:7979/v1/admin/policies \
 ```bash
 curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "caps": {"max_tokens": 8192},
     "status": "ACTIVE"
@@ -255,7 +269,7 @@ curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
 Query the audit trail for compliance and debugging:
 
 ```bash
-curl -s 'http://localhost:7979/v1/admin/audit-logs?tenant_id=acme-corp&limit=10' \
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=10' \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
 

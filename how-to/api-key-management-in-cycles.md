@@ -50,7 +50,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   }'
 ```
 
-### Available permissions (23 total)
+### Available permissions (27 total)
 
 **Tenant-scoped permissions** (used with `X-Cycles-API-Key` for runtime and tenant operations):
 
@@ -70,10 +70,10 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 
 | Permission | Grants | Default? |
 |---|---|---|
-| `budgets:read` | List and read own tenant budgets | No |
-| `budgets:write` | Create and fund own tenant budgets | No |
-| `policies:read` | List and read own tenant policies | No |
-| `policies:write` | Create and update own tenant policies | No |
+| `budgets:read` | List and read own tenant budgets | Yes |
+| `budgets:write` | Create and fund own tenant budgets | Yes |
+| `policies:read` | List and read own tenant policies | Yes |
+| `policies:write` | Create and update own tenant policies | Yes |
 
 **Admin wildcard permissions** (used with `X-Cycles-API-Key` for admin operations):
 
@@ -103,9 +103,15 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `admin:events:read` | Query admin event stream |
 | `admin:audit:read` | Query audit logs |
 
-> **Defaults:** When no permissions are specified at key creation, the key receives the 6 default runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`). Webhook, event, and admin permissions must be explicitly requested.
+> **Defaults:** When no permissions are specified at key creation, the key receives 10 default permissions: the 6 runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`) plus `budgets:read`, `budgets:write`, `policies:read`, `policies:write`. Webhook, event, and admin permissions must be explicitly requested.
 
-A typical runtime key needs only the 6 defaults. Add `webhooks:write` and `webhooks:read` if tenants manage their own [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) if the key is used for budget management via the admin server (port 7979). For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
+A typical runtime key needs only the 6 defaults. Add `budgets:write` and `budgets:read` if tenants manage their own budgets. Add `webhooks:write` and `webhooks:read` for [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) only if the key is used for cross-tenant admin operations via the admin server (port 7979).
+
+::: warning Admin permissions on tenant keys (v0.1.25.7)
+`admin:read` and `admin:write` are accepted on tenant keys for backward compatibility, but **SHOULD NOT be assigned to new tenant keys**. Use the specific permissions (`budgets:write`, `policies:read`, etc.) instead. The admin key (`X-Admin-API-Key`) is server-configured and is not provisioned through the API key creation endpoint.
+:::
+
+For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
 
 Response:
 

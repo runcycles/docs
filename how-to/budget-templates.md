@@ -50,7 +50,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/api-keys" \
   -d "{
     \"tenant_id\": \"$TENANT\",
     \"name\": \"app-server\",
-    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\", \"events:create\"]
+    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\"]
   }"
 echo -e "\n>>> Save the api_key value above — it won't be shown again\n"
 
@@ -158,7 +158,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/api-keys" \
   -d "{
     \"tenant_id\": \"$CUSTOMER_ID\",
     \"name\": \"$CUSTOMER_ID-app\",
-    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\", \"events:create\"]
+    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\"]
   }"
 echo -e "\n>>> Save the api_key value above\n"
 
@@ -240,7 +240,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/api-keys" \
   -d "{
     \"tenant_id\": \"$TENANT\",
     \"name\": \"app-server\",
-    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\", \"events:create\"]
+    \"permissions\": [\"reservations:create\", \"reservations:commit\", \"reservations:release\", \"reservations:extend\", \"reservations:list\", \"balances:read\"]
   }"
 echo -e "\n>>> Save the api_key value above\n"
 
