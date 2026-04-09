@@ -1,5 +1,5 @@
 ---
-title: "Your AI Agents Are Running in Production. Who's Watching the Limits?"
+title: "AI Agent Governance Dashboard: Operating Budgets, Risk Limits, and Keys in Production"
 date: 2026-04-09
 author: Albert Mavashev
 tags: [product, operations, dashboard, runtime-authority]
@@ -40,7 +40,7 @@ From there, one click opens the fund dialog. Select **Credit**, enter the amount
 
 ![Budget detail showing RISK_POINTS utilization at 85% with the Fund Budget dialog open](/images/dashboard/risk-budget-fund.png)
 
-If the usage looks suspicious instead of legitimate? Click **Freeze** directly from the budget list. No detail page needed. The scope is locked immediately — all reservations, commits, and fund operations blocked until you unfreeze it.
+If the usage looks suspicious instead of legitimate? Click **Freeze** directly from the budget list. No detail page needed. The scope is locked immediately — new reservations and commits are blocked until you unfreeze it.
 
 The same workflow applies to cost budgets — USD spend, token usage, credits. Whether you're capping dollars or risk points, the operational pattern is the same.
 
@@ -54,7 +54,7 @@ You need to revoke it immediately, provision a replacement, hand the new secret 
 
 Filter audit logs by `resource_type: api_key` and the time window. Expand any row to see the full context: who did what, from which IP, with what parameters. The metadata shows the exact resource ID, operation, and request details.
 
-Found the compromised key? Click **Revoke** on the API Keys page. It's invalidated instantly. Active reservations using that key can still commit (no data loss), but no new operations are permitted.
+Found the compromised key? Click **Revoke** on the API Keys page. It's invalidated instantly. New operations using that key stop immediately.
 
 Now create a replacement. The new key secret is shown exactly once — copy it, confirm you've saved it, and the dialog closes. The secret is never stored in the dashboard or retrievable again.
 
@@ -78,14 +78,7 @@ If the webhook needs maintenance downtime, **Pause** it from the list view — e
 
 The screenshots above show an environment with 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
 
-The operational checklist:
-
-- **Freeze a runaway scope in under 10 seconds?** Yes — directly from the budget list.
-- **Credit risk points without a deploy?** Yes — Fund dialog with audit reason.
-- **Rotate a webhook secret and see it exactly once?** Yes — crypto-strong generation with auto-clear clipboard.
-- **Export audit logs for your SOC2 auditor?** Yes — CSV and JSON with all metadata.
-- **Revoke a key and provision a replacement in under a minute?** Yes — without touching a terminal.
-- **See cost and risk budgets in the same view?** Yes — USD, tokens, credits, and risk points side by side.
+In practice, that means you can freeze a runaway scope, credit risk points, rotate a webhook secret, revoke and replace a key, replay missed events, and export audit evidence — without touching a terminal.
 
 ## Try it
 
@@ -96,4 +89,4 @@ npm run dev            # starts dashboard on localhost:5173
 
 Login with your admin API key. Everything else is in the [README](https://github.com/runcycles/cycles-dashboard).
 
-The dashboard is open source, ships as a Docker image, and covers every admin endpoint in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml).
+The dashboard is open source, ships as a Docker image, and covers the core admin workflows in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml).
