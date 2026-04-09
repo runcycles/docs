@@ -22,7 +22,7 @@ You SSH into a box. You grep for the right curl command in the runbook. You try 
 
 **Governance systems need an operational surface.** Not just APIs — a place where operators can see what's happening, decide what to do, and act on it. Without leaving the browser. Without remembering endpoint paths.
 
-This post walks through three production scenarios we kept hitting, the pattern we found behind all of them, and how we built the operational surface for [Cycles](https://runcycles.io).
+This post walks through three production scenarios we kept hitting, the pattern behind them, and how we built the operational surface for [Cycles](https://runcycles.io).
 
 <!-- more -->
 
@@ -77,7 +77,7 @@ Now create a replacement. The new key secret is shown exactly once — copy it, 
 
 ![API Key Created dialog showing the one-time secret with copy button and confirmation checkbox](/images/dashboard/key-secret-reveal.png)
 
-The clipboard auto-clears after 60 seconds. The entire rotation — revoke old, create new, copy secret — happens in the browser without touching a terminal.
+The secret is shown once, designed for immediate copy, then cleared from the UI flow. The entire rotation — revoke old, create new, copy secret — happens in the browser without touching a terminal.
 
 ## Scenario 3: Webhook delivery failing silently
 
