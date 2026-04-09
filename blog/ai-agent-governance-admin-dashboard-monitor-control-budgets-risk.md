@@ -3,13 +3,13 @@ title: "AI Agent Governance Dashboard: Operating Budgets, Risk Limits, and Keys 
 date: 2026-04-09
 author: Albert Mavashev
 tags: [product, operations, dashboard, runtime-authority]
-description: "AI agents have budgets and risk limits. But when something breaks at 2am, what do you actually do? Three production scenarios and how an operational dashboard addresses each one."
+description: "AI agents have budgets and risk limits. But when something breaks at 2am, what do you actually do? Three production scenarios, the pattern behind governance UIs, and why read-only dashboards aren't enough."
 blog: true
 sidebar: false
 head:
   - - meta
     - name: keywords
-      content: "AI agent budget control, AI agent risk governance, admin dashboard, runtime authority, agent cost management, risk points, budget monitoring, incident response, API key management, webhook management"
+      content: "AI agent budget control, AI agent risk governance, admin dashboard, runtime authority, agent cost management, risk points, budget monitoring, incident response, API key management, webhook management, Grafana, Retool, admin panel"
 ---
 
 # Your AI Agents Are Running in Production. Who's Watching the Limits?
@@ -22,9 +22,26 @@ You SSH into a box. You grep for the right curl command in the runbook. You try 
 
 **Governance systems need an operational surface.** Not just APIs — a place where operators can see what's happening, decide what to do, and act on it. Without leaving the browser. Without remembering endpoint paths.
 
-Here are three production scenarios we kept hitting, and how we solved each one.
+This post walks through three production scenarios we kept hitting, the pattern we found behind all of them, and how we built the operational surface for [Cycles](https://runcycles.io).
 
 <!-- more -->
+
+## The pattern: read-only dashboards aren't enough
+
+Most teams start with Grafana. You instrument your governance layer, build dashboards for budget utilization and denial rates, set up PagerDuty alerts. That covers the **see** part of the loop.
+
+Then the alert fires, and you need to **act**. Credit more risk points. Freeze a scope. Revoke a key. Grafana can't do that — it's read-only. So you open a terminal.
+
+Some teams go further and build a custom admin panel in Retool or an internal tool. That works until you need confirmation dialogs on destructive actions, one-time secret display for API keys, capability-gated buttons that hide based on permissions, or audit-grade export. You end up rebuilding half a governance UI from scratch, and maintaining it alongside the governance system itself.
+
+The pattern we found: **a governance operational surface has different requirements than a monitoring dashboard.** It needs:
+
+- **Write actions with safety rails** — confirmation dialogs, irreversibility warnings, name-match gates for destructive operations
+- **Secret lifecycle** — one-time display, clipboard auto-clear, rotation without retrieval
+- **Resource-level audit** — not just "what happened" but "what happened to *this specific key* in *this time window*"
+- **Capability gating** — operators see only the actions their permissions allow
+
+These are the properties we designed around. Here are three scenarios that exercise all of them.
 
 ## Scenario 1: Agent burns through its risk budget
 
@@ -60,7 +77,7 @@ Now create a replacement. The new key secret is shown exactly once — copy it, 
 
 ![API Key Created dialog showing the one-time secret with copy button and confirmation checkbox](/images/dashboard/key-secret-reveal.png)
 
-The clipboard auto-clears after 60 seconds. The entire rotation — revoke old, create new, copy secret — takes under a minute without touching a terminal.
+The clipboard auto-clears after 60 seconds. The entire rotation — revoke old, create new, copy secret — happens in the browser without touching a terminal.
 
 ## Scenario 3: Webhook delivery failing silently
 
@@ -74,13 +91,19 @@ Once the endpoint is fixed, click **Replay** to re-deliver the events that were 
 
 If the webhook needs maintenance downtime, **Pause** it from the list view — events will be silently dropped rather than piling up failed deliveries. **Enable** it when you're ready.
 
-## At scale
+## What we learned building this
 
-The screenshots above show a demo environment with 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
+A few things surprised us.
 
-In practice, that means you can freeze a runaway scope, credit risk points, rotate a webhook secret, revoke and replace a key, replay missed events, and export audit evidence — without touching a terminal.
+**Risk budgets and cost budgets need the same operational surface.** Early on we treated risk points as a different category from USD or tokens. In practice, the operator workflow is identical: see utilization, decide to credit or freeze, log a reason. The unit type is metadata, not architecture. Our dashboard handles all four unit types (USD, tokens, credits, risk points) with the same components.
+
+**Destructive actions need more than a confirm button.** For reversible operations like freeze, a standard confirmation dialog works. For irreversible ones like closing a tenant permanently, we adopted the GitHub pattern: the operator must type the tenant name before the button enables. The friction is the point — it eliminates "I thought I was clicking on the other one" incidents.
+
+**Audit filtering by resource ID changed how we investigate.** Before we added `resource_type` and `resource_id` as server-side filters, operators had to query broadly and scan manually. Being able to say "show me everything that happened to key `key_011005b2`" makes incident investigation an order of magnitude faster.
 
 ## Try it
+
+The screenshots above show a demo environment with 12 tenants, 42 budgets across four unit types, 6 webhooks, and a full audit trail — representative of a mid-scale production deployment.
 
 ```bash
 docker compose up -d   # starts admin server + Redis
@@ -90,3 +113,5 @@ npm run dev            # starts dashboard on localhost:5173
 Login with your admin API key. Everything else is in the [README](https://github.com/runcycles/cycles-dashboard).
 
 The dashboard is open source, ships as a Docker image, and covers the core admin workflows in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml).
+
+If you're building a governance layer for your agents — whether you use Cycles or not — the pattern holds: your operators need write access with safety rails, not just read-only charts. Design for the 2am case, not the demo.
