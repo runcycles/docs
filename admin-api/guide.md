@@ -19,15 +19,15 @@ The admin API uses two authentication mechanisms:
 # Tenant/key/policy/webhook management + budget PATCH/freeze/unfreeze
 -H "X-Admin-API-Key: $ADMIN_KEY"
 
-# Budget create, list (tenant-scoped operations)
+# Budget create (tenant-scoped)
 -H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires budgets:write or admin:write
 
-# Budget fund (dual-auth — either works)
+# Budget list, fund (dual-auth — either works)
 -H "X-Cycles-API-Key: $CYCLES_API_KEY"  # tenant derived from key
 -H "X-Admin-API-Key: $ADMIN_KEY"        # requires tenant_id query param
 ```
 
-The admin key is set via the `ADMIN_API_KEY` environment variable. `admin:write` acts as a wildcard that satisfies any `*:write` permission. `admin:read` satisfies any `*:read` permission. Budget patch, freeze, and unfreeze require the admin bootstrap key.
+The admin key is set via the `ADMIN_API_KEY` environment variable. `admin:write` acts as a wildcard that satisfies any `*:write` permission. `admin:read` satisfies any `*:read` permission. Budget patch, freeze, and unfreeze require the admin bootstrap key. Budget list and fund accept either auth method (v0.1.25.5+) — when using `X-Admin-API-Key`, the `tenant_id` query parameter is required.
 
 ## Tenant management
 
@@ -168,7 +168,7 @@ curl -s -X POST 'http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme
   -d '{"reason": "Investigating runaway agent"}' | jq .
 ```
 
-Transitions budget status from ACTIVE → FROZEN. All new reservations against this budget will be denied with reason code `BUDGET_FROZEN`. Existing active reservations are unaffected until they commit or expire. Emits a `budget.frozen` event.
+Transitions budget status from ACTIVE → FROZEN. All new reservations and fund operations against this budget will be denied (reservations return `BUDGET_FROZEN`, fund returns 409). Existing active reservations are unaffected until they commit or expire. Emits a `budget.frozen` event.
 
 ### Unfreeze a budget
 
@@ -180,6 +180,39 @@ curl -s -X POST 'http://localhost:7979/v1/admin/budgets/unfreeze?scope=tenant:ac
 ```
 
 Transitions FROZEN → ACTIVE. Reservations resume. Emits a `budget.unfrozen` event. Returns 409 if the budget is already active or has been closed.
+
+### Look up a specific budget
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/admin/budgets/lookup?scope=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
+```
+
+Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` with `tenant_id` query param.
+
+### Dashboard overview
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/admin/overview?tenant_id=acme-corp" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+Returns a summary view of budgets, active reservations, and recent events for a tenant. Designed for admin dashboard UIs.
+
+### API key introspection
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/auth/introspect" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
+```
+
+Returns the authenticated key's tenant, permissions, and expiration. Useful for debugging auth issues.
 
 ## Policy management
 
