@@ -846,3 +846,15 @@ samp {
     display: none;
   }
 }
+
+/* ══ Image zoom ══ */
+.vp-doc img:not(.no-zoom) {
+  cursor: zoom-in;
+  border-radius: 8px;
+}
+.medium-zoom-overlay {
+  z-index: 100;
+}
+.medium-zoom-image--opened {
+  z-index: 101;
+}

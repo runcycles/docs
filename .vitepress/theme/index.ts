@@ -3,6 +3,7 @@ import type { Theme } from 'vitepress'
 import { useRoute } from 'vitepress'
 import { theme, useOpenapi } from 'vitepress-openapi/client'
 import { nextTick, onMounted, watch } from 'vue'
+import mediumZoom from 'medium-zoom'
 import 'vitepress-openapi/dist/style.css'
 import './custom.css'
 import spec from '../../public/openapi.json'
@@ -42,12 +43,20 @@ export default {
   setup() {
     const route = useRoute()
     onMounted(() => {
+      // Click-to-zoom on all content images
+      const initZoom = () => {
+        mediumZoom('.vp-doc img:not(.no-zoom)', {
+          background: 'var(--vp-c-bg)',
+        })
+      }
+      initZoom()
       watch(
         () => route.path,
         () => {
           if (document.startViewTransition) {
             document.startViewTransition(() => nextTick())
           }
+          nextTick(initZoom)
         }
       )
     })
