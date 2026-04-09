@@ -3,7 +3,7 @@ title: "Your AI Agents Are Running in Production. Who's Watching the Limits?"
 date: 2026-04-09
 author: Albert Mavashev
 tags: [product, operations, dashboard, runtime-authority]
-description: "AI agents have budgets and risk limits. But when something breaks at 2am, what do you actually do? Three production scenarios and how an operational dashboard changes the game."
+description: "AI agents have budgets and risk limits. But when something breaks at 2am, what do you actually do? Three production scenarios and how an operational dashboard addresses each one."
 blog: true
 sidebar: false
 head:
@@ -36,13 +36,13 @@ You need to see the situation, decide if the usage is legitimate, and either cre
 
 The overview surfaces it immediately: over-limit budgets, scopes with outstanding debt, and recent event activity across all tenants. You can see that `tenant:wayne-corp/agent:primary` is burning through RISK_POINTS — and drill straight into the budget detail.
 
-From there, one click opens the fund dialog. Select **Credit**, enter the amount, add a reason for the audit trail. The budget is topped up. The agent resumes. Total time: under 30 seconds.
+From there, one click opens the fund dialog. Select **Credit**, enter the amount, add a reason for the audit trail. The budget is topped up and the agent resumes.
 
 ![Budget detail showing RISK_POINTS utilization at 85% with the Fund Budget dialog open](/images/dashboard/risk-budget-fund.png)
 
 If the usage looks suspicious instead of legitimate? Click **Freeze** directly from the budget list. No detail page needed. The scope is locked immediately — all reservations, commits, and fund operations blocked until you unfreeze it.
 
-This works for cost budgets too. USD spend, token usage, credits — the same workflow applies. The governance system doesn't care whether you're capping dollars or risk. The operator shouldn't have to either.
+The same workflow applies to cost budgets — USD spend, token usage, credits. Whether you're capping dollars or risk points, the operational pattern is the same.
 
 ## Scenario 2: Compromised API key
 
@@ -74,9 +74,9 @@ Once the endpoint is fixed, click **Replay** to re-deliver the events that were 
 
 If the webhook needs maintenance downtime, **Pause** it from the list view — events will be silently dropped rather than piling up failed deliveries. **Enable** it when you're ready.
 
-## What this looks like at scale
+## At scale
 
-These aren't toy examples. The seeded environment behind those screenshots has 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
+The screenshots above show an environment with 12 tenants, 42 budgets across four unit types (USD, tokens, credits, risk points), 6 webhooks, and a full audit trail. Every operation is tracked with resource type, resource ID, and metadata. Filter, expand, export to CSV or JSON for your compliance team.
 
 The operational checklist:
 
@@ -96,4 +96,4 @@ npm run dev            # starts dashboard on localhost:5173
 
 Login with your admin API key. Everything else is in the [README](https://github.com/runcycles/cycles-dashboard).
 
-The dashboard is open source, ships as a Docker image, and covers every admin endpoint in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml). If your agents have budgets, they deserve an ops UI.
+The dashboard is open source, ships as a Docker image, and covers every admin endpoint in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml).
