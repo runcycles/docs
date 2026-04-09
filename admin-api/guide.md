@@ -7,7 +7,7 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
 
-**Authentication:** Budget create, fund, and list use `X-Cycles-API-Key` with `admin:write` permission (tenant manages own budgets). Budget patch uses `X-Admin-API-Key` per the protocol spec (admin-only control over overdraft settings). Other admin endpoints (tenants, API keys, policies, webhooks, events) use `X-Admin-API-Key`. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
+**Authentication:** Budget create and list use `X-Cycles-API-Key` with `budgets:write` / `budgets:read` permission. Budget fund accepts either `X-Cycles-API-Key` or `X-Admin-API-Key` (with `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
@@ -16,14 +16,18 @@ For the full interactive API reference, see the [Admin API Reference](/admin-api
 The admin API uses two authentication mechanisms:
 
 ```bash
-# Tenant/key/policy/webhook management + budget PATCH
+# Tenant/key/policy/webhook management + budget PATCH/freeze/unfreeze
 -H "X-Admin-API-Key: $ADMIN_KEY"
 
-# Budget create, fund, list (tenant-scoped operations)
--H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires admin:write permission
+# Budget create, list (tenant-scoped operations)
+-H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires budgets:write or admin:write
+
+# Budget fund (dual-auth — either works)
+-H "X-Cycles-API-Key: $CYCLES_API_KEY"  # tenant derived from key
+-H "X-Admin-API-Key: $ADMIN_KEY"        # requires tenant_id query param
 ```
 
-The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server. Budget create, fund, and list authenticate via tenant API keys with `admin:write` permission — the tenant is derived from the key, so no `tenant_id` is needed in request bodies. Budget patch requires the admin bootstrap key.
+The admin key is set via the `ADMIN_API_KEY` environment variable. `admin:write` acts as a wildcard that satisfies any `*:write` permission. `admin:read` satisfies any `*:read` permission. Budget patch, freeze, and unfreeze require the admin bootstrap key.
 
 ## Tenant management
 
@@ -152,6 +156,30 @@ curl -s -X PATCH 'http://localhost:7979/v1/admin/budgets?scope=tenant:acme-corp&
 ```
 
 This atomically recalculates `is_over_limit` based on the new settings.
+
+### Freeze a budget
+
+*New in v0.1.25.6:*
+
+```bash
+curl -s -X POST 'http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigating runaway agent"}' | jq .
+```
+
+Transitions budget status from ACTIVE → FROZEN. All new reservations against this budget will be denied with reason code `BUDGET_FROZEN`. Existing active reservations are unaffected until they commit or expire. Emits a `budget.frozen` event.
+
+### Unfreeze a budget
+
+```bash
+curl -s -X POST 'http://localhost:7979/v1/admin/budgets/unfreeze?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigation complete, resuming"}' | jq .
+```
+
+Transitions FROZEN → ACTIVE. Reservations resume. Emits a `budget.unfrozen` event. Returns 409 if the budget is already active or has been closed.
 
 ## Policy management
 

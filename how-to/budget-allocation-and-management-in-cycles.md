@@ -222,6 +222,38 @@ You can update:
 
 Fields not included in the request are left unchanged. Returns `404` if the budget does not exist, `403` for tenant mismatch, and `409` if the budget is `CLOSED`.
 
+## Freezing and unfreezing budgets
+
+*New in v0.1.25.6.*
+
+Use freeze to immediately halt all new reservations against a budget without deleting or modifying it. This is useful during incident investigations, compliance holds, or when a runaway agent is detected.
+
+### Freeze
+
+```bash
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigating runaway agent in support workflow"}' | jq .
+```
+
+All new reservations return `DENY` with reason code `BUDGET_FROZEN`. Existing active reservations continue until they commit or expire. Emits a `budget.frozen` webhook event.
+
+### Unfreeze
+
+```bash
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/unfreeze?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigation complete — root cause was prompt loop, now fixed"}' | jq .
+```
+
+Transitions FROZEN → ACTIVE. Reservations resume immediately. Emits a `budget.unfrozen` webhook event. Returns 409 if the budget is already active or closed.
+
+::: tip When to freeze vs. adjust budget
+**Freeze** when you need to stop all activity immediately while investigating. The budget allocation and history are preserved. **Adjust the budget** (PATCH or fund) when you want to change how much is available. Freeze is an operational control; budget adjustment is a financial control.
+:::
+
 ## Adjusting budget allocation
 
 ### Increasing a budget
