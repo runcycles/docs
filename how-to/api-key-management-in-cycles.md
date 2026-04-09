@@ -66,14 +66,27 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `webhooks:read` | List tenant webhooks and delivery history | No |
 | `events:read` | Query tenant event stream at `/v1/events` | No |
 
+**Tenant budget/policy permissions** (v0.1.25.6+):
+
+| Permission | Grants | Default? |
+|---|---|---|
+| `budgets:read` | List and read own tenant budgets | No |
+| `budgets:write` | Create and fund own tenant budgets | No |
+| `policies:read` | List and read own tenant policies | No |
+| `policies:write` | Create and update own tenant policies | No |
+
 **Admin wildcard permissions** (used with `X-Cycles-API-Key` for admin operations):
 
 | Permission | Grants |
 |---|---|
-| `admin:read` | Read any admin resource (budgets, policies, tenants, webhooks, events, audit) |
-| `admin:write` | Modify any admin resource (create/fund budgets, manage policies, manage webhooks) |
+| `admin:read` | Satisfies **any** `*:read` permission (budgets:read, policies:read, webhooks:read, events:read, etc.) |
+| `admin:write` | Satisfies **any** `*:write` permission (budgets:write, policies:write, webhooks:write, etc.). Does NOT grant read access — use both `admin:read` and `admin:write` for full access. |
 
-**Admin granular permissions** (v0.1.25 — finer-grained alternative to admin wildcards):
+::: tip Wildcard behavior (v0.1.25.7+)
+`admin:write` acts as a server-level wildcard — it satisfies any `*:write` permission requirement. This means pre-v0.1.25.6 keys with `admin:write` continue to work without migration even after granular permissions were introduced. `admin:read` does NOT satisfy `*:write`.
+:::
+
+**Admin granular permissions** (v0.1.25+ — finer-grained alternative to admin wildcards):
 
 | Permission | Grants |
 |---|---|

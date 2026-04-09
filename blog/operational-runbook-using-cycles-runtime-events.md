@@ -111,7 +111,7 @@ Was spend rate normal until recently?
 2. **Common reason codes:**
    - `BUDGET_EXCEEDED` — per-scope sub-budget is tight while parent has room. Check budget hierarchy.
    - `OVERDRAFT_LIMIT_EXCEEDED` — hitting the debt ceiling, not the allocated ceiling.
-   - `BUDGET_FROZEN` — someone froze the budget manually.
+   - `BUDGET_FROZEN` — someone froze the budget via `POST /v1/admin/budgets/freeze`. Unfreeze with `POST /v1/admin/budgets/unfreeze` (X-Admin-API-Key) once investigation is complete.
    - `DEBT_OUTSTANDING` — unresolved debt blocking new reservations.
 3. **Look at agent behavior.** Are specific agents being denied repeatedly? That's a retry loop signature — the agent keeps trying the same denied reservation.
 
