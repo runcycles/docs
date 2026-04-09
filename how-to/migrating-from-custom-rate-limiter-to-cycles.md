@@ -38,7 +38,7 @@ See the [full deployment guide](/quickstart/deploying-the-full-cycles-stack) for
 curl -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"tenant_id": "acme-corp"}'
+  -d '{"tenant_id": "acme-corp", "name": "Acme Corp"}'
 
 # Create an API key for your application
 curl -X POST http://localhost:7979/v1/admin/api-keys \

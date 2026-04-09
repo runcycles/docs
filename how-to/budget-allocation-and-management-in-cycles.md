@@ -47,10 +47,12 @@ Budget allocation is managed through the [Cycles Admin Server](https://github.co
 
 ### Authentication
 
-Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate admin permissions:
+Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate permissions:
 
-- **`admin:write`** — required for creating budgets, funding, resetting, updating budgets, and managing policies
-- **`admin:read`** — required for querying budgets and policies
+- **`budgets:write`** — required for creating budgets, funding, and resetting (or `admin:write` as wildcard)
+- **`budgets:read`** — required for listing and querying budgets (or `admin:read` as wildcard)
+- **`policies:write`** — required for creating and updating policies (or `admin:write` as wildcard)
+- **`policies:read`** — required for listing and querying policies (or `admin:read` as wildcard)
 
 Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error on budget endpoints. You must explicitly include `admin:write` and/or `admin:read` when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
 

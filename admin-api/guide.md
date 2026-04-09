@@ -240,13 +240,12 @@ In v0, policies are **stored but not yet enforced at runtime**. The protocol ser
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/policies \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "name": "limit-gpt4",
     "scope_pattern": "tenant:acme-corp/agent:*",
     "caps": {"max_tokens": 4096},
-    "overage_policy": "REJECT",
+    "commit_overage_policy": "REJECT",
     "priority": 100
   }' | jq .
 ```
@@ -258,7 +257,7 @@ curl -s -X POST http://localhost:7979/v1/admin/policies \
 ```bash
 curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "caps": {"max_tokens": 8192},
     "status": "ACTIVE"
@@ -270,7 +269,7 @@ curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
 Query the audit trail for compliance and debugging:
 
 ```bash
-curl -s 'http://localhost:7979/v1/admin/audit-logs?tenant_id=acme-corp&limit=10' \
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=10' \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
 

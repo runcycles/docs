@@ -70,10 +70,10 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 
 | Permission | Grants | Default? |
 |---|---|---|
-| `budgets:read` | List and read own tenant budgets | No |
-| `budgets:write` | Create and fund own tenant budgets | No |
-| `policies:read` | List and read own tenant policies | No |
-| `policies:write` | Create and update own tenant policies | No |
+| `budgets:read` | List and read own tenant budgets | Yes |
+| `budgets:write` | Create and fund own tenant budgets | Yes |
+| `policies:read` | List and read own tenant policies | Yes |
+| `policies:write` | Create and update own tenant policies | Yes |
 
 **Admin wildcard permissions** (used with `X-Cycles-API-Key` for admin operations):
 
@@ -103,7 +103,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `admin:events:read` | Query admin event stream |
 | `admin:audit:read` | Query audit logs |
 
-> **Defaults:** When no permissions are specified at key creation, the key receives the 6 default runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`). Webhook, event, budget, policy, and admin permissions must be explicitly requested.
+> **Defaults:** When no permissions are specified at key creation, the key receives 10 default permissions: the 6 runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`) plus `budgets:read`, `budgets:write`, `policies:read`, `policies:write`. Webhook, event, and admin permissions must be explicitly requested.
 
 A typical runtime key needs only the 6 defaults. Add `budgets:write` and `budgets:read` if tenants manage their own budgets. Add `webhooks:write` and `webhooks:read` for [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) only if the key is used for cross-tenant admin operations via the admin server (port 7979).
 
