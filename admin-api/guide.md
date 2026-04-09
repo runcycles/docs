@@ -102,6 +102,22 @@ curl -s http://localhost:7979/v1/admin/api-keys?tenant_id=acme-corp \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
 
+### Update a key
+
+*New in v0.1.25.7:*
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/api-keys/{key_id} \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read", "budgets:write"],
+    "name": "support-bot-v2"
+  }' | jq .
+```
+
+Updates key permissions, scope_filter, name, description, or metadata without rotating the secret. Emits `api_key.permissions_changed` when permissions or scope_filter change. Returns 400 for invalid permission names, 409 for revoked or expired keys.
+
 ### Revoke a key
 
 ```bash
@@ -168,7 +184,7 @@ curl -s -X POST 'http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme
   -d '{"reason": "Investigating runaway agent"}' | jq .
 ```
 
-Transitions budget status from ACTIVE → FROZEN. All new reservations and fund operations against this budget will be denied (reservations return `BUDGET_FROZEN`, fund returns 409). Existing active reservations are unaffected until they commit or expire. Emits a `budget.frozen` event.
+Transitions budget status from ACTIVE → FROZEN. All new reservations, commits, and fund operations against this budget will be blocked (reservations return `BUDGET_FROZEN`, commits and fund return 409). Existing active reservations can only be released, not committed. Emits a `budget.frozen` event.
 
 ### Unfreeze a budget
 

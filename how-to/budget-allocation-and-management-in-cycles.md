@@ -237,7 +237,7 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme
   -d '{"reason": "Investigating runaway agent in support workflow"}' | jq .
 ```
 
-All new reservations return `DENY` with reason code `BUDGET_FROZEN`, and fund operations return 409. Existing active reservations continue until they commit or expire. Emits a `budget.frozen` webhook event.
+All new reservations return `DENY` with reason code `BUDGET_FROZEN`. Commits and fund operations return 409. Existing active reservations can only be released, not committed. Emits a `budget.frozen` webhook event.
 
 ### Unfreeze
 
