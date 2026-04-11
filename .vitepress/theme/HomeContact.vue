@@ -2,7 +2,7 @@
 const reasons = [
   {
     label: 'Piloting Cycles on a real stack',
-    detail: 'You\'re putting Cycles in front of a real workload — Python, TypeScript, Spring Boot, MCP — and want implementation help or a second pair of eyes on the integration.',
+    detail: 'You\'re putting Cycles in front of a real workload — Python, TypeScript, Spring Boot, Rust, MCP — and want implementation help or a second pair of eyes on the integration.',
   },
   {
     label: 'Hit a failure mode we haven\'t documented',
