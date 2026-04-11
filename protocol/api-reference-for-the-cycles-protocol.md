@@ -201,7 +201,7 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt (no overdraft limit configured) |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
-**Dry run:** when `dry_run=true`, budget-state conditions surface as `200 OK` with `decision: DENY` and a `reason_code` field from the `DecisionReasonCode` enum — NOT as 4xx errors. The 4xx error codes above only apply when `dry_run` is false or omitted. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
+**Dry run:** when `dry_run=true`, budget-state conditions (`BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`, and the 404 "no budget at any scope" case) surface as `200 OK` with `decision: DENY` and a `reason_code` field from the `DecisionReasonCode` enum — not as 4xx/409 errors. Request-validity errors (`INVALID_REQUEST`, `UNIT_MISMATCH`, `UNAUTHORIZED`, `FORBIDDEN`, `IDEMPOTENCY_MISMATCH`) are still returned as 4xx on dry-run. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
 
 ---
 
