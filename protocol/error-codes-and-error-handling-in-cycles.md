@@ -64,11 +64,19 @@ Common causes:
 
 ### NOT_FOUND (404)
 
-The requested resource does not exist. This error has two contexts:
+The specified reservation ID does not exist. This is different from RESERVATION_EXPIRED — a 404 means the reservation was never created, while RESERVATION_EXPIRED means it existed but its TTL has passed.
 
-**Missing reservation:** The specified reservation ID does not exist. This is different from RESERVATION_EXPIRED — a 404 means the reservation was never created, while RESERVATION_EXPIRED means it existed but its TTL has passed. **What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
+**What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
 
-**Missing budget:** No budget ledger exists for any derived scope in the reservation subject. The server checks each scope level and skips those without a budget, but at least one must have a ledger. **What to do:** create a budget via `POST /v1/admin/budgets` for at least one scope in the hierarchy. See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#how-budget-lookup-works-during-reservations).
+### BUDGET_NOT_FOUND (404)
+
+No budget ledger exists at any of the derived scopes, in any unit. Returned on `POST /v1/reservations` and `POST /v1/events` when the target scope hierarchy has no budget at all. The server checks each scope level and skips those without a budget, but at least one must have a ledger.
+
+This is distinct from `UNIT_MISMATCH (400)` — `BUDGET_NOT_FOUND` means *no budget exists at all*, while `UNIT_MISMATCH` means a budget exists at the scope but in a different unit than the request.
+
+On `POST /v1/decide`, this condition does NOT return 404 — it returns `200` with `decision=DENY` and `reason_code=BUDGET_NOT_FOUND`, consistent with decide's policy of surfacing budget-state conditions as decisions rather than errors.
+
+**What to do:** create a budget via `POST /v1/admin/budgets` for at least one scope in the hierarchy. See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#how-budget-lookup-works-during-reservations).
 
 ### BUDGET_EXCEEDED (409)
 
@@ -126,14 +134,24 @@ This means the client sent a request with an idempotency key that was already us
 
 ### UNIT_MISMATCH (400)
 
-The unit in the request does not match the expected unit.
+The unit in the request does not match any budget stored for the derived scopes, but at least one of those scopes has a budget in a different unit.
 
-Common causes:
+Returned on four operations:
 
-- committing with a different unit than the reservation was created with (e.g., reserving in TOKENS, committing in USD_MICROCENTS)
-- creating an event with a unit not supported for the target scope
+1. **Reserve** — `estimate.unit` does not match any budget at the derived scopes (a budget exists in a different unit)
+2. **Commit** — `actual.unit` differs from the reservation's `estimate.unit`
+3. **Event** — `actual.unit` does not match the budget stored for the target scope
+4. **Decide** — `estimate.unit` does not match any budget at the derived scopes. This is an exception to `/decide`'s general "return `decision=DENY` (200) without 4xx" pattern, which applies only to budget-state conditions (debt, overdraft, insufficient remaining), not request-validity errors like a wrong unit.
 
-**What to do:** ensure the unit is consistent across the reservation lifecycle. Check that the commit or event uses the same unit as the reservation or scope.
+When the cause is a wrong unit (rather than the absence of any budget at the scope), the server populates the error response's `details` object with:
+
+- `scope` — the canonical scope identifier where the mismatch was detected
+- `requested_unit` — the unit supplied by the client
+- `expected_units` — array of units for which a budget does exist at that scope
+
+so clients can self-correct without a separate lookup. `BUDGET_NOT_FOUND (404)` is reserved for the case where the target scope has no budget in **any** unit.
+
+**What to do:** switch the request to one of the units listed in `details.expected_units`, or create a budget in the requested unit via `POST /v1/admin/budgets`.
 
 ### OVERDRAFT_LIMIT_EXCEEDED (409)
 
@@ -181,6 +199,8 @@ An unexpected server error occurred.
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
 | DEBT_OUTSTANDING | 409 | Scope has unresolved debt (no overdraft limit configured) |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
+| BUDGET_NOT_FOUND | 404 | No budget exists at any derived scope in any unit |
+| UNIT_MISMATCH | 400 | `estimate.unit` does not match any budget at the derived scopes (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
@@ -189,12 +209,13 @@ An unexpected server error occurred.
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| UNIT_MISMATCH | 400 | `estimate.unit` does not match any budget at the derived scopes (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 
-Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
+Note: decide returns `200` with `decision: DENY` for budget-state conditions (insufficient remaining, debt, overdraft, and the "no budget exists at any scope" case — surfaced as `reason_code=BUDGET_NOT_FOUND`), not a `409` or `404` error. Request-validity errors like `UNIT_MISMATCH` are still returned as 400.
 
 ### Commit errors
 
@@ -244,7 +265,8 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
-| UNIT_MISMATCH | 400 | Unit not supported for scope |
+| BUDGET_NOT_FOUND | 404 | No budget exists at any derived scope in any unit |
+| UNIT_MISMATCH | 400 | `actual.unit` does not match any budget at the target scope (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
@@ -272,12 +294,12 @@ Log the request_id when handling errors.
 
 ## Summary
 
-Cycles provides 15 specific error codes that tell the client exactly what went wrong:
+Cycles provides 16 specific error codes that tell the client exactly what went wrong:
 
 - **400** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH)
 - **401** for authentication failures (UNAUTHORIZED)
 - **403** for authorization failures (FORBIDDEN)
-- **404** for missing reservations (NOT_FOUND)
+- **404** for missing reservations (NOT_FOUND) and missing budgets (BUDGET_NOT_FOUND)
 - **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
 - **410** for expired reservations (RESERVATION_EXPIRED)
 - **500** for server errors (INTERNAL_ERROR)

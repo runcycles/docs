@@ -139,7 +139,7 @@ Risk points are subjective. The team must define what each point represents and 
 All amounts within a single reservation lifecycle must use the same unit.
 
 - The reservation estimate, commit actual, and balance amounts must all be in the same unit
-- The server returns `400 UNIT_MISMATCH` if a commit or event uses a different unit than expected
+- The server returns `400 UNIT_MISMATCH` if a reserve, decide, commit, or event uses a unit that doesn't match any budget at the derived scopes (when a budget exists at the scope in a different unit). The error details include `expected_units` listing the units for which a budget does exist, so clients can self-correct. When no budget exists at any scope in *any* unit, the server returns `404 BUDGET_NOT_FOUND` instead.
 
 This prevents accidental unit confusion (e.g., reserving in tokens and committing in dollars).
 

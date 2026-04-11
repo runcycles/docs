@@ -190,9 +190,10 @@ curl -X POST http://localhost:7878/v1/reservations \
 | Code | Error | When |
 |---|---|---|
 | 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 400 | `UNIT_MISMATCH` | `estimate.unit` does not match any budget at the derived scopes (a budget exists in a different unit) |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 404 | `NOT_FOUND` | No budget ledger exists for any derived scope |
+| 404 | `BUDGET_NOT_FOUND` | No budget ledger exists at any derived scope in any unit |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |
@@ -548,11 +549,12 @@ curl -X POST http://localhost:7878/v1/decide \
 | Code | Error | When |
 |---|---|---|
 | 400 | `INVALID_REQUEST` | Missing or invalid fields |
+| 400 | `UNIT_MISMATCH` | `estimate.unit` does not match any budget at the derived scopes (a budget exists in a different unit) |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
-Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
+Note: decide returns `200` with `decision: DENY` for budget-state conditions (insufficient remaining, debt, overdraft) and for the "no budget exists at any scope" case (surfaced as `reason_code=BUDGET_NOT_FOUND`) — not a `409` or `404`. Request-validity errors like `UNIT_MISMATCH` are still returned as `400`.
 
 ---
 
@@ -696,10 +698,10 @@ curl -X POST http://localhost:7878/v1/events \
 | Code | Error | When |
 |---|---|---|
 | 400 | `INVALID_REQUEST` | Missing or invalid fields |
-| 400 | `UNIT_MISMATCH` | Unit not supported for scope |
+| 400 | `UNIT_MISMATCH` | `actual.unit` does not match any budget at the target scope (a budget exists in a different unit) |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 404 | `NOT_FOUND` | No budget ledger exists for any derived scope |
+| 404 | `BUDGET_NOT_FOUND` | No budget ledger exists at any derived scope in any unit |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT only) |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |

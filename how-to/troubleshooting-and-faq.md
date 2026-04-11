@@ -9,11 +9,13 @@ Common issues when integrating and operating Cycles, with solutions.
 
 ## Reservation and budget issues
 
-### NOT_FOUND on first reservation
+### BUDGET_NOT_FOUND on first reservation
 
-**Symptom:** The very first reservation attempt returns `404 NOT_FOUND`.
+**Symptom:** The very first reservation attempt returns `404 BUDGET_NOT_FOUND` (in earlier protocol versions this was surfaced as `404 NOT_FOUND`).
 
-**Cause:** No budget ledger exists for any derived scope. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+**Cause:** No budget ledger exists for any derived scope in any unit. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+
+This is distinct from `400 UNIT_MISMATCH` — if a budget exists at the scope but in a different unit (e.g., you requested USD_MICROCENTS but only TOKENS is funded), you get `UNIT_MISMATCH` instead, with `details.expected_units` listing the units that are funded.
 
 **Fix:** Create a budget via the admin API:
 
