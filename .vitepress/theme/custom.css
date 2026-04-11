@@ -124,6 +124,18 @@ samp {
   color: var(--vp-c-brand-1) !important;
 }
 
+/* ══ Home layout: collapse empty markdown container ══
+   VitePress's home layout renders a .vp-doc.container after the
+   #home-features-after slot to house optional markdown body content
+   from index.md. Our index.md is frontmatter-only, so this container
+   is always empty but still carries the default VitePress doc-page
+   padding — creating a visible gap between HomeContact and the footer.
+   Collapse it. Scoped to .VPHome so regular doc pages are unaffected. */
+.VPHome .vp-doc.container {
+  padding: 0;
+  margin: 0;
+}
+
 /* ══ Hero Image ══ */
 
 /* Hero image — remove VitePress card decoration */
