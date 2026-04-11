@@ -68,9 +68,22 @@ The server evaluates the request against current balances and returns:
 
 - **decision** — ALLOW, ALLOW_WITH_CAPS, or DENY
 - **caps** — soft constraints (only present when decision is ALLOW_WITH_CAPS)
-- **reason_code** — machine-readable reason when decision is DENY
+- **reason_code** — machine-readable reason when decision is DENY (closed enum `DecisionReasonCode`, see below)
 - **retry_after_ms** — optional guidance on when to retry
 - **affected_scopes** — which scopes were evaluated
+
+The `reason_code` field is a closed enum with six values:
+
+| reason_code | Meaning |
+|---|---|
+| `BUDGET_EXCEEDED` | Remaining amount insufficient on at least one derived scope |
+| `BUDGET_FROZEN` | A derived scope has a budget in `FROZEN` status |
+| `BUDGET_CLOSED` | A derived scope has a budget in `CLOSED` status |
+| `BUDGET_NOT_FOUND` | No budget exists at any derived scope in the requested unit (on non-dry reserve and `/v1/events`, this same condition surfaces as `HTTP 404` with `error=NOT_FOUND`) |
+| `OVERDRAFT_LIMIT_EXCEEDED` | Either `debt + delta > overdraft_limit`, or the scope is in over-limit state (`is_over_limit=true`) |
+| `DEBT_OUTSTANDING` | A derived scope has `debt > 0` and `overdraft_limit == 0` |
+
+Clients SHOULD treat this as a closed set for v0 but MUST be prepared to encounter new values in future protocol versions. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for full semantics.
 
 ## Decide does not guarantee future reservation
 

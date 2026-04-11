@@ -273,8 +273,9 @@ async def cycles_error_handler(request: Request, exc: CyclesProtocolError):
 | `RESERVATION_EXPIRED` (410) | No | Create a new reservation or record as event. |
 | `RESERVATION_FINALIZED` (409) | No | Reservation already settled. No action needed. |
 | `IDEMPOTENCY_MISMATCH` (409) | No | Fix the idempotency key or payload. |
-| `UNIT_MISMATCH` (400) | No | Fix the unit in your request. |
+| `UNIT_MISMATCH` (400) | No | Fix the unit in your request. Inspect `details.expected_units` to see which units are funded at the scope. |
 | `INVALID_REQUEST` (400) | No | Fix the request payload. |
+| `NOT_FOUND` (404) | No / Wait | Two cases, distinguished by the `message` field: missing reservation (`"Reservation not found: ..."` — check the reservation ID) or missing budget (`"Budget not found for provided scope: ..."` — operator must create a budget via the admin API). |
 | `INTERNAL_ERROR` (500) | Yes | Retry with exponential backoff. |
 | Transport error | Yes | Retry with exponential backoff. |
 

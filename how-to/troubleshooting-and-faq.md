@@ -11,9 +11,15 @@ Common issues when integrating and operating Cycles, with solutions.
 
 ### NOT_FOUND on first reservation
 
-**Symptom:** The very first reservation attempt returns `404 NOT_FOUND`.
+**Symptom:** The very first reservation attempt returns `404 NOT_FOUND` with a response message like `"Budget not found for provided scope: tenant:acme-corp"`.
 
-**Cause:** No budget ledger exists for any derived scope. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+**Cause:** No budget ledger exists for any derived scope in any unit. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+
+The runtime plane uses a single `NOT_FOUND` wire code for all resource-not-found conditions (missing reservation, missing budget). The `message` field distinguishes them: `"Reservation not found: ..."` vs. `"Budget not found for provided scope: ..."`.
+
+This is distinct from `400 UNIT_MISMATCH` — if a budget exists at the scope but in a different unit (e.g., you requested USD_MICROCENTS but only TOKENS is funded), you get `UNIT_MISMATCH` instead, with `details.expected_units` listing the units that are funded.
+
+On `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true`, the same "no budget" condition doesn't surface as a 404. Those endpoints return `200 OK` with `decision: DENY` and `reason_code: "BUDGET_NOT_FOUND"` in the response body — so a preflight check can distinguish "no budget" from "insufficient budget" without catching an exception.
 
 **Fix:** Create a budget via the admin API:
 
