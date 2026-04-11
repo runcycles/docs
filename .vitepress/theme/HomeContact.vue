@@ -25,7 +25,7 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
 <template>
   <section class="home-contact">
     <div class="inner">
-      <h2 class="contact-heading">Talk to the team building Cycles.</h2>
+      <h2 class="contact-heading">Talk to the team building Cycles</h2>
       <p class="contact-caption">
        Most teams reach out for one of four reasons — they all land in the same inbox, and a founder reads every one.
       </p>
