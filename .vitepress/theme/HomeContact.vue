@@ -59,17 +59,17 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
 
 <style scoped>
 .home-contact {
-  padding: 48px 24px 64px;
+  padding: 24px 24px 32px;
   border-top: 1px solid var(--vp-c-divider);
-  margin-top: 48px;
+  margin-top: 24px;
 }
 
 @media (min-width: 640px) {
-  .home-contact { padding: 56px 48px 72px; }
+  .home-contact { padding: 28px 48px 36px; }
 }
 
 @media (min-width: 960px) {
-  .home-contact { padding: 64px 64px 80px; }
+  .home-contact { padding: 32px 64px 40px; }
 }
 
 .inner {
