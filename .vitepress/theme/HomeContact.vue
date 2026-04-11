@@ -1,8 +1,8 @@
 <script setup>
 const reasons = [
   {
-    label: 'Piloting on a real stack',
-    detail: 'You\'re putting Cycles in front of a production workload — Python, TypeScript, Spring Boot, MCP — and want implementation help or a second pair of eyes on the integration.',
+    label: 'Piloting Cycles on a real stack',
+    detail: 'You\'re putting Cycles in front of a real workload — Python, TypeScript, Spring Boot, MCP — and want implementation help or a second pair of eyes on the integration.',
   },
   {
     label: 'Hit a failure mode we haven\'t documented',
@@ -27,7 +27,7 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
     <div class="inner">
       <h2 class="contact-heading">Talk to the team building Cycles.</h2>
       <p class="contact-caption">
-        Cycles is in early access. Most teams reach out for one of four reasons — they all land in the same inbox, and a founder reads every one.
+       Most teams reach out for one of four reasons — they all land in the same inbox, and a founder reads every one.
       </p>
 
       <ul class="reasons">
