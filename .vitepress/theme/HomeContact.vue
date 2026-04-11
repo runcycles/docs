@@ -14,7 +14,7 @@ const reasons = [
   },
   {
     label: 'Evaluating Cycles for production',
-    detail: 'You\'re in vendor eval or architecture review — comparing Cycles to rate limiters, LLM gateways, or observability tools. We\'ll walk through the spec, demo the runtime, and answer specific integration questions.',
+    detail: 'You\'re evaluating Cycles for production — comparing it to rate limiters, LLM gateways, or observability tools. We\'ll walk through the spec, demo the runtime, and answer integration questions.',
   },
 ]
 
@@ -25,7 +25,7 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
 <template>
   <section class="home-contact">
     <div class="inner">
-      <h2 class="contact-heading">Talk to the people building Cycles.</h2>
+      <h2 class="contact-heading">Talk to the team building Cycles.</h2>
       <p class="contact-caption">
         Cycles is in early access. Most teams reach out for one of four reasons — they all land in the same inbox, and a founder reads every one.
       </p>
