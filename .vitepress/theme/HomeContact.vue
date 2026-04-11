@@ -13,8 +13,8 @@ const reasons = [
     detail: 'You\'ve read the spec and have opinions on the error contract, permission model, or something you need in v0.1.26.',
   },
   {
-    label: 'Building something adjacent',
-    detail: 'An observability layer, a policy engine, a framework — and want to compare notes on where the seams are.',
+    label: 'Evaluating Cycles for production',
+    detail: 'You\'re in vendor eval or architecture review — comparing Cycles to rate limiters, LLM gateways, or observability tools. We\'ll walk through the spec, demo the runtime, and answer specific integration questions.',
   },
 ]
 
@@ -44,7 +44,7 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
           target="_blank"
           rel="noopener"
         >
-          Start the conversation &rarr;
+          Talk to the team &rarr;
         </a>
       </div>
 
