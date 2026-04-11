@@ -47,7 +47,7 @@ All of these share a similar shape:
 
 For basic protection against runaway API bills, they work. That is their purpose.
 
-The problem starts when teams need more than basic protection.
+The problem starts when teams need more than basic protection. The single-provider point in particular has its own structural argument — see [Agents Are Cross-Cutting. Your Controls Aren't.](/blog/agents-are-cross-cutting-your-controls-arent) for why a control that lives inside one provider can't reach across an agent that spans many.
 
 ## Why provider caps are not sufficient
 

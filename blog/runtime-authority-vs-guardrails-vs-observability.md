@@ -124,6 +124,7 @@ Because it is protocol-based, Cycles works across frameworks, languages, and pro
 
 ## Next steps
 
+- [Agents Are Cross-Cutting. Your Controls Aren't.](/blog/agents-are-cross-cutting-your-controls-arent) — the *span* companion to this *lifecycle* argument: why governance has to reach across providers, tools, tenants, and workers
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions
 - [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) — deeper exploration of category boundaries
