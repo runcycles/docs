@@ -275,7 +275,7 @@ async def cycles_error_handler(request: Request, exc: CyclesProtocolError):
 | `IDEMPOTENCY_MISMATCH` (409) | No | Fix the idempotency key or payload. |
 | `UNIT_MISMATCH` (400) | No | Fix the unit in your request. Inspect `details.expected_units` to see which units are funded at the scope. |
 | `INVALID_REQUEST` (400) | No | Fix the request payload. |
-| `BUDGET_NOT_FOUND` (404) | Wait | No budget exists at any derived scope. Requires operator to create a budget via the admin API. |
+| `NOT_FOUND` (404) | No / Wait | Two cases, distinguished by the `message` field: missing reservation (`"Reservation not found: ..."` — check the reservation ID) or missing budget (`"Budget not found for provided scope: ..."` — operator must create a budget via the admin API). |
 | `INTERNAL_ERROR` (500) | Yes | Retry with exponential backoff. |
 | Transport error | Yes | Retry with exponential backoff. |
 

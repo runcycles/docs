@@ -592,8 +592,7 @@ if (response.isSuccess) {
 | `INVALID_REQUEST` (400) | No | Fix the request payload. |
 | `UNAUTHORIZED` (401) | No | Fix the API key. |
 | `FORBIDDEN` (403) | No | Fix the tenant configuration. |
-| `NOT_FOUND` (404) | No | Check the reservation ID. |
-| `BUDGET_NOT_FOUND` (404) | Wait | No budget exists at any derived scope. Requires operator to create a budget via the admin API. |
+| `NOT_FOUND` (404) | No / Wait | Two cases, distinguished by the `message` field: missing reservation (`"Reservation not found: ..."` — check the reservation ID) or missing budget (`"Budget not found for provided scope: ..."` — operator must create a budget via the admin API). |
 | `INTERNAL_ERROR` (500) | Yes | Retry with exponential backoff. |
 | Transport error | Yes | Retry with exponential backoff. |
 

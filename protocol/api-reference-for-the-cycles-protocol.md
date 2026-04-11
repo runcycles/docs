@@ -193,13 +193,15 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 400 | `UNIT_MISMATCH` | `estimate.unit` does not match any budget at the derived scopes (a budget exists in a different unit) |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 404 | `BUDGET_NOT_FOUND` | No budget ledger exists at any derived scope in any unit |
+| 404 | `NOT_FOUND` | No budget ledger exists at any derived scope in any unit (message: `"Budget not found for provided scope: ..."`) |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |
 | 409 | `OVERDRAFT_LIMIT_EXCEEDED` | Scope is over-limit |
 | 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt (no overdraft limit configured) |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
+
+**Dry run:** when `dry_run=true`, budget-state conditions surface as `200 OK` with `decision: DENY` and a `reason_code` field from the `DecisionReasonCode` enum — NOT as 4xx errors. The 4xx error codes above only apply when `dry_run` is false or omitted. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
 
 ---
 
@@ -528,7 +530,7 @@ Evaluate a budget decision without creating a reservation. Useful for preflight 
 }
 ```
 
-The `reason_code` and `retry_after_ms` fields are present when the decision is `DENY`.
+The `reason_code` and `retry_after_ms` fields are present when the decision is `DENY`. `reason_code` is a closed enum (`DecisionReasonCode`) with six values: `BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
 
 ### Example
 
@@ -554,7 +556,7 @@ curl -X POST http://localhost:7878/v1/decide \
 | 403 | `FORBIDDEN` | Tenant mismatch |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
-Note: decide returns `200` with `decision: DENY` for budget-state conditions (insufficient remaining, debt, overdraft) and for the "no budget exists at any scope" case (surfaced as `reason_code=BUDGET_NOT_FOUND`) — not a `409` or `404`. Request-validity errors like `UNIT_MISMATCH` are still returned as `400`.
+Note: decide returns `200` with `decision: DENY` for all budget-state conditions — insufficient remaining, debt, overdraft, frozen, closed, and the "no budget exists at any scope" case — not a `409` or `404`. The specific reason is surfaced in the `reason_code` field, which is drawn from the closed `DecisionReasonCode` enum (`BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`). See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for the full enum. Request-validity errors like `UNIT_MISMATCH` are still returned as `400`.
 
 ---
 
@@ -701,7 +703,7 @@ curl -X POST http://localhost:7878/v1/events \
 | 400 | `UNIT_MISMATCH` | `actual.unit` does not match any budget at the target scope (a budget exists in a different unit) |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Tenant mismatch |
-| 404 | `BUDGET_NOT_FOUND` | No budget ledger exists at any derived scope in any unit |
+| 404 | `NOT_FOUND` | No budget ledger exists at any derived scope in any unit (message: `"Budget not found for provided scope: ..."`) |
 | 409 | `BUDGET_EXCEEDED` | Insufficient budget (REJECT only) |
 | 409 | `BUDGET_FROZEN` | Budget scope is frozen |
 | 409 | `BUDGET_CLOSED` | Budget scope is permanently closed |

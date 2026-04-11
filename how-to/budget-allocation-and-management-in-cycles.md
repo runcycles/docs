@@ -135,7 +135,7 @@ When the server processes a reservation, it derives scope paths from the subject
 
 1. Scopes **with** a budget ledger are checked for sufficient funds
 2. Scopes **without** a budget ledger are skipped — they do not block the reservation
-3. If **no** derived scope has a budget ledger, the reservation is rejected with `BUDGET_NOT_FOUND` (404)
+3. If **no** derived scope has a budget ledger, the reservation is rejected with `NOT_FOUND` (404) — the response message is `"Budget not found for provided scope: ..."`. (On `/v1/decide` and dry-run reserve, the same condition surfaces as `200 DENY` with `reason_code=BUDGET_NOT_FOUND`.)
 4. If **any** budgeted scope has insufficient funds, the reservation is rejected with `BUDGET_EXCEEDED` (409)
 
 This means you only need budgets at the scope levels where you want enforcement. For example, if you only set a tenant-level budget, workspace and app scopes are skipped — the tenant budget is the only constraint.
@@ -144,7 +144,7 @@ This means you only need budgets at the scope levels where you want enforcement.
 |---|---|
 | Budget at tenant only, reservation targets tenant/workspace/app | Reserves against tenant budget; workspace and app skipped |
 | Budget at tenant and app, not workspace | Reserves against both; workspace skipped |
-| No budget at any scope | `BUDGET_NOT_FOUND` (404) |
+| No budget at any scope | `NOT_FOUND` (404) — message: `"Budget not found for provided scope: ..."` |
 | Budget exists with zero allocation | `BUDGET_EXCEEDED` (409) |
 
 ## Common allocation patterns
