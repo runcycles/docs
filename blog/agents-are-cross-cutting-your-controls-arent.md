@@ -40,7 +40,7 @@ This post is the *span* companion to [Runtime Authority vs Guardrails vs Observa
 
 Each of these is independently true. Combined, they are multiplicative. A platform with three providers, eight tools, fifty tenants, and twelve worker processes has well over ten thousand distinct (provider × tool × tenant × worker) combinations to reason about. Any control that lives inside one of those dimensions is, by construction, blind to the other three.
 
-Effective governance has to reach the same surface the agent does.
+Effective governance has to span the same surface the agent spans.
 
 ## Where each "obvious" control falls short
 
@@ -112,7 +112,7 @@ These properties are not arbitrary. Each one falls out of "the agent is cross-cu
 
 ## The layer, not the feature
 
-Provider caps are not going to grow into cross-provider authorities. Observability tools are not going to grow into transactional enforcement layers. Framework limits are not going to grow into distributed governance services. None of those evolutions are impossible — they are just different products at a different layer, and the tools that exist today have their architectural assumptions baked into the wrong layer for this job.
+Provider caps are not going to grow into cross-provider authorities. Observability tools are not going to grow into transactional enforcement layers. Framework limits are not going to grow into distributed governance services. None of those evolutions is impossible. They are just different products at a different layer, and the tools that exist today have their architectural assumptions baked into the wrong layer for this job.
 
 Cycles sits at that outside layer. Keep the provider cap. Keep the observability tool. Keep the framework limit. But add the cross-cutting authority for the question none of those can answer: **may this agent, for this customer, on this worker, take the next action right now?**
 
