@@ -23,13 +23,13 @@ The platform team is asked a reasonable question by their head of engineering: *
 
 They walk through the options. OpenAI has organization-level usage limits. Anthropic has workspace caps. Their observability tool, Langfuse, gives them per-call cost attribution. LangChain's `AgentExecutor` has a `max_iterations` parameter. They also have a small Redis-backed counter the team wrote one afternoon for per-customer spend tracking.
 
-Each of those controls exists. Each one solves a real problem. None of them, individually or together, can answer the question that was actually asked: *can this agent — across all providers, all tools, this specific customer, on whichever worker happens to pick up the job — proceed with the next action?*
+Each of those controls exists. Each one solves a real problem. None of them, individually, and few combinations of them in practice, can answer the question that was actually asked: *can this agent — across all providers, all tools, this specific customer, on whichever worker happens to pick up the job — proceed with the next action?*
 
 The shape of the problem is not a missing feature in any one of these tools. It is a structural mismatch. **Agents are cross-cutting by construction. The controls people reach for first are tool-local by construction.** That gap does not close by adding features. It closes by adding a layer.
 
 This post is the *span* companion to [Runtime Authority vs Guardrails vs Observability](/blog/runtime-authority-vs-guardrails-vs-observability), which makes the *lifecycle* version of the same argument: enforcement has to happen before the action runs. Here the question is different. How far does the enforcement reach?
 
-## The span thesis
+## The cross-cutting thesis
 
 [Autonomous agents](/glossary#autonomous-agent) are cross-cutting along at least four axes:
 
@@ -40,7 +40,7 @@ This post is the *span* companion to [Runtime Authority vs Guardrails vs Observa
 
 Each of these is independently true. Combined, they are multiplicative. A platform with three providers, eight tools, fifty tenants, and twelve worker processes has well over ten thousand distinct (provider × tool × tenant × worker) combinations to reason about. Any control that lives inside one of those dimensions is, by construction, blind to the other three.
 
-Effective governance has to reach the same surface the agent does. If it does not, it is not governance. It is a partial view.
+Effective governance has to reach the same surface the agent does.
 
 ## Where each "obvious" control falls short
 
@@ -80,8 +80,6 @@ The pattern is familiar: a small Redis-backed counter, one increment per call, a
 
 The walls show up in a predictable order — TOCTOU race conditions under concurrency, multi-provider attribution drift, [retry storms](/glossary#retry-storm) that double-count or under-count, lost state on worker crashes, the slow realization that what started as a counter is becoming a distributed transactional system. The full post-mortem of that journey, including the specific failure modes and the production data that triggered each rebuild, is in [We Built a Custom Agent Rate Limiter. Here's Why We Stopped.](/blog/we-built-a-custom-agent-rate-limiter-heres-why-we-stopped).
 
-The structural limit is the same as the others: a counter inside one process governs that process. As soon as the agent spans more than one worker, more than one provider, or more than one tenant, the counter has the wrong scope.
-
 ## Why these tools cannot evolve to fill the gap
 
 It is tempting to assume the gap closes with one more release. A cap that sees more than one provider. An observability tool that adds enforcement. A framework that adds distributed counters. None of these are technically impossible. All of them are architectural reorientations that turn the tool into a different category of system.
@@ -116,7 +114,7 @@ These properties are not arbitrary. Each one falls out of "the agent is cross-cu
 
 Provider caps are not going to grow into cross-provider authorities. Observability tools are not going to grow into transactional enforcement layers. Framework limits are not going to grow into distributed governance services. None of those evolutions are impossible — they are just different products at a different layer, and the tools that exist today have their architectural assumptions baked into the wrong layer for this job.
 
-Cycles is at that outside layer. Not because it competes with provider caps or observability platforms or framework limits, but because the agent itself spans across all of them and the governance has to span the same surface. Keep the observability tool. Keep the provider cap as a safety net. Keep the framework's loop limit as a local circuit breaker. Add the cross-cutting layer for the question none of those answer: **may this agent, on this worker, for this customer, take the next action right now?**
+Cycles sits at that outside layer. Keep the provider cap. Keep the observability tool. Keep the framework limit. But add the cross-cutting authority for the question none of those can answer: **may this agent, for this customer, on this worker, take the next action right now?**
 
 If your agent spans N providers, M tools, K tenants, and W workers, your governance has to span the same N × M × K × W. Anything that lives inside one of those dimensions is a partial view. A partial view is not governance.
 
