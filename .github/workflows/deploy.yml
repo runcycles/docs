@@ -21,10 +21,6 @@ jobs:
         with:
           repository: runcycles/cycles-protocol
           path: cycles-protocol
-      - uses: actions/checkout@v4
-        with:
-          repository: runcycles/cycles-server-admin
-          path: cycles-server-admin
       - uses: actions/setup-node@v4
         with:
           node-version: 20
