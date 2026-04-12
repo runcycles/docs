@@ -112,6 +112,6 @@ npm run dev            # starts dashboard on localhost:5173
 
 Login with your admin API key. Everything else is in the [README](https://github.com/runcycles/cycles-dashboard).
 
-The dashboard is open source, ships as a Docker image, and covers the core admin workflows in the [Cycles governance spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml).
+The dashboard is open source, ships as a Docker image, and covers the core admin workflows in the [Cycles governance spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml).
 
 If you're building a governance layer for your agents — whether you use Cycles or not — the pattern holds: your operators need write access with safety rails, not just read-only charts. Design for the 2am case, not the demo.

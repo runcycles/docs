@@ -180,7 +180,7 @@ The v0.1.25 event system delivers threshold alerts at the default levels (80%, 9
 - **Burn rate anomaly detection**: alert when spend rate exceeds the rolling average by a configurable multiplier
 - **Rate spike detection**: alert on reservation denial rate spikes and expiry rate spikes across rolling windows
 
-These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml) as `WebhookThresholdConfig`. The schema is finalized; server-side implementation is on the roadmap.
+These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) as `WebhookThresholdConfig`. The schema is finalized; server-side implementation is on the roadmap.
 
 ---
 
