@@ -21,7 +21,7 @@ The platform team is asked a reasonable question by their head of engineering: *
 
 <!-- more -->
 
-They walk through the options. OpenAI has organization-level usage limits. Anthropic has workspace caps. Their observability tool, Langfuse, gives them per-call cost attribution. LangChain has a `max_iterations` parameter on every agent. They also have a small Redis-backed counter the team wrote one afternoon for per-customer spend tracking.
+They walk through the options. OpenAI has organization-level usage limits. Anthropic has workspace caps. Their observability tool, Langfuse, gives them per-call cost attribution. LangChain's `AgentExecutor` has a `max_iterations` parameter. They also have a small Redis-backed counter the team wrote one afternoon for per-customer spend tracking.
 
 Each of those controls exists. Each one solves a real problem. None of them, individually or together, can answer the question that was actually asked: *can this agent — across all providers, all tools, this specific customer, on whichever worker happens to pick up the job — proceed with the next action?*
 
@@ -38,7 +38,7 @@ This post is the *span* companion to [Runtime Authority vs Guardrails vs Observa
 - **[Tenants](/glossary#tenant).** Production agents in SaaS systems serve many customers from the same infrastructure. Per-customer isolation is a service requirement, not a nice-to-have.
 - **Workers.** Agents do not run in one process. They run on pools of stateless workers, with retries, [fan-out](/glossary#fan-out), and concurrent runs hitting the same shared budget.
 
-Each of these is independently true. Combined, they are multiplicative. A platform with three providers, eight tools, fifty tenants, and twelve worker processes has a few thousand distinct enforcement points to reason about. Any control that lives inside one of those dimensions is, by construction, blind to the other three.
+Each of these is independently true. Combined, they are multiplicative. A platform with three providers, eight tools, fifty tenants, and twelve worker processes has well over ten thousand distinct (provider × tool × tenant × worker) combinations to reason about. Any control that lives inside one of those dimensions is, by construction, blind to the other three.
 
 Effective governance has to reach the same surface the agent does. If it does not, it is not governance. It is a partial view.
 
@@ -48,11 +48,11 @@ The four categories of control most teams reach for first each fall short for th
 
 ### Provider spending caps
 
-OpenAI, Anthropic, Google, and AWS Bedrock all offer some form of organization-level or workspace-level spending limit. These are useful safety nets against catastrophic monthly bills.
+OpenAI and Anthropic offer organization or workspace-level spending limits. Google Cloud and AWS provide budget alerts and service quotas that play a similar role, though as alerts and throughput limits rather than hard spend caps. All of them are useful safety nets against catastrophic monthly bills.
 
 But a provider cap lives inside that provider's billing system. It can see what your account spent on its product. It cannot see what you spent on any other provider, on any tool, or on behalf of which customer.
 
-A monthly OpenAI cap of $10,000 does not stop a runaway loop that burns $4,000 in three hours, because the cap measures against the calendar month, not against the run. It does not distinguish your fifty tenants from each other, because it does not know what a tenant is. It does not include the $3 web search call or the $0.40 Stripe charge that happen between the model calls. And it does not see Anthropic at all.
+A monthly OpenAI cap of $10,000 does not stop a runaway loop that burns $4,000 in three hours, because the cap measures against the calendar month, not against the run. It does not distinguish your fifty tenants from each other, because it does not know what a tenant is. It does not include the search API call, the payment processor charge, or the outbound mailer that happen between the model calls. And it does not see Anthropic at all.
 
 The deeper point is not that any of those gaps is a feature request. Provider caps exist to protect the provider from your account. They were never designed to govern your application's cross-provider, cross-tool, cross-customer surface. The full granularity, scope, and timing analysis is in [Cycles vs Provider Spending Caps](/concepts/cycles-vs-provider-spending-caps).
 
