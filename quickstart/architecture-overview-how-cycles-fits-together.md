@@ -148,7 +148,7 @@ Separating the management plane from the runtime enforcement plane lets you:
 - Scale the enforcement server independently from the admin server
 - Apply different access controls to management vs runtime operations
 
-See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-admin) for the full API reference.
+See the [Admin API reference](/admin-api/) for the full API, or the [governance spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) for the authoritative OpenAPI definition.
 
 ### Cycles Events Service
 
