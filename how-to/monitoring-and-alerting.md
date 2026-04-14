@@ -147,18 +147,6 @@ groups:
         annotations:
           summary: "Cycles Server p99 latency above 50ms on reservation/decide path"
 
-      # Denial rate — reservation POSTs returning HTTP 409 (BUDGET_EXCEEDED / BUDGET_FROZEN / OVERDRAFT_LIMIT_EXCEEDED / DEBT_OUTSTANDING)
-      - alert: CyclesHighDenialRate
-        expr: |
-          sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST",status="409"}[5m]))
-            / sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST"}[5m]))
-            > 0.1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Over 10% of reservations being denied"
-
       # 5xx error rate
       - alert: CyclesServerErrors
         expr: |
@@ -186,7 +174,26 @@ groups:
 
 ### Balance-polling alerts (no custom metric required)
 
-Until custom metrics ship, build budget / debt / overshoot alerts from the balance-polling sidecar shown in [Query balances for monitoring](#query-balances-for-monitoring). Push the sampled values as your own Prometheus gauges (`cycles_budget_utilization`, `cycles_budget_debt`, `cycles_active_reservations`) via a pushgateway or statsd bridge, then alert on them as you would on any other gauge. This is the path most operators are running today.
+::: warning Denial rate cannot be derived from `http_server_requests_seconds*`
+`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body, with `reason_code` carrying the deny reason. The default Spring Boot HTTP histogram has no body-content label, so denial-rate alerts cannot be built from it. Derive denial metrics from the balance-polling sidecar below or from the `reservation.denied` event stream ([webhook delivery](/protocol/webhook-event-delivery-protocol)).
+:::
+
+Until custom metrics ship, build budget / debt / overshoot / denial-rate alerts from the balance-polling sidecar shown in [Query balances for monitoring](#query-balances-for-monitoring). Push the sampled values as your own Prometheus gauges (`cycles_budget_utilization`, `cycles_budget_debt`, `cycles_active_reservations`, `cycles_reservations_denied`) via a pushgateway or statsd bridge, then alert on them as you would on any other gauge. This is the path most operators are running today.
+
+Example: a sidecar that consumes the `reservation.denied` webhook event and increments `cycles_reservations_denied_total{tenant,scope,reason_code}` gives you a real denial-rate alert:
+
+```yaml
+- alert: CyclesHighDenialRate
+  expr: |
+    sum(rate(cycles_reservations_denied_total[5m])) by (tenant)
+    / sum(rate(cycles_reservations_total[5m])) by (tenant)
+    > 0.1
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Over 10% of reservations being denied for {{ $labels.tenant }}"
+```
 
 ### Webhook delivery queue depth
 

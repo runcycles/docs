@@ -159,11 +159,13 @@ The server builds shipping at time of writing (runtime 0.1.25.8) don't register 
 :::
 
 ```yaml
-# Alert when reservation creation rate spikes relative to commit rate.
+# Alert when reservation POST rate spikes relative to commit rate.
 # A ratio above 3 means most reservations are not committing — likely retries.
+# Note: both ALLOW and DENY reservations return HTTP 200, so this counts all POSTs;
+# a denial-heavy spike will show up more cleanly on CyclesBudgetDenialSpike below.
 - alert: CyclesRetryStormDetected
   expr: |
-    sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST",status="201"}[5m]))
+    sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST"}[5m]))
       / sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri=~"/v1/reservations/.+/commit",method="POST"}[5m]))
       > 3
   for: 2m
@@ -183,12 +185,13 @@ The server builds shipping at time of writing (runtime 0.1.25.8) don't register 
   annotations:
     summary: "Over 50% of budget is in active reservations — retries may be stacking"
 
-# Alert when budget denials spike (retries hitting the wall).
-# Reservation denials return HTTP 409; DecisionReasonCode is in the response body, not the status,
-# so this fires on any DENY (BUDGET_EXCEEDED, OVERDRAFT_LIMIT_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, DEBT_OUTSTANDING).
+# Alert when reservation denials spike (retries hitting the wall).
+# POST /v1/reservations always returns HTTP 200 — DENY is surfaced in the response body with reason_code,
+# so this rule CANNOT be built from http_server_requests_seconds*. Subscribe to reservation.denied events
+# and push cycles_reservations_denied_total{reason_code=...} from a sidecar.
 - alert: CyclesBudgetDenialSpike
   expr: |
-    sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST",status="409"}[5m])) > 10
+    sum(rate(cycles_reservations_denied_total{reason_code=~"BUDGET_EXCEEDED|OVERDRAFT_LIMIT_EXCEEDED|BUDGET_FROZEN|BUDGET_CLOSED|DEBT_OUTSTANDING"}[5m])) > 10
   for: 1m
   labels:
     severity: warning
