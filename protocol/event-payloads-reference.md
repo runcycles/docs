@@ -75,18 +75,20 @@ Every event shares this envelope structure. The `data` field varies by event typ
 ```
 
 ::: tip Fields populated at emission time
-The `reservation.denied` event model defines 7 fields, but the current server emission populates `scope`, `reason_code`, and `requested_amount`. The remaining fields (`unit`, `remaining`, `action`, `subject`) are defined in the model and may be populated in future releases.
+The `reservation.denied` event model defines 9 fields, but the current server emission populates `scope`, `reason_code`, and `requested_amount`. The remaining fields (`unit`, `remaining`, `action`, `subject`, `policy_id`, `deny_detail`) are defined in the model and may be populated in future releases.
 :::
 
 | Field | Type | Populated | Description |
 |---|---|---|---|
 | `scope` | string | Yes | Scope path that denied the reservation |
-| `reason_code` | string | Yes | Why denied: `BUDGET_EXCEEDED`, `OVERDRAFT_LIMIT_EXCEEDED`, `BUDGET_FROZEN`, `DEBT_OUTSTANDING` |
+| `reason_code` | string | Yes | Why denied. Known values: `BUDGET_EXCEEDED`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`, `BUDGET_FROZEN`, `BUDGET_CLOSED`. Open string — extensions (v0.1.26+) may emit additional values such as `ACTION_QUOTA_EXCEEDED`, `ACTION_KIND_DENIED`, `ACTION_KIND_NOT_ALLOWED`. |
 | `requested_amount` | number | Yes | Amount the reservation requested |
 | `unit` | string | Not yet | Budget unit (`USD_MICROCENTS`, `TOKENS`, `CREDITS`, `RISK_POINTS`) |
 | `remaining` | number | Not yet | Budget remaining at the scope that denied |
 | `action` | object | Not yet | Action metadata from the reservation request |
 | `subject` | object | Not yet | Subject metadata from the reservation request |
+| `policy_id` | string | Not yet | Policy ID that caused the denial, when applicable (added v0.1.25.8) |
+| `deny_detail` | object | Not yet | Operator-grade structured context (added v0.1.25.8). Populated by extensions; may include `quota_violation`, `blocked_by_policy`, `blocked_by_scope`, `suggested_fix`. |
 
 ---
 

@@ -17,7 +17,7 @@ Every webhook delivery includes these HTTP headers:
 | `X-Cycles-Signature` | `sha256=<hex>` | HMAC-SHA256 of the raw body using the signing secret. Omitted if no signing secret is configured. |
 | `X-Cycles-Event-Id` | `evt_abc123...` | Unique event ID. Use for deduplication. |
 | `X-Cycles-Event-Type` | `budget.exhausted` | Dot-notation event type for routing. |
-| `User-Agent` | `cycles-server-events/0.1.25.1` | Service identifier and version. |
+| `User-Agent` | `cycles-server-events/0.1.25.x` | Service identifier and version. Exact patch suffix tracks the shipped events-service build. |
 | Custom headers | Per subscription | From the subscription's `headers` map. |
 
 ## Payload format
