@@ -177,7 +177,7 @@ Content-Type: application/json
 X-Cycles-Event-Id: evt_a1b2c3d4e5f67890
 X-Cycles-Event-Type: reservation.denied
 X-Cycles-Signature: sha256=a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
-User-Agent: cycles-server-events/0.1.25.1
+User-Agent: cycles-server-events/0.1.25.5
 ```
 
 ## Signature Verification

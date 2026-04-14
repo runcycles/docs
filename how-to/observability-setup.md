@@ -16,19 +16,19 @@ The Cycles Server is a Spring Boot application. To expose Prometheus-format metr
 Set the following property via environment variable or `application.properties`:
 
 ```properties
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoints.web.exposure.include=health,info,prometheus
 ```
 
 In Docker Compose:
 
 ```yaml
 cycles-server:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server:0.1.25.8
   environment:
     REDIS_HOST: redis
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
-    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
   ports:
     - "7878:7878"
 ```

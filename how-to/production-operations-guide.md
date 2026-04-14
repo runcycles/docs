@@ -75,14 +75,14 @@ The Cycles Server is stateless. You can run multiple instances behind a load bal
 
 ```yaml
 cycles-server-1:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server:0.1.25.8
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
 
 cycles-server-2:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server:0.1.25.8
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
@@ -93,20 +93,22 @@ Any load balancing strategy works (round-robin, least-connections). No sticky se
 
 ### Health checks
 
-All three services expose Spring Boot Actuator health endpoints:
+All three services expose Spring Boot Actuator health at `/actuator/health`. Only the Admin Server also enables Spring's dedicated Kubernetes liveness/readiness probes (`management.endpoint.health.probes.enabled=true`); the runtime and events services expose only the aggregate endpoint.
 
 ```bash
-# Cycles Server
+# Cycles Server (aggregate only)
 curl http://localhost:7878/actuator/health
 
-# Admin Server
+# Admin Server (aggregate + Kubernetes probes)
 curl http://localhost:7979/actuator/health
+curl http://localhost:7979/actuator/health/liveness
+curl http://localhost:7979/actuator/health/readiness
 
-# Events Service
+# Events Service (aggregate only)
 curl http://localhost:7980/actuator/health
 ```
 
-Configure your load balancer or orchestrator to check these endpoints. The Events Service health check verifies Redis connectivity and queue consumption — if it reports unhealthy, webhook deliveries are stalled.
+Configure your load balancer or orchestrator to check these endpoints. On Kubernetes, wire the Admin Server's liveness/readiness probes to `/actuator/health/liveness` and `/actuator/health/readiness`. For the runtime and events services, probe `/actuator/health` directly. All three services rely on Spring Boot's default Redis health indicator — the aggregate `/actuator/health` status turns `DOWN` when Redis is unreachable. There is no custom queue-consumption health check on the Events Service today; for backlog monitoring, watch `LLEN dispatch:pending` (see [Monitoring and Alerting](/how-to/monitoring-and-alerting)).
 
 ### JVM tuning
 
@@ -142,6 +144,12 @@ The **Cycles Events Service** (`cycles-server-events`, port 7980) delivers webho
 | `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
 | `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
 | `MAX_DELIVERY_AGE_MS` | 86400000 | Stale deliveries auto-fail after this age (24h default) |
+| `dispatch.retry.poll-interval-ms` | 5000 | How often the retry scheduler scans for ready-to-retry deliveries. |
+| `dispatch.retry.batch-size` | 100 | Max deliveries processed per retry-scan tick. |
+| `dispatch.http.timeout-seconds` | 30 | HTTP request timeout per delivery attempt. |
+| `dispatch.http.connect-timeout-seconds` | 5 | HTTP connect timeout per delivery attempt. |
+
+The per-subscription retry policy (exponential backoff) defaults to `max_retries=5`, `initial_delay_ms=1000`, `backoff_multiplier=2.0`, `max_delay_ms=60000`. A delivery older than `MAX_DELIVERY_AGE_MS` is failed immediately without further retries. See the [Events Service section in the Server Configuration Reference](/configuration/server-configuration-reference-for-cycles#events-service-configuration) for the full knob list.
 
 ### Running multiple instances
 
@@ -149,7 +157,7 @@ The Events Service is safe to run as multiple instances. Each instance consumes 
 
 ```yaml
 cycles-events-1:
-  image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.5
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
@@ -157,7 +165,7 @@ cycles-events-1:
     WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY}
 
 cycles-events-2:
-  image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.5
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
