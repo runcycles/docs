@@ -23,8 +23,12 @@ The server uses Spring Boot's configuration system. Properties can be set in `ap
 | `redis.host` | `localhost` | `REDIS_HOST` | Redis server hostname |
 | `redis.port` | `6379` | `REDIS_PORT` | Redis server port |
 | `redis.password` | (empty) | `REDIS_PASSWORD` | Redis password (optional) |
+| `redis.pool.max-total` | `128` | — | JedisPool max active connections |
+| `redis.pool.max-idle` | `32` | — | JedisPool max idle connections |
+| `redis.pool.min-idle` | `16` | — | JedisPool min idle connections kept warm |
+| `redis.pool.max-wait-ms` | `2000` | — | Max ms a caller waits for a pooled connection before `JedisException` |
 
-The server uses a JedisPool with a maximum of 50 connections by default. Redis 7+ is required for Lua script compatibility.
+Redis 7+ is required for Lua script compatibility. Tune `redis.pool.max-total` upward on high-concurrency instances — the reservation Lua script holds a connection for the duration of the atomic script call.
 
 ## Reservation expiry
 
@@ -75,6 +79,17 @@ logging.level.io.runcycles.protocol.data=DEBUG
 ```
 
 This logs Lua script execution details, scope derivation, and balance calculations.
+
+### Structured (JSON) logging
+
+For log pipelines that expect structured JSON, set the Spring Boot structured format via environment variable:
+
+| Variable | Value | Description |
+|---|---|---|
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `ecs` | Emit logs in Elastic Common Schema JSON. |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `logstash` | Emit logs in Logstash JSON format. |
+
+When either value is set the custom `logging.pattern.console` is overridden in favor of JSON output.
 
 ## OpenAPI / Swagger
 
@@ -190,6 +205,24 @@ The Cycles Admin Server (`cycles-admin-service`) is a separate service that mana
 | `redis.host` | (required) | `REDIS_HOST` | Redis server hostname |
 | `redis.port` | (required) | `REDIS_PORT` | Redis server port |
 | `redis.password` | (required) | `REDIS_PASSWORD` | Redis password (set empty string if none) |
+| `dashboard.cors.origin` | `http://localhost:5173` | `DASHBOARD_CORS_ORIGIN` | Allowed CORS origin for the admin dashboard. Set to the production dashboard URL. |
+| `springdoc.swagger-ui.enabled` | `false` | `SWAGGER_ENABLED` | Swagger UI is disabled by default on the admin server; set to `true` to enable. |
+| `logging.level.io.runcycles.admin` | `INFO` | `LOG_LEVEL` | Admin-specific log level. |
+
+### Admin server Kubernetes probes
+
+Unlike the runtime and events services, the admin server enables Spring Boot's liveness/readiness probes out of the box (`management.endpoint.health.probes.enabled=true`). In Kubernetes, wire probes to these paths:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 7979
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 7979
+```
 
 ### Admin authentication
 
@@ -256,12 +289,26 @@ The events delivery service (`cycles-server-events`, port 7980) is an optional c
 | `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Must match admin and runtime. Generate: `openssl rand -base64 32` |
 | `dispatch.pending.timeout-seconds` | 5 | BRPOP blocking timeout |
 | `dispatch.retry.poll-interval-ms` | 5000 | Retry queue poll interval (ms) |
-| `dispatch.http.timeout-seconds` | 30 | HTTP timeout for webhook delivery |
+| `dispatch.retry.batch-size` | 100 | Max ready-for-retry deliveries processed per poll tick |
+| `dispatch.http.timeout-seconds` | 30 | HTTP request timeout for webhook delivery |
 | `dispatch.http.connect-timeout-seconds` | 5 | HTTP connect timeout |
-| `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail (24h) |
+| `dispatch.max-delivery-age-ms` / `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail without further retries (24h) |
 | `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
 | `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
-| `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+| `events.retention.cleanup-interval-ms` / `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+
+### Per-subscription retry policy
+
+Each subscription carries a `retry_policy` applied by the dispatcher's exponential-backoff loop in `DeliveryHandler`. Defaults (used when a subscription omits the field):
+
+| Field | Default | Description |
+|---|---|---|
+| `max_retries` | 5 | Number of retry attempts before the delivery is marked failed. |
+| `initial_delay_ms` | 1000 | First retry delay. Doubles with each attempt up to `max_delay_ms`. |
+| `backoff_multiplier` | 2.0 | Exponential backoff factor. Delay for attempt *n* = `min(initial_delay_ms × multiplier^(n-1), max_delay_ms)`. |
+| `max_delay_ms` | 60000 | Ceiling for the computed backoff delay. |
+
+A delivery that exceeds `dispatch.max-delivery-age-ms` (default 24h) is failed immediately regardless of remaining retries.
 
 ### Encryption key (shared across all services)
 

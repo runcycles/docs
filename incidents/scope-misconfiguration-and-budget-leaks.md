@@ -214,12 +214,17 @@ if (gaps.length > 0) {
 
 ### Alerting for scope mismatches
 
+::: warning Planned metrics — requires balance-polling sidecar
+`cycles_reservations_created_total{scope=...}` and `cycles_scope_spent_total{level=...}` are on the roadmap but not emitted by the current server builds (runtime 0.1.25.8). Because the `/actuator/prometheus` endpoint only exposes Spring Boot default metrics (no scope label is available on `http_server_requests_seconds*`), scope-aware alerts require a sidecar that polls `GET /v1/balances` and `GET /v1/reservations` and pushes labelled gauges (`cycles_scope_spent`, `cycles_scope_allocated`, `cycles_reservations_created`) into your metrics pipeline. See [Balance-polling alerts](/how-to/monitoring-and-alerting#balance-polling-alerts-no-custom-metric-required). Once those gauges exist, the rules below apply as-is.
+:::
+
 ```yaml
-# Alert when reservations hit scopes that have no configured budget
+# Alert when reservations hit scopes that have no configured budget.
+# Requires sidecar gauges: cycles_reservations_created{scope=...}, cycles_scope_allocated{scope=...}.
 - alert: CyclesScopeWithoutBudget
   expr: |
-    cycles_reservations_created_total{scope=~".+"}
-    unless on(scope) cycles_scope_allocated_total
+    cycles_reservations_created{scope=~".+"}
+    unless on(scope) cycles_scope_allocated
   for: 5m
   labels:
     severity: warning
@@ -227,11 +232,11 @@ if (gaps.length > 0) {
     summary: "Reservations hitting scope {{ $labels.scope }} which has no budget"
 
 # Alert when a scope's spend diverges significantly from its child scopes
-# (indicates traffic bypassing child scope)
+# (indicates traffic bypassing child scope). Requires sidecar gauges with a level label.
 - alert: CyclesScopeSpendMismatch
   expr: |
-    cycles_scope_spent_total{level="tenant"}
-    - sum(cycles_scope_spent_total{level="workspace"}) by (tenant)
+    cycles_scope_spent{level="tenant"}
+    - sum(cycles_scope_spent{level="workspace"}) by (tenant)
     > 1000000
   for: 10m
   labels:
@@ -239,11 +244,11 @@ if (gaps.length > 0) {
   annotations:
     summary: "Tenant spend exceeds sum of workspace spend — possible scope bypass"
 
-# Alert when a workspace scope shows zero spend while tenant scope is active
+# Alert when a workspace scope shows zero spend while tenant scope is active.
 - alert: CyclesInactiveChildScope
   expr: |
-    cycles_scope_spent_total{level="workspace"} == 0
-    and on(tenant) cycles_scope_spent_total{level="tenant"} > 0
+    cycles_scope_spent{level="workspace"} == 0
+    and on(tenant) cycles_scope_spent{level="tenant"} > 0
   for: 30m
   labels:
     severity: info

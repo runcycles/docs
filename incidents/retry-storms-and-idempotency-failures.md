@@ -152,41 +152,48 @@ Any result means at least one document hit 5+ retries.
 
 ### Alerting rules
 
-Use these Prometheus-style rules to detect retry storms before they drain budgets:
+Use these Prometheus-style rules to detect retry storms before they drain budgets.
+
+::: warning Derived from Spring Boot default metrics
+The server builds shipping at time of writing (runtime 0.1.25.8) don't register custom `cycles_reservations_*` counters yet. The rules below use Spring Boot's default `http_server_requests_seconds*` histogram (labels `method`, `uri`, `status`, `application`), which `/actuator/prometheus` exposes out of the box. Ratio-style rules tagged "requires sidecar" depend on gauges pushed by a balance-polling sidecar (see [Monitoring and Alerting](/how-to/monitoring-and-alerting#balance-polling-alerts-no-custom-metric-required)).
+:::
 
 ```yaml
-# Alert when reservation creation rate spikes relative to commit rate
-# A ratio above 3 means most reservations are not committing — likely retries
+# Alert when reservation creation rate spikes relative to commit rate.
+# A ratio above 3 means most reservations are not committing — likely retries.
 - alert: CyclesRetryStormDetected
   expr: |
-    rate(cycles_reservations_created_total[5m])
-    / rate(cycles_commits_total[5m]) > 3
+    sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST",status="201"}[5m]))
+      / sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri=~"/v1/reservations/.+/commit",method="POST"}[5m]))
+      > 3
   for: 2m
   labels:
     severity: warning
   annotations:
     summary: "Possible retry storm: reservation/commit ratio is {{ $value }}"
 
-# Alert when reserved amount exceeds a threshold relative to allocated
+# Alert when reserved amount exceeds a threshold relative to allocated.
+# Requires a balance-polling sidecar to push cycles_budget_reserved / cycles_budget_allocated gauges.
 - alert: CyclesHighReservedRatio
   expr: |
-    cycles_scope_reserved_total
-    / cycles_scope_allocated_total > 0.5
+    cycles_budget_reserved / cycles_budget_allocated > 0.5
   for: 5m
   labels:
     severity: critical
   annotations:
     summary: "Over 50% of budget is in active reservations — retries may be stacking"
 
-# Alert when BUDGET_EXCEEDED denials spike (retries hitting the wall)
+# Alert when budget denials spike (retries hitting the wall).
+# Reservation denials return HTTP 409; DecisionReasonCode is in the response body, not the status,
+# so this fires on any DENY (BUDGET_EXCEEDED, OVERDRAFT_LIMIT_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, DEBT_OUTSTANDING).
 - alert: CyclesBudgetDenialSpike
   expr: |
-    rate(cycles_reservations_denied_total{reason="BUDGET_EXCEEDED"}[5m]) > 10
+    sum(rate(http_server_requests_seconds_count{application="cycles-protocol-service",uri="/v1/reservations",method="POST",status="409"}[5m])) > 10
   for: 1m
   labels:
     severity: warning
   annotations:
-    summary: "Spike in budget denials — retry storm may have hit budget limit"
+    summary: "Spike in reservation denials — retry storm may have hit budget limit"
 ```
 
 ### Key metrics to track
