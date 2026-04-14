@@ -125,10 +125,10 @@ The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVA
 | `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+ |
 | `@runcycles/mcp-server` | 0.2.0 | v0.1.23+, v0.1.24+ |
 | `@runcycles/openclaw-budget-guard` | 0.8.0 | v0.1.23+, v0.1.24+ |
-| Cycles Server | v0.1.24 | Protocol v0.1.24 |
-| Cycles Admin Server | v0.1.24 | Protocol v0.1.24 |
+| Cycles Server | v0.1.25 | Protocol v0.1.25 |
+| Cycles Admin Server | v0.1.25 | Protocol v0.1.25 (governance base v0.1.25.14, semantic base v0.1.25.9) |
 
-All 0.2.0 SDKs are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24.
+All 0.2.0 SDKs are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24+. New v0.1.25 features (event emission, webhook delivery, events service, `policy_id` / `deny_detail` on `reservation.denied`) require server v0.1.25.
 
 ---
 
