@@ -108,7 +108,7 @@ curl http://localhost:7979/actuator/health/readiness
 curl http://localhost:7980/actuator/health
 ```
 
-Configure your load balancer or orchestrator to check these endpoints. On Kubernetes, wire the Admin Server's liveness/readiness probes to `/actuator/health/liveness` and `/actuator/health/readiness`. For the runtime and events services, probe `/actuator/health` directly. The Events Service health check verifies Redis connectivity and queue consumption — if it reports unhealthy, webhook deliveries are stalled.
+Configure your load balancer or orchestrator to check these endpoints. On Kubernetes, wire the Admin Server's liveness/readiness probes to `/actuator/health/liveness` and `/actuator/health/readiness`. For the runtime and events services, probe `/actuator/health` directly. All three services rely on Spring Boot's default Redis health indicator — the aggregate `/actuator/health` status turns `DOWN` when Redis is unreachable. There is no custom queue-consumption health check on the Events Service today; for backlog monitoring, watch `LLEN dispatch:pending` (see [Monitoring and Alerting](/how-to/monitoring-and-alerting)).
 
 ### JVM tuning
 

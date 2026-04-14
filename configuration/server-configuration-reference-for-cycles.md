@@ -82,14 +82,14 @@ This logs Lua script execution details, scope derivation, and balance calculatio
 
 ### Structured (JSON) logging
 
-For log pipelines that expect structured JSON, set the Spring Boot structured format via environment variable:
+Cycles does not register a custom JSON log format. Because the services run on Spring Boot 3.4+, you can opt into Spring's built-in structured logging by setting one of the following at deploy time:
 
 | Variable | Value | Description |
 |---|---|---|
-| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `ecs` | Emit logs in Elastic Common Schema JSON. |
-| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `logstash` | Emit logs in Logstash JSON format. |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `ecs` | Emit logs in Elastic Common Schema JSON (Spring Boot built-in). |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `logstash` | Emit logs in Logstash JSON format (Spring Boot built-in). |
 
-When either value is set the custom `logging.pattern.console` is overridden in favor of JSON output.
+When either value is set, Spring Boot overrides `logging.pattern.console` in favor of JSON output. This is stock Spring Boot behavior, not a Cycles-specific feature — the same env var works on the admin and events services.
 
 ## OpenAPI / Swagger
 
@@ -111,22 +111,25 @@ The OpenAPI spec at `/api-docs` can remain enabled for tooling.
 
 | Property | Default | Description |
 |---|---|---|
-| `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
+| `management.endpoints.web.exposure.include` | `health,info,prometheus` | Exposed actuator endpoints (runtime server default) |
 | `management.endpoint.health.show-details` | `when-authorized` | Show health details |
 
-### Available health endpoints
+### Available endpoints (default)
 
 ```
-GET /actuator/health   — basic health check
-GET /actuator/info     — application info
+GET /actuator/health      — aggregate health check
+GET /actuator/info        — application info
+GET /actuator/prometheus  — Micrometer metrics in Prometheus exposition format
 ```
+
+The runtime server also whitelists `/actuator/prometheus` in `SecurityConfig` so it can be scraped without an API key. The admin server requires default Spring Security on its actuator paths.
 
 ### Adding more endpoints
 
-To expose additional actuator endpoints:
+To expose additional actuator endpoints (e.g., `metrics`, `loggers`, `env`):
 
 ```properties
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoints.web.exposure.include=health,info,prometheus,metrics,loggers
 ```
 
 ## Security configuration
