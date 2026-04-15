@@ -1,6 +1,6 @@
 ---
 title: "Webhook Event Delivery Protocol"
-description: "Complete reference for Cycles webhook delivery: 40 event types, HTTP headers, payload format, HMAC-SHA256 signing, retry policy, delivery status lifecycle, and at-least-once guarantees."
+description: "Complete reference for Cycles webhook delivery: 41 event types, HTTP headers, payload format, HMAC-SHA256 signing, retry policy, delivery status lifecycle, and at-least-once guarantees."
 ---
 
 # Webhook Event Delivery Protocol
@@ -54,17 +54,18 @@ The body is a JSON-serialized Event object:
 
 Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` are optional (omitted when null).
 
-## Event types (40)
+## Event types (41)
 
-### Budget events (15)
+### Budget events (16)
 
 | Event Type | Trigger |
 |------------|---------|
 | `budget.created` | Budget ledger created |
 | `budget.updated` | Budget ledger configuration changed |
-| `budget.funded` | CREDIT, DEBIT, RESET, or REPAY_DEBT funding operation |
+| `budget.funded` | CREDIT, DEBIT, RESET, REPAY_DEBT, or RESET_SPENT funding operation |
 | `budget.debited` | Budget debited (funds removed) |
-| `budget.reset` | Budget reset to a new allocated amount |
+| `budget.reset` | Budget resized (`allocated` changed; `spent`/`reserved`/`debt` preserved) |
+| `budget.reset_spent` | New billing period started (`allocated` set; `spent` cleared or explicitly set; `reserved`/`debt` preserved) |
 | `budget.debt_repaid` | Outstanding debt repaid |
 | `budget.frozen` | Budget set to FROZEN status (no new reservations) |
 | `budget.unfrozen` | Budget restored to ACTIVE from FROZEN |
@@ -128,7 +129,7 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 
 ### Tenant-accessible events
 
-Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events (26 of 40 types). API key, policy, and system events are admin-only.
+Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events (27 of 41 types). API key, policy, and system events are admin-only.
 
 ## Delivery status lifecycle
 

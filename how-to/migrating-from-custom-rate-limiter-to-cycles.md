@@ -304,7 +304,7 @@ The migration is safe because:
 | Cross-provider budget | Manual per-provider tracking | Single scope hierarchy |
 | Retry deduplication | No | Idempotency keys on every operation |
 | Action-level risk control | No | RISK_POINTS budgets |
-| Webhook alerts | Custom implementation | Built-in (40 event types across 6 categories, PagerDuty/Slack) |
+| Webhook alerts | Custom implementation | Built-in (41 event types across 6 categories, PagerDuty/Slack) |
 | Multi-tenant isolation | Manual Redis key prefixing | Built-in scope hierarchy |
 | Delegation attenuation | No | Sub-budget carving for sub-agents |
 | Shadow mode validation | No | `decide()` endpoint for shadow evaluation |
