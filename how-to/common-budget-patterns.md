@@ -29,12 +29,14 @@ curl -s -X POST http://localhost:7979/v1/admin/budgets \
   }' | jq .
 ```
 
-**Reset daily** with a cron job or scheduled task:
+**Reset daily** with a cron job or scheduled task — use `RESET_SPENT` so
+each day's spent clears to 0 (not `RESET`, which preserves spent and
+would leave the budget exhausted):
 
 ```bash
-# Reset each user's budget to $5
+# Reset each user's daily budget to $5, clearing yesterday's spend
 curl -s -X POST ".../fund" \
-  -d '{"operation": "RESET", "amount": {"amount": 500000000, "unit": "USD_MICROCENTS"}, ...}'
+  -d '{"operation": "RESET_SPENT", "amount": {"amount": 500000000, "unit": "USD_MICROCENTS"}, ...}'
 ```
 
 **In your app:**

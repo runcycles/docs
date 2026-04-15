@@ -373,11 +373,11 @@ def upgrade_plan(customer_id: str, old_plan: str, new_plan: str):
     ).raise_for_status()
 ```
 
-For downgrades, the remaining budget stays as-is until the billing period resets. Use the `RESET` operation at the start of each billing cycle to set the new plan's allocation.
+For downgrades, the remaining budget stays as-is until the billing period resets. Use `RESET_SPENT` at the start of each billing cycle to clear the previous period's consumption and set the new plan's allocation in one step.
 
 ## Monthly budget reset
 
-At the start of each billing period, reset budgets to the plan allocation:
+At the start of each billing period, reset budgets to the plan allocation with `RESET_SPENT`:
 
 ```python
 def monthly_reset(customer_id: str, plan: str):
@@ -389,14 +389,15 @@ def monthly_reset(customer_id: str, plan: str):
         f"{ADMIN_URL}/v1/admin/budgets/fund?scope={scope}&unit=USD_MICROCENTS",
         headers=budget_headers,
         json={
-            "operation": "RESET",
+            "operation": "RESET_SPENT",
             "amount": {"amount": budgets[plan], "unit": "USD_MICROCENTS"},
             "idempotency_key": f"reset-{customer_id}-{plan}-2026-04",
+            "reason": "Monthly billing period reset",
         },
     ).raise_for_status()
 ```
 
-Run this from a cron job or billing system webhook. The `RESET` operation sets the allocated budget to the specified amount, clearing prior spend.
+Run this from a cron job or billing system webhook. `RESET_SPENT` sets allocated to the new amount and clears spent to 0 (debt and active reservations carry forward); emits a `budget.reset_spent` event that your dashboards can route as a period-boundary signal distinct from ceiling adjustments.
 
 ## Customer-facing usage dashboard
 
@@ -525,7 +526,7 @@ See [Monitoring and Alerting](/how-to/monitoring-and-alerting) for PromQL querie
 - **Plan tiers map to budget allocations.** Free, Pro, Enterprise plans differ in allocated budget and overdraft limits.
 - **Automate onboarding.** Create tenant, API key, and budget in a single workflow when a customer signs up.
 - **Extract tenant from every request.** Use middleware to ensure every Cycles call is scoped to the requesting customer.
-- **Reset monthly.** Use the `RESET` budget operation at billing cycle boundaries.
+- **Reset monthly.** Use `RESET_SPENT` at billing-cycle boundaries (clears spent for the new period). Reserve `RESET` for plan-ceiling changes — it preserves spent.
 - **Degrade gracefully.** When budget is exhausted, show upgrade prompts or switch to cheaper models.
 - **Monitor per-tenant.** Alert on budget thresholds before customers are affected.
 
