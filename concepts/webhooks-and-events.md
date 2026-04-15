@@ -42,11 +42,11 @@ A subscription defines which events to deliver and where:
 
 The events service is **optional**. If not deployed, events accumulate in Redis with TTL and are delivered when the service starts.
 
-## 40 Event Types
+## 41 Event Types
 
 | Category | Count | Examples |
 |---|---|---|
-| budget | 15 | `budget.exhausted`, `budget.threshold_crossed`, `budget.over_limit_entered`, `budget.funded` |
+| budget | 16 | `budget.exhausted`, `budget.threshold_crossed`, `budget.over_limit_entered`, `budget.funded`, `budget.reset_spent` |
 | reservation | 5 | `reservation.denied`, `reservation.commit_overage`, `reservation.expired` |
 | tenant | 6 | `tenant.created`, `tenant.suspended`, `tenant.closed` |
 | api_key | 6 | `api_key.created`, `api_key.revoked`, `api_key.auth_failed` |
@@ -55,7 +55,7 @@ The events service is **optional**. If not deployed, events accumulate in Redis 
 
 ## Tenant Self-Service
 
-Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events (26 of 40 types).
+Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events (27 of 41 types).
 
 ## Security
 

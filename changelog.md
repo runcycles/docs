@@ -14,14 +14,14 @@ Release history for the Cycles Protocol and reference implementations.
 New event-driven observability system spanning all three services.
 
 **Protocol spec (non-breaking, guidance only):**
-- Added WEBHOOK EVENT GUIDANCE section documenting 40 event types, payload schema, delivery protocol, and X-Cycles-Signature HMAC verification
+- Added WEBHOOK EVENT GUIDANCE section documenting 41 event types, payload schema, delivery protocol, and X-Cycles-Signature HMAC verification
 - No new API endpoints — guidance is informational, not normative
 
 **Admin server (20 new endpoints):**
 - 12 admin webhook/event endpoints at `/v1/admin/webhooks` and `/v1/admin/events`
 - 8 tenant self-service endpoints at `/v1/webhooks` and `/v1/events` (requires `webhooks:read/write`, `events:read`)
 - `GET/PUT /v1/admin/config/webhook-security` — SSRF protection with blocked CIDR ranges
-- 40 event types across 6 categories: budget (15), reservation (5), tenant (6), api_key (6), policy (3), system (5)
+- 41 event types across 6 categories: budget (16), reservation (5), tenant (6), api_key (6), policy (3), system (5)
 - Event emission wired into all existing controllers
 
 **Runtime server (event emission):**
