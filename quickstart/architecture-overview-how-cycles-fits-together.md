@@ -75,11 +75,13 @@ Six Lua scripts handle the core operations:
 
 The management plane for Cycles. It runs as a separate Spring Boot 3.5 service on port 7979 and shares the same Redis instance as the Cycles Server.
 
+The optional [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) (Vue 3 SPA) sits in front of this server and exposes its operations as a web UI — useful for day-two ops without crafting curl commands.
+
 **What it does:**
 
 - Manages tenants (create, list, update, suspend, close)
 - Creates and revokes API keys with granular permissions
-- Creates budget ledgers and handles funding operations (credit, debit, reset, repay debt)
+- Creates budget ledgers and handles funding operations (credit, debit, reset, reset_spent, repay debt)
 - Defines policies (caps, rate limits, TTL overrides) matched by scope patterns — **stored for future runtime enforcement; not yet evaluated by the Cycles Server in v0**
 - Validates API keys (used by the Cycles Server for authentication)
 - Maintains an audit log of all administrative operations

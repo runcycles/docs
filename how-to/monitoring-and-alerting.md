@@ -232,6 +232,10 @@ For delivery success / failure rates and auto-disabled subscriptions, query the 
 
 ## Dashboard suggestions
 
+::: tip Ready-made operations dashboard
+Before building a custom Grafana dashboard, consider the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — a Vue 3 SPA that ships with an Overview page covering entity counts, top offenders, failing webhooks, and over-limit scopes, plus drill-downs for budgets, events, webhooks, audit, and reservations. It's not a Prometheus dashboard (no time-series charts), but it covers the operator workflows below without any setup. Use it for day-two ops; build the Grafana dashboards described here for time-series alerting and trend analysis.
+:::
+
 ### Budget overview dashboard
 
 Display for each tenant/scope:

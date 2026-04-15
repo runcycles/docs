@@ -163,6 +163,10 @@ A complete Cycles deployment has four components that share a single Redis insta
 
 Your application only talks to the **Cycles Server** (port 7878). You use the **Admin Server** (port 7979) to set up tenants, keys, and budgets before your app starts enforcing. The **Events Service** (port 7980) is optional — it delivers webhook notifications asynchronously. See [Deploying the Events Service](/quickstart/deploying-the-events-service).
 
+::: info Optional: deploy the admin dashboard
+For a web UI on top of this stack — operator workflows for tenants, budgets, webhooks, events, audit, and incident response (freeze, suspend, force-release) — also deploy the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard). It's a Vue 3 SPA that proxies through to the admin server (and to the runtime server for force-release). Skip if you only need SDK integration.
+:::
+
 ## Prerequisites
 
 - **Docker** and **Docker Compose** (for the quick path — no Java needed), or

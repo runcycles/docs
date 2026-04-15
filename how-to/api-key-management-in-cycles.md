@@ -184,6 +184,10 @@ curl -X POST http://localhost:7878/v1/reservations \
 
 ## Revoking API keys
 
+::: tip Revoke from the dashboard
+Key revocation is also a one-click action on the API Keys page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — typically faster than crafting a curl when responding to a leaked-key incident. Revocation is irreversible; the dashboard surfaces a confirmation step.
+:::
+
 Revoke a key to immediately block all requests using it:
 
 ```bash
