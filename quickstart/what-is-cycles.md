@@ -122,25 +122,33 @@ Your application talks to the **Cycles Server** for runtime budget checks. The *
 - **Enterprise operators** needing audit-grade cost accountability
 - **Teams building agents** that call paid APIs autonomously
 
-## Choose your stack
+## Get started
 
-Pick the quickstart that matches your environment:
+::: tip New to Cycles? Start here.
+The **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** takes you from zero to a working budget-guarded app in ~10 minutes — deploy the stack, create a tenant, mint an API key, and run your first reservation. Do this first, then pick a language client below.
+:::
+
+### Already have a running server? Pick your client
 
 | Stack | Guide | Time |
 |-------|-------|------|
 | **Python** | [Python Quickstart](/quickstart/getting-started-with-the-python-client) | ~5 min |
 | **TypeScript / Node.js** | [TypeScript Quickstart](/quickstart/getting-started-with-the-typescript-client) | ~5 min |
 | **Spring Boot / Java** | [Spring Boot Quickstart](/quickstart/getting-started-with-the-cycles-spring-boot-starter) | ~5 min |
+| **Rust** | [Rust Quickstart](/quickstart/getting-started-with-the-rust-client) | ~5 min |
 | **Claude / Cursor / Windsurf** | [MCP Server Quickstart](/quickstart/getting-started-with-the-mcp-server) | ~3 min |
-| **Full stack (Docker)** | [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) | ~10 min |
 
-::: tip Not sure where to start?
-Follow the [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — it walks you from zero to a working budget-guarded app in 10 minutes.
-:::
+### Need to deploy the server?
+
+| Scenario | Guide | Time |
+|---|---|---|
+| **Single-server local** | [Self-hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) | ~5 min |
+| **Full stack (runtime + admin + events)** | [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) | ~10 min |
+| **Webhooks/events only** | [Deploy the Events Service](/quickstart/deploying-the-events-service) | ~5 min |
 
 ## Next steps
 
 - [Choose a First Rollout](/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails) — decide your adoption strategy
-- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how components interact
-- [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — how Cycles compares to other alternatives
+- [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together) — how the runtime, admin, and events components fit together
+- [How Cycles Compares](/concepts/how-cycles-compares-to-rate-limiters-observability-provider-caps-in-app-counters-and-job-schedulers) — vs. rate limiters, observability, provider caps
 
