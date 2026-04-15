@@ -175,7 +175,7 @@ groups:
 ### Denial-rate and overdraft alerts (from `cycles_*` counters)
 
 ::: tip Why denial rate can't come from `http_server_requests_seconds*`
-`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body. The default Spring Boot HTTP histogram has no body-content label. Use the `cycles_reservations_reserve_total` counter instead: its `decision` tag carries `ALLOW`, `DENY`, or `ALLOW_WITH_OVERDRAFT`, and `reason` carries the deny/overdraft code.
+`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body. The default Spring Boot HTTP histogram has no body-content label. Use the `cycles_reservations_reserve_total` counter instead: its `decision` tag carries `ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`, and `reason` carries the deny/caps code. (`ALLOW_WITH_OVERDRAFT` is a value on the separate `overage_policy` tag — the budget's commit-overage policy — not a reservation decision.)
 :::
 
 ```yaml

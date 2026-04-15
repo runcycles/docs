@@ -117,8 +117,8 @@ The runtime server (`cycles-server` ≥ `0.1.25.8`) emits custom Micrometer coun
 
 | Metric | Tags | Description |
 |---|---|---|
-| `cycles_reservations_reserve_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every `POST /v1/reservations` call. `decision=ALLOW\|DENY\|ALLOW_WITH_OVERDRAFT`; `reason` carries the denial/overdraft code. |
-| `cycles_reservations_commit_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every commit. |
+| `cycles_reservations_reserve_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every `POST /v1/reservations` call. `decision=ALLOW\|ALLOW_WITH_CAPS\|DENY`; `reason` carries the deny/caps code; `overage_policy` carries the budget's commit-overage policy (`BLOCK`, `ALLOW_WITH_OVERDRAFT`, etc.). |
+| `cycles_reservations_commit_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every commit. `decision=COMMITTED\|DENY`. |
 | `cycles_reservations_release_total` | `tenant`, `actor_type`, `decision`, `reason` | Every successful release. `actor_type` distinguishes tenant-driven from admin-on-behalf-of releases. |
 | `cycles_reservations_extend_total` | `tenant`, `decision`, `reason` | Every extend attempt. |
 | `cycles_reservations_expired_total` | `tenant` | Per reservation actually marked EXPIRED by the sweep (not per candidate). |
