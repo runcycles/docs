@@ -38,29 +38,9 @@ Incident-response actions (freeze budget, suspend tenant, revoke API key, pause 
 
 The dashboard is a static SPA served by nginx. It talks to **two backends** — the governance plane (`cycles-server-admin`) for tenants, budgets, policies, webhooks, events, and audit; and the runtime plane (`cycles-server`) for reservation force-release during incident response. Both are reverse-proxied through the dashboard's own nginx so the browser sees everything as same-origin and CORS is not involved in a standard production deployment.
 
-```mermaid
-flowchart LR
-    B[Browser]
-    TLS["TLS Proxy<br/>Caddy / ALB<br/>:443"]
-    NGX["Dashboard<br/>nginx:80<br/>static SPA"]
-    ADM["cycles-admin<br/>:7979<br/>governance plane"]
-    SRV["cycles-server<br/>:7878<br/>runtime plane"]
-    R[(Redis<br/>:6379)]
+<DashboardArchDiagram />
 
-    B -->|HTTPS| TLS
-    TLS -->|HTTP| NGX
-    NGX -->|"/v1/* (default)<br/>tenants, budgets, webhooks,<br/>events, audit, API keys, policies"| ADM
-    NGX -.->|"/v1/reservations*<br/>force-release"| SRV
-    ADM --> R
-    SRV --> R
-
-    style SRV fill:#2d5a27,color:#fff
-    style ADM fill:#1e40af,color:#fff
-    style NGX fill:#374151,color:#fff
-    style TLS fill:#374151,color:#fff
-```
-
-The solid path carries every dashboard page except Reservations. The dotted path carries runtime-plane force-release calls issued from the Reservations page during incident response.
+The default path (left branch) carries every dashboard page except Reservations. The split path (right branch) carries runtime-plane force-release calls issued from the Reservations page during incident response.
 
 The nginx routing split in `nginx.conf`:
 

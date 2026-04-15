@@ -13,6 +13,7 @@ import BlogPost from './BlogPost.vue'
 import StackDiagram from './StackDiagram.vue'
 import ArchDiagram from './ArchDiagram.vue'
 import ArchDiagramFull from './ArchDiagramFull.vue'
+import DashboardArchDiagram from './DashboardArchDiagram.vue'
 import DecisionTree from './DecisionTree.vue'
 import ScopeDiagram from './ScopeDiagram.vue'
 import DeploymentDiagram from './DeploymentDiagram.vue'
@@ -32,6 +33,7 @@ export default {
     app.component('StackDiagram', StackDiagram)
     app.component('ArchDiagram', ArchDiagram)
     app.component('ArchDiagramFull', ArchDiagramFull)
+    app.component('DashboardArchDiagram', DashboardArchDiagram)
     app.component('DecisionTree', DecisionTree)
     app.component('ScopeDiagram', ScopeDiagram)
     app.component('DeploymentDiagram', DeploymentDiagram)
