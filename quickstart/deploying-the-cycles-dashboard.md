@@ -32,21 +32,29 @@ Incident-response actions (freeze budget, suspend tenant, revoke API key, pause 
 
 The dashboard is a static SPA served by nginx. It talks to **two backends** — the governance plane (`cycles-server-admin`) for tenants, budgets, policies, webhooks, events, and audit; and the runtime plane (`cycles-server`) for reservation force-release during incident response. Both are reverse-proxied through the dashboard's own nginx so the browser sees everything as same-origin and CORS is not involved in a standard production deployment.
 
-```
-                     ┌─────────────┐
-  Browser ──HTTPS──▶ │  TLS Proxy  │──HTTP──▶ Dashboard (nginx:80)
-                     │ (Caddy/ALB) │                  │
-                     └─────────────┘                  │  /v1/ proxy split
-                                                      ├──▶ cycles-admin  (:7979)
-                                                      │    tenants, budgets, policies,
-                                                      │    webhooks, events, audit, API keys
-                                                      │
-                                                      └──▶ cycles-server (:7878)
-                                                           /v1/reservations* —
-                                                           force-release during incidents
+```mermaid
+flowchart LR
+    B[Browser]
+    TLS["TLS Proxy<br/>Caddy / ALB<br/>:443"]
+    NGX["Dashboard<br/>nginx:80<br/>static SPA"]
+    ADM["cycles-admin<br/>:7979<br/>governance plane"]
+    SRV["cycles-server<br/>:7878<br/>runtime plane"]
+    R[(Redis<br/>:6379)]
 
-                                      Both share: Redis (:6379)
+    B -->|HTTPS| TLS
+    TLS -->|HTTP| NGX
+    NGX -->|"/v1/* (default)<br/>tenants, budgets, webhooks,<br/>events, audit, API keys, policies"| ADM
+    NGX -.->|"/v1/reservations*<br/>force-release"| SRV
+    ADM --> R
+    SRV --> R
+
+    style SRV fill:#2d5a27,color:#fff
+    style ADM fill:#1e40af,color:#fff
+    style NGX fill:#374151,color:#fff
+    style TLS fill:#374151,color:#fff
 ```
+
+The solid path carries every dashboard page except Reservations. The dotted path carries runtime-plane force-release calls issued from the Reservations page during incident response.
 
 The nginx routing split in `nginx.conf`:
 
@@ -219,8 +227,21 @@ The dashboard uses `X-Admin-API-Key` exclusively for authentication. There is no
 3. Sidebar navigation is gated by capability booleans (`view_overview`, `view_budgets`, etc.) — the admin server decides what's visible.
 4. On 401/403 from any API call, the session is cleared and the user is redirected to login.
 5. Key is stored in `sessionStorage` — survives page refresh, cleared on tab/browser close. Never written to `localStorage` or cookies.
-6. Session idle timeout (30 min) and absolute timeout (8 h) enforced client-side.
-7. Login rate limiting — exponential backoff after 3 failed attempts (5s → 60s cap).
+6. Session idle timeout (30 min) and absolute timeout (8 h) enforced client-side, checked every 15 s.
+7. Login rate limiting — exponential backoff after 3 failed attempts (5 s → 10 s → 20 s → 40 s → 60 s cap).
+
+## Polling cadence
+
+Each page manages its own polling lifecycle via a `usePolling` composable. Intervals are tuned per page — most default to 60 s; Events polls more aggressively, Audit not at all.
+
+| Page | Interval | Behaviour |
+|---|---|---|
+| Overview | 30 s | Pause on tab hidden, 2× backoff on error (max 5 min) |
+| Events | 15 s | Same |
+| Budgets | 60 s | Same |
+| Webhooks | 60 s | Same |
+| Tenants | 60 s | Same |
+| Audit | Manual only | Explicit "Run Query" button |
 
 ## Hardening checklist
 
