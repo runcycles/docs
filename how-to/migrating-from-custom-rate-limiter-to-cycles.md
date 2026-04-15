@@ -316,7 +316,7 @@ The migration is safe because:
 Yes. Each agent can have its own subject scope. Migrate `agent:support-bot` first, then `agent:sales-bot`, etc. Unmigrated agents keep using the old limiter.
 
 **What if my budget periods don't match?**
-Use the admin API to reset budgets on your schedule: `POST /v1/admin/budgets/fund?scope={scope}&unit={unit}` with a `RESET` operation. This can be triggered from a cron job.
+Use the admin API to reset budgets on your schedule: `POST /v1/admin/budgets/fund?scope={scope}&unit={unit}` with a `RESET_SPENT` operation (clears `spent` for the new period). This can be triggered from a cron job. For migrations where you need to import a customer mid-period with existing consumption, `RESET_SPENT` also accepts an optional `spent` field to set the starting consumption explicitly.
 
 **Do I need to migrate all providers at once?**
 No. You can start with one provider (e.g., OpenAI) and add others incrementally. Each reservation specifies the provider via the `action` field.

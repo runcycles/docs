@@ -91,7 +91,7 @@ curl -s -X POST "$ADMIN_URL/v1/admin/budgets/fund?scope=tenant:my-company&unit=U
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{
-    \"operation\": \"RESET\",
+    \"operation\": \"RESET_SPENT\",
     \"amount\": {\"amount\": 10000000000, \"unit\": \"USD_MICROCENTS\"},
     \"idempotency_key\": \"reset-$(date +%Y-%m)\",
     \"reason\": \"Monthly budget reset\"
