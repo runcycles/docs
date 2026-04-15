@@ -126,10 +126,10 @@ The Events Service (port 7980) delivers webhooks asynchronously. Monitor separat
 
 ## Alerting rules
 
-::: warning Cycles-specific custom metrics are on the roadmap
-The server versions shipping at time of writing (runtime 0.1.25.8, admin 0.1.25.16, events 0.1.25.5) do **not** register any custom `cycles_*` metrics with Micrometer — `/actuator/prometheus` exposes only Spring Boot's defaults (`http_server_requests_seconds*`, `jvm_*`, `process_*`, `system_*`). Planned additions such as `cycles_budget_utilization`, `cycles_reservations_denied_total`, `cycles_active_reservations`, `cycles_dispatch_pending_length`, and `cycles_webhook_deliveries_failed_total` will land in a future release — track the changelog.
+::: info Custom `cycles_*` metrics ship with the server
+Runtime `cycles-server` ≥ `0.1.25.8` and admin `cycles-server-admin` ≥ `0.1.25.18` emit custom Micrometer counters under the `cycles.*` namespace, exposed at `/actuator/prometheus` as `cycles_*`. See [Custom Cycles metrics](./observability-setup#custom-cycles-metrics) for the full catalogue (reservation lifecycle, events, overdraft, admin webhooks/events).
 
-The alert rules below use metrics that **do** exist today. Where a Cycles-specific signal has no server-side metric yet, we show the balance-polling or Redis-exporter fallback instead.
+The alert rules below use these counters directly where they exist. For signals without a first-class counter (budget utilization, active-reservation count, dispatch-queue depth), derive from balance polling or Redis directly — shown where relevant.
 :::
 
 ### Prometheus example (using default metrics)
@@ -172,28 +172,47 @@ groups:
           summary: "JVM heap usage above 80% for {{ $labels.application }}"
 ```
 
-### Balance-polling alerts (no custom metric required)
+### Denial-rate and overdraft alerts (from `cycles_*` counters)
 
-::: warning Denial rate cannot be derived from `http_server_requests_seconds*`
-`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body, with `reason_code` carrying the deny reason. The default Spring Boot HTTP histogram has no body-content label, so denial-rate alerts cannot be built from it. Derive denial metrics from the balance-polling sidecar below or from the `reservation.denied` event stream ([webhook delivery](/protocol/webhook-event-delivery-protocol)).
+::: tip Why denial rate can't come from `http_server_requests_seconds*`
+`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body. The default Spring Boot HTTP histogram has no body-content label. Use the `cycles_reservations_reserve_total` counter instead: its `decision` tag carries `ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`, and `reason` carries the deny/caps code. (`ALLOW_WITH_OVERDRAFT` is a value on the separate `overage_policy` tag — the budget's commit-overage policy — not a reservation decision.)
 :::
-
-Until custom metrics ship, build budget / debt / overshoot / denial-rate alerts from the balance-polling sidecar shown in [Query balances for monitoring](#query-balances-for-monitoring). Push the sampled values as your own Prometheus gauges (`cycles_budget_utilization`, `cycles_budget_debt`, `cycles_active_reservations`, `cycles_reservations_denied`) via a pushgateway or statsd bridge, then alert on them as you would on any other gauge. This is the path most operators are running today.
-
-Example: a sidecar that consumes the `reservation.denied` webhook event and increments `cycles_reservations_denied_total{tenant,scope,reason_code}` gives you a real denial-rate alert:
 
 ```yaml
 - alert: CyclesHighDenialRate
   expr: |
-    sum(rate(cycles_reservations_denied_total[5m])) by (tenant)
-    / sum(rate(cycles_reservations_total[5m])) by (tenant)
+    sum by (tenant) (rate(cycles_reservations_reserve_total{decision="DENY"}[5m]))
+    / sum by (tenant) (rate(cycles_reservations_reserve_total[5m]))
     > 0.1
   for: 5m
   labels:
     severity: warning
   annotations:
     summary: "Over 10% of reservations being denied for {{ $labels.tenant }}"
+    description: "Top deny reasons: {{ $labels.reason }}"
+
+- alert: CyclesOverdraftSpike
+  expr: |
+    sum by (tenant) (rate(cycles_overdraft_incurred_total[5m])) > 0
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Tenant {{ $labels.tenant }} incurring overdraft debt for 10m+"
+
+- alert: CyclesReservationExpirySpike
+  expr: |
+    sum by (tenant) (rate(cycles_reservations_expired_total[5m])) > 1
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Reservation expiry rate elevated for {{ $labels.tenant }} — callers likely failing to commit"
 ```
+
+### Balance-polling alerts (for signals without a counter)
+
+Some operational questions don't have a direct counter — point-in-time utilization (`spent / allocated`), total debt, and active-reservation counts are all derivable from the ledger but not emitted as gauges. For those, a lightweight sidecar that calls `GET /v1/admin/budgets/{id}` on a schedule and pushes the sampled values (e.g. `cycles_budget_utilization`, `cycles_budget_debt`) via pushgateway or statsd is the standard pattern. See [Query balances for monitoring](#query-balances-for-monitoring).
 
 ### Webhook delivery queue depth
 
