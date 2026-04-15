@@ -30,23 +30,32 @@ Incident-response actions (freeze budget, suspend tenant, revoke API key, pause 
 
 ## Architecture
 
-The dashboard is a static SPA served by nginx. API calls are reverse-proxied through the same nginx to the admin server, so the browser sees everything as same-origin and CORS is not involved in a standard production deployment.
+The dashboard is a static SPA served by nginx. It talks to **two backends** — the governance plane (`cycles-server-admin`) for tenants, budgets, policies, webhooks, events, and audit; and the runtime plane (`cycles-server`) for reservation force-release during incident response. Both are reverse-proxied through the dashboard's own nginx so the browser sees everything as same-origin and CORS is not involved in a standard production deployment.
 
 ```
                      ┌─────────────┐
   Browser ──HTTPS──▶ │  TLS Proxy  │──HTTP──▶ Dashboard (nginx:80)
                      │ (Caddy/ALB) │                  │
-                     └─────────────┘           /v1/ proxy
+                     └─────────────┘                  │  /v1/ proxy split
+                                                      ├──▶ cycles-admin  (:7979)
+                                                      │    tenants, budgets, policies,
+                                                      │    webhooks, events, audit, API keys
                                                       │
-                                               Admin Server (:7979)
-                                                      │
-                                                   Redis (:6379)
+                                                      └──▶ cycles-server (:7878)
+                                                           /v1/reservations* —
+                                                           force-release during incidents
+
+                                      Both share: Redis (:6379)
 ```
 
-Runtime-plane admin actions (e.g. force-release reservation) are proxied to `cycles-server` (:7878) instead — the same routing split is configured in the dashboard's `nginx.conf`:
+The nginx routing split in `nginx.conf`:
 
-- `/v1/reservations*` → `cycles-server:7878`
-- `/v1/*` (everything else) → `cycles-admin:7979`
+| Request path | Upstream | Used by |
+|---|---|---|
+| `/v1/reservations*` | `cycles-server:7878` | Reservations page — force-release hung reservations (runtime-plane admin-on-behalf-of) |
+| `/v1/*` (everything else) | `cycles-admin:7979` | All other dashboard pages |
+
+Both backends authenticate the same `X-Admin-API-Key` header. On the runtime plane, force-release is a dual-authenticated admin-on-behalf-of call — the runtime server validates the admin key and records the actor in the audit trail.
 
 ## Quick start (development)
 
@@ -59,12 +68,15 @@ npm install
 npm run dev
 ```
 
-Dashboard opens at `http://localhost:5173`. The Vite dev server proxies `/v1/*` to `localhost:7979` (admin) and `/v1/reservations*` to `localhost:7878` (runtime) — so you need both backends running. See [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) to bring them up.
+Dashboard opens at `http://localhost:5173`. The Vite dev server mirrors the production routing split:
 
-Log in with the same `ADMIN_API_KEY` you set on the admin server.
+- `/v1/reservations*` → `localhost:7878` (`cycles-server` — runtime plane)
+- `/v1/*` (everything else) → `localhost:7979` (`cycles-admin` — governance plane)
+
+**You need both backends running.** See [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) to bring them up — or `cd ../cycles-server-admin && ADMIN_API_KEY=your-key docker compose up -d` if you only want admin + Redis and plan to run `cycles-server` separately. Log in with the same `ADMIN_API_KEY` you set on the servers (both admin and runtime must share the same key for force-release to work).
 
 ::: tip CORS for dev mode
-If the admin server rejects your dev browser with a CORS error, set `DASHBOARD_CORS_ORIGIN=http://localhost:5173` on the admin container. (In production with the nginx reverse proxy, CORS is not needed — requests are same-origin.)
+If the admin or runtime server rejects your dev browser with a CORS error, set `DASHBOARD_CORS_ORIGIN=http://localhost:5173` on **both** containers. (In production with the nginx reverse proxy, CORS is not needed — the dashboard's nginx makes every backend call same-origin.)
 :::
 
 ## Production (Docker + Caddy)
@@ -85,14 +97,46 @@ services:
       - caddy-data:/data
     depends_on:
       - dashboard
+    networks:
+      - cycles
 
   dashboard:
     image: ghcr.io/runcycles/cycles-dashboard:0.1.25.27
     restart: unless-stopped
+    # No exposed ports — only reachable through Caddy.
     depends_on:
       cycles-admin:
         condition: service_healthy
+      cycles-server:
+        condition: service_healthy
+    networks:
+      - cycles
 
+  # Runtime plane — reservation force-release goes here via /v1/reservations*.
+  # Its ADMIN_API_KEY must match cycles-admin's so admin-on-behalf-of calls
+  # authenticate on both sides.
+  cycles-server:
+    image: ghcr.io/runcycles/cycles-server:0.1.25.8
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?ADMIN_API_KEY must be set}
+      DASHBOARD_CORS_ORIGIN: ${DASHBOARD_ORIGIN:-https://admin.example.com}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7878/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cycles
+
+  # Governance plane — tenants, budgets, policies, webhooks, events, audit.
   cycles-admin:
     image: ghcr.io/runcycles/cycles-server-admin:0.1.25.18
     restart: unless-stopped
@@ -102,6 +146,9 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       ADMIN_API_KEY: ${ADMIN_API_KEY:?ADMIN_API_KEY must be set}
       WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY:-}
+      DASHBOARD_CORS_ORIGIN: ${DASHBOARD_ORIGIN:-https://admin.example.com}
+      EVENT_TTL_DAYS: ${EVENT_TTL_DAYS:-90}
+      DELIVERY_TTL_DAYS: ${DELIVERY_TTL_DAYS:-14}
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:7979/actuator/health"]
       interval: 10s
@@ -111,6 +158,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    networks:
+      - cycles
 
   redis:
     image: redis:7-alpine
@@ -123,11 +172,20 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - cycles
 
 volumes:
   redis-data:
   caddy-data:
+
+networks:
+  cycles:
 ```
+
+::: warning Both backends required
+The dashboard's nginx routes `/v1/reservations*` to `cycles-server:7878` for the Reservations page's force-release action. If you omit `cycles-server`, every other page works but force-release fails with a 502. The `ADMIN_API_KEY` **must be the same** on both `cycles-admin` and `cycles-server` — admin-on-behalf-of calls authenticate on both sides.
+:::
 
 ```
 # Caddyfile
@@ -166,7 +224,7 @@ The dashboard uses `X-Admin-API-Key` exclusively for authentication. There is no
 
 ## Hardening checklist
 
-- **Never expose port 7979 or 6379** to the public internet. Only the TLS proxy (443/80) should be reachable.
+- **Never expose ports 7878, 7979, or 6379** to the public internet. Only the TLS proxy (443/80) should be reachable; the runtime, admin, and Redis containers must stay on the internal Docker network.
 - **HTTPS only** — the admin key is sent on every request. Caddy or a load balancer with TLS 1.2+ in front.
 - **Rotate the admin key** periodically (`openssl rand -base64 32`).
 - **Set `REDIS_PASSWORD`** — the default has no authentication.
@@ -185,7 +243,7 @@ The dashboard uses `X-Admin-API-Key` exclusively for authentication. There is no
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_API_KEY` | Yes | — | Admin API key for `X-Admin-API-Key` |
+| `ADMIN_API_KEY` | Yes | — | Admin API key for `X-Admin-API-Key`. **Must be the same value on `cycles-admin` and `cycles-server`** — admin-on-behalf-of calls (force-release reservation) authenticate on both. |
 | `REDIS_PASSWORD` | Recommended | (empty) | Redis authentication password |
 | `WEBHOOK_SECRET_ENCRYPTION_KEY` | Recommended | (empty) | AES-256-GCM key for webhook signing secrets at rest |
 | `DASHBOARD_CORS_ORIGIN` | Dev only | `http://localhost:5173` | CORS origin — only needed when the browser calls the admin server directly (dev mode); unused in standard production |
