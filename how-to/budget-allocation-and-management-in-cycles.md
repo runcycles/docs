@@ -1,6 +1,6 @@
 ---
 title: "Budget Allocation and Management in Cycles"
-description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, reset for billing periods, and manage hierarchical budget structures."
+description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, resize ceilings (RESET) and start new billing periods (RESET_SPENT), and manage hierarchical budget structures."
 ---
 
 # Budget Allocation and Management in Cycles
@@ -266,9 +266,9 @@ Increase the `allocated` value to give a scope more room. This takes effect imme
 
 Decrease the `allocated` value. If the new value is less than `spent + reserved`, existing reservations are not affected, but new reservations may be denied.
 
-### Resetting budgets
+### Resizing a budget (RESET)
 
-To reset a scope for a new billing period, use the `RESET` funding operation:
+To **change the allocated ceiling** while preserving consumption history (`spent`, `reserved`, `debt`), use `RESET`:
 
 ```bash
 curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
@@ -276,13 +276,75 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "RESET",
-    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
-    "idempotency_key": "reset-march-2026",
-    "reason": "Monthly budget reset"
+    "amount": { "amount": 1500000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "resize-acme-q2",
+    "reason": "Plan upgrade — Pro tier"
   }'
 ```
 
-`RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Release any active reservations first to avoid unexpected budget pressure.
+`RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Spent stays where it was. Use this for **plan changes, policy tightening, ceiling adjustments** — the typical "this customer moved to a bigger plan" or "we're tightening this team's limit" scenarios.
+
+Release active reservations first if you're shrinking the ceiling below `spent + reserved` and want a clean cutover.
+
+::: warning RESET is for resizing, not period boundaries
+For a fresh billing period (clearing consumption), use `RESET_SPENT` below. A same-amount `RESET` on an exhausted budget is a no-op — `spent` stays at its old value, so `remaining` stays at 0.
+:::
+
+### Starting a new billing period (RESET_SPENT)
+
+To **start a new billing period** — clearing accumulated spend so the scope can transact fresh — use `RESET_SPENT`:
+
+```bash
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "reset-march-2026",
+    "reason": "Monthly billing period reset — March 2026"
+  }'
+```
+
+`RESET_SPENT` sets `allocated = amount`, **clears spent to 0**, and preserves `reserved` (active reservations straddle the period boundary and will land in the new period's spent when they commit) and `debt` (period boundaries don't forgive debt — use `REPAY_DEBT` to clear it explicitly).
+
+#### Optional `spent` override
+
+For migrations, prorated signups, and corrections, supply an explicit `spent`:
+
+```bash
+# Migration: import an existing customer with their consumption already reflected
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "spent":  { "amount": 400000,  "unit": "USD_MICROCENTS" },
+    "idempotency_key": "migrate-acme-from-billing-vendor",
+    "reason": "Imported from billing vendor — current period 40% consumed"
+  }'
+```
+
+The `spent` field is honoured **only** for `RESET_SPENT`. Common patterns:
+
+| Scenario | `spent` value | Notes |
+|---|---|---|
+| Routine billing-period rollover | omit (defaults to 0) | The 90% case. |
+| Migration from another billing system | actual current consumption | Customer arrives with history; reflect it. |
+| Prorated mid-period signup | `allocated × (days_remaining / period_days)` | New customer joins partway through. |
+| Credit-back / compensation | reduced consumption value | Refund a portion after a service incident. |
+| State correction | corrected value | Fix a miscounted `spent` from an upstream bug. |
+
+Constraints:
+- `spent` must be `>= 0`.
+- The unit must match the budget's unit.
+- If `spent + reserved + debt > allocated`, `remaining` will go negative — same as overdraft scenarios. The response shows the value; no error.
+- The audit log records whether `spent` was explicitly supplied or defaulted to 0, distinguishing routine rollovers from operator-initiated consumption adjustments for compliance review.
+
+#### Event emission
+
+`RESET_SPENT` emits `budget.reset_spent` (distinct from `budget.reset`) so dashboards and webhook handlers can route period boundaries separately from resize events. The payload's `spent_override_provided` boolean flags which mode was used.
 
 ::: info Why budgets cannot be deleted
 The admin API has no delete endpoint for budgets. A budget ledger is the permanent audit record for all spend within a scope — committed reservations reference it, and historical balances are derived from it. Deleting a ledger would create orphaned transactions and break spend reporting.
