@@ -145,6 +145,7 @@ The **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** takes you from ze
 | **Single-server local** | [Self-hosting the Cycles Server](/quickstart/self-hosting-the-cycles-server) | ~5 min |
 | **Full stack (runtime + admin + events)** | [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) | ~10 min |
 | **Webhooks/events only** | [Deploy the Events Service](/quickstart/deploying-the-events-service) | ~5 min |
+| **Admin dashboard (web UI)** | [Deploy the Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) | ~10 min |
 
 ## Next steps
 

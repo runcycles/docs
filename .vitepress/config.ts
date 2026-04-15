@@ -213,6 +213,7 @@ export default defineConfig({
             { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
             { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
             { text: 'Deploy the Events Service', link: '/quickstart/deploying-the-events-service' },
+            { text: 'Deploy the Admin Dashboard', link: '/quickstart/deploying-the-cycles-dashboard' },
             { text: 'Migrate from Custom Rate Limiter', link: '/how-to/migrating-from-custom-rate-limiter-to-cycles' },
           ]
         },
