@@ -73,19 +73,28 @@ jobs:
       - name: Create PR with updated count
         if: env.UPDATED == 'true'
         run: |
-          BRANCH="chore/update-install-count-$(date +%Y%m%d)"
+          BRANCH="chore/update-install-count"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
+
+          # Stash the updated cache file, reset branch to latest main, reapply.
+          # This keeps a single long-lived branch that always diffs cleanly against main.
+          cp .vitepress/theme/installs-cache.json /tmp/installs-cache.json
+          git checkout -B "$BRANCH"
+          cp /tmp/installs-cache.json .vitepress/theme/installs-cache.json
           git add .vitepress/theme/installs-cache.json
           git commit -m "chore: update install count"
-          git push -u origin "$BRANCH"
+          git push -f -u origin "$BRANCH"
 
-          # Create PR, or skip if one already exists for today
-          gh pr create \
-            --title "chore: update install count" \
-            --body "Automated daily update of download counters." \
-            --head "$BRANCH" \
-            --base main || echo "PR already exists, skipping"
+          # Open PR only if one isn't already open; otherwise the force-push updates it.
+          if ! gh pr view "$BRANCH" --json state --jq '.state' 2>/dev/null | grep -q OPEN; then
+            gh pr create \
+              --title "chore: update install count" \
+              --body "Automated update of download counters. This PR is force-updated daily until merged." \
+              --head "$BRANCH" \
+              --base main
+          else
+            echo "PR already open for $BRANCH; updated via force-push."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
