@@ -31,7 +31,7 @@ docker compose -f docker-compose.prod.yml up -d
 This pulls `ghcr.io/runcycles/cycles-server:latest` and starts it with Redis.
 
 ::: tip Pinning versions
-Replace `:latest` with a specific version tag (e.g., `:0.1.25.1`) in `docker-compose.prod.yml` for reproducible deployments.
+Replace `:latest` with a specific version tag (e.g., `:0.1.25.8`) in `docker-compose.prod.yml` for reproducible deployments. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for the current stable version.
 :::
 
 ### Building from source with Docker
