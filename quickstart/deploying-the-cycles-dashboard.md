@@ -7,6 +7,12 @@ description: "Deploy the Cycles admin dashboard — a Vue 3 SPA for operating te
 
 The Cycles Admin Dashboard is a Vue 3 single-page app that sits in front of [`cycles-server-admin`](https://github.com/runcycles/cycles-server-admin) and provides an operations-oriented UI for tenants, budgets, webhooks, and incident response. It's a thin client — all state lives in the admin server; the dashboard just visualises it and calls admin API endpoints on your behalf.
 
+<p align="center">
+  <img src="/images/cycles-dashboard-demo.gif" alt="End-to-end walkthrough of the main operator flows — tenants, budgets, reservations, webhooks" width="800" loading="lazy"/>
+  <br/>
+  <em>End-to-end walkthrough of the main operator flows</em>
+</p>
+
 ::: info When to deploy the dashboard
 If you only need SDK integration (Python, TypeScript, Spring, Rust, MCP), you can skip this page — the dashboard is optional. Deploy it when you want a UI for day-two operations: investigating events, freezing a runaway budget, rotating API keys, replaying missed webhooks, or force-releasing hung reservations during an incident.
 :::
