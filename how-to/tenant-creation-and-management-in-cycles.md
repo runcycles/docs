@@ -199,6 +199,10 @@ Fields not included in the `PATCH` request are left unchanged.
 
 ## Tenant status lifecycle
 
+::: tip Status changes from the dashboard
+Suspend, reactivate, and close are also one-click actions on the Tenants page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard). The Tenants list also supports **bulk suspend / reactivate** with a multi-select bar and per-tenant progress — useful when you need to lock down or restore many tenants at once during an incident.
+:::
+
 Every tenant has a status that controls what operations are allowed:
 
 ```

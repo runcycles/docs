@@ -11,6 +11,10 @@ This guide covers what you need to run Cycles reliably in production. It assumes
 Cycles stores all state in Redis. Redis availability directly determines Cycles availability. Plan your Redis deployment accordingly.
 :::
 
+::: tip Operations UI for incident response
+For incident-response workflows — freeze a runaway budget, suspend a tenant, force-release hung reservations, replay missed webhooks, revoke a leaked API key — deploy the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard). It's a Vue 3 SPA with one-click actions (capability-gated, with confirm + blast-radius summaries) that's typically faster than crafting curl during a live incident. Pair with the Prometheus alerting in [Monitoring and Alerting](/how-to/monitoring-and-alerting) — alerts page you, dashboard helps you act.
+:::
+
 ## Redis configuration for production
 
 Cycles stores all state in Redis. Redis availability directly determines Cycles availability.
