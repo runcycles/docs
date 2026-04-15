@@ -216,7 +216,7 @@ curl -s "http://localhost:7979/v1/admin/overview" \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs.
+Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs — this endpoint is what powers the Overview page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard).
 
 ### API key introspection
 

@@ -20,6 +20,7 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [Deploy the Full Stack](https://runcycles.io/quickstart/deploying-the-full-cycles-stack): Docker-based deployment guide
 - [MCP Server](https://runcycles.io/quickstart/getting-started-with-the-mcp-server): Add budget enforcement to AI coding tools via the Model Context Protocol
 - [Self-Hosting the Server](https://runcycles.io/quickstart/self-hosting-the-cycles-server): Run the Cycles server in your own infrastructure
+- [Deploy the Admin Dashboard](https://runcycles.io/quickstart/deploying-the-cycles-dashboard): Vue 3 web UI for operating tenants, budgets, webhooks, reservations, and incident response
 
 ## Integration Guides (27 integrations)
 
