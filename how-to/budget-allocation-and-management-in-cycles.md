@@ -339,8 +339,18 @@ The `spent` field is honoured **only** for `RESET_SPENT`. Common patterns:
 Constraints:
 - `spent` must be `>= 0`.
 - The unit must match the budget's unit.
-- If `spent + reserved + debt > allocated`, `remaining` will go negative — same as overdraft scenarios. The response shows the value; no error.
 - The audit log records whether `spent` was explicitly supplied or defaulted to 0, distinguishing routine rollovers from operator-initiated consumption adjustments for compliance review.
+
+##### What `remaining` looks like after RESET_SPENT
+
+In the common case — no outstanding `debt`, no active `reserved`, `spent` omitted — `RESET_SPENT(amount=X)` produces `allocated = X` and `remaining = X`. A clean fresh period.
+
+`remaining` can start the new period **negative** in two specific situations:
+
+- **Carryover.** Preserved `debt` (and/or active `reserved`) exceed the new `allocated`. Periods don't forgive debt by design — use `REPAY_DEBT` if you want to clear it. Example: old period ended with `debt=1200`; `RESET_SPENT(amount=1000)` yields `remaining = 1000 - 0 - 0 - 1200 = -200`.
+- **Explicit override.** You pass `spent` larger than `allocated - reserved - debt`. Example: migrating a customer already partway through a period with `RESET_SPENT(amount=1000, spent=1200)` yields `remaining = -200`.
+
+Both cases are valid ledger states, not errors. The response returns the negative value, and the invariant `remaining = allocated - spent - reserved - debt` holds.
 
 #### Event emission
 
