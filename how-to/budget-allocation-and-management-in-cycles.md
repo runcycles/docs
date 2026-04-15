@@ -352,6 +352,28 @@ In the common case — no outstanding `debt`, no active `reserved`, `spent` omit
 
 Both cases are valid ledger states, not errors. The response returns the negative value, and the invariant `remaining = allocated - spent - reserved - debt` holds.
 
+##### Recovery pattern: truly starting fresh when the prior period ended in debt
+
+`RESET_SPENT` preserves `debt` by design — periods don't silently forgive obligations. If you want a customer to start the new period with a clean slate (no carryover debt, full ceiling available), pair `REPAY_DEBT` with `RESET_SPENT`:
+
+```bash
+# Prior period ended with: allocated=1000, spent=1000, debt=200, remaining=0
+
+# Step 1: Clear the outstanding debt (e.g., after the customer paid their invoice).
+curl -X POST https://admin.example.com/v1/admin/budgets/<id>/fund \
+  -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  -d '{"operation":"REPAY_DEBT","amount":200,"reason":"invoice paid"}'
+# State now: allocated=1000, spent=1000, debt=0, remaining=0
+
+# Step 2: Start the new billing period with a fresh ceiling.
+curl -X POST https://admin.example.com/v1/admin/budgets/<id>/fund \
+  -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  -d '{"operation":"RESET_SPENT","amount":1000,"reason":"monthly rollover"}'
+# State now: allocated=1000, spent=0, debt=0, remaining=1000
+```
+
+Order matters: if you skip step 1, the carryover `debt` will make the new period's `remaining` start negative. That's the correct behaviour for "customer still owes from last period", but it's not what you want if the debt has already been settled externally. Run `REPAY_DEBT` first whenever you want the next period to begin at the full ceiling.
+
 #### Event emission
 
 `RESET_SPENT` emits `budget.reset_spent` (distinct from `budget.reset`) so dashboards and webhook handlers can route period boundaries separately from resize events. The payload's `spent_override_provided` boolean flags which mode was used.
