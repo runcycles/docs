@@ -41,7 +41,7 @@ That's not a tool problem. That's a **data-model problem**. The tree has to be c
 
 ## The three primitives for LLM token attribution
 
-Every `reserve` and `commit` in Cycles — and every event that drops out — carries three structural attribution fields:
+Cycles is designed to carry three structural attribution fields through the reserve/commit flow and onto events when your integration provides them:
 
 **`scope` (a path).** Not a flat label. A path like `tenant:acme-corp/workspace:prod/app:support-bot/workflow:handoff/agent:planner/toolset:web-search`. Six levels deep is the current shape; the depth is a design choice that makes prefix queries cheap. You filter at any depth: "everything under `tenant:acme-corp/workspace:prod`" or "just this one agent instance."
 
