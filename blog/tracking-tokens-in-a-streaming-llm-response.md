@@ -25,7 +25,7 @@ Streaming — whether an OpenAI chat completion with `stream=True`, an Anthropic
 
 The obvious first instinct: reserve `max_tokens`, stream the response, commit the total when the stream ends. This works in a demo and breaks in at least four predictable ways once the system sees real traffic.
 
-**1. The final usage lands in the *last* chunk, not the first.** OpenAI's streaming API only includes `usage` in the final chunk, and only if you passed `stream_options={"include_usage": True}`. Anthropic exposes it via a final `message_delta` event. If your code commits after the first chunk — or before the stream ends — you either commit the reserved estimate (over-charging) or skip the commit entirely (reservation expires, budget is phantom-released, attribution is lost).
+**1. The final usage lands in the *last* chunk, not the first.** OpenAI's streaming API only includes `usage` in the final chunk, and only if you passed `stream_options={"include_usage": True}`. Anthropic exposes cumulative usage through one or more `message_delta` events, with the final totals available by the end of the stream. If your code commits after the first chunk — or before the stream ends — you either commit the reserved estimate (over-charging) or skip the commit entirely (reservation expires, budget is phantom-released, attribution is lost).
 
 **2. The stream can outlive the TTL.** Cycles reservations have a [default server TTL of 60 seconds](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) (the Python `StreamReservation` raises its own default to 120 seconds) and a hard cap of 24 hours. A slow model, a slow network, or a model that wanders for 2,000 tokens can push stream duration past your TTL. If the reservation expires mid-stream, your commit call returns `410 RESERVATION_EXPIRED` and the budget accounting is wrong in a way you'll only notice when the overage-policy metric starts drifting.
 
@@ -37,16 +37,16 @@ Four problems; one context manager closes all four — here's the shape.
 
 ## The pattern: track tokens during the stream, commit on exit
 
-**Reserve a generous estimate up front. Accumulate actual usage as chunks arrive. Commit the actual on clean exit; release on exception. Heartbeat-extend the TTL while the stream is running. Use the reservation ID as the idempotency key for retry.**
+**Reserve a generous estimate up front. Accumulate actual usage as chunks arrive. Commit the actual on clean exit; release on exception. Heartbeat-extend the TTL while the stream is running. Send the commit with a stable idempotency key so a network retry replays the original response.**
 
 Each word carries weight:
 
 - **Generous estimate** — overestimate the cost, because under-reservation at request time means a `DENY` before you can even start the stream. The extra is *reserved*, not *spent* — it returns to the pool on commit.
-- **Accumulate actual usage** — update a mutable counter from each chunk that carries usage info (final chunk only in OpenAI; multiple `message_delta`s in Anthropic).
+- **Accumulate actual usage** — update a mutable counter from each chunk that carries usage info (final-chunk-only via `stream_options.include_usage` for OpenAI; one-or-more `message_delta` events for Anthropic).
 - **Commit actual on clean exit** — the context manager's `__exit__` path when no exception was raised.
 - **Release on exception** — the `__exit__` path when the stream was interrupted. Release returns the reservation to the available pool and records the reason.
 - **Heartbeat-extend** — a background task calling `POST /v1/reservations/:id/extend` every `ttl_ms/2` so the reservation outlives a long stream.
-- **Reservation ID as idempotency key** — the commit carries the reservation ID, which is immutable; a retry against the same reservation either succeeds or returns `RESERVATION_FINALIZED` (already committed — safe to treat as success).
+- **Stable idempotency key on commit** — the commit body carries an `idempotency_key`. Per the [Cycles protocol](/protocol/api-reference-for-the-cycles-protocol), retrying with the same key and same payload returns the original successful response; the operation is not applied again. That's the happy-path retry semantics — not an error code branch.
 
 ## The actual Python code
 
@@ -119,13 +119,13 @@ The pattern stays readable because the context manager absorbs the ceremony. The
 
 **Client disconnect.** The context manager's `__exit__` receives the exception on the way out. `exc_type is not None` routes to `_handle_release`, which calls `POST /v1/reservations/:id/release` with a `reason` payload (e.g., `"stream_failed"`). The reservation transitions to `RELEASED` with the reason recorded in the release event. Partial spend accounting requires one extra line — set `reservation.usage.actual_cost` before the exception propagates — but the default path is "release, don't commit." Whether that's the right accounting depends on provider behavior: if the provider short-circuited before billable generation, you didn't pay either and the release matches; if the provider generated tokens that never made it to the client, you *did* pay, and you should override `actual_cost` in the `except` block before re-raising.
 
-**Retry double-commit.** Three error codes make retries safe:
+**Retry double-commit.** The primary safety mechanism is idempotent replay. A commit retry that uses the same `idempotency_key` and same body returns the server's original successful response — the operation isn't applied twice. The agent framework's retry logic doesn't need to know about Cycles; the protocol handles the happy path.
 
-- `RESERVATION_FINALIZED` — the commit already landed. The retry handler logs and treats it as success; no double-debit.
-- `RESERVATION_EXPIRED` — too late. The retry handler logs; the operator sees the expiry event; budget accounting records the estimate as the spend (via the commit-overage path, if the estimate was under-reserved) or as released (via expiry, if the estimate was over-reserved).
-- `IDEMPOTENCY_MISMATCH` — the retry body doesn't match the original. Handler logs explicitly and does *not* release, because releasing would double-account.
+Three error codes cover the edge cases where replay isn't what's happening:
 
-The commit body carries a stable idempotency key derived from the reservation ID, so a network-retry against the same reservation is by-definition idempotent at the Cycles layer. The agent framework's retry logic doesn't need to know about Cycles; the protocol handles it.
+- `RESERVATION_FINALIZED` — the reservation is already in a terminal state but the current request is not a same-key replay (e.g., a second client trying to commit against an already-committed reservation). The retry handler logs it and treats it as finalised — no double-debit.
+- `RESERVATION_EXPIRED` — the late commit returns `410 RESERVATION_EXPIRED`. Whatever the expiry path already did governs the ledger; the commit itself doesn't retro-apply. The operator sees the expiry event; the retry handler logs and moves on.
+- `IDEMPOTENCY_MISMATCH` — the retry sent the same key with a different payload. The handler logs explicitly and does *not* release, because releasing would double-account.
 
 ## Reserve in USD, not tokens: the unit mistake in streaming LLM budgets
 
@@ -155,7 +155,7 @@ Three trade-offs worth naming explicitly.
 
 **The estimate is reserved, not free.** A generous estimate means that budget is unavailable for other reservations during the stream. If a single agent reserves 50,000 tokens' worth at the start of every stream and actually uses 3,000, concurrent agents on the same scope see the full 50,000 as reserved. The fix is to right-size the estimate — not "generous" as in "3× actual," but "generous" as in "p95 of actual + margin."
 
-**Release-on-exception defaults to zero-cost attribution.** If the provider already started generating tokens before the disconnect, those tokens were paid for at the provider — but the release path doesn't record them as spend. If this matters for your billing model, set `reservation.usage.actual_cost` explicitly in the `except` block before re-raising, and the pattern becomes "commit what you used, release the rest." The default is zero-cost because that's almost always what you want; the override is one line.
+**Release-on-exception defaults to zero-cost attribution.** If the provider already started generating tokens before the disconnect, those tokens were paid for at the provider — but the release path doesn't record them as spend. If this matters for your billing model, set `reservation.usage.actual_cost` explicitly in the `except` block before re-raising, and the pattern becomes "commit what you used, release the rest." The default is release-on-exception because that's the safest generic behavior; if your provider billed for partial generation, override `actual_cost` and commit what was actually used.
 
 ## Bottom line
 
