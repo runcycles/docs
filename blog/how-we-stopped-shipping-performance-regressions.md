@@ -17,7 +17,7 @@ head:
 
 A benchmark suite that nobody looks at is theatre — six months later, nobody trusts it enough to gate anything on. The actual engineering question isn't "can we benchmark our system" — it's "can we wire the benchmark into the release process in a way that blocks real performance regressions without crying wolf on runner noise."
 
-Cycles has a two-tier gate for this. **Release-time blocking at 25% against a pinned baseline; nightly trend-warning at 30% against a rolling 7-run median.** Both use a 3-trial median per run to damp GitHub-runner variance. This post is about what each piece does, why we picked those numbers, and the one escape hatch that keeps the gate from turning into the boy who cried wolf.
+Cycles has a two-tier gate for this. **Release-time blocking at 25% against a pinned baseline; nightly trend-warning at 30% against a rolling 7-run median.** Both use a 3-trial median per run to damp GitHub-runner variance. This post is about what each piece does, why we picked those numbers, and the one escape hatch that keeps the gate from training the team to ignore it.
 
 <!-- more -->
 
@@ -37,7 +37,7 @@ Any gate that handles (1) but not (2) is reactive. Any gate that handles (1) and
 
 ## Tier 1: the release gate
 
-At release time — when the workflow fires on `release: [published]` — the job runs the `-Pbenchmark` Maven profile three times, medians the numbers, and compares against `baseline.json` on a dedicated data branch. Threshold: **25% worse on any headline metric fails the release.** The Docker build doesn't even run if the gate rejects.
+At release time — when the workflow fires on `release: [published]` — the job runs the `-Pbenchmark` Maven profile three times, medians the numbers, and compares against `baseline.json` on a dedicated data branch. Threshold: **25% worse on any headline metric fails the release.** The release is blocked before the image is published.
 
 The shape of the comparison is in [`scripts/check-regression.py`](https://github.com/runcycles/cycles-server/blob/main/scripts/check-regression.py):
 
@@ -57,7 +57,7 @@ Why 25%? Three reasons, stacked:
 
 - **GH-hosted runner variance is real.** Benchmark-grade hardware it is not — on our runs, sub-10ms latencies have bounced roughly ±10-20% run-to-run on the same commit. A 10% threshold would fail more often from noise than from real regressions.
 - **The 3-trial median already cuts the tail.** One pathological trial doesn't move the reported number; you'd need two of three trials to be bad for the record to drift. That changes the shape of the noise distribution we're thresholding against.
-- **25% catches the regressions that actually matter.** A 2× slowdown is a 100% move; a 30% slowdown on the reserve hot path is a feature-level issue. The threshold is set at "big enough to be a real change, small enough not to be a normal-day blip."
+- **25% catches the regressions that actually matter.** A 2× slowdown is a 100% move; a 30% slowdown on the reserve hot path is a feature-level issue. 25% is our current operating threshold: above normal runner wobble, but low enough to catch regressions that matter.
 
 On a successful gate, the new median atomically overwrites `baseline.json` and appends to `history.jsonl`. The next release is measured against *this* release's numbers, which means the bar ratchets: you can't slowly drift 5% per release forever, because each release resets the comparison point.
 
@@ -160,7 +160,7 @@ The first nightly run silently missed every latency metric. The throughput numbe
 
 The gate isn't magic. It's four small pieces fitted together: 3-trial medians to damp runner noise, a release-blocking tier at 25% against a pinned baseline, a trend-warning tier at 30% against a rolling 7-run median, and an auditable escape hatch for releases where the benchmark would only measure variance. The data branch keeps CI telemetry out of `main`'s history; the parse layer fails loudly rather than reporting null metrics as "passing."
 
-What it buys is a specific kind of confidence: when a release ships, the headline latency and throughput numbers are within 25% of the last release's, and we know that because nothing else let the Docker image get built. The numbers in the [benchmark post](/blog/cycles-server-performance-benchmarks) aren't a snapshot from a lucky run — they're a bound the release process refuses to let drift more than 25% at a time.
+The numbers in the [benchmark post](/blog/cycles-server-performance-benchmarks) aren't a snapshot from a lucky run — they're a bound the release process refuses to let drift more than 25% at a time.
 
 ---
 
