@@ -19,6 +19,8 @@ The bill just tripled. Your agents aren't doing anything new. You open the LLM p
 
 This is LLM token attribution at production scale — debugging AI agent spend when the proxy can't tell you *which agent, which workflow, which tool call* drove the spike. This post is about the data model you actually need to answer the question. Not which observability tool to buy — which **fields on which events**, and which **balance queries**, let you drill from "total spend tripled" down to "this workflow, this agent, this tool call, this API key, this correlation ID." The answer in Cycles is three primitives captured at enforcement time — **scope path, actor, correlation ID** — surfaced through the event stream and the balance API. Everything else is filtering.
 
+Cycles narrows the suspect set structurally; exact tool-call reconstruction still depends on your own application logs keyed by correlation ID. The post covers both halves.
+
 <!-- more -->
 
 ## Why LLM-proxy observability stops short
@@ -43,9 +45,9 @@ Every `reserve` and `commit` in Cycles — and every event that drops out — ca
 
 **`scope` (a path).** Not a flat label. A path like `tenant:acme-corp/workspace:prod/app:support-bot/workflow:handoff/agent:planner/toolset:web-search`. Six levels deep is the current shape; the depth is a design choice that makes prefix queries cheap. You filter at any depth: "everything under `tenant:acme-corp/workspace:prod`" or "just this one agent instance."
 
-**`actor` (the principal).** Type, key ID, source IP. This is who/what initiated the action at the API boundary — an API key, a service account, a system process. Two agents sharing a budget scope still have distinct actors, so "who spent the money" is separable from "whose budget paid for it."
+**`actor` (the principal).** Type, key ID, source IP. This is who/what initiated the action at the API boundary — an API key, a service account, a system process. Two agents sharing a budget scope can still be separated if they arrive through distinct actors or correlation paths, so "who spent the money" is separable from "whose budget paid for it."
 
-**`correlation_id` and `request_id`.** The trace primitives. Every Cycles call echoes these back and stamps them on every event. If your agent framework threads them through to the LLM request — or if you log them next to the LLM call — you can pivot from "this event happened" to "this exact request in your code" in one hop.
+**`correlation_id` and `request_id`.** The trace primitives. Cycles supports `correlation_id` and `request_id` on events (both are optional fields in the schema, populated when the caller provides them). When your integration threads them through consistently — on the reserve, on the commit, on the LLM request, in your own logs — they become the pivot from "this event happened" to "this exact request in your code" in one hop.
 
 These three fields are what make the event stream navigable — a structural commitment that *everything* that affects spend carries enough metadata to find its origin.
 
@@ -171,7 +173,7 @@ Concretely — what do you type when the bill is 3× and you have thirty minutes
 
 **Move 3: Estimator drift.** Pull `reservation.commit_overage` volume for the window. A rising rate on a specific client or reservation-id prefix is the estimator on that scope over-committing. The fix is recalibration — not capacity. This is a different root cause than "traffic genuinely increased," and you will misdiagnose it if you only look at totals.
 
-**Move 4: Correlation ID trace.** Pick one expensive commit (from the balance API or your own commit logs); grab the `correlation_id`; grep your application logs. You now have the exact function call, prompt, tool invocation. This is the step that closes the loop — event and balance attribution tell you *where*, but `correlation_id` is what tells you *what code* ran.
+**Move 4: Correlation ID trace.** Pick the expensive scope from the balance API, then grab a `correlation_id` from the event stream or your own commit logs and pivot into application logs. You now have the exact function call, prompt, tool invocation. This is the step that closes the loop — the balance API and event stream tell you *which scope*, but `correlation_id` is what tells you *what code* ran. The balance API gives you ledger quantities, not commit-level records; threading a correlation ID through on every reserve/commit call is what makes this move work.
 
 Without step 4, the first three tell you where to look but not what to fix. With step 4, you end with a diff in a specific file.
 
