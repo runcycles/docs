@@ -32,7 +32,7 @@ docker run -d --name cycles-events \
   -e REDIS_PORT=6379 \
   -e REDIS_PASSWORD=your-redis-password \
   -e WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-  ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  ghcr.io/runcycles/cycles-server-events:0.1.25.5
 ```
 
 ### From JAR
@@ -42,7 +42,7 @@ REDIS_HOST=redis.example.com \
 REDIS_PORT=6379 \
 REDIS_PASSWORD=your-redis-password \
 WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-java -jar cycles-server-events-0.1.25.1.jar
+java -jar cycles-server-events-*.jar
 ```
 
 ## Configuration

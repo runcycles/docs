@@ -230,6 +230,10 @@ Fields not included in the request are left unchanged. Returns `404` if the budg
 
 Use freeze to immediately halt all new reservations against a budget without deleting or modifying it. This is useful during incident investigations, compliance holds, or when a runaway agent is detected.
 
+::: tip Freeze from the dashboard
+Freeze and unfreeze are also one-click actions on the Budgets page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — typically faster during an active incident than crafting a curl. The dashboard also exposes an **Emergency Freeze (tenant-wide)** action that sequentially freezes every ACTIVE budget for a tenant with a confirm + blast-radius summary.
+:::
+
 ### Freeze
 
 ```bash

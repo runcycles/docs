@@ -912,7 +912,7 @@ def handle():
 
 ## Tenant Self-Service Webhooks
 
-Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 26 of 40 types). Admin-only events (`api_key.*`, `policy.*`, `system.*`) are not available to tenants.
+Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 27 of 41 types). Admin-only events (`api_key.*`, `policy.*`, `system.*`) are not available to tenants.
 
 **Required API key permissions:**
 - `webhooks:write` — create, update, delete subscriptions

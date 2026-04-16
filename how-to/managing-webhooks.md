@@ -7,6 +7,10 @@ description: Create, test, monitor, troubleshoot, and manage webhook subscriptio
 
 This guide covers the full webhook lifecycle: creating subscriptions, testing connectivity, monitoring delivery health, handling failures, rotating secrets, and replaying events.
 
+::: tip Webhook operations from the dashboard
+Every action in this guide — create, test, replay, pause/enable, reset failures, delete — is also available on the Webhooks page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard). The dashboard shows subscription health (green/yellow/red), recent delivery history, and supports **bulk pause / enable** with tenant filtering. Use the dashboard for day-two operations and the curl examples below for automation.
+:::
+
 ## Creating a Webhook Subscription
 
 ### Admin subscription

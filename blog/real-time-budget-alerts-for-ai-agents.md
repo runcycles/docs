@@ -36,13 +36,13 @@ The webhook doesn't make humans faster. It eliminates the detection delay entire
 
 This is why we built a webhook event system into Cycles v0.1.25.
 
-## 40 event types across 6 categories
+## 41 event types across 6 categories
 
 Every observable state change in the system produces an event. We organized them into 6 categories covering the full lifecycle:
 
 | Category | Count | Covers |
 |---|---|---|
-| **budget** | 15 | Created, funded, debited, frozen, closed, threshold crossed, exhausted, over-limit, debt incurred, burn rate anomaly |
+| **budget** | 16 | Created, funded, debited, reset, reset_spent (billing period), frozen, closed, threshold crossed, exhausted, over-limit, debt incurred, burn rate anomaly |
 | **[reservation](/glossary#reservation)** | 5 | Denied, denial rate spike, expired, expiry rate spike, commit overage |
 | **[tenant](/glossary#tenant)** | 6 | Created, updated, suspended, reactivated, closed, settings changed |
 | **api_key** | 6 | Created, revoked, expired, permissions changed, auth failed, auth failure rate spike |
@@ -168,7 +168,7 @@ The response includes a signing secret (returned once — store it). Your middle
 
 We have full integration guides with code examples for [PagerDuty, Slack, Datadog, Microsoft Teams, Opsgenie, and ServiceNow](/how-to/webhook-integrations), plus a [custom receiver pattern](/how-to/webhook-integrations#integration-custom-receiver-direct) with signature verification in Python, Node.js, and Go.
 
-Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (26 of 40 types). Admin-only events (api_key, policy, system) require admin key access.
+Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (27 of 41 types). Admin-only events (api_key, policy, system) require admin key access.
 
 Webhook URLs are validated at creation time with SSRF protection enabled by default: RFC 1918 private IP ranges, loopback, and link-local addresses are blocked, and HTTPS is required in production. These can be configured via `PUT /v1/admin/config/webhook-security` for environments that need internal endpoint access.
 

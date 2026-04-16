@@ -154,7 +154,7 @@ curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-c
   }' | jq .
 ```
 
-Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (reset to specified amount), `REPAY_DEBT` (reduce outstanding debt).
+Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (resize `allocated` ceiling, preserving `spent`/`reserved`/`debt`), `RESET_SPENT` (start new billing period — set `allocated`, clear `spent` or set via optional `spent` override, preserve `reserved`/`debt`), `REPAY_DEBT` (reduce outstanding debt).
 
 ### Patch budget settings
 
@@ -216,7 +216,7 @@ curl -s "http://localhost:7979/v1/admin/overview" \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
 
-Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs.
+Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs — this endpoint is what powers the Overview page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard).
 
 ### API key introspection
 
@@ -282,7 +282,7 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 - **Delivery tracking**: list delivery attempts per subscription with status/date filters
 - **Event replay**: re-deliver historical events to a subscription
 - **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
-- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (26 of 40 event types)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (27 of 41 event types)
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 

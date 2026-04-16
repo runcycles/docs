@@ -213,7 +213,7 @@ An HTTP POST callback triggered by a state change event. Cycles delivers webhook
 
 ### Event (Webhook)
 
-An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 40 event types across 6 categories. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
+An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 41 event types across 6 categories. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
 
 ### Signing Secret
 

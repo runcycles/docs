@@ -208,7 +208,7 @@ The Cycles Admin Server (`cycles-admin-service`) is a separate service that mana
 | `redis.host` | (required) | `REDIS_HOST` | Redis server hostname |
 | `redis.port` | (required) | `REDIS_PORT` | Redis server port |
 | `redis.password` | (required) | `REDIS_PASSWORD` | Redis password (set empty string if none) |
-| `dashboard.cors.origin` | `http://localhost:5173` | `DASHBOARD_CORS_ORIGIN` | Allowed CORS origin for the admin dashboard. Set to the production dashboard URL. |
+| `dashboard.cors.origin` | `http://localhost:5173` | `DASHBOARD_CORS_ORIGIN` | Allowed CORS origin for the [admin dashboard](/quickstart/deploying-the-cycles-dashboard). Only needed when the browser calls the admin server directly (dev mode); unused in standard production (nginx reverse-proxies same-origin). |
 | `springdoc.swagger-ui.enabled` | `false` | `SWAGGER_ENABLED` | Swagger UI is disabled by default on the admin server; set to `true` to enable. |
 | `logging.level.io.runcycles.admin` | `INFO` | `LOG_LEVEL` | Admin-specific log level. |
 
