@@ -1,9 +1,9 @@
 ---
-title: "Tracking Tokens in a Streaming LLM Response"
+title: "Tracking Tokens and Cost in a Streaming LLM Response"
 date: 2026-04-20
 author: Albert Mavashev
 tags: [engineering, streaming, llm, budget-enforcement, python, openai]
-description: "Streaming LLM cost tracking is hard: final usage lands in the last SSE chunk, streams outlive TTL, disconnects leak budget. Four failure modes and a Python context manager for OpenAI + Anthropic budget enforcement."
+description: "Streaming LLM cost tracking breaks reserve-commit in four ways. A Python context manager for OpenAI + Anthropic budget enforcement that handles all four."
 blog: true
 sidebar: false
 featured: false
@@ -15,7 +15,7 @@ head:
 
 # Tracking Tokens in a Streaming LLM Response
 
-Non-streaming LLM calls are the easy case for budget enforcement. You know the max output length, you reserve that many tokens up front, the response comes back, you commit the actual usage from the `usage` field, done. One reserve, one commit, one HTTP request-response on each side.
+Non-streaming LLM calls are the easy case for LLM cost tracking and budget enforcement. You know the max output length, you reserve that many tokens up front, the response comes back, you commit the actual usage from the `usage` field, done. One reserve, one commit, one HTTP request-response on each side.
 
 Streaming — whether an OpenAI chat completion with `stream=True`, an Anthropic SSE response with `message_delta` events, or any provider shipping tokens over Server-Sent Events — breaks that pattern in four specific places, and each one has a wrong answer that looks right until you hit production. This post is about those four failure modes and the pattern that closes all of them: the same pattern the [`runcycles` Python client](https://github.com/runcycles/cycles-client-python) already implements as `StreamReservation`.
 
@@ -27,7 +27,7 @@ The obvious first instinct: reserve `max_tokens`, stream the response, commit th
 
 **1. The final usage lands in the *last* chunk, not the first.** OpenAI's streaming API only includes `usage` in the final chunk, and only if you passed `stream_options={"include_usage": True}`. Anthropic exposes it via a final `message_delta` event. If your code commits after the first chunk — or before the stream ends — you either commit the reserved estimate (over-charging) or skip the commit entirely (reservation expires, budget is phantom-released, attribution is lost).
 
-**2. The stream can outlive the TTL.** Cycles reservations have a [default 60-second TTL](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) and a hard cap of 24 hours. A slow model, a slow network, or a model that wanders for 2,000 tokens can push stream duration past your TTL. If the reservation expires mid-stream, your commit call returns `410 RESERVATION_EXPIRED` and the budget accounting is wrong in a way you'll only notice when the overage-policy metric starts drifting.
+**2. The stream can outlive the TTL.** Cycles reservations have a [default server TTL of 60 seconds](/protocol/reservation-ttl-grace-period-and-extend-in-cycles) (the Python `StreamReservation` raises its own default to 120 seconds) and a hard cap of 24 hours. A slow model, a slow network, or a model that wanders for 2,000 tokens can push stream duration past your TTL. If the reservation expires mid-stream, your commit call returns `410 RESERVATION_EXPIRED` and the budget accounting is wrong in a way you'll only notice when the overage-policy metric starts drifting.
 
 **3. The client can disconnect mid-stream.** The agent framework crashes; the user closes the browser; the network blips. You have *partial* output and no final `usage`. Who pays? The question has a real answer — estimate from what you received and commit a partial cost, or release and accept the estimate loss — but the default behavior in most naive wrappers is "silent leak": reservation expires, budget returns to the pool, and the actual LLM cost you already incurred at the provider is never accounted for against the right scope.
 
@@ -50,7 +50,7 @@ Each word carries weight:
 
 ## The actual Python code
 
-From [`runcycles/streaming.py`](https://github.com/runcycles/cycles-client-python/blob/main/runcycles/streaming.py) (sync variant shown; `AsyncStreamReservation` is the near-identical async twin):
+Simplified from [`runcycles/streaming.py`](https://github.com/runcycles/cycles-client-python/blob/main/runcycles/streaming.py) (sync variant shown; `AsyncStreamReservation` is the near-identical async twin, and the real implementation adds a few validation branches omitted here for clarity):
 
 ```python
 class StreamReservation:
@@ -115,7 +115,7 @@ The pattern stays readable because the context manager absorbs the ceremony. The
 
 **Final usage in the last chunk.** The `cost_fn` runs *inside* `__exit__`, after the stream has drained. By then, the final `chunk.usage` has written into `reservation.usage.tokens_input` and `tokens_output`, and `cost_fn` converts to the unit the reservation was made in (USD microcents, in the example above). A single commit fires with the actual — not the estimate. If the final chunk never arrives (malformed stream, SDK bug), the commit falls back to the estimate. The [`_resolve_actual_cost`](https://github.com/runcycles/cycles-client-python/blob/main/runcycles/streaming.py) helper is explicit about this fallback order: explicit `actual_cost` set by the caller wins, `cost_fn` output second, reserved estimate last.
 
-**Stream outlives TTL.** The `_start_heartbeat` method spawns an asyncio task that calls `extend_reservation` every `max(ttl_ms/2, 1000ms)`. On success, it updates the cached `expires_at_ms` so the caller's view stays consistent. On heartbeat failure, it logs — the commit will still try on exit, and if the reservation did expire, the `RESERVATION_EXPIRED` branch below handles it. Heartbeat failures are visible in metrics; they don't silently drop budget accounting.
+**Stream outlives TTL.** The `_start_heartbeat` method spawns a background thread (or asyncio task in the async variant) that calls `extend_reservation` every `max(ttl_ms/2, 1000ms)`. On success, it updates the cached `expires_at_ms` so the caller's view stays consistent. On heartbeat failure, it logs — the commit will still try on exit, and if the reservation did expire, the `RESERVATION_EXPIRED` branch below handles it. Heartbeat failures are visible in metrics; they don't silently drop budget accounting.
 
 **Client disconnect.** The context manager's `__exit__` receives the exception on the way out. `exc_type is not None` routes to `_handle_release`, which calls `POST /v1/reservations/:id/release` with a `reason` payload (e.g., `"stream_failed"`). The reservation transitions to `RELEASED` with the reason recorded in the release event. Partial spend accounting requires one extra line — set `reservation.usage.actual_cost` before the exception propagates — but the default path is "release, don't commit." Whether that's the right accounting depends on provider behavior: if the provider short-circuited before billable generation, you didn't pay either and the release matches; if the provider generated tokens that never made it to the client, you *did* pay, and you should override `actual_cost` in the `except` block before re-raising.
 
@@ -127,7 +127,7 @@ The pattern stays readable because the context manager absorbs the ceremony. The
 
 The commit body carries a stable idempotency key derived from the reservation ID, so a network-retry against the same reservation is by-definition idempotent at the Cycles layer. The agent framework's retry logic doesn't need to know about Cycles; the protocol handles it.
 
-## The one thing most wrappers get wrong: the unit
+## Reserve in USD, not tokens: the unit mistake in streaming LLM budgets
 
 A naive streaming wrapper reserves in *tokens* because that's what the LLM SDK reports. Cycles lets you reserve in any unit — `TOKENS`, `USD_MICROCENTS`, `CREDITS`, `RISK_POINTS` — and the right choice for LLM budgets is *not* tokens. It's USD_microcents, with a `cost_fn` that converts token counts to cost at request time.
 
@@ -161,7 +161,7 @@ Three trade-offs worth naming explicitly.
 
 Streaming breaks four things: the timing of `usage` arrival, the TTL window, the disconnect path, and the retry semantics. Each one has a naive wrapper that silently corrupts budget accounting; each one has a concrete fix in the pattern above. The Python `StreamReservation` context manager is that pattern codified — reserve-on-enter, heartbeat during, commit-or-release on exit, idempotent retry — so the caller gets streaming budget enforcement without having to get any of the four details right on their own.
 
-The code is already in the client; this post names what each line is doing and why.
+The code is in the client today; the four failure modes above are what each line is there to close.
 
 ---
 
