@@ -13,7 +13,7 @@ head:
       content: "streaming llm token tracking, streaming llm cost tracking, sse budget enforcement, openai streaming budget, openai streaming cost, anthropic streaming usage tracking, anthropic streaming usage, budget check streaming response, llm streaming reservation, track tokens during stream, budgeted streaming python"
 ---
 
-# Tracking Tokens in a Streaming LLM Response
+# Tracking Tokens and Cost in a Streaming LLM Response
 
 Non-streaming LLM calls are the easy case for LLM cost tracking and budget enforcement. You know the max output length, you reserve that many tokens up front, the response comes back, you commit the actual usage from the `usage` field, done. One reserve, one commit, one HTTP request-response on each side.
 
