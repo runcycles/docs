@@ -182,6 +182,25 @@ curl -X POST http://localhost:7878/v1/reservations \
   -d '{ ... }'
 ```
 
+## Listing API keys
+
+`GET /v1/admin/api-keys` lists keys. By default (tenant-scoped with `X-Cycles-API-Key`), the server returns keys for the authenticated tenant only. With `X-Admin-API-Key` you can list across all tenants by omitting the `tenant_id` query parameter (v0.1.25.22+). Cross-tenant results paginate with a composite `(tenant_id, key_id)` cursor.
+
+```bash
+# Cross-tenant — all keys, sorted by last-used
+curl -G "http://localhost:7979/v1/admin/api-keys" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  --data-urlencode "sort_by=last_used_at_ms" \
+  --data-urlencode "sort_dir=desc" \
+  --data-urlencode "limit=50" | jq .
+
+# Tenant-scoped
+curl -G "http://localhost:7979/v1/admin/api-keys?tenant_id=acme" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+`search` (v0.1.25.25+) does a case-insensitive match over `key_id`, `name`, and `description`. See [Searching and Sorting Admin List Endpoints](/how-to/searching-and-sorting-admin-list-endpoints) for the full parameter vocabulary.
+
 ## Revoking API keys
 
 ::: tip Revoke from the dashboard
@@ -198,7 +217,7 @@ curl -X DELETE http://localhost:7979/v1/admin/api-keys/key_abc123 \
 Revocation is immediate. Any in-flight requests using the revoked key will fail on their next call to the Cycles server. Active reservations created with the revoked key remain valid until they expire or are committed/released.
 
 ::: tip Revocation, not deletion
-The `DELETE` endpoint performs a **status transition** (ACTIVE → REVOKED), not a hard delete. The key record is retained so that audit logs referencing the key remain resolvable. This is consistent with the lifecycle model used across Cycles — see the equivalent notes on [tenant closure](/how-to/tenant-creation-and-management-in-cycles#closed) and [budget decommissioning](/how-to/budget-allocation-and-management-in-cycles#resetting-budgets).
+The `DELETE` endpoint performs a **status transition** (ACTIVE → REVOKED), not a hard delete. The key record is retained so that audit logs referencing the key remain resolvable. This is consistent with the lifecycle model used across Cycles — see the equivalent notes on [tenant closure](/how-to/tenant-creation-and-management-in-cycles#closed) and [budget decommissioning](/how-to/budget-allocation-and-management-in-cycles#resizing-a-budget-reset).
 :::
 
 ## Key rotation

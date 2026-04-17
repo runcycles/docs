@@ -366,7 +366,85 @@ curl -X POST http://localhost:7979/v1/webhooks \
   }'
 ```
 
-See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 40-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 41-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+
+## List-endpoint features (v0.1.25.22+)
+
+Six admin list endpoints (`/v1/admin/tenants`, `/api-keys`, `/budgets`, `/webhooks/subscriptions`, `/events`, `/audit/logs`) gained three operator features across the v0.1.25.22–.25 window. See [Searching and sorting admin list endpoints](/how-to/searching-and-sorting-admin-list-endpoints) for the full cursor-invalidation rules.
+
+**Cross-tenant lists (v0.1.25.22).** `GET /v1/admin/api-keys` and `GET /v1/admin/budgets` accept an omitted `tenant_id` under admin auth — the walk covers every tenant and returns a composite cursor (`{tenantId}|{keyId}` or `{tenantId}|{ledgerId}`). Dashboards that previously ran N+1 per-tenant loops should replace them with a single cross-tenant call.
+
+**Budget filters (v0.1.25.22).** `GET /v1/admin/budgets` adds `over_limit` (boolean), `has_debt` (boolean), `utilization_min` (`[0,1]`), and `utilization_max` (`[0,1]`). AND-combined with every other filter; applied before cursor traversal so pagination stays stable. `utilization_min > utilization_max` → 400.
+
+**Server-side sort (v0.1.25.24).** `sort_by` + `sort_dir` on all six endpoints. Per-endpoint whitelists; unknown keys → 400. `listBudgets` and `listWebhookSubscriptions` **change default row order** (utilization DESC / consecutive_failures DESC) — pass `sort_by=created_at&sort_dir=desc` to restore prior behavior.
+
+**Free-text search (v0.1.25.25).** `search` query param on all six endpoints. Case-insensitive substring match on natural identifier fields, ≤128 characters, AND-combined with other filters.
+
+## Audit log failure capture (v0.1.25.20)
+
+`GET /v1/admin/audit/logs` now returns entries for **failed** requests (401/403/400/404/409/500) alongside successes. Each failure entry carries `status`, `error_code`, `metadata.error_message` (sanitized, 1024-char capped), `metadata.method`, `metadata.path`, and — on 500 — `metadata.exception_class`.
+
+Pre-auth failures are attributed to the sentinel tenant `<unauthenticated>`. Query them directly:
+
+```bash
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=%3Cunauthenticated%3E&limit=50' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+**Tiered TTL defaults** (SOC2 compliant out of the box): authenticated entries retained 400 days, unauthenticated entries 30 days. Set either `audit.retention.authenticated.days` or `audit.retention.unauthenticated.days` to `0` for indefinite retention. See [Server Configuration Reference → Audit log retention](/configuration/server-configuration-reference-for-cycles#audit-log-retention).
+
+**Semantic change for consumers.** Queries without a `status` filter (or with `status=4xx/5xx`) now surface failure entries that didn't exist in v0.1.25.19. Dashboards that assumed "audit entry exists ⇒ operation succeeded" must switch to checking `status` or `error_code`.
+
+## Bulk actions (v0.1.25.26)
+
+Two filter-driven bulk endpoints for operators who need to suspend / reactivate / close many tenants — or pause / resume / delete many webhooks — in a single atomic call.
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/tenants/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "status": "ACTIVE", "search": "preview-" },
+    "action": "SUSPEND",
+    "expected_count": 12,
+    "idempotency_key": "'"$(uuidgen)"'"
+  }'
+```
+
+**Safety gates:**
+- Empty filter → 400 (prevents accidental all-rows action).
+- More than 500 matches → 400 `LIMIT_EXCEEDED` with `total_matched` in the body.
+- `expected_count` mismatch → 409 `COUNT_MISMATCH` with no writes.
+- `idempotency_key` required; 15-minute replay window returns the cached outcome.
+
+**Response envelope** splits results three ways:
+
+```json
+{
+  "action": "SUSPEND",
+  "total_matched": 12,
+  "succeeded": ["tenant_1", "tenant_2", "..."],
+  "failed": [{"id": "tenant_7", "error_code": "INVALID_TRANSITION", "message": "..."}],
+  "skipped": [{"id": "tenant_9", "reason": "ALREADY_IN_TARGET_STATE"}],
+  "idempotency_key": "..."
+}
+```
+
+Supported actions: `SUSPEND | REACTIVATE | CLOSE` on `/v1/admin/tenants/bulk-action`; `PAUSE | RESUME | DELETE` on `/v1/admin/webhooks/bulk-action`.
+
+See [Using bulk actions for tenants and webhooks](/how-to/using-bulk-actions-for-tenants-and-webhooks) for idempotency patterns, filter construction, and operator workflow.
+
+## Admin-on-behalf-of (v0.1.25.14 / v0.1.25.16)
+
+Several mutating endpoints accept admin auth with an explicit `tenant_id` in the body — useful for onboarding, migration, and incident response:
+
+- `POST /v1/admin/budgets` (budget creation)
+- `POST /v1/admin/policies`, `PATCH /v1/admin/policies/{id}` (policy creation + update)
+- Six tenant-scoped webhook endpoints: `GET /v1/webhooks`, `GET/PATCH/DELETE /v1/webhooks/{id}`, `POST /v1/webhooks/{id}/test`, `GET /v1/webhooks/{id}/deliveries`
+
+All admin-driven mutations tag the audit entry with `metadata.actor_type=admin_on_behalf_of` so the provenance is queryable. `POST /v1/webhooks` (create) remains tenant-only — admin-creating-on-tenant-behalf would obscure the audit trail.
+
+Incident-response bonus: `POST /v1/reservations/{id}/release` on the runtime server (port 7878) also accepts `X-Admin-API-Key` as of cycles-server v0.1.25.8 — see [Force-releasing stuck reservations as an operator](/how-to/force-releasing-stuck-reservations-as-an-operator).
 
 ## Next steps
 

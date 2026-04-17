@@ -251,6 +251,28 @@ Standard metrics and metadata enrich budget operations with execution context:
 
 These fields are optional but recommended. They turn budget accounting from raw cost numbers into actionable operational data.
 
+## Server-side operational metrics
+
+The metrics above describe the **execution-context fields** a client attaches to each commit or event. They are stored with the protocol record and surface on commit / event responses and in admin audit trails.
+
+Cycles also exposes **Prometheus metrics** on each service's `/actuator/prometheus` endpoint for operational monitoring. These are aggregate counters and histograms — they do not replace per-request metrics, they complement them.
+
+The runtime server (`cycles-server` v0.1.25.10+) publishes seven domain counters under the `cycles_*` namespace:
+
+- `cycles_reservations_reserve_total{tenant, decision, reason, overage_policy}`
+- `cycles_reservations_commit_total{tenant, decision, reason, overage_policy}`
+- `cycles_reservations_release_total{tenant, actor_type, decision, reason}`
+- `cycles_reservations_extend_total{tenant, decision, reason}`
+- `cycles_reservations_expired_total{tenant}`
+- `cycles_events_total{tenant, decision, reason, overage_policy}`
+- `cycles_overdraft_incurred_total{tenant}`
+
+The admin server (`cycles-server-admin` v0.1.25.20+) adds `cycles_admin_audit_writes_total{path_class, outcome}` — **alert on `outcome=error` nonzero** to catch silent audit-coverage loss.
+
+The events service (`cycles-server-events` v0.1.25.6+) publishes eight webhook delivery metrics under `cycles_webhook_*` — see [Server Configuration Reference → Events service metrics](/configuration/server-configuration-reference-for-cycles#events-service-metrics) for the full inventory.
+
+The `tenant` label on all three services is gated by `cycles.metrics.tenant-tag.enabled` (default `true`) — set to `false` in deployments with many thousands of tenants to bound Prometheus cardinality.
+
 ## Next steps
 
 To explore the Cycles stack:

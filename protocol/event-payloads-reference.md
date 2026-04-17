@@ -8,7 +8,9 @@ description: "Complete payload reference for all Cycles webhook events — curre
 This page documents the payload structure for every webhook event Cycles can emit. Each event wraps a standard envelope with an event-specific `data` object.
 
 ::: info Currently Emitted Events
-As of v0.1.25, the Cycles server emits **6 event types** from the runtime protocol service. The remaining 34 event types are **defined in the protocol** and will be emitted in future releases as the admin service and additional runtime hooks are wired up. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
+As of v0.1.25.13, the runtime server emits **14 event types** (all five reservation-lifecycle events, the three budget-state-transition events, `event.applied`, and the budget-exhaust / over-limit / debt events). The admin server adds `budget.reset_spent` (v0.1.25.18). The remaining event types are **defined in the protocol** and will be emitted as the admin service and additional runtime hooks are wired up. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
+
+The v0.1.25 protocol registers **41 event types** total across six categories (budget: 16, reservation: 5, tenant: 6, api_key: 6, policy: 3, system: 5).
 :::
 
 ## Standard Envelope
@@ -56,6 +58,42 @@ Every event shares this envelope structure. The `data` field varies by event typ
 ---
 
 ## Reservation Events
+
+### `reservation.reserved` — Currently Emitted (v0.1.25.3)
+
+**Trigger:** A reservation is created successfully.
+
+**Emitted from:** `POST /v1/reservations` (ALLOW or ALLOW_WITH_CAPS response).
+
+The envelope's `scope`, `tenant_id`, and `actor` fields identify the reservation context. The `data` payload carries the reservation identifier and the amount held.
+
+---
+
+### `reservation.committed` — Currently Emitted (v0.1.25.3)
+
+**Trigger:** A reservation is committed with actual spend recorded.
+
+**Emitted from:** `POST /v1/reservations/{id}/commit`.
+
+If `actual > estimated`, a companion `reservation.commit_overage` event is also emitted (see below).
+
+---
+
+### `reservation.released` — Currently Emitted (v0.1.25.3)
+
+**Trigger:** A reservation is cancelled.
+
+**Emitted from:** `POST /v1/reservations/{id}/release`. If the release was performed by an admin operator (dual-auth path introduced in v0.1.25.8), the envelope's `actor.type` will be `admin` and the audit log records `metadata.actor_type=admin_on_behalf_of`.
+
+---
+
+### `reservation.extended` — Currently Emitted (v0.1.25.3)
+
+**Trigger:** A reservation TTL is extended via heartbeat.
+
+**Emitted from:** `POST /v1/reservations/{id}/extend`.
+
+---
 
 ### `reservation.denied` — Currently Emitted
 
@@ -181,6 +219,52 @@ This event type is defined in the protocol but not yet emitted by the Cycles ser
 ---
 
 ## Budget Events
+
+### `budget.approaching_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+
+**Trigger:** A scope's utilization crosses the configured "approaching" threshold (default **80%**).
+
+**Emitted from:** `EventEmitterService.emitBalanceEvents()` on reservation / commit / event.
+
+The envelope identifies the scope; the `data` payload reports `utilization`, `remaining`, and the threshold crossed. Subscriptions that want pager-ready escalation should filter on `event_type=budget.approaching_limit OR budget.at_limit OR budget.over_limit`.
+
+---
+
+### `budget.at_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+
+**Trigger:** Utilization crosses the "at-limit" threshold (default **95%**).
+
+**Emitted from:** Same emission path as `approaching_limit`. Dedup logic prevents re-emission while the scope remains in the same state band on subsequent mutations.
+
+---
+
+### `budget.over_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+
+**Trigger:** Utilization reaches or exceeds **100%**.
+
+**Emitted from:** Same emission path. Distinct from `budget.over_limit_entered`, which fires when debt first exceeds `overdraft_limit` under `ALLOW_WITH_OVERDRAFT`.
+
+---
+
+### `budget.reset_spent` — Currently Emitted (v0.1.25.18)
+
+**Trigger:** An admin operator issues a `RESET_SPENT` funding operation on `POST /v1/admin/budgets/fund`.
+
+**Emitted from:** `cycles-server-admin`. Distinct from `budget.reset` — `RESET` resizes the allocated ceiling and preserves `spent`; `RESET_SPENT` additionally clears (or overrides) `spent` for billing-period rollover.
+
+The payload is an `EventDataBudgetLifecycle` with `spent` and `reserved` fields on `BudgetState`, plus an optional `spent_override_provided` boolean flag on the outer payload (`true` when the operator supplied an explicit `spent` value).
+
+See [Rolling over billing periods with RESET_SPENT](/how-to/rolling-over-billing-periods-with-reset-spent) for operator guidance.
+
+---
+
+### `event.applied` — Currently Emitted (v0.1.25.3)
+
+**Trigger:** A direct debit via `POST /v1/events` is applied successfully (no pre-reservation path).
+
+**Emitted from:** Runtime events controller. The envelope's `scope` and `actor` identify the debit; the `data` payload reports the amount charged.
+
+---
 
 ### `budget.exhausted` — Currently Emitted
 
@@ -337,13 +421,13 @@ The following event categories are fully defined in the protocol but are not yet
 
 | Category | Total Defined | Currently Emitted | Planned |
 |---|---|---|---|
-| Reservation | 5 | 3 (`denied`, `commit_overage`, `expired`) | 2 |
-| Budget | 15 | 3 (`exhausted`, `over_limit_entered`, `debt_incurred`) | 12 |
+| Reservation | 5 | 5 (`reserved`, `committed`, `released`, `extended`, `expired`) plus `denied` + `commit_overage` on the denial / overage paths | — |
+| Budget | 16 | 7 (`exhausted`, `over_limit_entered`, `debt_incurred`, `approaching_limit`, `at_limit`, `over_limit`, `reset_spent`) + `event.applied` on direct debits | 9 |
 | Tenant | 6 | 0 | 6 |
 | API Key | 6 | 0 | 6 |
 | Policy | 3 | 0 | 3 |
 | System | 5 | 0 | 5 |
-| **Total** | **40** | **6** | **34** |
+| **Total** | **41** | **14** | **27** |
 
 For webhook delivery mechanics, retry schedule, and signature verification, see the [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol).
 

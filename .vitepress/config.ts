@@ -425,6 +425,11 @@ export default defineConfig({
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Managing Webhooks', link: '/how-to/managing-webhooks' },
             { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },
+            { text: 'Using the Dashboard', link: '/how-to/using-the-cycles-dashboard' },
+            { text: 'Bulk Actions for Tenants and Webhooks', link: '/how-to/using-bulk-actions-for-tenants-and-webhooks' },
+            { text: 'Searching and Sorting Admin Lists', link: '/how-to/searching-and-sorting-admin-list-endpoints' },
+            { text: 'Rolling Over Billing Periods (RESET_SPENT)', link: '/how-to/rolling-over-billing-periods-with-reset-spent' },
+            { text: 'Force-Releasing Stuck Reservations', link: '/how-to/force-releasing-stuck-reservations-as-an-operator' },
           ]
         },
         {
