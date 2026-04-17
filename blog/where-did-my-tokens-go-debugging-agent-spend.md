@@ -1,6 +1,6 @@
 ---
 title: "Where Did My Tokens Go? Debugging Agent Spend at Production Scale"
-date: 2026-04-19
+date: 2026-04-17
 author: Albert Mavashev
 tags: [engineering, debugging, observability, agents, cost-attribution, runtime-authority]
 description: "Debug AI agent spend with scope paths, event streams, and correlation IDs — what Cycles' six live events and balance API actually let you pivot on when the bill triples."
