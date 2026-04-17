@@ -51,7 +51,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.18
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.26
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -61,7 +61,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.8
+    image: ghcr.io/runcycles/cycles-server:0.1.25.13
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -71,7 +71,7 @@ services:
       redis: { condition: service_healthy }
   # Optional: webhook event delivery service (port 7980)
   cycles-events:
-    image: ghcr.io/runcycles/cycles-server-events:0.1.25.5
+    image: ghcr.io/runcycles/cycles-server-events:0.1.25.6
     ports: ["7980:7980"]
     environment:
       REDIS_HOST: redis
@@ -206,7 +206,7 @@ services:
       retries: 5
 
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.18
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.26
     ports:
       - "7979:7979"
     environment:
@@ -219,7 +219,7 @@ services:
         condition: service_healthy
 
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.8
+    image: ghcr.io/runcycles/cycles-server:0.1.25.13
     ports:
       - "7878:7878"
     environment:
@@ -235,7 +235,7 @@ services:
   # for production: export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
   # Docs: https://runcycles.io/quickstart/deploying-the-events-service
   # cycles-events:
-  #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.5
+  #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.6
   #   ports:
   #     - "7980:7980"
   #   environment:
@@ -258,7 +258,7 @@ docker compose up -d
 ```
 
 ::: tip Version pinning
-The examples above pin specific versions (admin `0.1.25.18`, server `0.1.25.8`, events `0.1.25.5`). Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
+The examples above pin specific versions (admin `0.1.25.26`, server `0.1.25.13`, events `0.1.25.6`). Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions. Admin, runtime, and events ship on independent release cadences — bumping one does not require bumping the others.
 :::
 
 Verify all services are healthy:

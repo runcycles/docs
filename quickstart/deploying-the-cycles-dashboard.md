@@ -34,6 +34,13 @@ A single pane for all operator tasks, capability-gated by the admin key:
 
 Incident-response actions (freeze budget, suspend tenant, revoke API key, pause webhook, force-release reservation, emergency tenant-wide freeze) are one-click with confirmation and blast-radius summaries.
 
+### Power-user features (v0.1.25.24+)
+
+- **Command palette** — press `Cmd+K` on macOS or `Ctrl+K` on Linux/Windows to jump to any tenant, budget, webhook, or API key by ID or name. The palette also exposes the common incident actions without navigating.
+- **Bulk action lanes** — the Tenants and Webhooks pages expose a filter-then-bulk workflow that maps onto the admin bulk endpoints (`POST /v1/admin/tenants/bulk-action`, `POST /v1/admin/webhooks/bulk-action`). The UI surfaces the `expected_count` safety gate, the 500-match `LIMIT_EXCEEDED` ceiling, and per-row succeeded/failed/skipped results.
+- **Tenant hierarchy breadcrumbs** — detail pages show `tenant → workspace → app → workflow` so operators can navigate back up the scope path without losing context.
+- **RESET_SPENT inline funding** — the Budgets page exposes `RESET_SPENT` alongside `RESET`, clearing `spent` for a new billing period without disturbing `reserved`/`debt`. Matches the server-side funding operation added in `cycles-server-admin` v0.1.25.18.
+
 ## Architecture
 
 The dashboard is a static SPA served by nginx. It talks to **two backends** — the governance plane (`cycles-server-admin`) for tenants, budgets, policies, webhooks, events, and audit; and the runtime plane (`cycles-server`) for reservation force-release during incident response. Both are reverse-proxied through the dashboard's own nginx so the browser sees everything as same-origin and CORS is not involved in a standard production deployment.
@@ -95,7 +102,7 @@ services:
       - cycles
 
   dashboard:
-    image: ghcr.io/runcycles/cycles-dashboard:0.1.25.27
+    image: ghcr.io/runcycles/cycles-dashboard:0.1.25.28
     restart: unless-stopped
     # No exposed ports — only reachable through Caddy.
     depends_on:
@@ -110,7 +117,7 @@ services:
   # Its ADMIN_API_KEY must match cycles-admin's so admin-on-behalf-of calls
   # authenticate on both sides.
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.8
+    image: ghcr.io/runcycles/cycles-server:0.1.25.13
     restart: unless-stopped
     environment:
       REDIS_HOST: redis
@@ -132,7 +139,7 @@ services:
 
   # Governance plane — tenants, budgets, policies, webhooks, events, audit.
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.18
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.26
     restart: unless-stopped
     environment:
       REDIS_HOST: redis

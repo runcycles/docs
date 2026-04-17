@@ -32,7 +32,7 @@ docker run -d --name cycles-events \
   -e REDIS_PORT=6379 \
   -e REDIS_PASSWORD=your-redis-password \
   -e WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-  ghcr.io/runcycles/cycles-server-events:0.1.25.5
+  ghcr.io/runcycles/cycles-server-events:0.1.25.6
 ```
 
 ### From JAR
@@ -112,6 +112,33 @@ In Docker, the Dockerfile includes a built-in health check (30s interval, 60s st
    - Fresh deliveries are processed normally via BRPOP
    - `RetentionCleanupService` trims orphaned ZSET index entries hourly
 5. **No data loss for events** — event records persist in Redis for 90 days regardless of delivery status
+
+## Auto-disable for persistently failing subscriptions
+
+The events service tracks `consecutive_failures` per subscription. When the counter reaches `disable_after_failures` (default **10**), the subscription transitions to `DISABLED` and no further deliveries are attempted. The counter resets to 0 on any successful delivery. Re-enable a disabled subscription with `PATCH /v1/admin/webhooks/{id}` once the receiver is healthy.
+
+Stale deliveries (older than `MAX_DELIVERY_AGE_MS`, default 24h) are marked `FAILED` without attempting HTTP delivery. This prevents a large backlog from triggering thundering-herd traffic against a receiver after a long events-service outage.
+
+Signing secrets are encrypted at rest with AES-256-GCM using `WEBHOOK_SECRET_ENCRYPTION_KEY` (v0.1.25.2+). The events service decrypts per delivery; plaintext never lives on disk.
+
+## Prometheus metrics
+
+The events service publishes webhook delivery metrics under the `cycles_webhook_*` namespace on `/actuator/prometheus` (v0.1.25.6+):
+
+| Metric | Tags | Description |
+|--------|------|-------------|
+| `cycles_webhook_delivery_attempts_total` | `tenant`, `event_type` | Every outbound HTTP attempt (including retries) |
+| `cycles_webhook_delivery_success_total` | `tenant`, `event_type`, `status_code_family` (`2xx`/`3xx`/`4xx`/`5xx`) | Attempts that received HTTP 2xx |
+| `cycles_webhook_delivery_failed_total` | `tenant`, `event_type`, `reason` | Failed attempts, bucketed by failure reason |
+| `cycles_webhook_delivery_retried_total` | `tenant`, `event_type` | Retry attempts scheduled on the `dispatch:retry` ZSET |
+| `cycles_webhook_delivery_stale_total` | `tenant` | Deliveries auto-failed by the `MAX_DELIVERY_AGE_MS` gate |
+| `cycles_webhook_subscription_auto_disabled_total` | `tenant`, `reason` | Subscriptions transitioned to `DISABLED` after `disable_after_failures` |
+| `cycles_webhook_delivery_latency_seconds` | `tenant`, `event_type`, `outcome` | Timer — HTTP RTT per delivery attempt |
+| `cycles_webhook_events_payload_invalid_total` | `type`, `rule` | Event payload validation discrepancies (no tenant tag — shape issue, not traffic) |
+
+The `tenant` tag on all counters is gated by `cycles.metrics.tenant-tag.enabled` (default `true`) — set to `false` in deployments with many thousands of tenants to bound Prometheus cardinality.
+
+Alert on `cycles_webhook_subscription_auto_disabled_total` (any increase is a receiver health issue) and on a sustained rise in `cycles_webhook_delivery_failed_total{reason=!~"client_4xx"}` (non-client-error failures indicate dispatch issues).
 
 ## Scaling
 

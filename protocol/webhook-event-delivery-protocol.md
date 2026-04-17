@@ -169,6 +169,12 @@ After `disable_after_failures` (default 10) consecutive delivery failures, the s
 
 Deliveries older than `MAX_DELIVERY_AGE_MS` (default 24 hours) are automatically marked FAILED without attempting HTTP delivery. This prevents delivering stale events after a prolonged events service outage.
 
+## Transport
+
+Outbound webhook deliveries negotiate **HTTP/1.1 only** (no HTTP/2 / h2c). This was pinned in `cycles-server-events` v0.1.25.5 to close a silent body-drop bug against HTTP/2 reverse proxies that upgrade `http://` to h2c (closes `cycles-server-events#16`). Receivers behind HTTP/1.1-only proxies were unaffected; receivers behind HTTP/2-capable proxies gain consistent body delivery.
+
+Response bodies are discarded (`HttpResponse.BodyHandlers.discarding()`) so large responses from misbehaving receivers don't pin memory.
+
 ## Signature verification
 
 The `X-Cycles-Signature` header contains `sha256=<hex>` where `<hex>` is the HMAC-SHA256 of the raw JSON request body using the subscription's signing secret as the key.

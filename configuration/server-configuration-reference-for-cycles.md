@@ -45,6 +45,14 @@ The expiry sweep scans for reservations past their TTL and marks them as `EXPIRE
 
 For most deployments, the default 5000ms is a good balance.
 
+## Metrics
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `cycles.metrics.tenant-tag.enabled` | `true` | `CYCLES_METRICS_TENANT_TAG_ENABLED` | When `true`, Prometheus counters include a `tenant` label. Set to `false` in deployments with many thousands of tenants to bound series cardinality. |
+
+The runtime server publishes these domain counters (introduced in v0.1.25.10): `cycles_reservations_reserve_total`, `cycles_reservations_commit_total`, `cycles_reservations_release_total`, `cycles_reservations_extend_total`, `cycles_reservations_expired_total`, `cycles_events_total`, `cycles_overdraft_incurred_total`. The events service mirrors the same toggle for its `cycles_webhook_*` counters so both services can be flipped together.
+
 ## JSON serialization
 
 | Property | Default | Description |
@@ -212,6 +220,25 @@ The Cycles Admin Server (`cycles-admin-service`) is a separate service that mana
 | `springdoc.swagger-ui.enabled` | `false` | `SWAGGER_ENABLED` | Swagger UI is disabled by default on the admin server; set to `true` to enable. |
 | `logging.level.io.runcycles.admin` | `INFO` | `LOG_LEVEL` | Admin-specific log level. |
 
+### Audit log retention
+
+Introduced in `cycles-server-admin` v0.1.25.20 for SOC2-compliant defaults. Failed requests (401/403/400/404/409/500) are now recorded alongside successes; retention is tiered so pre-auth failures expire faster than authenticated entries.
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `audit.retention.authenticated.days` | `400` | `AUDIT_RETENTION_AUTHENTICATED_DAYS` | TTL on authenticated audit entries (success + authenticated failures). `400` covers the SOC2 Type II 12-month lookback + 1-month auditor-engagement buffer. Set to `0` for indefinite retention (legal hold, HIPAA-adjacent). |
+| `audit.retention.unauthenticated.days` | `30` | `AUDIT_RETENTION_UNAUTHENTICATED_DAYS` | TTL on pre-auth failures (sentinel tenant `<unauthenticated>`). Enough for brute-force / credential-stuffing post-mortem. Aggregate volume stays visible via Prometheus regardless of TTL. Set to `0` for indefinite. |
+| `audit.sample.unauthenticated` | `1` | `AUDIT_SAMPLE_UNAUTHENTICATED` | Sampling rate on unauthenticated entries (`1` = every entry, `100` = 1 in 100). Opt-in hardening against failed-auth floods on internet-exposed admin endpoints. Authenticated entries are **never** sampled. |
+| `audit.sweep.cron` | `0 0 3 * * *` | — | Cron for the daily audit-index sweep. Purges TTL-expired pointers from the `audit:logs:_all` + per-tenant sorted-set indexes. Skipped entirely when `audit.retention.authenticated.days=0`. |
+
+**Alerting.** The Prometheus counter `cycles_admin_audit_writes_total{path_class, outcome}` tracks audit-write health. Alert on `outcome=error` nonzero — audit writes are non-fatal to the request, but silent coverage loss is the exact failure mode the tiered TTL is designed to prevent:
+
+```
+sum(rate(cycles_admin_audit_writes_total{outcome="error"}[5m])) > 0
+```
+
+**Semantic change for audit-log consumers.** Dashboards that assumed "audit entry exists ⇒ operation succeeded" must now check the entry's `status` or `error_code` field. Queries filtered by `status=201/200/204` return exactly the same rows as v0.1.25.19. See [Admin API guide](/admin-api/guide) for field semantics.
+
 ### Admin server Kubernetes probes
 
 Unlike the runtime and events services, the admin server enables Spring Boot's liveness/readiness probes out of the box (`management.endpoint.health.probes.enabled=true`). In Kubernetes, wire probes to these paths:
@@ -299,6 +326,7 @@ The events delivery service (`cycles-server-events`, port 7980) is an optional c
 | `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
 | `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
 | `events.retention.cleanup-interval-ms` / `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+| `cycles.metrics.tenant-tag.enabled` | `true` | Same toggle as the runtime. When `false`, `cycles_webhook_*` counters drop the `tenant` label to bound cardinality. |
 
 ### Per-subscription retry policy
 
@@ -312,6 +340,21 @@ Each subscription carries a `retry_policy` applied by the dispatcher's exponenti
 | `max_delay_ms` | 60000 | Ceiling for the computed backoff delay. |
 
 A delivery that exceeds `dispatch.max-delivery-age-ms` (default 24h) is failed immediately regardless of remaining retries.
+
+### Events service metrics
+
+Introduced in `cycles-server-events` v0.1.25.6. Seven counters and one latency timer under the `cycles_webhook_*` namespace, with `tenant` and `event_type` labels (gated by `cycles.metrics.tenant-tag.enabled`):
+
+- `cycles_webhook_delivery_attempts_total` — every attempted delivery.
+- `cycles_webhook_delivery_success_total{status_code_family}` — 2xx responses.
+- `cycles_webhook_delivery_failed_total{reason}` — terminal failures (post-retry).
+- `cycles_webhook_delivery_retried_total` — retries scheduled.
+- `cycles_webhook_delivery_stale_total` — dropped due to `MAX_DELIVERY_AGE_MS`.
+- `cycles_webhook_subscription_auto_disabled_total{reason}` — subscriptions disabled after consecutive failures (`disable_after_failures`, default `10`).
+- `cycles_webhook_events_payload_invalid_total{type, rule}` — non-fatal payload-validator warnings. Never drops events.
+- `cycles_webhook_delivery_latency_seconds{outcome}` — attempt latency histogram.
+
+See the events service `OPERATIONS.md` for full alerting recipes.
 
 ### Encryption key (shared across all services)
 

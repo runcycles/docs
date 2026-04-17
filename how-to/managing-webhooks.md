@@ -208,6 +208,17 @@ redis-cli ZCARD dispatch:retry
 
 If `dispatch:pending` grows continuously, the events service may be down or overwhelmed.
 
+### Prometheus metrics (v0.1.25.6+)
+
+The events service publishes webhook delivery metrics on `/actuator/prometheus` under the `cycles_webhook_*` namespace. The operationally most useful alerts:
+
+- **`cycles_webhook_subscription_auto_disabled_total`** — any increase means a receiver has gone from healthy to dead. Page on `rate(cycles_webhook_subscription_auto_disabled_total[5m]) > 0`.
+- **`cycles_webhook_delivery_failed_total`** — failed delivery attempts, tagged by `reason`. Spikes in non-client-error reasons (`connect_timeout`, `read_timeout`, `5xx`) signal either a widespread receiver outage or a configuration regression.
+- **`cycles_webhook_delivery_stale_total`** — non-zero means the `MAX_DELIVERY_AGE_MS` gate (default 24h) is firing. Usually benign after an events-service outage; persistently firing means dispatch is not catching up.
+- **`cycles_webhook_delivery_latency_seconds`** — Timer with `outcome` tag. Watch p99 — a creeping tail latency is often the first signal that a receiver is degrading before it starts outright failing.
+
+See [Deploying the Events Service](/quickstart/deploying-the-events-service#prometheus-metrics) for the full metric inventory.
+
 ## Handling Failures
 
 ### Subscription statuses
@@ -377,7 +388,7 @@ curl "http://localhost:7979/v1/events?event_type=budget.exhausted" \
   -H "X-Cycles-API-Key: $TENANT_API_KEY"
 ```
 
-**Required permissions:** `webhooks:write` (create/update/delete), `webhooks:read` (list), `events:read` (query events). These are not included in default key permissions — they must be explicitly requested at key creation. See [API Key Permissions](/how-to/api-key-management-in-cycles#available-permissions-23-total) for the full list.
+**Required permissions:** `webhooks:write` (create/update/delete), `webhooks:read` (list), `events:read` (query events). These are not included in default key permissions — they must be explicitly requested at key creation. See [API Key Permissions](/how-to/api-key-management-in-cycles#available-permissions-27-total) for the full list.
 
 ## Webhook URL Security
 
