@@ -1,6 +1,6 @@
 ---
 title: "Tracking Tokens and Cost in a Streaming LLM Response"
-date: 2026-04-20
+date: 2026-04-19
 author: Albert Mavashev
 tags: [engineering, streaming, llm, budget-enforcement, python, openai]
 description: "Streaming LLM cost tracking breaks reserve-commit in four ways. A Python context manager for OpenAI + Anthropic budget enforcement that handles all four."
