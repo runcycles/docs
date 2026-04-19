@@ -15,7 +15,12 @@ export interface PostData {
 export declare const data: PostData[]
 
 function estimateReadingTime(html: string): number {
-  const text = html.replace(/<[^>]*>/g, '')
+  let text = html
+  let prev: string
+  do {
+    prev = text
+    text = text.replace(/<[^>]*>/g, '')
+  } while (text !== prev)
   const words = text.split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.ceil(words / 230))
 }
