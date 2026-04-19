@@ -50,15 +50,28 @@ Press `Cmd+K` on macOS or `Ctrl+K` on Linux/Windows to open the palette. It sear
 
 ### Bulk action lanes
 
-The Tenants and Webhooks pages expose a filter-then-bulk workflow:
+The Tenants, Webhooks, and Budgets pages expose a filter-then-bulk workflow:
 
 1. Apply filters in the page toolbar (`status`, `plan`, `over_limit`, etc.) until the row count is what you want to act on.
 2. Click **Bulk action**. A side panel opens with the `expected_count` pre-filled from the current filter.
-3. Pick the action. Tenants: `SUSPEND`, `REACTIVATE`, `CLOSE`. Webhooks: `PAUSE`, `RESUME`, `DELETE`. A blast-radius summary confirms before execution.
-4. The dashboard calls `POST /v1/admin/tenants/bulk-action` or `POST /v1/admin/webhooks/bulk-action` with the filter, the `expected_count` safety gate, and an idempotency key generated from the current session.
-5. The result panel shows per-row `succeeded`, `failed`, `skipped` lists. Failed rows show the per-row `error_code`.
+3. Pick the action. Tenants: `SUSPEND`, `REACTIVATE`, `CLOSE`. Webhooks: `PAUSE`, `RESUME`, `DELETE`. Budgets (v0.1.25.35+, requires admin v0.1.25.29+): `CREDIT`, `DEBIT`, `RESET`, `RESET_SPENT`, `REPAY_DEBT`. A blast-radius summary confirms before execution.
+4. The dashboard calls `POST /v1/admin/tenants/bulk-action`, `/v1/admin/webhooks/bulk-action`, or `/v1/admin/budgets/bulk-action` with the filter, the `expected_count` safety gate, and an idempotency key generated from the current session.
+5. The result panel shows per-row `succeeded`, `failed`, `skipped` lists — rendered in a `BulkActionResultDialog` (v0.1.25.34+) with per-row copy-ID affordances and operator-friendly error messages sourced from the shared `errorCodeMessages` catalog. Failed rows show the per-row `error_code`.
+
+**Row-select variant (v0.1.25.36).** The Budgets view also supports row-select bulk Freeze and Unfreeze — select individual checkboxes across filtered rows rather than applying to the whole filter. Row-select bulk failures open the same `BulkActionResultDialog` with per-row status.
 
 See [Using Bulk Actions](/how-to/using-bulk-actions-for-tenants-and-webhooks) for the full request shape and error taxonomy.
+
+### Cross-surface correlation chip (v0.1.25.39)
+
+Every row on Events, Audit, and WebhookDeliveries views carries a **correlation chip** with three identifiers — `trace_id`, `request_id`, `correlation_id` (see [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for what each one scopes). Clicking any identifier opens a pivot menu:
+
+- Click `trace_id` on an Audit row → EventsView filtered to the same trace, plus a side panel with every webhook delivery dispatched under that trace.
+- Click `trace_id` on an Events row → AuditView filtered to the originating entry.
+- Click `correlation_id` on an EventTimeline row → EventsView filtered to all events in the same cluster (v0.1.25.37+).
+- Copy-to-clipboard icon on the chip for sharing into tickets or chat.
+
+This is how operator triage starts in v0.1.25: pull a `trace_id` out of a failing response header (`X-Cycles-Trace-Id`) or error body, paste into the dashboard command palette, and follow the chip through the four views. Requires `cycles-server-admin` v0.1.25.31+ for server-side support. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 
 ### Tenant hierarchy breadcrumbs
 
@@ -78,6 +91,7 @@ Every destructive action is one-click with a confirmation and a blast-radius sum
 |--------|------|-------------|
 | Freeze budget | Budgets / Budget detail | `PATCH /v1/admin/budgets?status=FROZEN` |
 | Unfreeze budget | Budgets | `PATCH /v1/admin/budgets?status=ACTIVE` |
+| Bulk Freeze / Unfreeze budgets (v0.1.25.36+) | Budgets — row-select + floating toolbar | `POST /v1/admin/budgets/bulk-action` |
 | Suspend tenant | Tenants / Tenant detail | `PATCH /v1/admin/tenants/{id}` |
 | Reactivate tenant | Tenants | `PATCH /v1/admin/tenants/{id}` |
 | Revoke API key | API Keys | `DELETE /v1/admin/api-keys/{id}` |
@@ -100,13 +114,17 @@ The Events page is correlation-first, not time-first:
 
 Events poll every 15 seconds (the most aggressive of any page) because incident response typically starts here.
 
+Per-row **Copy JSON** (v0.1.25.37+) is available on every surface rendering an event, audit entry, event-timeline entry, or webhook delivery — part of the shared triage affordances extracted to the icon library in v0.1.25.40. The correlation chip (trace_id / request_id / correlation_id) is available on the same rows.
+
 ## Audit page
 
 Audit is the one page that is manual-only. You build a query, press **Run Query**, and the dashboard calls `GET /v1/admin/audit/logs` with the filter you built.
 
-Supported filters mirror the audit endpoint: `tenant_id`, `actor_type`, `action_kind`, `idempotency_key`, `bulk_idempotency_key`, `request_id`, time range. Results can be exported as CSV or JSON for compliance review.
+Supported filters (v0.1.25.33 UI + v0.1.25.27 server DSL): `tenant_id`, `actor_type`, `action_kind`, `idempotency_key`, `bulk_idempotency_key`, `request_id`, `trace_id`, `error_code` (IN-list), `error_code_exclude` (NOT-IN-list), `status_min` / `status_max` (range), `operation` (IN-list), `resource_type` (typeahead + IN-list), free-text `search`, time range. Deep-link URL params (`?error_code_exclude=`, `?status_min=`) support sharable filter state. Results can be exported as CSV or JSON for compliance review.
 
-Failed-request entries (added in `cycles-server-admin` v0.1.25.20) are included in results. Their `tenant_id` is the sentinel `<unauthenticated>` and they carry `status` (HTTP code) and `error_code` fields. The tiered retention model applies — authenticated entries live 400 days by default, unauthenticated entries 30 days.
+Bulk-action audit rows expand into a structured detail panel (v0.1.25.38) that renders `succeeded_ids`, `failed_rows`, `skipped_rows`, `filter` echo, and `duration_ms` as a first-class layout instead of raw JSON — per-row copy affordances are wired for immediate triage.
+
+Failed-request entries (added in `cycles-server-admin` v0.1.25.20) are included in results. In v0.1.25.28+ servers, their `tenant_id` is `__unauth__` (pre-auth failures) or `__admin__` (admin-plane ops); pre-.28 rows continue to show the historical `<unauthenticated>` literal. All three are queryable from the Audit filter dropdown. Tiered retention — authenticated entries live 400 days by default, unauthenticated entries 30 days.
 
 ## Monitoring the dashboard itself
 

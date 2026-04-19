@@ -17,8 +17,13 @@ Every webhook delivery includes these HTTP headers:
 | `X-Cycles-Signature` | `sha256=<hex>` | HMAC-SHA256 of the raw body using the signing secret. Omitted if no signing secret is configured. |
 | `X-Cycles-Event-Id` | `evt_abc123...` | Unique event ID. Use for deduplication. |
 | `X-Cycles-Event-Type` | `budget.exhausted` | Dot-notation event type for routing. |
+| `X-Cycles-Trace-Id` | `0af7651916cd43dd8448eb211c80319c` | 32-hex W3C Trace Context identifier for the logical operation this event belongs to. Always present on deliveries from v0.1.25.7+ events services. |
+| `traceparent` | `00-<trace_id>-<16-hex-span>-<flags>` | W3C Trace Context v00. `trace_id` matches `X-Cycles-Trace-Id`. `span-id` is freshly generated per delivery (not reused from the inbound request). `trace-flags` preserves the inbound sampling decision when the originating request had a valid `traceparent`, otherwise defaults to `01` (sampled). Always present on v0.1.25.7+ events services. |
+| `X-Request-Id` | `req-abc-123` | Present when the originating event carries `request_id`. Narrows to side effects of one HTTP request (vs. `X-Cycles-Trace-Id` which may span many). v0.1.25.7+ events services. |
 | `User-Agent` | `cycles-server-events/0.1.25.x` | Service identifier and version. Exact patch suffix tracks the shipped events-service build. |
 | Custom headers | Per subscription | From the subscription's `headers` map. |
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract on `trace_id` precedence and propagation.
 
 ## Payload format
 
@@ -46,13 +51,16 @@ The body is a JSON-serialized Event object:
     "remaining": 0,
     "spent": 10000
   },
-  "correlation_id": "req_789",
+  "correlation_id": "batch_nightly_2026_04_18",
   "request_id": "req_789",
+  "trace_id": "0af7651916cd43dd8448eb211c80319c",
   "metadata": {}
 }
 ```
 
-Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` are optional (omitted when null).
+Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, `trace_id`, and `metadata` are optional (omitted when null).
+
+**Correlation fields.** `request_id` narrows to one HTTP request; `trace_id` (32-hex W3C) narrows to one logical operation (may span many requests); `correlation_id` is operator-populated and groups a family of related events. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 
 ## Event types (41)
 

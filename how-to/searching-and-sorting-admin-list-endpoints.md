@@ -140,6 +140,46 @@ curl -G "http://localhost:7979/v1/admin/api-keys" \
   --data-urlencode "sort_dir=desc" | jq .
 ```
 
+## Audit log filter DSL (v0.1.25.27)
+
+`GET /v1/admin/audit/logs` supports a richer filter DSL than the other list endpoints. In addition to `search`, `sort_by`, and `sort_dir`, it accepts:
+
+| Parameter | Type | Purpose |
+|---|---|---|
+| `error_code` | array (max 25) | Exact-or-IN-list on `error_code`. Comma-separated form (`?error_code=a,b`). NULL (success rows) does not match. |
+| `error_code_exclude` | array (max 25) | NOT-IN-list. NULL always passes. Combine with `error_code` via AND. |
+| `status_min` | integer 100–599 | Inclusive lower bound. Mutually exclusive with exact `status`. |
+| `status_max` | integer 100–599 | Inclusive upper bound. `status_min > status_max` returns 400. |
+| `operation` | array (max 25) | Promoted from scalar. `?operation=createBudget,updateBudget`. |
+| `resource_type` | array (max 25) | Same shape. |
+| `trace_id` | 32-hex | Exact-match JOIN across events and webhook deliveries (v0.1.25.31). See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles). |
+| `request_id` | string | Exact-match on per-HTTP-request id (v0.1.25.31). |
+
+Also, `search` on `listAuditLogs` was extended to match `error_code` and `operation` in addition to `resource_id` / `log_id` — useful when you remember "`BUDGET_EXCEEDED` was involved" but not the full resource id.
+
+```bash
+# 5xx failures on budget endpoints in the last hour, not counting known idempotency noise
+curl -G 'http://localhost:7979/v1/admin/audit/logs' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  --data-urlencode "status_min=500" \
+  --data-urlencode "resource_type=budget" \
+  --data-urlencode "error_code_exclude=IDEMPOTENCY_MISMATCH" \
+  --data-urlencode "from_ts=2026-04-18T12:00:00Z" | jq .
+
+# Everything admins did cross-tenant today
+curl -G 'http://localhost:7979/v1/admin/audit/logs' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  --data-urlencode "tenant_id=__admin__" \
+  --data-urlencode "from_ts=2026-04-18T00:00:00Z" | jq .
+```
+
+### Tenant sentinels (v0.1.25.28)
+
+- `__admin__` — admin-plane operations not scoped to a tenant (governance ops, cross-tenant reads, admin-plane 4xx/5xx). Authenticated-tier retention.
+- `__unauth__` — pre-authentication failures. Unauthenticated-tier retention, subject to `audit.sample.unauthenticated`.
+
+v0.1.25.28 renamed the previous single `<unauthenticated>` sentinel. Historical rows keep their `<unauthenticated>` literal and age out under the unauth-tier TTL; migrate queries to `__unauth__` (pre-auth failures only) or `__admin__` (new platform-admin slice).
+
 ## Hydration cap on sorted reservation listings
 
 On `/v1/reservations`, the sorted path caps the pre-sort working set at `SORTED_HYDRATE_CAP = 2000` rows per page (v0.1.25.13+). If your filter matches more than 2000 rows, the server logs a WARN and fills the page from the capped slice — the sort is only approximately global.

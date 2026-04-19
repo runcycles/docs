@@ -1,20 +1,21 @@
 ---
-title: "Using Bulk Actions for Tenants and Webhooks"
-description: "Suspend, reactivate, pause, resume, or delete tenants and webhooks in bulk against the Cycles admin API, with idempotency, 500-row safety gates, and per-row outcome buckets."
+title: "Using Bulk Actions for Tenants, Webhooks, and Budgets"
+description: "Suspend, reactivate, pause, resume, delete, or fund fleets of tenants, webhooks, and budgets against the Cycles admin API, with idempotency, 500-row safety gates, and per-row outcome buckets."
 ---
 
-# Using Bulk Actions for Tenants and Webhooks
+# Using Bulk Actions for Tenants, Webhooks, and Budgets
 
-Bulk actions let a single admin call suspend hundreds of tenants, pause a fleet of noisy webhooks, or reactivate a batch after an incident is resolved. They ship in `cycles-server-admin` v0.1.25.26 against governance spec v0.1.25.21, and surface in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) as filter-then-bulk lanes on the Tenants and Webhooks pages.
+Bulk actions let a single admin call suspend hundreds of tenants, pause a fleet of noisy webhooks, reactivate a batch after an incident is resolved, or roll every budget to a new billing period. They ship in `cycles-server-admin` v0.1.25.26 (tenants + webhooks) and v0.1.25.29 (budgets), against governance spec v0.1.25.21 and .26 respectively, and surface in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) as filter-then-bulk lanes on the Tenants, Webhooks, and Budgets pages.
 
 The endpoints:
 
-| Endpoint | Supported actions |
-|----------|-------------------|
-| `POST /v1/admin/tenants/bulk-action` | `SUSPEND`, `REACTIVATE`, `CLOSE` |
-| `POST /v1/admin/webhooks/bulk-action` | `PAUSE`, `RESUME`, `DELETE` |
+| Endpoint | Supported actions | Since |
+|----------|-------------------|-------|
+| `POST /v1/admin/tenants/bulk-action` | `SUSPEND`, `REACTIVATE`, `CLOSE` | v0.1.25.26 |
+| `POST /v1/admin/webhooks/bulk-action` | `PAUSE`, `RESUME`, `DELETE` | v0.1.25.26 |
+| `POST /v1/admin/budgets/bulk-action` | `CREDIT`, `DEBIT`, `RESET`, `REPAY_DEBT`, `RESET_SPENT` | v0.1.25.29 |
 
-Both accept the same request shape and return the same response envelope.
+All three accept the same envelope and return the same response shape. Budget bulk-action has two extra requirements covered in the [Budget bulk-action](#budget-bulk-action) section below.
 
 ## Request shape
 
@@ -116,7 +117,7 @@ Bulk calls are idempotent on `idempotency_key`. A replay within the 15-minute wi
 
 ## Audit trail
 
-One audit entry is written per bulk invocation (not per row). Its metadata captures the full outcome:
+One audit entry is written per bulk invocation (not per row). As of v0.1.25.30 its metadata captures the full per-row outcome plus filter echo and wall-clock duration — enough to triage a failure without re-running the op or capturing the synchronous response:
 
 ```json
 {
@@ -130,20 +131,77 @@ One audit entry is written per bulk invocation (not per row). Its metadata captu
     "succeeded": 40,
     "failed": 1,
     "skipped": 1,
+    "succeeded_ids": ["tenant_1", "tenant_2", "..."],
+    "failed_rows": [
+      {"id": "tenant_7", "error_code": "INVALID_TRANSITION", "message": "Already SUSPENDED"}
+    ],
+    "skipped_rows": [
+      {"id": "tenant_9", "reason": "ALREADY_IN_TARGET_STATE"}
+    ],
+    "filter": { "status": "ACTIVE", "search": "trial-" },
+    "duration_ms": 1245,
     "idempotency_key": "ops-2026-04-17-freeze-abusers"
   }
 }
 ```
+
+Worst-case audit row size is ~40 KB at the 500-row bulk cap. Audit tooling that caps on entry-level JSON size should review.
 
 Query bulk-action entries:
 
 ```bash
 curl -G "http://localhost:7979/v1/admin/audit/logs" \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
-  --data-urlencode "operation=bulkActionTenants" | jq .
+  --data-urlencode "operation=bulkActionTenants,bulkActionWebhooks,bulkActionBudgets" | jq .
 ```
 
-Per-row outcomes live in the response envelope, not the audit log — capture the response body to your runbook if you need a permanent record of which specific rows landed in each bucket.
+The `operation` param was promoted to an array in v0.1.25.27 — you can OR across all three bulk operations in one query.
+
+## Budget bulk-action
+
+Budget bulk-action (v0.1.25.29) follows the same envelope as tenants and webhooks with two differences: `filter.tenant_id` is REQUIRED, and most actions require an `amount`.
+
+```bash
+# End-of-month period rollover for one tenant
+curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "tenant_id": "acme-corp", "unit": "USD_MICROCENTS" },
+    "action": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "expected_count": 8,
+    "idempotency_key": "period-rollover-2026-05-01-acme"
+  }'
+
+# Debt cleanup on over-limit budgets
+curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "tenant_id": "acme-corp", "has_debt": true },
+    "action": "REPAY_DEBT",
+    "amount": { "amount": 500000, "unit": "USD_MICROCENTS" },
+    "expected_count": 3,
+    "idempotency_key": "debt-cleanup-2026-04-18-acme"
+  }'
+```
+
+### Differences vs. tenants / webhooks
+
+- **`filter.tenant_id` is REQUIRED.** Cross-tenant budget bulk is explicitly out of scope — returns 400 if blank. If you're operating across many tenants, iterate over tenants and make one bulk call per tenant.
+- **`amount` is required for all 5 actions.** `CREDIT`, `DEBIT`, `RESET`, `RESET_SPENT`, `REPAY_DEBT` all move value; there is no "state transition only" action like `SUSPEND` on tenants.
+- **`spent` is honored only on `RESET_SPENT`.** Use it to override the post-reset `spent` value (for prorated signups, migrations, or credit-back). Default is 0.
+- **Optional filters:** `scope_prefix`, `unit`, `status`, `over_limit`, `has_debt`, `utilization_min`, `utilization_max`, `search`. Same shape as `listBudgets`.
+- **Per-row idempotency.** The server derives `{idempotency_key}:{scope}:{unit}` per row and passes it to the underlying fund path, so retrying the failed subset on a tighter filter cannot double-apply CREDIT / DEBIT / RESET / RESET_SPENT / REPAY_DEBT against rows that already landed.
+- **Per-row `error_code`:** `BUDGET_EXCEEDED` (DEBIT would take remaining negative), `INVALID_TRANSITION` (unit mismatch / FROZEN / CLOSED), `NOT_FOUND` (ledger deleted between match and apply), `INTERNAL_ERROR`.
+- **Per-row `skipped` reasons.** Today only `REPAY_DEBT` on `debt==0` produces `ALREADY_IN_TARGET_STATE`.
+
+### When RESET_SPENT vs. RESET
+
+`RESET` resizes the `allocated` ceiling and preserves `spent`, `reserved`, and `debt`. Use it for plan changes ("this tenant upgraded from 500k to 1M").
+
+`RESET_SPENT` clears (or overrides) `spent` and preserves `allocated`, `reserved`, and `debt`. Use it for billing-period rollovers where outstanding reservations and debt must survive the boundary. See [Rolling Over Billing Periods with RESET_SPENT](/how-to/rolling-over-billing-periods-with-reset-spent).
 
 ## Recommended pattern
 

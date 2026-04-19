@@ -18,14 +18,18 @@ Every error response follows the same structure:
   "error": "BUDGET_EXCEEDED",
   "message": "Insufficient budget in scope tenant:acme",
   "request_id": "req-abc-123",
+  "trace_id": "0af7651916cd43dd8448eb211c80319c",
   "details": {}
 }
 ```
 
 - **error** — a machine-readable error code from the fixed enum
 - **message** — a human-readable explanation
-- **request_id** — a unique identifier for debugging and support
+- **request_id** — a unique identifier for one HTTP request
+- **trace_id** — OPTIONAL. 32-hex W3C Trace Context identifier for the logical operation this request belongs to. Conformant v0.1.25.14+ runtime servers and v0.1.25.31+ admin servers populate it on every error response. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 - **details** — optional additional context
+
+Every response — error or success — also carries an `X-Cycles-Trace-Id` HTTP response header with the same 32-hex identifier. Log both `request_id` and `trace_id` when handling errors; `trace_id` is the cross-plane join key for admin audit, events, and webhook delivery queries.
 
 ## The error codes
 
@@ -301,17 +305,22 @@ Errors interact with idempotency in specific ways:
 - **Payload mismatch:** if you reuse a key with a different payload, you get `409 IDEMPOTENCY_MISMATCH`.
 - **Failed original:** if the original request failed (e.g., BUDGET_EXCEEDED), retrying with the same key sends a fresh request. Idempotency only applies to successful operations.
 
-## The request_id field
+## Correlation identifiers
 
-Every error response includes a `request_id`.
+Every error response carries two server-generated identifiers:
 
-This is a server-generated identifier useful for:
+- **`request_id`** — unique per HTTP request. Useful for correlating errors with server logs, debugging with the Cycles operator, and tracking specific failures in client-side monitoring.
+- **`trace_id`** — 32-hex W3C Trace Context identifier. OPTIONAL on the schema; populated by conformant v0.1.25.14+ runtime and v0.1.25.31+ admin servers. Scopes a logical operation that may span multiple HTTP requests. Also echoed in the `X-Cycles-Trace-Id` response header.
 
-- correlating errors with server logs
-- debugging with the Cycles server operator
-- tracking specific failures in client-side monitoring
+Log both when handling errors. `trace_id` is usually the right choice for cross-plane root-cause analysis:
 
-Log the request_id when handling errors.
+```bash
+# Find everything that happened under one trace
+GET /v1/admin/audit/logs?trace_id=<32-hex>
+GET /v1/admin/events?trace_id=<32-hex>
+```
+
+`request_id` narrows to the side effects of one specific HTTP call. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract.
 
 ## Summary
 
@@ -329,11 +338,24 @@ Additionally, `/v1/decide` and dry-run reserve surface budget-state conditions v
 
 Handling these codes correctly is the difference between a fragile integration and a production-grade one.
 
+## Debugging with `trace_id`
+
+When an error response carries `trace_id`, the fastest way to reconstruct the full operation is a three-call walk across the admin plane:
+
+```bash
+TID=<value from X-Cycles-Trace-Id header or error-body trace_id>
+curl -s "http://localhost:7979/v1/admin/audit/logs?trace_id=$TID" -H "X-Admin-API-Key: $ADMIN_KEY"
+curl -s "http://localhost:7979/v1/admin/events?trace_id=$TID"     -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract (W3C Trace Context precedence, outbound headers on webhook deliveries, cross-plane propagation rules).
+
 ## Next steps
 
 To explore the Cycles stack:
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
+- [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) — `trace_id` as the cross-plane join key for debugging
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)

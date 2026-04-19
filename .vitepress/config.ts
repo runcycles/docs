@@ -389,6 +389,7 @@ export default defineConfig({
             { text: 'Webhook Event Delivery Protocol', link: '/protocol/webhook-event-delivery-protocol' },
             { text: 'Event Payloads Reference', link: '/protocol/event-payloads-reference' },
             { text: 'Webhook Scope Filter Syntax', link: '/protocol/webhook-scope-filter-syntax' },
+            { text: 'Correlation and Tracing', link: '/protocol/correlation-and-tracing-in-cycles' },
           ]
         },
         {
