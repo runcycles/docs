@@ -11,7 +11,8 @@
     "vitest": "^4.1.4"
   },
   "overrides": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "vite": ">=7.1.12"
   },
   "scripts": {
     "convert-spec": "node scripts/convert-spec.js",
