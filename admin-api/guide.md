@@ -384,16 +384,77 @@ Six admin list endpoints (`/v1/admin/tenants`, `/api-keys`, `/budgets`, `/webhoo
 
 `GET /v1/admin/audit/logs` now returns entries for **failed** requests (401/403/400/404/409/500) alongside successes. Each failure entry carries `status`, `error_code`, `metadata.error_message` (sanitized, 1024-char capped), `metadata.method`, `metadata.path`, and — on 500 — `metadata.exception_class`.
 
-Pre-auth failures are attributed to the sentinel tenant `<unauthenticated>`. Query them directly:
+Four query features landed in rapid succession on top of this foundation — sentinels (how pre-auth and admin-plane rows are tagged), filter DSL (how to slice the failure stream), correlation filters (how to join across planes), and tiered retention (how long each slice lives). They are covered separately below.
+
+### Tenant sentinels (v0.1.25.28)
+
+v0.1.25.28 split the previous single `<unauthenticated>` sentinel into two URL-safe values:
+
+| Sentinel | Meaning | Retention tier |
+|---|---|---|
+| `__admin__` | Request authenticated via `X-Admin-API-Key`, not scoped to a tenant (governance ops, cross-tenant reads, admin-plane 4xx/5xx) | Authenticated (default 400 days). Never sampled. |
+| `__unauth__` | Pre-authentication failure (missing / invalid / revoked key) | Unauthenticated (default 30 days). Subject to `audit.sample.unauthenticated`. |
 
 ```bash
-curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=%3Cunauthenticated%3E&limit=50' \
+# Admin-plane activity (new in v0.1.25.28)
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=__admin__&limit=50' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+
+# Pre-auth failures (was <unauthenticated>)
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=__unauth__&limit=50' \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
 ```
+
+**Migration note.** Auditor queries and dashboard filters hard-coded to `?tenant_id=<unauthenticated>` (or its URL-encoded form `%3Cunauthenticated%3E`) stop matching fresh writes the moment a server upgrades to v0.1.25.28. Historical rows written pre-.28 keep their literal `<unauthenticated>` value and age out under the unauth-tier TTL; no rewrite happens. Migrate queries to `__unauth__` (pre-auth failures only) or `__admin__` (new platform-admin slice).
 
 **Tiered TTL defaults** (SOC2 compliant out of the box): authenticated entries retained 400 days, unauthenticated entries 30 days. Set either `audit.retention.authenticated.days` or `audit.retention.unauthenticated.days` to `0` for indefinite retention. See [Server Configuration Reference → Audit log retention](/configuration/server-configuration-reference-for-cycles#audit-log-retention).
 
 **Semantic change for consumers.** Queries without a `status` filter (or with `status=4xx/5xx`) now surface failure entries that didn't exist in v0.1.25.19. Dashboards that assumed "audit entry exists ⇒ operation succeeded" must switch to checking `status` or `error_code`.
+
+### Filter DSL (v0.1.25.27)
+
+Four new query parameters on `GET /v1/admin/audit/logs` and two promoted to arrays:
+
+| Parameter | Type | Purpose |
+|---|---|---|
+| `error_code` | array (max 25) | Exact-or-IN-list on `AuditLogEntry.error_code`. NULL `error_code` (success rows) MUST NOT match. |
+| `error_code_exclude` | array (max 25) | NOT-IN-list. NULL `error_code` MUST always pass — don't hide successes when excluding failure codes. |
+| `status_min` | integer 100..599 | Inclusive lower bound. Mutually exclusive with exact `status`. |
+| `status_max` | integer 100..599 | Inclusive upper bound. `status_min > status_max` returns 400. |
+| `operation` | array (max 25) | Promoted from scalar. Comma-separated form: `?operation=createBudget,updateBudget`. Single scalar still parses correctly. |
+| `resource_type` | array (max 25) | Same shape. |
+
+Search was extended to match `error_code` and `operation` in addition to `resource_id` / `log_id` (128-char substring cap unchanged).
+
+```bash
+# All 4xx failures for budget operations today
+curl -s 'http://localhost:7979/v1/admin/audit/logs?status_min=400&status_max=499&resource_type=budget&from_ts=2026-04-18T00:00:00Z' \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Narrow to a set, minus a noisy subset
+curl -s 'http://localhost:7979/v1/admin/audit/logs?error_code=BUDGET_EXCEEDED,OVERDRAFT_LIMIT_EXCEEDED&error_code_exclude=IDEMPOTENCY_MISMATCH' \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+### Correlation filters (v0.1.25.31)
+
+Two exact-match filters that JOIN audit entries with events and webhook deliveries:
+
+| Parameter | Purpose |
+|---|---|
+| `trace_id` | 32-hex W3C Trace Context identifier. Narrows to audit rows for one logical operation. May span multiple HTTP requests. |
+| `request_id` | Narrows to audit rows for one specific HTTP request. |
+
+```bash
+# Walk one logical operation across planes
+TID=0af7651916cd43dd8448eb211c80319c
+curl -s "http://localhost:7979/v1/admin/audit/logs?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+curl -s "http://localhost:7979/v1/admin/events?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract.
 
 ## Bulk actions (v0.1.25.26)
 
@@ -430,7 +491,42 @@ curl -X POST http://localhost:7979/v1/admin/tenants/bulk-action \
 }
 ```
 
-Supported actions: `SUSPEND | REACTIVATE | CLOSE` on `/v1/admin/tenants/bulk-action`; `PAUSE | RESUME | DELETE` on `/v1/admin/webhooks/bulk-action`.
+Supported actions: `SUSPEND | REACTIVATE | CLOSE` on `/v1/admin/tenants/bulk-action`; `PAUSE | RESUME | DELETE` on `/v1/admin/webhooks/bulk-action`; `CREDIT | DEBIT | RESET | REPAY_DEBT | RESET_SPENT` on `/v1/admin/budgets/bulk-action` (v0.1.25.29+).
+
+### Budget bulk-action (v0.1.25.29)
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "tenant_id": "acme-corp", "unit": "USD_MICROCENTS" },
+    "action": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "expected_count": 8,
+    "idempotency_key": "period-rollover-2026-05-01-acme"
+  }'
+```
+
+- `filter.tenant_id` is REQUIRED (cross-tenant budget bulk is explicitly out of scope — 400 if blank). Optional filters: `scope_prefix`, `unit`, `status`, `over_limit`, `has_debt`, `utilization_min`, `utilization_max`, `search`.
+- `amount` is required for all 5 actions. `spent` is honored only on `RESET_SPENT`.
+- Per-row idempotency is derived from `{idempotency_key}:{scope}:{unit}`, so retrying the failed subset on a tighter filter cannot double-apply CREDIT / DEBIT / RESET / RESET_SPENT / REPAY_DEBT.
+- Per-row `error_code` values: `BUDGET_EXCEEDED`, `INVALID_TRANSITION` (unit mismatch / FROZEN / CLOSED), `NOT_FOUND`, `INTERNAL_ERROR`.
+- `skipped` with `reason=ALREADY_IN_TARGET_STATE` is produced today only by `REPAY_DEBT` on `debt==0` rows.
+
+### Audit metadata enrichment (v0.1.25.30)
+
+The single `AuditLogEntry` emitted per bulk invocation (`bulkActionTenants`, `bulkActionWebhooks`, `bulkActionBudgets`) now carries the full per-row outcome arrays, the filter echo, and the wall-clock duration. This lets triage happen from audit alone without re-running the op:
+
+| Key | Type | Purpose |
+|---|---|---|
+| `succeeded_ids` | `string[]` | Per-row ids that succeeded — paper trail. |
+| `failed_rows` | `BulkActionRowOutcome[]` | Full `{id, error_code, message}` per failure. |
+| `skipped_rows` | `BulkActionRowOutcome[]` | Full `{id, reason}` per skip — distinguishes `ALREADY_IN_TARGET_STATE` from `ALREADY_DELETED`. |
+| `filter` | object | Normalized filter echoed as-is — reconstructs operator intent from audit alone. |
+| `duration_ms` | int64 | Handler-entry → audit-emit wall-clock for SLO triage. |
+
+Worst-case audit row size is ~40 KB at the 500-row bulk cap. Audit tooling that caps on entry-level JSON size should review.
 
 See [Using bulk actions for tenants and webhooks](/how-to/using-bulk-actions-for-tenants-and-webhooks) for idempotency patterns, filter construction, and operator workflow.
 

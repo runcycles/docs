@@ -45,6 +45,17 @@ The expiry sweep scans for reservations past their TTL and marks them as `EXPIRE
 
 For most deployments, the default 5000ms is a good balance.
 
+## Runtime audit log retention (v0.1.25.15)
+
+The runtime server writes audit entries for admin-on-behalf-of operations (force-release) to `audit:log:{id}` keys in Redis. v0.1.25.15 adds TTL-based retention so these rows respect the same 400-day authenticated tier as the admin plane.
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `audit.retention.days` | `400` | `AUDIT_RETENTION_DAYS` | TTL in days for runtime-written audit rows. Set to `0` for indefinite retention (legal hold, HIPAA-adjacent deployments, environments that offload to an archive store). |
+| `audit.sweep.cron` | `0 0 3 * * *` | `AUDIT_SWEEP_CRON` | Cron for the daily `@Scheduled` sweep that prunes expired `audit:logs:{tenantId}` and `audit:logs:_all` ZSET pointers. Safe to run alongside admin's sweep (idempotent `ZREMRANGEBYSCORE`). |
+
+Runtime audit rows never use the admin-plane `__admin__` / `__unauth__` sentinels — the runtime never fails pre-auth for admin keys, so a single tier is sufficient.
+
 ## Metrics
 
 | Property | Default | Env Variable | Description |
@@ -309,7 +320,22 @@ The admin server exposes powerful management operations. In production:
 
 ## Events Service Configuration
 
-The events delivery service (`cycles-server-events`, port 7980) is an optional component for webhook delivery.
+The events delivery service (`cycles-server-events`) is an optional component for webhook delivery.
+
+### Ports (v0.1.25.9)
+
+As of v0.1.25.9 the events service separates its public API port from its management (actuator) port:
+
+| Port | Default | Env Variable | Purpose |
+|---|---|---|---|
+| Public API | `7980` | `SERVER_PORT` | Webhook dispatch control surface |
+| Management | `9980` | `MANAGEMENT_PORT` | Actuator endpoints (`/actuator/health`, `/actuator/info`, `/actuator/prometheus`) |
+
+**Migration from pre-.9:** Prometheus scrape configs must point to `:9980/actuator/prometheus`. Kubernetes liveness / readiness probes and Docker `HEALTHCHECK` must hit `:9980/actuator/health`. The published Docker image `HEALTHCHECK` has already been updated. No wire-format change for the dispatch surface.
+
+Expose `7980` via public ingress or external ClusterIP; keep `9980` on an internal-only ClusterIP scraped by Prometheus.
+
+### Core config
 
 | Variable | Default | Description |
 |---|---|---|

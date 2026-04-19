@@ -109,6 +109,28 @@ Fields to expect on the audit entry:
 
 The audit entry is retained under the authenticated-audit retention policy (default 400 days in v0.1.25.20+). This comfortably covers SOC2 audit windows.
 
+### Joining release → events → webhook delivery with `trace_id`
+
+Every response from the runtime server — including the force-release response — carries an `X-Cycles-Trace-Id` header and a `trace_id` field in error bodies (v0.1.25.14+). Use it to see the full consequences of a force-release across planes:
+
+```bash
+TID=<32-hex from X-Cycles-Trace-Id response header>
+
+# The audit entry for this specific release
+curl -s "http://localhost:7979/v1/admin/audit/logs?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Events emitted as a side effect (reservation.released, budget.*)
+curl -s "http://localhost:7979/v1/admin/events?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Webhook deliveries that went out
+curl -s "http://localhost:7979/v1/admin/webhooks/<subscription-id>/deliveries?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+This is useful for confirming that a subscriber alerting channel (oncall rotation, incident tracker) received the `reservation.released` notification before you close the incident. Requires `cycles-server-admin` v0.1.25.31+. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
 ## Recovery checklist
 
 A pragmatic runbook for hung-reservation incidents:

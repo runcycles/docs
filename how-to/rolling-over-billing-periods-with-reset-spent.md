@@ -111,6 +111,67 @@ Cycles does not schedule rollovers for you — there is no built-in cron. You ru
 
 In every case, make the idempotency key include the target period, so a retry or duplicate trigger does not double-rollover.
 
+## Rolling over many budgets at once (v0.1.25.29)
+
+When a tenant has many budgets (workspace, app, workflow ladders), rolling each one over with individual `POST /v1/admin/budgets/fund` calls is fine but tedious — and leaves a tiny drift window between calls. Budget bulk-action lets you do the whole tenant atomically in one request.
+
+::: warning `filter.tenant_id` is REQUIRED — one bulk call per tenant
+Cross-tenant budget bulk is explicitly out of scope. The server returns `400 INVALID_REQUEST` if `filter.tenant_id` is missing or blank. **If you're rolling over a fleet, loop once per tenant** — do not attempt a single bulk call across multiple tenants. This is enforced to cap blast radius: a bad filter wipes at most one tenant's spend, not your whole fleet.
+:::
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "tenant_id": "acme-corp", "unit": "USD_MICROCENTS" },
+    "action": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "expected_count": 8,
+    "idempotency_key": "period-rollover-2026-05-01-acme"
+  }'
+```
+
+### Fleet-scale rollover pattern
+
+```bash
+# Per-tenant loop — substitute your tenant source of truth
+for TENANT in $(cat tenants-to-roll.txt); do
+  COUNT=$(curl -s "http://localhost:7979/v1/admin/budgets?tenant_id=$TENANT&unit=USD_MICROCENTS" \
+    -H "X-Admin-API-Key: $ADMIN_KEY" | jq '.total')
+
+  curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+    -H "X-Admin-API-Key: $ADMIN_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"filter\": { \"tenant_id\": \"$TENANT\", \"unit\": \"USD_MICROCENTS\" },
+      \"action\": \"RESET_SPENT\",
+      \"amount\": { \"amount\": 1000000, \"unit\": \"USD_MICROCENTS\" },
+      \"expected_count\": $COUNT,
+      \"idempotency_key\": \"period-rollover-2026-05-01-$TENANT\"
+    }"
+done
+```
+
+The idempotency key **must** encode both the period and the tenant (`period-rollover-{date}-{tenant_id}`). A static key like `period-rollover-acme` replays the first month's response on month two — the bulk-action returns `200 OK` but mutates nothing. Including the date makes the key unique per billing boundary; including the tenant makes it unique per iteration.
+
+### `amount` vs. `spent`
+
+- **`amount`** (REQUIRED) is the new `allocated` ceiling for every matched budget after the reset. One value applies to all rows.
+- **`spent`** (optional, `RESET_SPENT`-only) overrides the default-zero `spent` value after the reset. Use it for prorated signups mid-period or migrations that import an existing consumption number.
+
+If each budget needs a different `allocated`, `amount` is too coarse — fall back to per-budget `POST /v1/admin/budgets/fund` calls.
+
+### Prerequisites and per-row outcomes
+
+- **Budgets must be ACTIVE.** `RESET_SPENT` against a `FROZEN` or `CLOSED` budget lands in the `failed[]` bucket with `error_code=INVALID_TRANSITION`. If you intentionally froze some budgets during a dispute, either unfreeze them first or add `status=ACTIVE` to the filter to skip them: `"filter": { "tenant_id": "acme-corp", "unit": "USD_MICROCENTS", "status": "ACTIVE" }`.
+- **Other per-row outcomes:** `BUDGET_EXCEEDED` (only matters for DEBIT, not RESET_SPENT), `NOT_FOUND` (ledger deleted mid-operation), `INTERNAL_ERROR`.
+- The 500-row cap and 15-minute idempotency window apply the same as for tenants/webhooks bulk-action.
+- Emits one `budget.reset_spent` event per matched budget.
+- Emits one audit row for the whole invocation with per-budget `succeeded_ids` / `failed_rows` — triageable from the audit log alone (v0.1.25.30+).
+
+See [Using bulk actions for tenants, webhooks, and budgets](/how-to/using-bulk-actions-for-tenants-and-webhooks#budget-bulk-action) for the full envelope, safety gates, and per-row error codes.
+
 ## Common mistakes
 
 - **Using `RESET` when you meant `RESET_SPENT`.** `RESET` rewrites `allocated` — it does not clear spend. If you call `RESET` with the same `amount` as the previous period, you've changed nothing. Use `RESET_SPENT` to zero out spend.
