@@ -6,7 +6,7 @@
     "finalhandler": "^2.1.1",
     "png-to-ico": "^3.0.1",
     "puppeteer": "^23.11.1",
-    "serve-static": "^1.16.3",
+    "serve-static": "^2.2.1",
     "sharp": "^0.34.5",
     "to-ico": "^1.1.5",
     "vitepress": "^1.6.3",
