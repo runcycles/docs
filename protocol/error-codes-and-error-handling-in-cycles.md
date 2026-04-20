@@ -122,7 +122,9 @@ The owning tenant has been permanently closed. Every mutating admin-plane operat
 
 This error is issued by the **Rule 2 — Terminal-Owner Mutation Guard** half of the cascade contract (governance-admin spec v0.1.25.29, shipped in `cycles-server-admin` v0.1.25.35; full coverage v0.1.25.36). Rule 2's counterpart — **Rule 1 — Close Cascade** — runs at tenant-close time and automatically drives owned objects to terminal states (`BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open reservations → `RELEASED`, `WebhookSubscription → DISABLED`), so by the time you see this error the owned objects are already terminal. There is no way to "undo" a close; this is not a race condition that will resolve on retry.
 
-**What to do:** the tenant and its owned objects are read-only. Create a new tenant or escalate. Not retryable against any object owned by this tenant.
+**What to do:** the tenant and its owned objects are read-only. Create a new tenant or escalate. **Not retryable against any object owned by this tenant** — unlike `BUDGET_FROZEN` (which an operator may unfreeze), `TENANT_CLOSED` is terminal. Implement no retry logic for this error.
+
+**For client-app developers.** If your users encounter `TENANT_CLOSED`, escalate to your platform operator — they control tenant lifecycle; a client cannot un-close a tenant. New workloads require a fresh active tenant. To proactively detect closed tenants and surface a friendlier message before mutation attempts, call `GET /v1/admin/tenants/{tenant_id}` (admin-scoped) or check the response of any `GET /v1/balances` / `GET /v1/reservations` call — reads against a closed tenant still succeed and return status metadata.
 
 **In bulk-action responses:** rows targeting a closed tenant go into the `failed[]` bucket with `error_code=TENANT_CLOSED`; the rest of the batch continues.
 

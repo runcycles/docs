@@ -9,7 +9,14 @@ The Cycles Admin API runs on port **7979** (separate from the runtime API on por
 
 **Authentication:** Budget create uses `X-Cycles-API-Key` with `budgets:write` permission. Budget list and fund accept either `X-Cycles-API-Key` or `X-Admin-API-Key` (admin requires `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
-**Conformance note.** Most of this admin API is **runcycles-reference** (implementers of the Cycles protocol MAY diverge — use GitOps YAML for policies, OAuth/OIDC for auth, direct DB writes for budget allocation, etc.). Eight specific operations and a small set of schemas (events list / get / replay, webhook deliveries, admin balances view, auth introspect; `Event` / `EventType` / `EventData*` / `WebhookDelivery` / `WebhookRetryPolicy` / `Permission`) are labeled `x-conformance: normative` in the governance-admin YAML because they expose the protocol's event stream, webhook delivery contract, and cross-plane auth introspection. See [CONFORMANCE.md](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) for the authoritative MUST / SHOULD / MAY statement.
+**Conformance note.** Most of this admin API is **runcycles-reference**: implementers of the Cycles protocol MAY diverge — use GitOps YAML for policies, OAuth/OIDC for auth, direct DB writes for budget allocation, etc.
+
+A small set of operations and schemas inside the governance-admin YAML are labeled `x-conformance: normative` because they expose the protocol's event stream, webhook delivery contract, and cross-plane auth introspection:
+
+- **Operations (8):** events list / get / replay, webhook deliveries (admin + tenant paths), admin balances view, auth introspect.
+- **Schemas:** `Event`, `EventType`, `EventData*` variants, `WebhookDelivery`, `WebhookRetryPolicy`, `Permission`.
+
+See [CONFORMANCE.md](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) for the authoritative MUST / SHOULD / MAY statement.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 

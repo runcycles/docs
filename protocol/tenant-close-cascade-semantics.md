@@ -132,7 +132,7 @@ Per spec v0.1.25.29–.30, these mutating operations all return `409 TENANT_CLOS
 ## Operator recipe — closing a tenant
 
 ```bash
-# 1. (Optional, recommended) Preview what will cascade
+# 1. Preview what will cascade — confirms intent before the irreversible close
 curl -s http://localhost:7979/v1/admin/tenants/acme-corp \
   -H "X-Admin-API-Key: $ADMIN_KEY" | jq '{
     status,
