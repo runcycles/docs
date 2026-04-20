@@ -9,6 +9,8 @@ The Cycles Admin API runs on port **7979** (separate from the runtime API on por
 
 **Authentication:** Budget create uses `X-Cycles-API-Key` with `budgets:write` permission. Budget list and fund accept either `X-Cycles-API-Key` or `X-Admin-API-Key` (admin requires `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
 
+**Conformance note.** Most of this admin API is **runcycles-reference** (implementers of the Cycles protocol MAY diverge — use GitOps YAML for policies, OAuth/OIDC for auth, direct DB writes for budget allocation, etc.). Eight specific operations and a small set of schemas (events list / get / replay, webhook deliveries, admin balances view, auth introspect; `Event` / `EventType` / `EventData*` / `WebhookDelivery` / `WebhookRetryPolicy` / `Permission`) are labeled `x-conformance: normative` in the governance-admin YAML because they expose the protocol's event stream, webhook delivery contract, and cross-plane auth introspection. See [CONFORMANCE.md](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) for the authoritative MUST / SHOULD / MAY statement.
+
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
 ## Authentication
@@ -69,6 +71,21 @@ curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
 ```
 
 Status values: `ACTIVE`, `SUSPENDED`, `CLOSED`.
+
+### Tenant-close cascade semantics (v0.1.25.35+)
+
+Closing a tenant is not just a status flip. As of `cycles-server-admin` v0.1.25.35, the `* → CLOSED` transition cascades owned objects to terminal states automatically:
+
+| Owned object | Terminal state | Event emitted |
+|---|---|---|
+| `BudgetLedger` | `CLOSED` | `budget.closed_via_tenant_cascade` |
+| `ApiKey` | `REVOKED` | `api_key.revoked_via_tenant_cascade` |
+| Open `Reservation` | `RELEASED` (reason `tenant_closed`) | `reservation.released_via_tenant_cascade` |
+| `WebhookSubscription` | `DISABLED` | `webhook.disabled_via_tenant_cascade` |
+
+All cascade events share the `correlation_id` of the originating `tenant.closed` audit entry. After the cascade completes, every mutating admin-plane operation on the closed tenant's owned objects returns **`409 TENANT_CLOSED`** (Rule 2 — Terminal-Owner Mutation Guard). GET endpoints remain available for audit reads. runcycles' server uses the Mode B (flip-first-with-guarded-cascade) cascade implementation; both Mode A (atomic) and Mode B are conformant per spec v0.1.25.31.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract, affected endpoints, and operator recipes.
 
 ## API key management
 
@@ -282,7 +299,7 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 - **Delivery tracking**: list delivery attempts per subscription with status/date filters
 - **Event replay**: re-deliver historical events to a subscription
 - **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
-- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (27 of 41 event types)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (29 of 45 event types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`)
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 

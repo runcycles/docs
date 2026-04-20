@@ -83,6 +83,19 @@ On the Budgets page, every row has a funding dropdown. Alongside `CREDIT`, `DEBI
 
 See [Rolling Over Billing Periods with RESET_SPENT](/how-to/rolling-over-billing-periods-with-reset-spent) for when to use each pattern.
 
+### Closed-tenant tombstone and cascade preview
+
+As of v0.1.25.43 (consuming admin v0.1.25.36), the dashboard surfaces tenant-close cascade behavior through four coordinated affordances:
+
+- **Closed-tenant banner.** When `tenant.status === 'CLOSED'`, an amber read-only banner renders at the top of `TenantDetailView`: *"Tenant closed — all owned objects are read-only."* Immediately answers the "why won't this unfreeze?" question on closed-tenant pages.
+- **CLOSE confirm-dialog cascade preview.** Before closing, the confirmation dialog enumerates what will be terminated — owned budgets, webhook subscriptions, API keys, open reservations, with counts pulled from already-loaded tenant-detail state. Spells out *"This cannot be undone."* Useful for estimating blast radius before pulling the trigger.
+- **`TENANT_CLOSED` 409 humanizer.** Any mutation that races the cascade (stale tab, deep-link, in-flight request) surfaces as *"Tenant is closed — this object is read-only."* instead of a raw 409. Lives alongside the existing error-code map in `errorCodeMessages.ts`.
+- **Tenant-cascade audit + event chip.** `AuditView` and `EventTimeline` rows render a small amber "tenant cascade" chip when the event carries a `_via_tenant_cascade` suffix (`budget.closed_via_tenant_cascade`, `webhook.disabled_via_tenant_cascade`, `api_key.revoked_via_tenant_cascade`, `reservation.released_via_tenant_cascade`, or audit operation `tenant_close_cascade`). Lets operators visually distinguish cascade-triggered state changes from user-driven ones when correlating by `correlation_id`.
+
+Requires admin v0.1.25.36. Running the dashboard against admin `.32` still renders the tombstone + dialog preview (pure client-side), but the cascade itself won't fire and frozen budgets on closed tenants continue to inflate the Overview alert counter. Running against `.35` works but leaves policy / api-key / webhook-admin mutations un-guarded against the Rule 2 MUST — `.36` completes the guard coverage.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full protocol contract.
+
 ## Incident-response actions
 
 Every destructive action is one-click with a confirmation and a blast-radius summary:
@@ -101,6 +114,7 @@ Every destructive action is one-click with a confirmation and a blast-radius sum
 | Replay webhook delivery | Webhook detail | `POST /v1/admin/webhook-deliveries/{id}/replay` |
 | Force-release reservation | Reservations / Reservation detail | `POST /v1/reservations/{id}/release` with `X-Admin-API-Key` |
 | Emergency tenant-wide freeze | Tenant detail | Bulk freeze across all budgets for the tenant |
+| Close tenant (cascades owned objects, v0.1.25.43+) | Tenants / Tenant detail | `PATCH /v1/admin/tenants/{id}` — dashboard shows cascade preview before confirming |
 
 Force-release uses dual authentication — the dashboard's nginx routes `/v1/reservations*` to `cycles-server:7878` and the runtime server validates both keys before executing. The audit log tags the action `actor_type=admin_on_behalf_of`. See [Force-Releasing Stuck Reservations](/how-to/force-releasing-stuck-reservations-as-an-operator) for the underlying flow.
 

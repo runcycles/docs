@@ -35,7 +35,7 @@ docker run -d --name cycles-events \
   -e REDIS_PORT=6379 \
   -e REDIS_PASSWORD=your-redis-password \
   -e WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-  ghcr.io/runcycles/cycles-server-events:0.1.25.9
+  ghcr.io/runcycles/cycles-server-events:0.1.25.10
 ```
 
 Only `7980` needs to be reachable from clients and downstream webhook targets. `9980` should remain internal — scrape it from your Prometheus cluster on its own network path.

@@ -262,6 +262,7 @@ Permanent and irreversible. Use this only when a tenant is being decommissioned:
 - All operations are blocked
 - The tenant **cannot be reactivated**
 - Data is retained for audit purposes
+- **All owned objects cascade to terminal states automatically** (v0.1.25.35+)
 
 **When to close:**
 
@@ -270,7 +271,7 @@ Permanent and irreversible. Use this only when a tenant is being decommissioned:
 - A department has been merged and its tenant is being retired
 
 ```bash
-# Close a tenant (irreversible)
+# Close a tenant (irreversible — triggers cascade)
 curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
   -H "Content-Type: application/json" \
   -H "X-Admin-API-Key: $ADMIN_API_KEY" \
@@ -280,6 +281,31 @@ curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
 ::: warning
 Closing a tenant is irreversible. If you need a temporary block, use SUSPENDED instead.
 :::
+
+#### What cascades automatically (v0.1.25.35+)
+
+Pre-v0.1.25.35, closing a tenant was a pure status flip — operators then had to separately drain reservations, freeze budgets, revoke API keys, and disable webhooks by hand. Today, `cycles-server-admin` runs the full cascade in one transaction:
+
+| Owned object | Cascade action | Event kind |
+|---|---|---|
+| `BudgetLedger` | → `CLOSED` (final balance preserved for audit) | `budget.closed_via_tenant_cascade` |
+| `ApiKey` | → `REVOKED` | `api_key.revoked_via_tenant_cascade` |
+| Open `Reservation` | → `RELEASED` (reason `tenant_closed`, no overage debt) | `reservation.released_via_tenant_cascade` |
+| `WebhookSubscription` | → `DISABLED` (re-enable blocked by Rule 2) | `webhook.disabled_via_tenant_cascade` |
+
+All four cascade events share the `correlation_id` of the originating `tenant.closed` entry — you can find every side effect of a close with one query:
+
+```bash
+# All cascade events for one close
+curl -s "http://localhost:7979/v1/admin/events?correlation_id=<id>" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" | jq '.items[] | {event_type, data}'
+```
+
+After the cascade, mutating any owned object returns `409 TENANT_CLOSED` (Rule 2 — Terminal-Owner Mutation Guard). GET endpoints remain available for post-mortem audit reads. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract and Mode A / Mode B semantics.
+
+**Don't pre-freeze before closing.** Operators on older admin versions used to freeze budgets and revoke keys one at a time before closing. That's no longer necessary (and is mildly wasteful — it generates extra audit entries). Just close; the cascade handles everything.
+
+**Operator preview in the dashboard.** The [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) (v0.1.25.43+) shows what will be terminated in the CLOSE confirmation dialog before you click through — owned budgets, webhook subscriptions, API keys, and open reservations, with counts. Useful for estimating blast radius before pulling the trigger.
 
 ::: info Why tenants cannot be deleted
 The admin API intentionally has no `DELETE /v1/admin/tenants/{tenant_id}` endpoint. Tenants are referenced by ID throughout the system — budgets, API keys, reservations, and audit logs all carry a `tenant_id`. Hard deletion would orphan these records and break audit trails.

@@ -33,7 +33,7 @@ Every response — error or success — also carries an `X-Cycles-Trace-Id` HTTP
 
 ## The error codes
 
-Cycles defines 15 error codes, each with a specific HTTP status code and meaning.
+Cycles defines 16 error codes, each with a specific HTTP status code and meaning.
 
 ### INVALID_REQUEST (400)
 
@@ -115,6 +115,18 @@ The budget scope has been frozen by an operator. Operations that would modify th
 The budget scope has been permanently closed. No further budget operations are allowed against this scope.
 
 **What to do:** create a new budget scope or contact the operator. Not retryable against this scope.
+
+### TENANT_CLOSED (409)
+
+The owning tenant has been permanently closed. Every mutating admin-plane operation on any object owned by a closed tenant — budgets, reservations, API keys, webhook subscriptions, policies — is rejected with this code. GET endpoints remain available for post-mortem audit reads.
+
+This error is issued by the "Rule 2 — Terminal-Owner Mutation Guard" half of the cascade contract added in governance-admin spec v0.1.25.29 and shipped in `cycles-server-admin` v0.1.25.35+ (full coverage v0.1.25.36). The "Rule 1 — Close Cascade" half automatically drives owned objects to terminal states on tenant close (`BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open reservations → `RELEASED`, `WebhookSubscription → DISABLED`).
+
+**What to do:** the tenant and its owned objects are read-only. Create a new tenant or escalate. Not retryable against any object owned by this tenant.
+
+**In bulk-action responses:** rows targeting a closed tenant go into the `failed[]` bucket with `error_code=TENANT_CLOSED`; the rest of the batch continues.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract, affected endpoints, and Mode A vs Mode B cascade behavior.
 
 ### RESERVATION_EXPIRED (410)
 
@@ -204,6 +216,7 @@ An unexpected server error occurred.
 | BUDGET_EXCEEDED | 409 | Insufficient budget |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+); every mutation on owned objects rejects |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
 | DEBT_OUTSTANDING | 409 | Scope has unresolved debt (no overdraft limit configured) |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
@@ -232,6 +245,7 @@ Note: decide returns `200` with `decision: DENY` for budget-state conditions (in
 | BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT only) |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
@@ -245,6 +259,7 @@ Note: decide returns `200` with `decision: DENY` for budget-state conditions (in
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
@@ -257,6 +272,7 @@ Note: decide returns `200` with `decision: DENY` for budget-state conditions (in
 | Error | HTTP | Meaning |
 |---|---|---|
 | INVALID_REQUEST | 400 | Missing or invalid fields |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | RESERVATION_EXPIRED | 410 | Past TTL (no grace period for extend) |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
 | MAX_EXTENSIONS_EXCEEDED | 409 | Tenant max_reservation_extensions limit reached |
@@ -272,6 +288,7 @@ Note: decide returns `200` with `decision: DENY` for budget-state conditions (in
 | BUDGET_EXCEEDED | 409 | Insufficient budget (REJECT only) |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | NOT_FOUND | 404 | No budget exists at any derived scope in any unit (message: `"Budget not found for provided scope: ..."`) |
 | UNIT_MISMATCH | 400 | `actual.unit` does not match any budget at the target scope (budget exists in a different unit) |
@@ -324,13 +341,13 @@ GET /v1/admin/events?trace_id=<32-hex>
 
 ## Summary
 
-Cycles provides 15 specific error codes that tell the client exactly what went wrong:
+Cycles provides 16 specific error codes that tell the client exactly what went wrong:
 
 - **400** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH)
 - **401** for authentication failures (UNAUTHORIZED)
 - **403** for authorization failures (FORBIDDEN)
 - **404** for missing resources (NOT_FOUND) — covers both missing reservations and missing budgets, distinguished by the `message` field
-- **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
+- **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, TENANT_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
 - **410** for expired reservations (RESERVATION_EXPIRED)
 - **500** for server errors (INTERNAL_ERROR)
 
