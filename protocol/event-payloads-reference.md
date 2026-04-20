@@ -10,7 +10,7 @@ This page documents the payload structure for every webhook event Cycles can emi
 ::: info Currently Emitted Events
 As of v0.1.25.13, the runtime server emits **14 event types** (all five reservation-lifecycle events, the three budget-state-transition events, `event.applied`, and the budget-exhaust / over-limit / debt events). The admin server adds `budget.reset_spent` (v0.1.25.18). The remaining event types are **defined in the protocol** and will be emitted as the admin service and additional runtime hooks are wired up. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
 
-The v0.1.25 protocol registers **41 event types** total across six categories (budget: 16, reservation: 5, tenant: 6, api_key: 6, policy: 3, system: 5).
+The v0.1.25 protocol registers **45 event types** total across seven categories (budget: 17, reservation: 6, tenant: 6, api_key: 7, policy: 3, webhook: 1, system: 5). The webhook category and four `_via_tenant_cascade` variants were added in v0.1.25.35 for the tenant-close cascade contract — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
 :::
 
 ## Standard Envelope
@@ -368,6 +368,118 @@ The following budget events are defined in the protocol but not yet emitted. The
 | `budget.threshold_crossed` | Utilization crossed configured threshold (e.g., 80%, 95%) |
 | `budget.over_limit_exited` | Debt dropped below overdraft limit after repayment |
 | `budget.burn_rate_anomaly` | Spend rate exceeds baseline multiplier within window |
+
+---
+
+## Tenant-Close Cascade Events — Currently Emitted (v0.1.25.35+)
+
+Four event kinds are emitted as side effects of a `* → CLOSED` tenant transition (Rule 1 — Close Cascade; see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full contract). All four share the `_via_tenant_cascade` suffix and carry the `correlation_id` of the originating `tenant.closed` audit entry so subscribers can correlate cascade side effects to the operator action that triggered them.
+
+Shipped in `cycles-server-admin` v0.1.25.35 (initial Mode B cascade) / v0.1.25.36 (full Rule 2 guard coverage).
+
+### `budget.closed_via_tenant_cascade`
+
+Emitted once per owned `BudgetLedger` when the tenant closes. The per-budget `BudgetLedger.status` flips to `CLOSED` and `closed_at` is stamped; the final balance snapshot is preserved for audit.
+
+```json
+{
+  "event_id": "evt_...",
+  "event_type": "budget.closed_via_tenant_cascade",
+  "category": "budget",
+  "timestamp": "2026-04-20T12:00:00Z",
+  "tenant_id": "acme-corp",
+  "scope": "tenant:acme-corp/workspace:prod",
+  "source": "cycles-admin",
+  "actor": {
+    "type": "api_key",
+    "key_id": "admin_key_...",
+    "source_ip": "..."
+  },
+  "data": {
+    "ledger_id": "led_...",
+    "scope": "tenant:acme-corp/workspace:prod",
+    "unit": "USD_MICROCENTS",
+    "final_allocated": 10000000,
+    "final_spent": 8234000,
+    "final_reserved": 0,
+    "final_debt": 0,
+    "closed_at": "2026-04-20T12:00:00Z",
+    "cascade_origin": "tenant.closed"
+  },
+  "correlation_id": "<same as originating tenant.closed>",
+  "trace_id": "<same as originating>"
+}
+```
+
+### `reservation.released_via_tenant_cascade`
+
+Emitted once per open owned `Reservation` when the tenant closes. Reason `tenant_closed`; no overage debt is recorded; the full reserved amount returns to the (now-closed) budget's balance snapshot.
+
+```json
+{
+  "event_id": "evt_...",
+  "event_type": "reservation.released_via_tenant_cascade",
+  "category": "reservation",
+  "tenant_id": "acme-corp",
+  "data": {
+    "reservation_id": "rsv_...",
+    "scope": "tenant:acme-corp/...",
+    "reserved": { "amount": 1000, "unit": "TOKENS" },
+    "release_reason": "tenant_closed",
+    "cascade_origin": "tenant.closed"
+  },
+  "correlation_id": "<same as originating>",
+  "trace_id": "<same as originating>"
+}
+```
+
+### `api_key.revoked_via_tenant_cascade`
+
+Emitted once per owned `ApiKey` when the tenant closes. The per-key `ApiKey.status` flips to `REVOKED` and `revoked_at` is stamped.
+
+```json
+{
+  "event_id": "evt_...",
+  "event_type": "api_key.revoked_via_tenant_cascade",
+  "category": "api_key",
+  "tenant_id": "acme-corp",
+  "data": {
+    "key_id": "key_...",
+    "name": "production",
+    "revoked_at": "2026-04-20T12:00:00Z",
+    "cascade_origin": "tenant.closed"
+  },
+  "correlation_id": "<same as originating>",
+  "trace_id": "<same as originating>"
+}
+```
+
+### `webhook.disabled_via_tenant_cascade`
+
+Emitted once per owned `WebhookSubscription` when the tenant closes. Status flips to `DISABLED`; re-enable is blocked by the Rule 2 guard (returns `409 TENANT_CLOSED`), making DISABLED effectively-terminal for closed-owner subscriptions without adding a new enum value.
+
+```json
+{
+  "event_id": "evt_...",
+  "event_type": "webhook.disabled_via_tenant_cascade",
+  "category": "webhook",
+  "tenant_id": "acme-corp",
+  "data": {
+    "subscription_id": "whsub_...",
+    "url": "https://...",
+    "disabled_at": "2026-04-20T12:00:00Z",
+    "cascade_origin": "tenant.closed"
+  },
+  "correlation_id": "<same as originating>",
+  "trace_id": "<same as originating>"
+}
+```
+
+### Correlating cascade events
+
+The shared `correlation_id` is the primary join key — querying `GET /v1/admin/events?correlation_id=...` returns every event emitted by the cascade in one call. The dashboard (v0.1.25.43+) renders a "tenant cascade" chip on audit and event-timeline rows with these suffixes. See [Using the Cycles Dashboard](/how-to/using-the-cycles-dashboard#closed-tenant-tombstone-and-cascade-preview).
+
+**Ordering guarantee.** The spec mandates emission order: reservations released → budgets closed → webhooks disabled + API keys revoked → `tenant.closed`. Subscribers that depend on ordered observation of these events can rely on this, modulo the usual at-least-once webhook-delivery duplicates and reordering risk.
 
 ---
 

@@ -213,7 +213,7 @@ An HTTP POST callback triggered by a state change event. Cycles delivers webhook
 
 ### Event (Webhook)
 
-An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 41 event types across 6 categories. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
+An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 45 event types across 7 categories (budget, reservation, tenant, api_key, policy, webhook, system — the webhook category was added in v0.1.25.35 for `webhook.disabled_via_tenant_cascade`). Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
 
 ### Signing Secret
 
@@ -280,6 +280,14 @@ A single request that applies an action across many resources selected by a filt
 ### Audit Sentinels
 
 Two reserved `tenant_id` values on audit-log entries (v0.1.25.28+): `__admin__` (admin-plane operation, not scoped to a tenant, authenticated-tier retention, never sampled) and `__unauth__` (pre-authentication failure, unauthenticated-tier retention, subject to sampling). URL-safe underscored form — no percent-encoding needed. Both are queryable with exact match. Historical `<unauthenticated>` values written pre-.28 keep their literal and age out under the unauth-tier TTL. See [Audit log failure capture](/admin-api/guide#audit-log-failure-capture-v0-1-25-20).
+
+### TENANT_CLOSED
+
+A `409` error code (v0.1.25.35+) returned by every mutating admin-plane operation on an object whose owning tenant is `CLOSED`. Enforced by the "Rule 2 — Terminal-Owner Mutation Guard" half of the cascade contract; GET endpoints remain available for post-mortem audit reads. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) and [Error Codes — TENANT_CLOSED](/protocol/error-codes-and-error-handling-in-cycles#tenant-closed-409).
+
+### Tenant-Close Cascade
+
+The two-rule contract (governance-admin spec v0.1.25.29/.30/.31) that makes `* → CLOSED` tenant transitions atomic (or eventually-atomic) across owned objects. **Rule 1 — Close Cascade**: server drives owned `BudgetLedger` → `CLOSED`, `ApiKey` → `REVOKED`, open `Reservation` → `RELEASED`, `WebhookSubscription` → `DISABLED`, emitting one `*_via_tenant_cascade` event per mutated object under the originating `tenant.closed` audit entry's `correlation_id`. **Rule 2 — Terminal-Owner Mutation Guard**: mutations on a closed tenant's children return `409 TENANT_CLOSED`. Two conformant modes: **Mode A** (atomic single-transaction) or **Mode B** (flip-first with guarded cascade; runcycles uses this). See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
 
 ### RESET_SPENT
 

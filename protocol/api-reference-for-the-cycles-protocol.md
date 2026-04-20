@@ -9,6 +9,10 @@ This is a developer-friendly reference for every endpoint in the Cycles protocol
 
 All requests require the `X-Cycles-API-Key` header for authentication.
 
+::: info Protocol conformance
+Cycles is an **open protocol with a minimum conformance surface** — approximately 23 operations across the runtime base, action-kind registry, governance extensions, and eight specifically-normative operations inside the otherwise-reference admin spec. runcycles' own servers (`cycles-server`, `cycles-server-admin`, `cycles-server-events`) are one such implementation — additional admin-API surface beyond the conformance minimum is runcycles-specific reference; implementers MAY diverge. See [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) for the authoritative MUST / SHOULD / MAY statement.
+:::
+
 ## Common headers
 
 ### Request headers

@@ -79,14 +79,14 @@ The Cycles Server is stateless. You can run multiple instances behind a load bal
 
 ```yaml
 cycles-server-1:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.15
+  image: ghcr.io/runcycles/cycles-server:0.1.25.17
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
 
 cycles-server-2:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.15
+  image: ghcr.io/runcycles/cycles-server:0.1.25.17
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
@@ -161,7 +161,7 @@ The Events Service is safe to run as multiple instances. Each instance consumes 
 
 ```yaml
 cycles-events-1:
-  image: ghcr.io/runcycles/cycles-server-events:0.1.25.9
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379
@@ -169,7 +169,7 @@ cycles-events-1:
     WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY}
 
 cycles-events-2:
-  image: ghcr.io/runcycles/cycles-server-events:0.1.25.9
+  image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
   environment:
     REDIS_HOST: redis-primary
     REDIS_PORT: 6379

@@ -55,7 +55,7 @@ The events service is **optional**. If not deployed, events accumulate in Redis 
 
 ## Tenant Self-Service
 
-Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events (27 of 41 types).
+Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events (29 of 45 types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`).
 
 ## Security
 

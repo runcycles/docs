@@ -16,14 +16,22 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 | Component | Version | Release date |
 |---|---|---|
 | Protocol spec (runtime) | v0.1.25 (revision 2026-04-18) | 2026-04-18 |
-| Governance spec (admin) | v0.1.25.28 | 2026-04-18 |
-| `cycles-server` (runtime) | v0.1.25.15 | 2026-04-18 |
-| `cycles-server-admin` | v0.1.25.32 | 2026-04-18 |
-| `cycles-server-events` | v0.1.25.9 | 2026-04-18 |
-| `cycles-dashboard` | v0.1.25.42 | 2026-04-19 |
+| Governance spec (admin) | v0.1.25.31 | 2026-04-20 |
+| `cycles-server` (runtime) | v0.1.25.17 | 2026-04-20 |
+| `cycles-server-admin` | v0.1.25.36 | 2026-04-20 |
+| `cycles-server-events` | v0.1.25.10 | 2026-04-20 |
+| `cycles-dashboard` | v0.1.25.43 | 2026-04-20 |
+
+### Protocol spec suite (v0.1.26)
+
+- The cycles-protocol repo added [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) — a formal MUST / SHOULD / MAY statement of what a conformant Cycles implementation has to do. Defines ~23 operations across the runtime base, action-kind registry, governance extensions, and 8 specifically-normative operations inside the otherwise-reference governance-admin spec.
+- The README repositioned the spec suite as **v0.1.26** (runtime base still v0.1.25). v0.1.26 extensions (action-kinds, action-quotas, observe mode, DenyDetail, `ACTION_QUOTA_EXCEEDED` / `ACTION_KIND_DENIED` / `ACTION_KIND_NOT_ALLOWED` reason codes) are marked normative for conformance but **not yet implemented** in runcycles' servers. Tracked for a future release.
+- Spec-only trace_id alignment bumps on extension specs (`cycles-action-kinds`, `cycles-governance-extensions` to v0.1.27) — declare `trace_id` on `ErrorResponse` and `X-Cycles-Trace-Id` on `components.headers` for OpenAPI tooling consistency. Behavioral contract unchanged from what's documented in [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 
 ### Runtime server (`cycles-server`)
 
+- **v0.1.25.17** (2026-04-20) — Pin `commons-lang3` 3.18.0 to close CVE-2025-48924. No wire or behavior change.
+- **v0.1.25.16** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
 - **v0.1.25.15** (2026-04-18) — **Runtime audit-log retention TTL.** New `audit.retention.days` config (default `400`, env `AUDIT_RETENTION_DAYS`) applies a TTL to `audit:log:{id}` keys — previously these persisted indefinitely until Redis eviction, silently escaping the authenticated-tier retention the admin plane applies. New `audit.sweep.cron` (default `0 0 3 * * *`, env `AUDIT_SWEEP_CRON`) prunes stale ZSET pointers. Set to `0` for indefinite retention.
 - **v0.1.25.14** (2026-04-18) — **W3C Trace Context correlation.** Every response now carries `X-Cycles-Trace-Id` (32-hex lowercase). Inbound precedence: `traceparent` → `X-Cycles-Trace-Id` → server-generate. New optional `trace_id` field on `ErrorResponse`, `Event`, `WebhookDelivery`, `AuditLogEntry`. `WebhookDelivery` also gains `trace_flags` and `traceparent_inbound_valid`. Malformed inbound correlation headers are tolerated (fall through to next rule) — server never rejects on a bad header. SLF4J MDC carries `traceId` alongside `requestId`. `ReservationExpiryService` mints a fresh trace_id per sweep batch so sibling `reservation.expired` events correlate. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 - **v0.1.25.13** (2026-04-16) — `SORTED_HYDRATE_CAP = 2000` guard on `GET /v1/reservations` sorted path. Capped WARN log; cursor page still fills from the capped slice. Narrow filters to see past the cap.
@@ -39,6 +47,10 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 
 ### Admin server (`cycles-server-admin`)
 
+- **v0.1.25.36** (2026-04-20) — **Rule 2 terminal-owner mutation guard coverage completed.** Every mutation on an object whose owning tenant is CLOSED now returns `409 TENANT_CLOSED` from every admin-mutating endpoint, per spec v0.1.25.30. New guard callsites: `POST /v1/admin/policies`, `PATCH /v1/admin/policies/{id}`, `POST /v1/admin/api-keys`, `PATCH /v1/admin/api-keys/{id}`, `DELETE /v1/admin/api-keys/{id}`, `POST /v1/admin/webhooks`, `PATCH`, `DELETE`, `POST .../test`, and per-row in `bulkActionWebhooks`. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
+- **v0.1.25.35** (2026-04-20) — **Tenant-close cascade + TENANT_CLOSED guard shipped (Mode B).** Closing a tenant (`PATCH /v1/admin/tenants/{id}` or bulk-action) now cascades: `BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open `Reservation → RELEASED` (reason `tenant_closed`), `WebhookSubscription → DISABLED`. One audit entry per mutated object under the same `correlation_id` as the originating `tenant.closed`. New event kinds: `budget.closed_via_tenant_cascade`, `api_key.revoked_via_tenant_cascade`, `reservation.released_via_tenant_cascade`, `webhook.disabled_via_tenant_cascade`. Rule 2 guard — 409 TENANT_CLOSED — active on budget/reservation mutation endpoints (full Rule 2 coverage shipped in v0.1.25.36). Spec v0.1.25.29 / .30 / .31 alignment. runcycles' reference server uses Mode B (flip-first-with-guarded-cascade); Mode A (atomic) is also conformant.
+- **v0.1.25.34** (2026-04-20) — Pin `commons-lang3` 3.18.0 to close CVE-2025-48924. No wire or behavior change.
+- **v0.1.25.33** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
 - **v0.1.25.32** (2026-04-18) — **Lenient deserialization on cross-plane read schemas.** `Event` and `WebhookDelivery` now set `@JsonIgnoreProperties(ignoreUnknown = true)` at the class level. Runtime is the authoritative writer of these records; admin only reads them. Previously admin POJOs were strict, so runtime shipping an additive field in a patch would break `listEvents` / `listWebhookDeliveries` until admin lockstep-updated. Now runtime can ship additive fields without forcing an admin release. Internal only — no wire contract change.
 - **v0.1.25.31** (2026-04-18) — **W3C Trace Context cross-surface correlation** — server-side implementation of spec v0.1.25.28. New optional `trace_id` (32-hex) on `ErrorResponse`, `AuditLogEntry`, `Event` response bodies. New `X-Cycles-Trace-Id` response header on every response (2xx, 4xx, 5xx). Inbound precedence: `traceparent` → `X-Cycles-Trace-Id` → server-generate. New exact-match query params on `GET /v1/admin/audit/logs` and `GET /v1/admin/events`: `trace_id`, `request_id`. `WebhookDelivery` persists `trace_id` + `trace_flags` + `traceparent_inbound_valid` so the events sidecar can construct outbound `traceparent` preserving inbound sampling. Historical entries without `trace_id` continue to round-trip through strict Jackson. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 - **v0.1.25.30** (2026-04-18) — **Bulk-action audit metadata enrichment.** Single `AuditLogEntry` per bulk-action invocation (`bulkActionTenants`, `bulkActionWebhooks`, `bulkActionBudgets`) now carries the full per-row outcome arrays plus filter echo plus wall-clock `duration_ms`. New keys: `succeeded_ids`, `failed_rows`, `skipped_rows`, `filter`. Worst-case audit row size ~40KB at 500-row cap. Fully additive — existing metadata keys unchanged; spec `AuditLogEntry.metadata` is already typed `object` with `additionalProperties: true` so no info.version bump. Triage now works from audit alone without re-running the op.
@@ -64,6 +76,7 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 
 ### Events service (`cycles-server-events`)
 
+- **v0.1.25.10** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
 - **v0.1.25.9** (2026-04-18) — **Management port split.** `health`, `info`, and `prometheus` actuator endpoints moved from public API port `7980` to a dedicated management port (default `9980`, env `MANAGEMENT_PORT`). **Migration:** Prometheus scrape configs must update target port from `:7980` → `:9980`; kubelet probes and Docker `HEALTHCHECK` same. Published Docker image `HEALTHCHECK` already updated. No wire-format change for dispatch. Expose `7980` publicly; keep `9980` internal-only.
 - **v0.1.25.8** (2026-04-18) — **Cross-surface correlation on `WebhookDelivery`.** Three new OPTIONAL fields: `trace_id` (captured at dispatch time from originating event), `trace_flags` (W3C trace-flags byte for outbound `traceparent`), `traceparent_inbound_valid` (whether upstream sent valid W3C traceparent). Aligns with governance-admin spec v0.1.25.28. Dispatcher honors `trace_flags` when `traceparent_inbound_valid=true`, otherwise defaults to `01` (sampled). Proactive `trace_id` stamping on `Delivery` as rolling-upgrade safety net for pre-.31 admin servers.
 - **v0.1.25.7** (2026-04-18) — **trace_id and W3C Trace Context headers on every outbound webhook delivery.** New outbound headers: `X-Cycles-Trace-Id` (always present), `traceparent: 00-<trace_id>-<16-hex-span>-<flags>` (fresh span-id per delivery, never reused from inbound), `X-Request-Id` (when event carries `request_id`). New `Event.trace_id` field, optional. Non-fatal `trace_id_shape` validation rule — malformed `trace_id` increments `cycles_webhook_events_payload_invalid_total{rule="trace_id_shape"}` and the dispatcher falls back to minting a fresh id so outbound header stays well-formed. Aligns with governance-admin spec v0.1.25.27.
@@ -75,6 +88,7 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 
 ### Dashboard (`cycles-dashboard`)
 
+- **v0.1.25.43** (2026-04-20) — **Closed-tenant tombstone + cascade preview UI.** Consumes admin v0.1.25.36 cascade implementation. New TenantDetailView amber banner when `tenant.status === 'CLOSED'` ("Tenant closed — all owned objects are read-only."). CLOSE confirm-dialog now previews what the cascade will terminate (budgets, webhook subscriptions, API keys, open reservations with counts). `TENANT_CLOSED` 409 humanizer ("Tenant is closed — this object is read-only.") on race conditions. Audit + event-timeline rows render a small amber "tenant cascade" chip when the event kind carries `_via_tenant_cascade`, letting operators distinguish cascade-triggered state changes from user-driven ones when correlating by `correlation_id`. Admin image pin 0.1.25.32 → 0.1.25.36 (cascade requires admin .36). New shared `isTerminalTenant()` predicate in `src/utils/tenantStatus.ts`. Spec pointer v0.1.25.29 → v0.1.25.31.
 - **v0.1.25.42** (2026-04-19) — Security: base-image bumps (`nginx:1.27-alpine` → `nginx:1.29-alpine`, `node:20.19` → `20.20`) resolving 57 Alpine-layer CVEs flagged by Trivy.
 - **v0.1.25.41** (2026-04-19) — Dependabot-bundled dependency bumps including `vue-router 4.6.4 → 5.0.4` (major, no breaking changes for this app). TypeScript typecheck clean; 742 tests green.
 - **v0.1.25.40** (2026-04-19) — **Shared icon library** at `src/components/icons/` — 24 reusable SVG components (CopyJsonIcon, CopyIcon, KebabIcon, etc.). Stroke-width unified to `1.5`; four icons upgraded to Heroicons v2 geometry. Copy JSON moved from dedicated rows/columns to overlay icons and kebab menus — WebhookDetailView delivery column shrinks 88px → 40px; panels lose ~35–50px footer rows.
@@ -213,10 +227,10 @@ The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVA
 | `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
 | `@runcycles/mcp-server` | 0.2.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
 | `@runcycles/openclaw-budget-guard` | 0.8.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
-| Cycles Server (runtime) | v0.1.25.15 | Protocol v0.1.25 (revision 2026-04-18) |
-| Cycles Admin Server | v0.1.25.32 | Governance spec v0.1.25.28 |
-| Cycles Events Service | v0.1.25.9 | Shared Redis dispatch queue |
-| Cycles Dashboard | v0.1.25.42 | Admin v0.1.25.31+ (correlation chip); v0.1.25.29+ (budget bulk); v0.1.25.18+ (RESET_SPENT) |
+| Cycles Server (runtime) | v0.1.25.17 | Protocol v0.1.25 (revision 2026-04-18) |
+| Cycles Admin Server | v0.1.25.36 | Governance spec v0.1.25.31 |
+| Cycles Events Service | v0.1.25.10 | Shared Redis dispatch queue |
+| Cycles Dashboard | v0.1.25.43 | Admin v0.1.25.36+ (tenant-close cascade); v0.1.25.31+ (correlation chip); v0.1.25.29+ (budget bulk); v0.1.25.18+ (RESET_SPENT) |
 
 All current SDK versions are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24+. New v0.1.25 features (event emission, webhook delivery, events service, `policy_id` / `deny_detail` on `reservation.denied`) require server v0.1.25.
 
@@ -224,6 +238,7 @@ All current SDK versions are backward-compatible with server v0.1.23. New v0.1.2
 
 | Feature | Minimum component |
 |---|---|
+| Tenant-close cascade + `TENANT_CLOSED` (409) error code + 4 `_via_tenant_cascade` event kinds | `cycles-server-admin` v0.1.25.35 (initial Mode B cascade) / v0.1.25.36 (full Rule 2 guard coverage); `cycles-dashboard` v0.1.25.43 (tombstone + cascade preview UI); governance-admin spec v0.1.25.29 / .30 / .31 |
 | W3C Trace Context (`trace_id` on responses + audit/events filter) | `cycles-server` v0.1.25.14, `cycles-server-admin` v0.1.25.31, `cycles-server-events` v0.1.25.7, `cycles-dashboard` v0.1.25.39 |
 | Runtime audit-log retention TTL (`AUDIT_RETENTION_DAYS`) | `cycles-server` v0.1.25.15 |
 | Events service management port split (9980) | `cycles-server-events` v0.1.25.9 |
