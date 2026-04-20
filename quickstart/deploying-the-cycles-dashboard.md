@@ -102,7 +102,7 @@ services:
       - cycles
 
   dashboard:
-    image: ghcr.io/runcycles/cycles-dashboard:0.1.25.28
+    image: ghcr.io/runcycles/cycles-dashboard:0.1.25.42
     restart: unless-stopped
     # No exposed ports — only reachable through Caddy.
     depends_on:
@@ -117,7 +117,7 @@ services:
   # Its ADMIN_API_KEY must match cycles-admin's so admin-on-behalf-of calls
   # authenticate on both sides.
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.13
+    image: ghcr.io/runcycles/cycles-server:0.1.25.15
     restart: unless-stopped
     environment:
       REDIS_HOST: redis
@@ -139,7 +139,7 @@ services:
 
   # Governance plane — tenants, budgets, policies, webhooks, events, audit.
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.26
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.32
     restart: unless-stopped
     environment:
       REDIS_HOST: redis

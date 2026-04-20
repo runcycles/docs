@@ -61,7 +61,8 @@ All Cycles services run on the internal network. Only the load balancer is expos
 | Load Balancer | 443 | DMZ / edge | Application traffic (TLS termination) |
 | Cycles Server | 7878 | **Internal only** | Application servers via load balancer — never exposed directly |
 | Admin Server | 7979 | **Internal / VPN only** | Operations team and CI/CD pipelines only |
-| Events Service | 7980 | **Internal only** | No inbound traffic — outbound webhook delivery only |
+| Events Service (API) | 7980 | **Internal only** | No inbound traffic — outbound webhook delivery only |
+| Events Service (management) | 9980 | **Internal only** | Actuator endpoints (`/actuator/health`, `/actuator/prometheus`) as of v0.1.25.9 — Prometheus scrape target |
 | Redis | 6379 | **Internal only** | Shared by all Cycles services — never exposed directly |
 
 <NetworkZones />

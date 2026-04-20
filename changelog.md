@@ -207,22 +207,30 @@ The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVA
 
 | SDK / Component | Version | Compatible server |
 |---|---|---|
-| `runcycles` (Python) | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `runcycles` (Python) | 0.3.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
 | `runcycles` (TypeScript) | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `runcycles` (Rust) | 0.2.3 | v0.1.23+, v0.1.24+, v0.1.25+ |
 | `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
-| `@runcycles/mcp-server` | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
-| `@runcycles/openclaw-budget-guard` | 0.8.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
-| Cycles Server (runtime) | v0.1.25.13 | Protocol v0.1.25 (revision 2026-04-16) |
-| Cycles Admin Server | v0.1.25.26 | Governance spec v0.1.25.23 |
-| Cycles Events Service | v0.1.25.6 | Shared Redis dispatch queue |
-| Cycles Dashboard | v0.1.25.28 | Admin v0.1.25.26+ (filter-apply bulk); v0.1.25.18+ (RESET_SPENT) |
+| `@runcycles/mcp-server` | 0.2.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `@runcycles/openclaw-budget-guard` | 0.8.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| Cycles Server (runtime) | v0.1.25.15 | Protocol v0.1.25 (revision 2026-04-18) |
+| Cycles Admin Server | v0.1.25.32 | Governance spec v0.1.25.28 |
+| Cycles Events Service | v0.1.25.9 | Shared Redis dispatch queue |
+| Cycles Dashboard | v0.1.25.42 | Admin v0.1.25.31+ (correlation chip); v0.1.25.29+ (budget bulk); v0.1.25.18+ (RESET_SPENT) |
 
-All 0.2.0 SDKs are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24+. New v0.1.25 features (event emission, webhook delivery, events service, `policy_id` / `deny_detail` on `reservation.denied`) require server v0.1.25.
+All current SDK versions are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24+. New v0.1.25 features (event emission, webhook delivery, events service, `policy_id` / `deny_detail` on `reservation.denied`) require server v0.1.25.
 
 ### Minimum versions for specific features
 
 | Feature | Minimum component |
 |---|---|
+| W3C Trace Context (`trace_id` on responses + audit/events filter) | `cycles-server` v0.1.25.14, `cycles-server-admin` v0.1.25.31, `cycles-server-events` v0.1.25.7, `cycles-dashboard` v0.1.25.39 |
+| Runtime audit-log retention TTL (`AUDIT_RETENTION_DAYS`) | `cycles-server` v0.1.25.15 |
+| Events service management port split (9980) | `cycles-server-events` v0.1.25.9 |
+| Bulk-action audit metadata enrichment (`succeeded_ids`, `failed_rows`, `filter`, `duration_ms`) | `cycles-server-admin` v0.1.25.30 |
+| Budget bulk-action endpoint (`POST /v1/admin/budgets/bulk-action`) | `cycles-server-admin` v0.1.25.29, `cycles-dashboard` v0.1.25.35 |
+| Audit tenant sentinel split (`__admin__` / `__unauth__`) | `cycles-server-admin` v0.1.25.28 |
+| Audit log filter DSL (`error_code_exclude`, `status_min/max`, array `operation`/`resource_type`) | `cycles-server-admin` v0.1.25.27, `cycles-dashboard` v0.1.25.33 |
 | Sorted pagination on `GET /v1/reservations` (`sort_by`, `sort_dir`) | `cycles-server` v0.1.25.12 |
 | Admin-on-behalf-of release (`X-Admin-API-Key` on `/v1/reservations/{id}/release`) | `cycles-server` v0.1.25.8 |
 | Bulk-action endpoints on tenants + webhooks | `cycles-server-admin` v0.1.25.26 |
