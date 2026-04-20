@@ -303,7 +303,11 @@ curl -s "http://localhost:7979/v1/admin/events?correlation_id=<id>" \
 
 After the cascade, mutating any owned object returns `409 TENANT_CLOSED` (Rule 2 — Terminal-Owner Mutation Guard). GET endpoints remain available for post-mortem audit reads. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract and Mode A / Mode B semantics.
 
-**Don't pre-freeze before closing.** Operators on older admin versions used to freeze budgets and revoke keys one at a time before closing. That's no longer necessary (and is mildly wasteful — it generates extra audit entries). Just close; the cascade handles everything.
+::: warning Don't pre-freeze before closing
+On admin v0.1.25.35+, the cascade runs automatically and atomically from the operator's perspective (via Rule 2). **Do not** freeze budgets, revoke keys, or disable webhooks before closing — it's unnecessary, generates audit clutter, and (on future Mode A implementations) can cause cascades to roll back if a pre-freeze step fails. Just close the tenant; the cascade handles everything.
+
+If you're running pre-v0.1.25.35 admin, cascade doesn't run — continue the manual cleanup until you upgrade.
+:::
 
 **Operator preview in the dashboard.** The [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) (v0.1.25.43+) shows what will be terminated in the CLOSE confirmation dialog before you click through — owned budgets, webhook subscriptions, API keys, and open reservations, with counts. Useful for estimating blast radius before pulling the trigger.
 

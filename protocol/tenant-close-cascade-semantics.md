@@ -22,6 +22,17 @@ In practice nobody did all of that. The `/admin/overview` dashboard would accumu
 
 The cascade contract, added in spec v0.1.25.29 and shipping in `cycles-server-admin` v0.1.25.35+, makes the close operation do the right thing atomically (or eventually-atomically) instead.
 
+## Version gate matrix
+
+| Feature | Minimum component | What works |
+|---|---|---|
+| Rule 1 cascade (budgets + reservations) | `cycles-server-admin` v0.1.25.35 | Closing a tenant cascades budgets → CLOSED and open reservations → RELEASED |
+| Rule 2 guard (budget + reservation mutations) | `cycles-server-admin` v0.1.25.35 | Mutations against closed-tenant budgets and reservations return `409 TENANT_CLOSED` |
+| Rule 2 full coverage (policies, api-keys, webhook admin) | `cycles-server-admin` v0.1.25.36 | All remaining mutation endpoints also return `409 TENANT_CLOSED` |
+| Dashboard tombstone + cascade preview UI | `cycles-dashboard` v0.1.25.43 | Banner, CLOSE dialog preview, humanized errors, cascade audit/event chip |
+
+**Pre-v0.1.25.35 admin servers do not cascade** — operators must manually freeze budgets, revoke keys, and disable webhooks before or after closing the tenant.
+
 ## The two rules
 
 ### Rule 1 — Close Cascade (server-issued)

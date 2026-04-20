@@ -64,6 +64,8 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, `trace_id`, and
 
 ## Event types (45)
 
+Cycles emits 45 event types across seven categories: budget (17), reservation (6), tenant (6), api_key (7), policy (3), webhook (1), system (5). Four of these are `_via_tenant_cascade` variants added in v0.1.25.35 for the tenant-close cascade contract — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
+
 ### Budget events (17)
 
 | Event Type | Trigger |

@@ -120,7 +120,7 @@ The budget scope has been permanently closed. No further budget operations are a
 
 The owning tenant has been permanently closed. Every mutating admin-plane operation on any object owned by a closed tenant — budgets, reservations, API keys, webhook subscriptions, policies — is rejected with this code. GET endpoints remain available for post-mortem audit reads.
 
-This error is issued by the "Rule 2 — Terminal-Owner Mutation Guard" half of the cascade contract added in governance-admin spec v0.1.25.29 and shipped in `cycles-server-admin` v0.1.25.35+ (full coverage v0.1.25.36). The "Rule 1 — Close Cascade" half automatically drives owned objects to terminal states on tenant close (`BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open reservations → `RELEASED`, `WebhookSubscription → DISABLED`).
+This error is issued by the **Rule 2 — Terminal-Owner Mutation Guard** half of the cascade contract (governance-admin spec v0.1.25.29, shipped in `cycles-server-admin` v0.1.25.35; full coverage v0.1.25.36). Rule 2's counterpart — **Rule 1 — Close Cascade** — runs at tenant-close time and automatically drives owned objects to terminal states (`BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open reservations → `RELEASED`, `WebhookSubscription → DISABLED`), so by the time you see this error the owned objects are already terminal. There is no way to "undo" a close; this is not a race condition that will resolve on retry.
 
 **What to do:** the tenant and its owned objects are read-only. Create a new tenant or escalate. Not retryable against any object owned by this tenant.
 
