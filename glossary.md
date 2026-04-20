@@ -73,7 +73,7 @@ The three possible responses to a reservation or decide request: **ALLOW** (proc
 
 ### Overage Policy
 
-Configures what happens when the actual cost committed exceeds the original estimate. Three policies are available: **REJECT** (deny the commit), **ALLOW_IF_AVAILABLE** (permit if remaining budget covers the difference), and **ALLOW_WITH_OVERDRAFT** (permit even if it creates debt). See [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft).
+Configures what happens when the actual cost committed exceeds the original estimate. Three policies are available: **REJECT** (deny the commit), **ALLOW_IF_AVAILABLE** (permit if remaining budget covers the difference), and **ALLOW_WITH_OVERDRAFT** (permit even if it creates debt). The default tenant policy is **ALLOW_IF_AVAILABLE** as of v0.1.24 (was REJECT in v0.1.23 and earlier). See [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft).
 
 ## Units
 
@@ -234,6 +234,14 @@ A single attempt to deliver an event to a webhook endpoint via HTTP POST. Tracke
 ### Events Service
 
 The async webhook delivery service (`cycles-server-events`). Consumes from shared Redis queue via BRPOP and delivers via HTTP POST with HMAC signing. Optional — admin and runtime operate without it. As of v0.1.25.9, binds public API port `7980` and management/actuator port `9980` (was consolidated on `7980` pre-.9).
+
+### Dashboard
+
+The Cycles Admin Dashboard (`cycles-dashboard`) — a Vue 3 SPA that provides operator-facing UIs for tenants, budgets, API keys, webhooks, events, audit logs, reservations, and policies. Reads through `cycles-server-admin`'s REST API; performs no business logic of its own. Includes capability gating (UI affordances reflect the calling key's permissions), bulk-action lanes, the cross-surface correlation chip (v0.1.25.39+), and a `Cmd/Ctrl+K` command palette. See [Using the Cycles Dashboard](/how-to/using-the-cycles-dashboard).
+
+### Tenant Self-Service
+
+The set of governance endpoints exposed at `/v1/webhooks` and `/v1/events` (no `/admin` prefix) that tenants can call directly with their own `X-Cycles-API-Key` to manage their webhook subscriptions and query their event stream — without going through a platform operator. Permissions: `webhooks:read`, `webhooks:write`, `events:read` (opt-in; not part of the default tenant key permission set). Six of these endpoints are also dual-auth (admin can call them on a tenant's behalf as of v0.1.25.16). See [Managing Webhooks](/how-to/managing-webhooks#tenant-self-service).
 
 ## Correlation and Tracing
 

@@ -201,7 +201,7 @@ curl -X POST http://localhost:7878/v1/reservations \
 | 409 | `DEBT_OUTSTANDING` | Scope has unpaid debt (no overdraft limit configured) |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
-**Dry run:** when `dry_run=true`, budget-state conditions (`BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`, and the 404 "no budget at any scope" case) surface as `200 OK` with `decision: DENY` and a `reason_code` field from the `DecisionReasonCode` enum — not as 4xx/409 errors. Request-validity errors (`INVALID_REQUEST`, `UNIT_MISMATCH`, `UNAUTHORIZED`, `FORBIDDEN`, `IDEMPOTENCY_MISMATCH`) are still returned as 4xx on dry-run. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
+**Dry run:** when `dry_run=true`, budget-state conditions (`BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`, and the 404 "no budget at any scope" case) surface as `200 OK` with `decision: DENY` and a `reason_code` field — `DecisionReasonCode` is an open string (as of v0.1.25); clients MUST handle unknown values gracefully — not as 4xx/409 errors. Request-validity errors (`INVALID_REQUEST`, `UNIT_MISMATCH`, `UNAUTHORIZED`, `FORBIDDEN`, `IDEMPOTENCY_MISMATCH`) are still returned as 4xx on dry-run. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
 
 ---
 
@@ -530,7 +530,7 @@ Evaluate a budget decision without creating a reservation. Useful for preflight 
 }
 ```
 
-The `reason_code` and `retry_after_ms` fields are present when the decision is `DENY`. `reason_code` is a closed enum (`DecisionReasonCode`) with six values: `BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
+The `reason_code` and `retry_after_ms` fields are present when the decision is `DENY`. `reason_code` is `DecisionReasonCode` — an open string (as of v0.1.25) with six documented known values: `BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`. Clients MUST handle unknown values gracefully. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes).
 
 ### Example
 
@@ -556,7 +556,7 @@ curl -X POST http://localhost:7878/v1/decide \
 | 403 | `FORBIDDEN` | Tenant mismatch |
 | 409 | `IDEMPOTENCY_MISMATCH` | Same key, different payload |
 
-Note: decide returns `200` with `decision: DENY` for all budget-state conditions — insufficient remaining, debt, overdraft, frozen, closed, and the "no budget exists at any scope" case — not a `409` or `404`. The specific reason is surfaced in the `reason_code` field, which is drawn from the closed `DecisionReasonCode` enum (`BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`). See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for the full enum. Request-validity errors like `UNIT_MISMATCH` are still returned as `400`.
+Note: decide returns `200` with `decision: DENY` for all budget-state conditions — insufficient remaining, debt, overdraft, frozen, closed, and the "no budget exists at any scope" case — not a `409` or `404`. The specific reason is surfaced in the `reason_code` field. `DecisionReasonCode` is an open string (as of v0.1.25) with six documented known values: `BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`. Clients MUST handle unknown values gracefully. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for full semantics. Request-validity errors like `UNIT_MISMATCH` are still returned as `400`.
 
 ---
 

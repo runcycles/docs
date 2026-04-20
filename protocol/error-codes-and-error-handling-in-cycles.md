@@ -282,7 +282,7 @@ Note: decide returns `200` with `decision: DENY` for budget-state conditions (in
 
 ## Decision reason codes
 
-Separately from the 4xx error code list, `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true` may return `200 OK` with `decision: DENY` and a machine-readable `reason_code`. These reason codes come from a closed enum (`DecisionReasonCode`) with six values:
+Separately from the 4xx error code list, `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true` may return `200 OK` with `decision: DENY` and a machine-readable `reason_code`. As of v0.1.25, `DecisionReasonCode` is an **open string** (was a closed enum in v0.1.24 and earlier — widened so future extension specs can add reason codes without a breaking protocol bump). Documented known values:
 
 | reason_code | Meaning |
 |---|---|
@@ -295,7 +295,7 @@ Separately from the 4xx error code list, `POST /v1/decide` and `POST /v1/reserva
 
 **Why this is a separate enum.** The 4xx error codes surface request-level failures in the `error` field. Decision reason codes surface budget-state outcomes in the `reason_code` field on successful HTTP responses. Some labels overlap (e.g. `BUDGET_EXCEEDED`) because the same underlying condition is reported differently depending on the endpoint: `/decide` and dry-run reserve surface it as a non-4xx DENY decision, while non-dry reserve surfaces it as a `409` error.
 
-**Forward compatibility.** Clients SHOULD treat `DecisionReasonCode` as a closed set at v0 but MUST be prepared to encounter new values in future protocol versions. Any future addition will be a minor protocol version bump.
+**Forward compatibility.** Because `DecisionReasonCode` is an open string (since v0.1.25), **clients MUST handle unknown values gracefully** — treat as DENY, log the raw string, do not crash on enum parsing. Known values above are stable; future values will always be additive (e.g., v0.1.26 extension specs may emit `ACTION_QUOTA_EXCEEDED`, `ACTION_KIND_DENIED`, `ACTION_KIND_NOT_ALLOWED`).
 
 ## Idempotency and error handling
 
