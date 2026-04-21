@@ -143,7 +143,7 @@ The plugin hooks into five OpenClaw lifecycle events to enforce budget boundarie
 | `before_prompt_build` | Commits any pending model reservation from the previous turn at the reserved estimate. Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
 | `before_tool_call` | Checks tool permissions (allowlist/blocklist), applies degradation strategies, creates a Cycles reservation. Optionally retries on denial. |
 | `after_tool_call` | Commits the reservation with the estimated cost from `toolBaseCosts` (or the default). |
-| `agent_end` | Releases orphaned reservations, builds a session summary with cost breakdown and forecasts, fires analytics callbacks/webhooks. |
+| `agent_end` | Releases orphaned reservations, builds a session summary with cost breakdown and forecasts, POSTs it to `analyticsWebhookUrl` if configured. |
 
 Both model and tool calls follow the standard Cycles reserve → commit → release protocol. The plugin manages an in-memory map of active reservations so that every reservation is properly settled or released at `agent_end`.
 
@@ -431,7 +431,7 @@ Get notified when the budget level changes (e.g., healthy → low → exhausted)
 The webhook POST body carries `{ previousLevel, currentLevel, remaining, timestamp }`. Receiver services should be idempotent and ack quickly — delivery is fire-and-forget (best-effort, no retries).
 
 ::: info Note
-Transition detection runs on every budget snapshot refresh (controlled by `snapshotCacheTtlMs`, default 5 seconds). If a budget oscillates rapidly around a threshold between cache refreshes, the same transition (e.g., healthy → low) may fire more than once. Callbacks should be idempotent or deduplicate by timestamp if this matters for your use case.
+Transition detection runs on every budget snapshot refresh (controlled by `snapshotCacheTtlMs`, default 5 seconds). If a budget oscillates rapidly around a threshold between cache refreshes, the same transition (e.g., healthy → low) may fire more than once. Webhook receivers should be idempotent or deduplicate by timestamp if this matters for your use case.
 :::
 
 ## Session analytics and cost breakdown
@@ -446,7 +446,7 @@ The plugin tracks per-tool and per-model cost breakdowns throughout the session.
 - Session timing (start/end timestamps)
 - Average cost and estimated remaining calls
 
-The summary is attached to `ctx.metadata["openclaw-budget-guard"]` and can also be exported via callback or webhook:
+The summary is attached to `ctx.metadata["openclaw-budget-guard"]` and can also be exported via webhook:
 
 ```json
 {
@@ -922,6 +922,8 @@ A programmatic `metricsEmitter` interface (`gauge` / `counter` / `histogram`) is
 | `cycles.tool.blocked` | counter | tenant, tool, reason | On tool block |
 | `cycles.session.duration_ms` | histogram | tenant | On agent_end |
 | `cycles.session.total_cost` | histogram | tenant | On agent_end |
+| `cycles.budget.burn_rate_anomaly` | counter | tenant, ratio | On burn rate spike (v0.6.0) |
+| `cycles.budget.exhaustion_forecast_ms` | gauge | tenant | On exhaustion forecast (v0.6.0) |
 
 ## Aggressive cache invalidation (v0.5.0)
 
