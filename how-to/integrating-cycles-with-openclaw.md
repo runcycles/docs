@@ -24,11 +24,11 @@ This plugin solves all five — and goes further. Every model call and tool invo
 
 Beyond enforcement, the plugin actively protects you:
 
-- **Burn rate anomaly detection** catches runaway tool loops before they exhaust budget — if spending spikes 3x above the session average, `onBurnRateAnomaly` fires immediately
-- **Predictive exhaustion warnings** estimate when budget will run out and fire `onExhaustionForecast` before it happens, so you can fund the budget or wind down gracefully
+- **Burn rate anomaly detection** catches runaway tool loops before they exhaust budget — if spending spikes 3x above the session average, the plugin emits `cycles.budget.burn_rate_anomaly` to your OTLP backend for immediate alerting
+- **Predictive exhaustion warnings** estimate when budget will run out and emit `cycles.budget.exhaustion_forecast_ms` before it happens, so you can fund the budget or wind down gracefully
 - **Automatic retry with backoff** on transient Cycles server errors (429/503/504) prevents spurious denials during load spikes
 - **Reservation heartbeat** auto-extends long-running tool reservations so cost tracking doesn't silently break when a tool exceeds the default 60s TTL
-- **Full observability** via `metricsEmitter` (pipe 12 metrics into Datadog, Prometheus, Grafana, or any OTLP collector) and opt-in session event logs for debugging exactly what happened
+- **Full observability** via the built-in OTLP HTTP adapter (pipe 12 metrics into Datadog, Prometheus, Grafana, or any OTLP collector — configured through `otlpMetricsEndpoint`) and opt-in session event logs for debugging exactly what happened
 - **Unconfigured tool detection** reports which tools are using default cost estimates so you can tune `toolBaseCosts` after every session
 
 The result: predictable spend, controlled behavior, and full visibility — even when agents run autonomously for hours.
@@ -140,7 +140,7 @@ The plugin hooks into five OpenClaw lifecycle events to enforce budget boundarie
 | Hook | What happens |
 |------|-------------|
 | `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted (via [model override workaround](#model-blocking-workaround-v073)). The reservation is held open for later commit (see [Model cost reconciliation](#model-cost-reconciliation-v050)). |
-| `before_prompt_build` | Commits any pending model reservation from the previous turn (with `modelCostEstimator` reconciliation if configured). Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
+| `before_prompt_build` | Commits any pending model reservation from the previous turn at the reserved estimate. Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
 | `before_tool_call` | Checks tool permissions (allowlist/blocklist), applies degradation strategies, creates a Cycles reservation. Optionally retries on denial. |
 | `after_tool_call` | Commits the reservation with the estimated cost from `toolBaseCosts` (or the default). |
 | `agent_end` | Releases orphaned reservations, builds a session summary with cost breakdown and forecasts, fires analytics callbacks/webhooks. |
@@ -428,18 +428,7 @@ Get notified when the budget level changes (e.g., healthy → low → exhausted)
 }
 ```
 
-Or set a callback programmatically:
-
-```typescript
-{
-  onBudgetTransition: (event) => {
-    // event: { previousLevel, currentLevel, remaining, timestamp }
-    console.log(`Budget changed: ${event.previousLevel} → ${event.currentLevel}`);
-  }
-}
-```
-
-Webhooks are fire-and-forget (best-effort). For guaranteed delivery, use the callback.
+The webhook POST body carries `{ previousLevel, currentLevel, remaining, timestamp }`. Receiver services should be idempotent and ack quickly — delivery is fire-and-forget (best-effort, no retries).
 
 ::: info Note
 Transition detection runs on every budget snapshot refresh (controlled by `snapshotCacheTtlMs`, default 5 seconds). If a budget oscillates rapidly around a threshold between cache refreshes, the same transition (e.g., healthy → low) may fire more than once. Callbacks should be idempotent or deduplicate by timestamp if this matters for your use case.
@@ -474,15 +463,7 @@ The summary is attached to `ctx.metadata["openclaw-budget-guard"]` and can also 
 }
 ```
 
-Or programmatically:
-
-```typescript
-{
-  onSessionEnd: async (summary) => {
-    await db.insert("agent_sessions", summary);
-  }
-}
-```
+The webhook receives the full `SessionSummary` as its POST body, so the receiving service can persist or forward it to any analytics backend.
 
 ## End-user budget visibility
 
@@ -738,14 +719,12 @@ With `logLevel: "debug"`, you'll see per-call activity:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `onBudgetTransition` | function | — | Callback on budget level changes |
 | `budgetTransitionWebhookUrl` | string | — | Webhook URL for level transitions |
 
 ### Session analytics
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `onSessionEnd` | function | — | Callback with session summary at agent end |
 | `analyticsWebhookUrl` | string | — | Webhook URL for session summary data |
 
 ### Budget pools
@@ -783,7 +762,7 @@ If you're already using the Cycles TypeScript client directly (see [Programmatic
 | Model downgrade on low budget | Your code | Automatic via `modelFallbacks` |
 | Prompt budget awareness | Your code | Automatic via `injectPromptBudgetHint` |
 | Cost breakdown tracking | Your code | Automatic per-tool/model tracking |
-| Session analytics | Your code | Automatic via `onSessionEnd` / webhook |
+| Session analytics | Your code | Automatic via `analyticsWebhookUrl` |
 | Tool access control | Your code | Automatic via `toolAllowlist` / `toolBlocklist` |
 
 The plugin is the recommended approach for OpenClaw users — it requires zero custom code and covers the full lifecycle automatically.
@@ -881,9 +860,9 @@ Aggressive cost savings. Low thresholds, model downgrade with token limits, expe
 
 ## Model cost reconciliation (v0.5.0)
 
-By default, model costs are estimated at reservation time based on `modelBaseCosts` or `defaultModelCost`. Since OpenClaw doesn't provide token counts after model completion, exact costs aren't available automatically.
+Model costs are estimated at reservation time based on `modelBaseCosts` or `defaultModelCost`. Since OpenClaw doesn't provide token counts after model completion, exact per-call costs aren't available through the JSON-configured OpenClaw path.
 
-v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin reserves budget in `before_model_resolve` but doesn't commit until the next `before_prompt_build` (or `agent_end` for the last turn). This opens a reconciliation window where you can use `modelCostEstimator` to adjust the cost.
+v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin reserves budget in `before_model_resolve` but doesn't commit until the next `before_prompt_build` (or `agent_end` for the last turn). The reservation is committed at the estimated cost.
 
 ```json
 {
@@ -896,46 +875,15 @@ v0.5.0 introduces the **reserve-then-commit** pattern for models: the plugin res
 }
 ```
 
-For programmatic cost reconciliation (e.g., reading token counts from a proxy layer):
+Tune the numbers iteratively: enable `enableEventLog: true`, run representative sessions, and adjust `modelBaseCosts` using the per-model cost breakdown in the session summary. Reservations lock the estimate and commits charge the same value, so close-enough estimates are sufficient for enforcement.
 
-```typescript
-import plugin from "@runcycles/openclaw-budget-guard";
+::: info Precise per-call reconciliation
+Token-accurate reconciliation via a `modelCostEstimator` callback is available only when consuming `cycles-openclaw-budget-guard` as an npm library in a custom agent framework — OpenClaw's JSON plugin config cannot carry JavaScript functions.
+:::
 
-plugin({
-  ...api,
-  pluginConfig: {
-    tenant: "my-org",
-    cyclesBaseUrl: "http://localhost:7878",
-    cyclesApiKey: "cyc_...",
-    modelCostEstimator: ({ model, estimatedCost, turnIndex }) => {
-      // Look up actual token usage from your proxy/gateway
-      const usage = getTokenUsageFromProxy(turnIndex);
-      if (!usage) return undefined; // fall back to estimate
-      return usage.inputTokens * getInputPrice(model) +
-             usage.outputTokens * getOutputPrice(model);
-    },
-  },
-});
-```
+## Observability with OTLP metrics (v0.5.0)
 
-When a `modelCostEstimator` is provided, the plugin calls it at commit time. Return a number to override the estimate, or `undefined` to use the original estimate. Errors are caught and logged — the estimate is used as fallback.
-
-## Observability with MetricsEmitter (v0.5.0)
-
-The plugin can emit structured metrics to any observability backend (Datadog, Prometheus, Grafana, OpenTelemetry) via the `metricsEmitter` callback.
-
-### Using a custom emitter
-
-```typescript
-const emitter = {
-  gauge(name, value, tags) { /* send to your backend */ },
-  counter(name, delta, tags) { /* send to your backend */ },
-  histogram(name, value, tags) { /* send to your backend */ },
-};
-
-// Pass as config
-{ metricsEmitter: emitter }
-```
+The plugin can emit structured metrics to any observability backend (Datadog, Prometheus, Grafana, OpenTelemetry) via the built-in OTLP HTTP adapter.
 
 ### Using the built-in OTLP adapter
 
@@ -953,6 +901,10 @@ For zero-config OpenTelemetry integration, set `otlpMetricsEndpoint`:
 ```
 
 The plugin auto-creates a lightweight OTLP HTTP adapter that buffers metrics and flushes them periodically. No OpenTelemetry SDK dependency required.
+
+::: info Custom emitter
+A programmatic `metricsEmitter` interface (`gauge` / `counter` / `histogram`) is available only when consuming `cycles-openclaw-budget-guard` as an npm library — OpenClaw's JSON plugin config cannot carry JavaScript functions. For OpenClaw deployments, point `otlpMetricsEndpoint` at your collector (most observability backends, including Datadog and Prometheus via a receiver, accept OTLP).
+:::
 
 ### Emitted metrics
 
@@ -1033,16 +985,7 @@ Detect runaway tool loops by monitoring cost-per-window:
 }
 ```
 
-If the cost rate in the current window exceeds 3x the previous window, the plugin fires `onBurnRateAnomaly` and emits `cycles.budget.burn_rate_anomaly`. Use the callback for custom responses:
-
-```typescript
-{
-  onBurnRateAnomaly: (event) => {
-    // event: { currentBurnRate, averageBurnRate, ratio, threshold, remaining }
-    alertOps(`Agent burn rate spiked ${event.ratio.toFixed(1)}x — ${event.remaining} remaining`);
-  }
-}
-```
+If the cost rate in the current window exceeds 3x the previous window, the plugin emits the `cycles.budget.burn_rate_anomaly` counter (tagged with `currentBurnRate`, `averageBurnRate`, `ratio`, `threshold`, and `remaining`). Wire alerts to this metric in your OTLP-connected backend (Datadog, Prometheus, Grafana) to page on runaway loops.
 
 ### Predictive exhaustion warning
 
@@ -1056,7 +999,7 @@ Get advance notice before budget runs out:
 }
 ```
 
-When estimated time-to-exhaustion drops below 120 seconds (based on current burn rate), the plugin fires `onExhaustionForecast`. The warning fires once per session.
+When estimated time-to-exhaustion drops below 120 seconds (based on current burn rate), the plugin emits the `cycles.budget.exhaustion_forecast_ms` gauge. The warning fires once per session. Alert on this gauge in your OTLP-connected backend to trigger a top-up or graceful wind-down.
 
 ## Session event log (v0.6.0)
 
