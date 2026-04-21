@@ -142,7 +142,7 @@ The plugin hooks into five OpenClaw lifecycle events to enforce budget boundarie
 | `before_model_resolve` | Fetches balance, reserves budget for the model call, downgrades the model if budget is low, blocks if exhausted (via [model override workaround](#model-blocking-workaround-v073)). The reservation is held open for later commit (see [Model cost reconciliation](#model-cost-reconciliation-v050)). |
 | `before_prompt_build` | Commits any pending model reservation from the previous turn (with `modelCostEstimator` reconciliation if configured). Injects a budget-awareness hint into the system prompt, including forecast projections and pool balances. |
 | `before_tool_call` | Checks tool permissions (allowlist/blocklist), applies degradation strategies, creates a Cycles reservation. Optionally retries on denial. |
-| `after_tool_call` | Commits the reservation with actual cost (via `costEstimator` callback if configured, otherwise uses the estimate). |
+| `after_tool_call` | Commits the reservation with the estimated cost from `toolBaseCosts` (or the default). |
 | `agent_end` | Releases orphaned reservations, builds a session summary with cost breakdown and forecasts, fires analytics callbacks/webhooks. |
 
 Both model and tool calls follow the standard Cycles reserve → commit → release protocol. The plugin manages an in-memory map of active reservations so that every reservation is properly settled or released at `agent_end`.
@@ -217,21 +217,16 @@ Any tool not listed defaults to 100,000 units.
 Config values in `toolBaseCosts` and `modelBaseCosts` are validated at startup (v0.7.10+). Non-number values are rejected and negative values throw an error. If using OpenClaw's JSON config, ensure all cost values are numbers, not quoted strings.
 :::
 
-For more accurate cost tracking, provide a `costEstimator` callback programmatically:
+::: info Tuning tool costs
+OpenClaw plugins are configured via JSON, which cannot carry JavaScript functions, so the plugin's `costEstimator` callback is **not available** through OpenClaw config. To refine estimates, iterate on `toolBaseCosts` using session data:
 
-```typescript
-{
-  costEstimator: (ctx) => {
-    // ctx: { toolName, estimate, durationMs, result }
-    if (ctx.toolName === "web_search" && ctx.durationMs) {
-      return Math.ceil(ctx.durationMs * 100); // cost proportional to duration
-    }
-    return undefined; // fall back to estimate
-  }
-}
-```
+1. Set `enableEventLog: true` in your plugin config.
+2. Run a few agent sessions.
+3. Inspect the session summary in the logs — it includes per-tool cost breakdowns and an `unconfiguredTools` list of tools falling back to the default estimate.
+4. Adjust `toolBaseCosts` values based on observed usage and re-run.
 
-The `costEstimator` receives the tool name, original estimate, execution duration, and result. Return a number for actual cost or `undefined` to use the estimate.
+Cycles reservations lock the estimated amount and commits charge the same estimate, so the values only need to be "close enough" — precise per-call cost reconciliation is reserved for consumers who import `cycles-openclaw-budget-guard` as an npm library in custom agent frameworks.
+:::
 
 ## Tool access control
 
@@ -691,7 +686,6 @@ With `logLevel: "debug"`, you'll see per-call activity:
 | `toolCurrencies` | object | — | Tool name → currency override |
 | `toolReservationTtls` | object | — | Tool name → TTL override (ms) |
 | `toolOveragePolicies` | object | — | Tool name → overage policy override |
-| `costEstimator` | function | — | Custom callback for dynamic cost estimation |
 | `toolCallLimits` | object | — | Map: tool name → max invocations per session |
 
 ### Prompt hints
