@@ -4,10 +4,12 @@ import { Rss } from 'lucide-vue-next'
 import { data as posts } from '../../blog/posts.data'
 
 const selectedTag = ref(null)
+const featuredOnly = ref(false)
 const tagsOpen = ref(false)
 const startHereOpen = ref(false)
 const page = ref(1)
 const perPage = 10
+const stripLimit = 5
 
 const tagCounts = computed(() => {
   const counts = {}
@@ -19,19 +21,25 @@ const allTags = computed(() =>
   Object.keys(tagCounts.value).sort()
 )
 
-const filteredPosts = computed(() =>
-  selectedTag.value
-    ? posts.filter(p => p.tags.includes(selectedTag.value))
-    : posts
+const featuredPosts = computed(() => posts.filter(p => p.featured))
+
+const filteredPosts = computed(() => {
+  if (featuredOnly.value) return featuredPosts.value
+  if (selectedTag.value) return posts.filter(p => p.tags.includes(selectedTag.value))
+  return posts
+})
+
+// Top N most-recent featured posts. Hidden under any filter — the filtered
+// view is deliberately chronological for scanning a topic or the full
+// featured set, and editorial picks from other topics would be noise there.
+const featuredStrip = computed(() =>
+  selectedTag.value || featuredOnly.value
+    ? []
+    : featuredPosts.value.slice(0, stripLimit)
 )
 
-// Top 5 most-recent featured posts. Hidden under a tag filter — the filtered
-// view is deliberately chronological for scanning a topic, and editorial
-// picks from other topics would be noise there.
-const featuredStrip = computed(() =>
-  selectedTag.value
-    ? []
-    : posts.filter(p => p.featured).slice(0, 5)
+const hasMoreFeatured = computed(() =>
+  featuredPosts.value.length > stripLimit
 )
 
 const totalPages = computed(() =>
@@ -49,12 +57,28 @@ function isNew(dateStr) {
 
 function selectTag(tag) {
   selectedTag.value = tag
+  if (tag) featuredOnly.value = false
   page.value = 1
   const url = new URL(window.location.href)
   if (tag) {
     url.searchParams.set('tag', tag)
+    url.searchParams.delete('featured')
   } else {
     url.searchParams.delete('tag')
+  }
+  history.replaceState(null, '', url.toString())
+}
+
+function toggleFeaturedOnly(on) {
+  featuredOnly.value = on
+  if (on) selectedTag.value = null
+  page.value = 1
+  const url = new URL(window.location.href)
+  if (on) {
+    url.searchParams.set('featured', '1')
+    url.searchParams.delete('tag')
+  } else {
+    url.searchParams.delete('featured')
   }
   history.replaceState(null, '', url.toString())
 }
@@ -70,6 +94,10 @@ onMounted(() => {
   const tagParam = url.searchParams.get('tag')
   if (tagParam && allTags.value.includes(tagParam)) {
     selectedTag.value = tagParam
+  }
+  if (url.searchParams.get('featured') === '1') {
+    featuredOnly.value = true
+    selectedTag.value = null
   }
 })
 </script>
@@ -108,7 +136,15 @@ onMounted(() => {
       class="blog-featured-strip"
       aria-label="Featured posts"
     >
-      <h2 class="blog-featured-strip-heading">Editor's picks</h2>
+      <div class="blog-featured-strip-header">
+        <h2 class="blog-featured-strip-heading">Editor's picks</h2>
+        <button
+          v-if="hasMoreFeatured"
+          type="button"
+          class="blog-featured-strip-more"
+          @click="toggleFeaturedOnly(true)"
+        >See all {{ featuredPosts.length }} featured &rarr;</button>
+      </div>
       <div class="blog-featured-strip-grid">
         <a
           v-for="post in featuredStrip"
@@ -122,6 +158,11 @@ onMounted(() => {
         </a>
       </div>
     </section>
+
+    <div v-if="featuredOnly" class="blog-featured-filter-banner">
+      <span>Showing all {{ featuredPosts.length }} featured posts, newest first.</span>
+      <button type="button" class="blog-tags-clear" @click="toggleFeaturedOnly(false)" aria-label="Clear featured filter">&larr; Back to all posts</button>
+    </div>
 
     <section v-if="!selectedTag" class="blog-start-here">
       <button class="blog-start-here-toggle" @click="startHereOpen = !startHereOpen" :aria-expanded="startHereOpen">
