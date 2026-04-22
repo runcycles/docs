@@ -51,12 +51,11 @@ cycles-events:
   image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
   restart: unless-stopped
   # No `ports:` stanza — the service has no public inbound surface.
-  # Traffic-plane is outbound-only (dispatches webhooks to tenant URLs);
-  # management-plane (9980) is scraped from inside the Docker network
-  # by a co-located Prometheus. Publishing either to the host is only
-  # needed for ad-hoc local inspection.
+  # Traffic-plane dispatch is outbound-only; only the management-plane
+  # port (9980) needs to be reachable inside the Docker network, where
+  # a co-located Prometheus scrapes it. Publish to the host only when
+  # an operator needs local inspection.
   expose:
-    - "7980"
     - "9980"
   environment:
     REDIS_HOST: redis
@@ -105,18 +104,27 @@ spec:
           containerPort: 7980
         - name: management
           containerPort: 9980
+      # Startup probe gates liveness + readiness until bootstrap is done.
+      # Kubernetes recommends this pattern for slow-starting containers
+      # that need to initialize external connections (Spring, Redis,
+      # dispatcher state) before health should count:
+      # https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      startupProbe:
+        httpGet:
+          path: /actuator/health/readiness
+          port: management
+        periodSeconds: 5
+        failureThreshold: 24   # ~2 min headroom for first start
       livenessProbe:
         httpGet:
           path: /actuator/health/liveness
           port: management
-        initialDelaySeconds: 60
         periodSeconds: 10
         failureThreshold: 3
       readinessProbe:
         httpGet:
           path: /actuator/health/readiness
           port: management
-        initialDelaySeconds: 20
         periodSeconds: 5
         failureThreshold: 2
       env:
@@ -129,10 +137,11 @@ spec:
               key: webhook-encryption-key
 ```
 
-Two things worth calling out:
+Three things worth calling out:
 
-- **Use Spring Boot's `liveness` / `readiness` health groups** rather than the plain `/actuator/health` endpoint. Spring Boot's [built-in probe groups](https://docs.spring.io/spring-boot/docs/2.4.1/reference/html/production-ready-features.html) separate "is this instance alive" from "is this instance ready to do work," with their own `HealthIndicator` registration points. If your operator cares about Redis specifically, the readiness group is where the `RedisHealthIndicator` output lands; liveness stays true as long as the JVM is responsive. If you don't need the separation, aliasing both probes to plain `/actuator/health` is a reasonable default.
-- **Asymmetric timing**. Liveness with a 60-second `initialDelaySeconds` gives the service room for its full startup cycle before Kubernetes decides to kill it. Readiness with 20 seconds gets the pod into the service endpoint list as soon as Redis connectivity is confirmed. Both probes fail open enough that a single slow Redis round-trip doesn't cause a cascading restart.
+- **`startupProbe` handles the bootstrap window** rather than large `initialDelaySeconds` on liveness. Kubernetes' [probe documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) recommends this specifically for slow-starting containers — liveness and readiness don't run until the startup probe succeeds, which is a cleaner fit for a worker that has to bootstrap Spring, Redis, and dispatcher state before health should count. A 24-try `failureThreshold` on a 5-second period gives roughly two minutes of startup headroom before Kubernetes decides the container is broken.
+- **Use Spring Boot's `liveness` / `readiness` health groups** rather than the plain `/actuator/health` endpoint. Spring Boot's [built-in probe groups](https://docs.spring.io/spring-boot/docs/2.4.1/reference/html/production-ready-features.html) separate "is this instance alive" from "is this instance ready to do work," with their own `HealthIndicator` registration points. If you care about Redis specifically, the readiness group is where the `RedisHealthIndicator` output lands; liveness stays true as long as the JVM is responsive. If you don't need the separation, aliasing both probes to plain `/actuator/health` is a reasonable default.
+- **Post-startup timing** on liveness and readiness can stay tight. Readiness on a 5-second period gets the pod back into and out of the service endpoint list quickly if Redis blips; liveness on a 10-second period with three failures catches a genuinely wedged JVM without being twitchy.
 
 A NetworkPolicy that restricts port 9980 to the monitoring namespace (or equivalent) is the other half of the story — the management surface should not be reachable from anywhere a tenant-visible API surface can be reached.
 
