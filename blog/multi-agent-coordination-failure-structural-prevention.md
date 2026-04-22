@@ -89,7 +89,7 @@ Every major multi-agent framework ships some subset of these prevention layers. 
 
 | Framework | Built-in budget attenuation | Built-in handoff contracts | Built-in pre-execution enforcement | Built-in coordination-budget cap |
 |---|---|---|---|---|
-| **CrewAI** | Per-agent roles; budget pool is shared | Role-based task assignment (loose) | App-defined | App-defined |
+| **CrewAI** | Per-agent roles; no built-in hierarchical budget attenuation | Role-based task assignment (loose) | App-defined | App-defined |
 | **LangGraph** | Graph-based typed state; no budget hierarchy | Typed node inputs/outputs (partial) | App-defined | App-defined |
 | **AutoGen** | Conversation model; budget pool is shared | Conversation turns (unstructured) | App-defined | App-defined |
 | **Semantic Kernel** | Per-agent tool scoping (loose) | App-defined | App-defined | App-defined |
@@ -118,7 +118,7 @@ Put the three layers together with a concrete workflow. A customer-support tenan
 - The `toolset:refunds` budget has a `RISK_POINTS` cap independent of model budget; the action agent runs out of refund authority before it runs out of LLM budget if something goes wrong.
 - A denial triggers graceful degradation: escalate to human, don't retry in a loop.
 
-None of these layers is novel individually. The value is applying all three simultaneously. The MAST category distribution says that fewer than any one layer leaves at least 23% of failures uncaught.
+None of these layers is novel individually. The value is applying all three simultaneously. The MAST distribution implies that omitting any one layer leaves at least one major failure class uncaught.
 
 ## The takeaway
 
