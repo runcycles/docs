@@ -29,7 +29,7 @@ For AI agents, the same principle applies — but at the **tool call layer**. An
 Zero trust for agents means:
 
 1. **Every tool call is evaluated against policy before execution** — not logged after.
-2. **Agent identity is explicit** — each agent has its own credentials, not inherited user tokens.
+2. **Agent identity is explicit** — each agent has its own credentials, not inherited user [tokens](/glossary#tokens).
 3. **Permissions are scoped to the current task** — least privilege, not broad access.
 4. **Budget is part of the policy** — cost authorization is security authorization.
 5. **Trust doesn't transfer between agents** — sub-agents earn their own permissions.
@@ -83,7 +83,7 @@ This is the difference between a guardrail and an enforcement layer. A guardrail
 
 ### 2. Budget as a First-Class Policy Dimension
 
-Cost authorization is security authorization. An agent that burns $47K over a weekend because it [misinterpreted an API error and ran 2.3 million calls](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/) is a security incident, not just a billing problem. Zero trust for agents must include spend limits as enforceable policy — per-agent, per-tenant, per-run.
+Cost authorization is security authorization. An agent that burns $47K over a weekend because it [misinterpreted an API error and ran 2.3 million calls](https://rocketedge.com/2026/03/15/your-ai-agent-bill-is-30x-higher-than-it-needs-to-be-the-6-tier-fix/) is a security incident, not just a billing problem. Zero trust for agents must include spend limits as enforceable policy — per-agent, per-[tenant](/glossary#tenant), per-run.
 
 ### 3. Scoped, Hierarchical Permissions
 
@@ -91,7 +91,7 @@ Flat allow/deny lists don't scale. Production systems need hierarchical scopes: 
 
 ### 4. Concurrency-Safe Authorization
 
-In any non-trivial deployment, multiple agents run simultaneously against shared budgets. Without atomic reservation, two agents can each check that $50 remains, both proceed, and spend $100. This is not a theoretical concern — it's the default behavior of every agent framework that checks budgets with a simple read-before-write pattern. Authorization decisions must be atomic.
+In any non-trivial deployment, multiple agents run simultaneously against shared budgets. Without atomic [reservation](/glossary#reservation), two agents can each check that $50 remains, both proceed, and spend $100. This is not a theoretical concern — it's the default behavior of every agent framework that checks budgets with a simple read-before-write pattern. Authorization decisions must be atomic.
 
 ### 5. Auditable Decision Trail
 
@@ -99,7 +99,7 @@ Zero trust without an audit trail is unverifiable trust. Every policy decision �
 
 ## How Runtime Authority Implements Zero Trust
 
-If you've read the Cycles documentation, these five requirements should sound familiar. Runtime authority is zero trust applied to AI agent actions.
+If you've read the Cycles documentation, these five requirements should sound familiar. [Runtime authority](/glossary#runtime-authority) is zero trust applied to AI agent actions.
 
 Here's how the mapping works:
 
@@ -117,7 +117,7 @@ This is precisely the enforcement point that the Hacker News community identifie
 
 ### Adding Zero Trust to Existing Agents
 
-For teams already using MCP-compatible tools (Claude Code, Cursor, Windsurf), zero trust enforcement is a [single config change](/quickstart/getting-started-with-the-mcp-server). The Cycles MCP server adds budget-aware tools (`cycles_reserve`, `cycles_commit`, `cycles_decide`) that wrap existing tool calls. No code changes to the agent.
+For teams already using MCP-compatible tools (Claude Code, Cursor, Windsurf), zero trust enforcement is a [single config change](/quickstart/getting-started-with-the-mcp-server). The Cycles [MCP server](/glossary#mcp-server) adds budget-aware tools (`cycles_reserve`, `cycles_commit`, `cycles_decide`) that wrap existing tool calls. No code changes to the agent.
 
 For teams building with Python, TypeScript, or Spring Boot, the SDK wraps your existing LLM calls and tool invocations with reserve-commit checks. The integration pattern:
 

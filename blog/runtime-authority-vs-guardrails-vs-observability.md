@@ -11,7 +11,7 @@ featured: true
 
 # Runtime Authority vs Guardrails vs Observability
 
-A team ships an autonomous agent with reasonable controls. They have observability — Langfuse traces every call, attributes cost by model, and surfaces slow runs. They have guardrails — a loop counter caps iterations at 100, a timeout kills runs after five minutes, and a hardcoded check rejects tool calls that look dangerous.
+A team ships an [autonomous agent](/glossary#autonomous-agent) with reasonable controls. They have observability — Langfuse traces every call, attributes cost by model, and surfaces slow runs. They have guardrails — a loop counter caps iterations at 100, a timeout kills runs after five minutes, and a hardcoded check rejects tool calls that look dangerous.
 
 On Tuesday, the agent enters a retry loop against an external API. Each retry stays under the loop cap. Each iteration finishes within the timeout. The guardrails pass every check. Langfuse logs every trace faithfully.
 
@@ -31,7 +31,7 @@ Three approaches. Three different questions. Only one acts before execution.
 |---|---|---|---|
 | **Observability** | What happened? | After execution | Nothing — it reports |
 | **Guardrails** | Is this output or action acceptable? | During or after execution | Content quality, structural validity, per-action policy |
-| **Runtime authority** | Should this happen at all? | Before execution | Cumulative spend, bounded exposure, action permissions |
+| **[Runtime authority](/glossary#runtime-authority)** | Should this happen at all? | Before execution | Cumulative spend, bounded [exposure](/glossary#exposure), action permissions |
 
 A guardrail can say "this tool output looks unsafe." Observability can say "this run sent 200 emails." Runtime authority can say "this run is not allowed to send any more emails without approval."
 
@@ -61,9 +61,9 @@ But guardrails have structural limitations that surface under real production co
 
 **No cumulative awareness.** A guardrail that checks "is this single action okay?" cannot answer "has this run already consumed too much in aggregate?" Each check is stateless. Nothing tracks the running total atomically.
 
-**Fragmented.** Guardrails accumulate across codebases — one team adds a loop cap here, another adds a timeout there, a third hardcodes a model fallback somewhere else. There is no unified policy surface. No single place to ask: what is this tenant, workflow, or run allowed to do?
+**Fragmented.** Guardrails accumulate across codebases — one team adds a loop cap here, another adds a timeout there, a third hardcodes a model fallback somewhere else. There is no unified policy surface. No single place to ask: what is this [tenant](/glossary#tenant), workflow, or run allowed to do?
 
-**Brittle under retries and fan-out.** An agent that retries five times stays under a per-call guardrail while consuming five times the expected budget. A workflow that fans out into 200 subtasks passes every per-task check while the aggregate cost grows unbounded and 200 downstream systems receive duplicate updates.
+**Brittle under retries and [fan-out](/glossary#fan-out).** An agent that retries five times stays under a per-call guardrail while consuming five times the expected budget. A workflow that fans out into 200 subtasks passes every per-task check while the aggregate cost grows unbounded and 200 downstream systems receive duplicate updates.
 
 Guardrails handle the obvious cases. They do not compose into a coherent control model for autonomous systems.
 
@@ -78,10 +78,10 @@ The key properties that distinguish runtime authority from guardrails and observ
 - **Pre-execution.** The decision happens before the action, not after.
 - **Enforcement.** The system can block or constrain, not just observe and report.
 - **Scoped.** Decisions apply at the right level — per tenant, per workflow, per agent, per run — not just globally or per-action.
-- **Concurrency-safe.** Atomic reservations prevent race conditions. Two agents cannot both claim the same remaining budget.
+- **Concurrency-safe.** Atomic [reservations](/glossary#reservation) prevent race conditions. Two agents cannot both claim the same remaining budget.
 - **Reconciled.** Budget is reserved before execution, actual cost is committed after. The difference is released.
 
-Instead of a binary allow/deny, runtime authority supports three outcomes: **ALLOW**, **ALLOW_WITH_CAPS** (proceed with constraints — use a cheaper model, skip optional steps), and **DENY**. That three-way decision enables graceful degradation rather than hard failure.
+Instead of a binary allow/deny, runtime authority supports three outcomes: **ALLOW**, **ALLOW_WITH_CAPS** (proceed with constraints — use a cheaper model, skip optional steps), and **DENY**. That [three-way decision](/glossary#three-way-decision) enables [graceful degradation](/glossary#graceful-degradation) rather than hard failure.
 
 For the full definition, see [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents).
 
@@ -124,6 +124,7 @@ Because it is protocol-based, Cycles works across frameworks, languages, and pro
 
 ## Next steps
 
+- [Agents Are Cross-Cutting. Your Controls Aren't.](/blog/agents-are-cross-cutting-your-controls-arent) — the *span* companion to this *lifecycle* argument: why governance has to reach across providers, tools, tenants, and workers
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational definition of runtime authority
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution decisions
 - [What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion) — deeper exploration of category boundaries

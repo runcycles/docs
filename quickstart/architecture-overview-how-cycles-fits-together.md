@@ -19,6 +19,10 @@ This is a reference page. If you haven't set up Cycles yet, start with the [End-
 
 Your application talks to the **Cycles Server** (port 7878) at runtime. The **Cycles Admin Server** (port 7979) is the management plane where you create tenants, generate API keys, and configure budget ledgers. The **Cycles Events Service** (port 7980) delivers webhook notifications asynchronously. All three services share the same Redis instance.
 
+::: info Independent release cadences
+Runtime, admin, and events services ship patch releases independently. Current versions as of 2026-04-17: `cycles-server` 0.1.25.13, `cycles-server-admin` 0.1.25.26, `cycles-server-events` 0.1.25.6, `cycles-dashboard` 0.1.25.28. Older admin servers that predate newer query parameters (e.g., `sort_by`, `search`) ignore them rather than erroring — the APIs follow an additive-parameter guarantee. See the [changelog](/changelog) for the full matrix of minimum versions per feature.
+:::
+
 ## Components
 
 ### Cycles Protocol
@@ -75,11 +79,13 @@ Six Lua scripts handle the core operations:
 
 The management plane for Cycles. It runs as a separate Spring Boot 3.5 service on port 7979 and shares the same Redis instance as the Cycles Server.
 
+The optional [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) (Vue 3 SPA) sits in front of this server and exposes its operations as a web UI — useful for day-two ops without crafting curl commands.
+
 **What it does:**
 
 - Manages tenants (create, list, update, suspend, close)
 - Creates and revokes API keys with granular permissions
-- Creates budget ledgers and handles funding operations (credit, debit, reset, repay debt)
+- Creates budget ledgers and handles funding operations (credit, debit, reset, reset_spent, repay debt)
 - Defines policies (caps, rate limits, TTL overrides) matched by scope patterns — **stored for future runtime enforcement; not yet evaluated by the Cycles Server in v0**
 - Validates API keys (used by the Cycles Server for authentication)
 - Maintains an audit log of all administrative operations
@@ -148,7 +154,7 @@ Separating the management plane from the runtime enforcement plane lets you:
 - Scale the enforcement server independently from the admin server
 - Apply different access controls to management vs runtime operations
 
-See the [Cycles Admin Server README](https://github.com/runcycles/cycles-server-admin) for the full API reference.
+See the [Admin API reference](/admin-api/) for the full API, or the [governance spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) for the authoritative OpenAPI definition.
 
 ### Cycles Events Service
 

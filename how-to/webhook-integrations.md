@@ -177,7 +177,7 @@ Content-Type: application/json
 X-Cycles-Event-Id: evt_a1b2c3d4e5f67890
 X-Cycles-Event-Type: reservation.denied
 X-Cycles-Signature: sha256=a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
-User-Agent: cycles-server-events/0.1.25.1
+User-Agent: cycles-server-events/0.1.25.5
 ```
 
 ## Signature Verification
@@ -912,7 +912,7 @@ def handle():
 
 ## Tenant Self-Service Webhooks
 
-Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 26 of 40 types). Admin-only events (`api_key.*`, `policy.*`, `system.*`) are not available to tenants.
+Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 29 of 45 types). Admin-only events (`api_key.*`, `policy.*`, `webhook.*`, `system.*`) are not available to tenants.
 
 **Required API key permissions:**
 - `webhooks:write` — create, update, delete subscriptions

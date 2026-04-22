@@ -50,7 +50,7 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
   }'
 ```
 
-### Available permissions (23 total)
+### Available permissions (27 total)
 
 **Tenant-scoped permissions** (used with `X-Cycles-API-Key` for runtime and tenant operations):
 
@@ -66,14 +66,27 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `webhooks:read` | List tenant webhooks and delivery history | No |
 | `events:read` | Query tenant event stream at `/v1/events` | No |
 
+**Tenant budget/policy permissions** (v0.1.25.6+):
+
+| Permission | Grants | Default? |
+|---|---|---|
+| `budgets:read` | List and read own tenant budgets | Yes |
+| `budgets:write` | Create and fund own tenant budgets | Yes |
+| `policies:read` | List and read own tenant policies | Yes |
+| `policies:write` | Create and update own tenant policies | Yes |
+
 **Admin wildcard permissions** (used with `X-Cycles-API-Key` for admin operations):
 
 | Permission | Grants |
 |---|---|
-| `admin:read` | Read any admin resource (budgets, policies, tenants, webhooks, events, audit) |
-| `admin:write` | Modify any admin resource (create/fund budgets, manage policies, manage webhooks) |
+| `admin:read` | Satisfies **any** `*:read` permission (budgets:read, policies:read, webhooks:read, events:read, etc.) |
+| `admin:write` | Satisfies **any** `*:write` permission (budgets:write, policies:write, webhooks:write, etc.). Does NOT grant read access — use both `admin:read` and `admin:write` for full access. |
 
-**Admin granular permissions** (v0.1.25 — finer-grained alternative to admin wildcards):
+::: tip Wildcard behavior (v0.1.25.7+)
+`admin:write` acts as a server-level wildcard — it satisfies any `*:write` permission requirement. This means pre-v0.1.25.6 keys with `admin:write` continue to work without migration even after granular permissions were introduced. `admin:read` does NOT satisfy `*:write`.
+:::
+
+**Admin granular permissions** (v0.1.25+ — finer-grained alternative to admin wildcards):
 
 | Permission | Grants |
 |---|---|
@@ -90,9 +103,15 @@ curl -X POST http://localhost:7979/v1/admin/api-keys \
 | `admin:events:read` | Query admin event stream |
 | `admin:audit:read` | Query audit logs |
 
-> **Defaults:** When no permissions are specified at key creation, the key receives the 6 default runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`). Webhook, event, and admin permissions must be explicitly requested.
+> **Defaults:** When no permissions are specified at key creation, the key receives 10 default permissions: the 6 runtime permissions (`reservations:create`, `reservations:commit`, `reservations:release`, `reservations:extend`, `reservations:list`, `balances:read`) plus `budgets:read`, `budgets:write`, `policies:read`, `policies:write`. Webhook, event, and admin permissions must be explicitly requested.
 
-A typical runtime key needs only the 6 defaults. Add `webhooks:write` and `webhooks:read` if tenants manage their own [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) if the key is used for budget management via the admin server (port 7979). For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
+A typical runtime key needs only the 6 defaults. Add `budgets:write` and `budgets:read` if tenants manage their own budgets. Add `webhooks:write` and `webhooks:read` for [webhook subscriptions](/how-to/managing-webhooks#tenant-self-service). Add `admin:read`/`admin:write` (or granular equivalents) only if the key is used for cross-tenant admin operations via the admin server (port 7979).
+
+::: warning Admin permissions on tenant keys (v0.1.25.7)
+`admin:read` and `admin:write` are accepted on tenant keys for backward compatibility, but **SHOULD NOT be assigned to new tenant keys**. Use the specific permissions (`budgets:write`, `policies:read`, etc.) instead. The admin key (`X-Admin-API-Key`) is server-configured and is not provisioned through the API key creation endpoint.
+:::
+
+For the full endpoint-to-header-to-permission mapping, see the [Architecture Overview — Authentication](/quickstart/architecture-overview-how-cycles-fits-together#authentication).
 
 Response:
 
@@ -163,7 +182,30 @@ curl -X POST http://localhost:7878/v1/reservations \
   -d '{ ... }'
 ```
 
+## Listing API keys
+
+`GET /v1/admin/api-keys` lists keys. By default (tenant-scoped with `X-Cycles-API-Key`), the server returns keys for the authenticated tenant only. With `X-Admin-API-Key` you can list across all tenants by omitting the `tenant_id` query parameter (v0.1.25.22+). Cross-tenant results paginate with a composite `(tenant_id, key_id)` cursor.
+
+```bash
+# Cross-tenant — all keys, sorted by last-used
+curl -G "http://localhost:7979/v1/admin/api-keys" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  --data-urlencode "sort_by=last_used_at_ms" \
+  --data-urlencode "sort_dir=desc" \
+  --data-urlencode "limit=50" | jq .
+
+# Tenant-scoped
+curl -G "http://localhost:7979/v1/admin/api-keys?tenant_id=acme" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+`search` (v0.1.25.25+) does a case-insensitive match over `key_id`, `name`, and `description`. See [Searching and Sorting Admin List Endpoints](/how-to/searching-and-sorting-admin-list-endpoints) for the full parameter vocabulary.
+
 ## Revoking API keys
+
+::: tip Revoke from the dashboard
+Key revocation is also a one-click action on the API Keys page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — typically faster than crafting a curl when responding to a leaked-key incident. Revocation is irreversible; the dashboard surfaces a confirmation step.
+:::
 
 Revoke a key to immediately block all requests using it:
 
@@ -175,7 +217,7 @@ curl -X DELETE http://localhost:7979/v1/admin/api-keys/key_abc123 \
 Revocation is immediate. Any in-flight requests using the revoked key will fail on their next call to the Cycles server. Active reservations created with the revoked key remain valid until they expire or are committed/released.
 
 ::: tip Revocation, not deletion
-The `DELETE` endpoint performs a **status transition** (ACTIVE → REVOKED), not a hard delete. The key record is retained so that audit logs referencing the key remain resolvable. This is consistent with the lifecycle model used across Cycles — see the equivalent notes on [tenant closure](/how-to/tenant-creation-and-management-in-cycles#closed) and [budget decommissioning](/how-to/budget-allocation-and-management-in-cycles#resetting-budgets).
+The `DELETE` endpoint performs a **status transition** (ACTIVE → REVOKED), not a hard delete. The key record is retained so that audit logs referencing the key remain resolvable. This is consistent with the lifecycle model used across Cycles — see the equivalent notes on [tenant closure](/how-to/tenant-creation-and-management-in-cycles#closed) and [budget decommissioning](/how-to/budget-allocation-and-management-in-cycles#resizing-a-budget-reset).
 :::
 
 ## Key rotation

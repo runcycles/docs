@@ -18,7 +18,7 @@ This post is a reference guide. We break down current per-token pricing across t
 
 ## Per-Token Pricing by Provider
 
-All prices below are per 1 million tokens. Every provider charges separately for input tokens (what you send) and output tokens (what the model generates). Agents are output-heavy relative to simple completions, because they generate tool calls, reasoning chains, and structured responses.
+All prices below are per 1 million [tokens](/glossary#tokens). Every provider charges separately for input tokens (what you send) and output tokens (what the model generates). Agents are output-heavy relative to simple completions, because they generate tool calls, reasoning chains, and structured responses.
 
 ### OpenAI
 

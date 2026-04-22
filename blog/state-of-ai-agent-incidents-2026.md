@@ -21,7 +21,7 @@ This report catalogues documented incidents and recurring failure patterns, scor
 
 - **20+ documented incidents and recurring patterns** across cost, action, security, and multi-agent categories
 - **Costs in this report range from $1.40 to $12,400 per incident** in direct model spend (documented and pattern-based), with business impact reaching $50,000+ from a single $1.40 agent run
-- **Some of the most damaging incidents cost very little in tokens.** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.washingtonpost.com/technology/2025/02/07/openai-operator-ai-agent-chatgpt/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
+- **Some of the most damaging incidents cost very little in [tokens](/glossary#tokens).** A $1.40 model run caused [$50K+ in pipeline damage](/blog/ai-agent-action-control-hard-limits-side-effects). A $0.80 run triggered an [unauthorized purchase](https://www.washingtonpost.com/technology/2025/02/07/openai-operator-ai-agent-chatgpt/). A $2.00 run [deleted a production database](https://techcrunch.com/2025/10/02/after-nine-years-of-grinding-replit-finally-found-its-market-can-it-keep-it/). Dollar budgets alone cannot prevent the worst failures.
 - **Up to 84.2% attack success rate** for tool poisoning in benchmark settings under auto-approval ([MCP-ITP](https://arxiv.org/abs/2601.07395))
 - **41–87% failure rates** in multi-agent coordination ([UC Berkeley MAST study](https://arxiv.org/abs/2503.13657))
 - **64% of $1B+ companies** have already lost >$1M to AI failures broadly ([EY survey](https://assets.ey.com/content/dam/ey-sites/ey-com/en_gl/topics/emerging-technologies/ey-ai-survey-2024.pdf))
@@ -42,7 +42,7 @@ Incidents are categorized as:
 
 ## Category A: Cost Explosions
 
-Agents that spend more than expected — through loops, retries, fan-out, or scope creep. These are pattern-based scenarios (⚙️) constructed from real failure modes — see Categories B and C for externally documented incidents from named companies and security researchers.
+Agents that spend more than expected — through loops, retries, [fan-out](/glossary#fan-out), or scope creep. These are pattern-based scenarios (⚙️) constructed from real failure modes — see Categories B and C for externally documented incidents from named companies and security researchers.
 
 ### A1. Coding agent retry loop — $4,200 ⚙️
 
@@ -75,7 +75,7 @@ Twenty concurrent agents [processing 200 documents simultaneously](/blog/ai-agen
 | Model cost | $3,200 (budget was $500) |
 | Business impact | 6.4x budget overrun |
 | Root cause | Application-level counter lacks atomicity |
-| Prevention | **Atomic reservation** — budget locked before execution, concurrent reads see accurate remaining |
+| Prevention | **Atomic [reservation](/glossary#reservation)** — budget locked before execution, concurrent reads see accurate remaining |
 
 ### A4. Retry storm during CRM outage — $1,800 ⚙️
 
@@ -84,7 +84,7 @@ A CRM returns 500 errors for 12 minutes. [Retry logic at tool, step, and orchest
 | | Detail |
 |---|---|
 | Model cost | $1,800 |
-| Business impact | All tenant budgets affected during the storm |
+| Business impact | All [tenant](/glossary#tenant) budgets affected during the storm |
 | Root cause | Retry multiplier at each layer; no cumulative check |
 | Prevention | **Budget gate** — per-conversation cap ($2) limits total to ~$76 |
 
@@ -154,7 +154,7 @@ A support agent [posts diagnostic information containing internal system names a
 | | Detail |
 |---|---|
 | Model cost | $0.30 |
-| Business impact | Data exposure, security review, possible compliance notification |
+| Business impact | Data [exposure](/glossary#exposure), security review, possible compliance notification |
 | Root cause | No distinction between internal and external channel tools |
 | Prevention | **Action gate** — external Slack posting scored as Tier 3 (20 risk points), limited per run |
 
@@ -175,7 +175,7 @@ Attacks exploiting the agent tool layer — tool poisoning, supply chain, privil
 
 ### C1. postmark-mcp — silent email exfiltration
 
-The first confirmed malicious MCP server in the wild: `postmark-mcp` [silently BCC'd every outgoing email](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/) to an attacker-controlled address. It ran for weeks before detection. No user interaction required.
+The first confirmed malicious [MCP server](/glossary#mcp-server) in the wild: `postmark-mcp` [silently BCC'd every outgoing email](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/) to an attacker-controlled address. It ran for weeks before detection. No user interaction required.
 
 | | Detail |
 |---|---|
@@ -319,7 +319,7 @@ Every incident maps to one or more runtime controls that would have prevented it
 | Control | What it prevents | Incidents prevented |
 |---|---|---|
 | **Budget gate** (pre-execution cost cap) | Runaway spend, loops, retries, fan-out | A1–A4, D1 |
-| **Action gate** (RISK_POINTS) | Wrong actions, excessive actions, unauthorized actions | B1–B6, C1, C3, C5, C7 |
+| **Action gate** ([RISK_POINTS](/glossary#risk-points)) | Wrong actions, excessive actions, unauthorized actions | B1–B6, C1, C3, C5, C7 |
 | **Scope isolation** (per-tenant, per-agent) | Cross-tenant blast radius, concurrent overruns, compromised agent containment | A3, C2, C4, C8, D1, D2 |
 | **Audit trail** (structured event log) | Undetected failures, compliance gaps, incident reconstruction | C1, C6, D3 |
 | **Atomic reservation** (concurrency-safe) | TOCTOU races, double-spend, concurrent burst | A3, A4 |
@@ -336,7 +336,7 @@ The incidents in this report share three properties:
 
 3. **Detection happened after the damage.** Dashboards showed the cost spike, logs recorded the wrong email, alerts fired after the deploy. Observation is not prevention. By the time anyone noticed, the consequence had already persisted — emails sent, data deleted, money spent, trust eroded.
 
-Runtime authority — the [pre-execution control layer](/blog/what-is-runtime-authority-for-ai-agents) that decides whether an agent's next action should proceed — addresses all three. It fills the gap between capability and execution with a decision point that checks budget, scores risk, verifies scope, and logs the result before anything happens.
+[Runtime authority](/glossary#runtime-authority) — the [pre-execution control layer](/blog/what-is-runtime-authority-for-ai-agents) that decides whether an agent's next action should proceed — addresses all three. It fills the gap between capability and execution with a decision point that checks budget, scores risk, verifies scope, and logs the result before anything happens.
 
 The regulatory frameworks converge on the same conclusion. The [EU AI Act's Article 14](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) (for high-risk systems) requires human oversight with a stop mechanism. [NIST's AI RMF](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires controls proportionate to risk. [OWASP's Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) identifies tool misuse, excessive authority, and cascading failures as critical risks. The incidents in this report are what these frameworks exist to prevent.
 

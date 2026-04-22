@@ -24,12 +24,12 @@ Side effects are the actions an agent takes in the world. Sending emails. Creati
 
 The critical property of side effects is **irreversibility**. A sent email cannot be unsent. A triggered deploy is live. A deleted record may not be recoverable. A Slack message to a customer channel cannot be retracted without notice. These are consequences that persist after the agent stops — and no amount of post-hoc cost reconciliation changes what already happened.
 
-This is why [Cycles](/) is positioned as **runtime authority**, not just budget authority. Runtime authority is the umbrella: it covers both how much the agent spends (budget authority) and what the agent does (action authority). Both are enforced through a shared protocol, a common lifecycle, and the same infrastructure. Budget authority is the subset most teams implement first. Action authority is the subset where the costliest incidents live.
+This is why [Cycles](/) is positioned as **[runtime authority](/glossary#runtime-authority)**, not just [budget authority](/glossary#budget-authority). Runtime authority is the umbrella: it covers both how much the agent spends (budget authority) and what the agent does ([action authority](/glossary#action-authority)). Both are enforced through a shared protocol, a common lifecycle, and the same infrastructure. Budget authority is the subset most teams implement first. Action authority is the subset where the costliest incidents live.
 
 | Dimension | What it limits | Example controls | What happens if missing |
 |-----------|---------------|------------------|------------------------|
-| **Budget authority** | How much the agent spends | Per-run dollar cap, per-tenant quota | Runaway cost — [$4,200 tool loops, $12,400 weekend batches](/blog/ai-agent-failures-budget-controls-prevent) |
-| **Action authority** | What the agent does | Tool allowlist/denylist, risk-point caps, per-action reservation | Wrong emails sent, accidental deploys, unauthorized file writes, data deletion |
+| **Budget authority** | How much the agent spends | Per-run dollar cap, per-[tenant](/glossary#tenant) quota | Runaway cost — [$4,200 tool loops, $12,400 weekend batches](/blog/ai-agent-failures-budget-controls-prevent) |
+| **Action authority** | What the agent does | Tool allowlist/denylist, risk-point caps, per-action [reservation](/glossary#reservation) | Wrong emails sent, accidental deploys, unauthorized file writes, data deletion |
 
 For a deep dive on the budget authority side specifically, see [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits).
 
@@ -51,7 +51,7 @@ The tiers are a starting point. Every team's risk map is different — a file wr
 
 Cycles provides two mechanisms for tracking agent actions, and choosing the right one is a risk judgment.
 
-**Reserve-commit** is pre-execution authorization. Before the agent sends the email, writes the file, or triggers the deploy, it calls the Cycles server to request permission. The server checks the available budget (whether that budget is denominated in dollars, tokens, or risk points), makes an allow/deny decision, and returns the result. Only if the decision is ALLOW does the agent proceed. After execution, the agent commits the actual cost or risk consumed.
+**Reserve-commit** is pre-execution authorization. Before the agent sends the email, writes the file, or triggers the deploy, it calls the [Cycles server](/glossary#cycles-server) to request permission. The server checks the available budget (whether that budget is denominated in dollars, [tokens](/glossary#tokens), or risk points), makes an allow/deny decision, and returns the result. Only if the decision is ALLOW does the agent proceed. After execution, the agent commits the actual cost or risk consumed.
 
 **Events** are post-hoc accounting. The agent takes the action first, then records what it did. There is no pre-execution check — the action already happened. Events are useful for low-risk actions where the overhead of a pre-execution round-trip is not justified, or for situations where the action completed outside of Cycles entirely and you need to record it for accounting purposes.
 
@@ -68,13 +68,13 @@ For the full reserve-commit lifecycle, see [How Reserve-Commit Works in Cycles](
 
 Dollar budgets are the wrong unit for action authority. The opening scenario makes this clear: 200 emails cost $1.40 in model spend. A per-run budget of $100, $50, even $5 would not have stopped a single email. The risk was not monetary. It was reputational, operational, and ultimately commercial — $50,000 in lost pipeline from a $1.40 agent run.
 
-Cycles supports a **RISK_POINTS** unit specifically for this problem. Instead of denominating budgets in dollars or tokens, teams assign point values to each action class based on blast radius. A workflow gets a fixed risk-point budget, and every consequential action deducts from it.
+Cycles supports a **[RISK_POINTS](/glossary#risk-points)** unit specifically for this problem. Instead of denominating budgets in dollars or tokens, teams assign point values to each action class based on blast radius. A workflow gets a fixed risk-point budget, and every consequential action deducts from it.
 
 | Action class | Risk points | Rationale |
 |-------------|:----------:|-----------|
 | Read-only model call | 1 | No side effects, no state change |
 | Internal tool call (search, lookup) | 2 | No external side effects |
-| External API read (GET) | 5 | Third-party dependency, potential data exposure |
+| External API read (GET) | 5 | Third-party dependency, potential data [exposure](/glossary#exposure) |
 | File write | 10 | Persistent state change, reversible with effort |
 | Email or Slack message | 20 | External recipient, irreversible once delivered |
 | Ticket creation | 20 | Triggers downstream workflows in external systems |
@@ -86,7 +86,7 @@ A workflow capped at 100 risk points can make dozens of reads and searches (1-2 
 
 The specific point values are subjective and team-defined. The table above is an example schedule — your team's will differ. A team that sends transactional emails as a core workflow might assign 5 points per email instead of 20, because a misrouted transactional email is recoverable. A team with strict compliance requirements might assign 100 points to any external communication, because the blast radius of a wrong message is regulatory, not just reputational. The value is not in the absolute numbers but in the **relative weighting** and the **hard cap**. What matters is that the cap exists and is enforced before execution.
 
-For the full unit system including USD_MICROCENTS, TOKENS, CREDITS, and RISK_POINTS, see [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
+For the full unit system including [USD_MICROCENTS](/glossary#usd-microcents), TOKENS, [CREDITS](/glossary#credits), and RISK_POINTS, see [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
 
 ## Tool Allowlists and Denylists — Capability Control Under Pressure
 
@@ -119,7 +119,7 @@ With a 100-point risk budget per run, the server applies progressive narrowing:
 
 The agent degrades gracefully instead of hard-stopping. It can still complete useful work — reading files, running searches, generating summaries — while the most dangerous capabilities are removed from its reach. This is the "disable" degradation strategy applied to action authority rather than cost control.
 
-For the three-way decision model (ALLOW, ALLOW_WITH_CAPS, DENY) and how caps flow through the system, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For the full set of degradation strategies, see [Degradation Paths in Cycles](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
+For the [three-way decision](/glossary#three-way-decision) model (ALLOW, ALLOW_WITH_CAPS, DENY) and how caps flow through the system, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For the full set of degradation strategies, see [Degradation Paths in Cycles](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
 ## Containment Is the Goal, Not Just Billing
 

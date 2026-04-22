@@ -1,6 +1,6 @@
 ---
 title: "Comparisons — How Cycles Differs from Alternatives"
-description: "See how Cycles compares to rate limiters, provider caps, observability tools, Guardrails AI, token counters, and DIY wrappers."
+description: "See how Cycles compares to LiteLLM, Helicone, OpenRouter, LangSmith, Guardrails AI, rate limiters, provider caps, and DIY wrappers."
 ---
 
 # Comparisons
@@ -9,16 +9,17 @@ Teams evaluating Cycles usually already have some controls in place. This page h
 
 ## At a glance
 
-| Approach | Pre-execution? | Per-tenant? | Cost-aware? | Degradation? | Lifecycle? |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Rate limiter | Velocity only | Partial | No | No | No |
-| Observability | No | No | After the fact | No | No |
-| Provider cap | No (delayed) | No | Partial | No | No |
-| In-app counter | Partial | Partial | Partial | No | No |
-| Job scheduler | No | No | No | No | No |
-| Guardrails AI | No | No | No | No | No |
-| DIY wrapper | Partial | Partial | Partial | No | No |
-| **Cycles** | **Yes** | **Yes** | **Yes** | **Yes (three-way)** | **Yes** |
+| Approach | Pre-execution? | Per-tenant? | Cost-aware? | Action control? | Degradation? | Reserve-commit? |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| LiteLLM | Yes (budget check) | Per-team/key | Yes | No | No | No |
+| Helicone | Window rate limit | Per-user/property | Yes | No | No | No |
+| OpenRouter | Yes (key cap) | Per-key | Yes | No | No | No |
+| LangSmith | No | No | After the fact | No | No | No |
+| Guardrails AI | No | No | No | No | No | No |
+| Rate limiter | Velocity only | Partial | No | No | No | No |
+| Provider cap | No (delayed) | No | Partial | No | No | No |
+| DIY wrapper | Partial | Partial | Partial | No | No | No |
+| **Cycles** | **Yes** | **Yes** | **Yes** | **Yes (RISK_POINTS)** | **Yes (three-way)** | **Yes** |
 
 ## By alternative
 
@@ -30,13 +31,21 @@ Teams evaluating Cycles usually already have some controls in place. This page h
 
 - **[Cycles vs Custom Token Counters](/concepts/cycles-vs-custom-token-counters)** — in-app counters work until concurrency, retries, and hierarchical scopes make them unreliable.
 
-### Tools in the AI stack
+### LLM proxies and gateways
 
-- **[Cycles vs Guardrails AI](/concepts/cycles-vs-guardrails-ai)** — Guardrails AI validates content (hallucination, toxicity, PII). Cycles governs budget. They solve different problems and complement each other.
+- **[Cycles vs LiteLLM](/concepts/cycles-vs-litellm)** — LiteLLM routes, rate-limits, and tracks spend at the proxy layer. Cycles enforces atomic budget authority and action control at the agent layer. They complement each other — LiteLLM picks the model, Cycles decides if the action should happen.
+
+- **[Cycles vs Helicone](/concepts/cycles-vs-helicone)** — Helicone provides observability, caching, and window-based cost limits. Cycles provides persistent cumulative budgets and action-level enforcement. Helicone reduces what you spend; Cycles limits what you're allowed to spend.
+
+- **[Cycles vs OpenRouter](/concepts/cycles-vs-openrouter)** — OpenRouter provides unified model access with per-key spending caps and guardrails. Cycles adds hierarchical runtime budgets, RISK_POINTS, and delegation attenuation. OpenRouter selects the model; Cycles governs the action.
+
+### Observability and content safety
 
 - **[Cycles vs LangSmith](/concepts/cycles-vs-langsmith)** — LangSmith traces what happened after execution. Cycles decides whether execution should happen at all. They complement each other.
 
-- **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — how Cycles complements LiteLLM, Portkey, Helicone, and Langfuse. Proxies route and observe; Cycles enforces.
+- **[Cycles vs Guardrails AI](/concepts/cycles-vs-guardrails-ai)** — Guardrails AI validates content (hallucination, toxicity, PII). Cycles governs budget and actions. They solve different problems and complement each other.
+
+- **[Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools)** — broader comparison of how Cycles complements the proxy and observability ecosystem.
 
 ### Build vs use
 

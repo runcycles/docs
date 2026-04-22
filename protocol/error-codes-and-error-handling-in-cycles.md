@@ -18,18 +18,22 @@ Every error response follows the same structure:
   "error": "BUDGET_EXCEEDED",
   "message": "Insufficient budget in scope tenant:acme",
   "request_id": "req-abc-123",
+  "trace_id": "0af7651916cd43dd8448eb211c80319c",
   "details": {}
 }
 ```
 
 - **error** — a machine-readable error code from the fixed enum
 - **message** — a human-readable explanation
-- **request_id** — a unique identifier for debugging and support
+- **request_id** — a unique identifier for one HTTP request
+- **trace_id** — OPTIONAL. 32-hex W3C Trace Context identifier for the logical operation this request belongs to. Conformant v0.1.25.14+ runtime servers and v0.1.25.31+ admin servers populate it on every error response. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 - **details** — optional additional context
+
+Every response — error or success — also carries an `X-Cycles-Trace-Id` HTTP response header with the same 32-hex identifier. Log both `request_id` and `trace_id` when handling errors; `trace_id` is the cross-plane join key for admin audit, events, and webhook delivery queries.
 
 ## The error codes
 
-Cycles defines 15 error codes, each with a specific HTTP status code and meaning.
+Cycles defines 16 error codes, each with a specific HTTP status code and meaning.
 
 ### INVALID_REQUEST (400)
 
@@ -64,11 +68,23 @@ Common causes:
 
 ### NOT_FOUND (404)
 
-The requested resource does not exist. This error has two contexts:
+The runtime plane uses a single `NOT_FOUND` wire code for all resource-not-found conditions. The `message` field carries the specific reason. Two distinct conditions surface here:
 
-**Missing reservation:** The specified reservation ID does not exist. This is different from RESERVATION_EXPIRED — a 404 means the reservation was never created, while RESERVATION_EXPIRED means it existed but its TTL has passed. **What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
+**Missing reservation.** The specified reservation ID does not exist. This is different from `RESERVATION_EXPIRED` — a 404 means the reservation was never created, while `RESERVATION_EXPIRED` means it existed but its TTL has passed. **What to do:** verify the reservation ID. If the client lost the ID, use `GET /v1/reservations` with the `idempotency_key` filter to recover it.
 
-**Missing budget:** No budget ledger exists for any derived scope in the reservation subject. The server checks each scope level and skips those without a budget, but at least one must have a ledger. **What to do:** create a budget via `POST /v1/admin/budgets` for at least one scope in the hierarchy. See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#how-budget-lookup-works-during-reservations).
+**Missing budget.** Returned on `POST /v1/reservations` and `POST /v1/events` when no budget ledger exists at any derived scope in any unit. The wire response looks like:
+
+```json
+{
+  "error": "NOT_FOUND",
+  "message": "Budget not found for provided scope: tenant:acme/workspace:prod",
+  "request_id": "req-abc-123"
+}
+```
+
+Distinct from `UNIT_MISMATCH (400)` — "missing budget" means *no budget exists at all*, while `UNIT_MISMATCH` means a budget exists at the scope but in a different unit than the request. **What to do:** create a budget via `POST /v1/admin/budgets` for at least one scope in the hierarchy. See [Budget Allocation and Management](/how-to/budget-allocation-and-management-in-cycles#how-budget-lookup-works-during-reservations).
+
+On `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true`, the "missing budget" condition does NOT surface as a 404. Those endpoints return `200` with `decision=DENY` and `reason_code=BUDGET_NOT_FOUND` instead — see [Decision reason codes](#decision-reason-codes) below.
 
 ### BUDGET_EXCEEDED (409)
 
@@ -100,6 +116,20 @@ The budget scope has been permanently closed. No further budget operations are a
 
 **What to do:** create a new budget scope or contact the operator. Not retryable against this scope.
 
+### TENANT_CLOSED (409)
+
+The owning tenant has been permanently closed. Every mutating admin-plane operation on any object owned by a closed tenant — budgets, reservations, API keys, webhook subscriptions, policies — is rejected with this code. GET endpoints remain available for post-mortem audit reads.
+
+This error is issued by the **Rule 2 — Terminal-Owner Mutation Guard** half of the cascade contract (governance-admin spec v0.1.25.29, shipped in `cycles-server-admin` v0.1.25.35; full coverage v0.1.25.36). Rule 2's counterpart — **Rule 1 — Close Cascade** — runs at tenant-close time and automatically drives owned objects to terminal states (`BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open reservations → `RELEASED`, `WebhookSubscription → DISABLED`), so by the time you see this error the owned objects are already terminal. There is no way to "undo" a close; this is not a race condition that will resolve on retry.
+
+**What to do:** the tenant and its owned objects are read-only. Create a new tenant or escalate. **Not retryable against any object owned by this tenant** — unlike `BUDGET_FROZEN` (which an operator may unfreeze), `TENANT_CLOSED` is terminal. Implement no retry logic for this error.
+
+**For client-app developers.** If your users encounter `TENANT_CLOSED`, escalate to your platform operator — they control tenant lifecycle; a client cannot un-close a tenant. New workloads require a fresh active tenant. To proactively detect closed tenants and surface a friendlier message before mutation attempts, call `GET /v1/admin/tenants/{tenant_id}` (admin-scoped) or check the response of any `GET /v1/balances` / `GET /v1/reservations` call — reads against a closed tenant still succeed and return status metadata.
+
+**In bulk-action responses:** rows targeting a closed tenant go into the `failed[]` bucket with `error_code=TENANT_CLOSED`; the rest of the batch continues.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract, affected endpoints, and Mode A vs Mode B cascade behavior.
+
 ### RESERVATION_EXPIRED (410)
 
 The reservation's TTL plus grace period has elapsed.
@@ -126,14 +156,24 @@ This means the client sent a request with an idempotency key that was already us
 
 ### UNIT_MISMATCH (400)
 
-The unit in the request does not match the expected unit.
+The unit in the request does not match any budget stored for the derived scopes, but at least one of those scopes has a budget in a different unit.
 
-Common causes:
+Returned on four operations:
 
-- committing with a different unit than the reservation was created with (e.g., reserving in TOKENS, committing in USD_MICROCENTS)
-- creating an event with a unit not supported for the target scope
+1. **Reserve** — `estimate.unit` does not match any budget at the derived scopes (a budget exists in a different unit)
+2. **Commit** — `actual.unit` differs from the reservation's `estimate.unit`
+3. **Event** — `actual.unit` does not match the budget stored for the target scope
+4. **Decide** — `estimate.unit` does not match any budget at the derived scopes. This is an exception to `/decide`'s general "return `decision=DENY` (200) without 4xx" pattern, which applies only to budget-state conditions (debt, overdraft, insufficient remaining), not request-validity errors like a wrong unit.
 
-**What to do:** ensure the unit is consistent across the reservation lifecycle. Check that the commit or event uses the same unit as the reservation or scope.
+When the cause is a wrong unit (rather than the absence of any budget at the scope), the server populates the error response's `details` object with:
+
+- `scope` — the canonical scope identifier where the mismatch was detected
+- `requested_unit` — the unit supplied by the client
+- `expected_units` — array of units for which a budget does exist at that scope
+
+so clients can self-correct without a separate lookup. `NOT_FOUND (404)` (with a `"Budget not found for provided scope: ..."` message) is reserved for the case where the target scope has no budget in **any** unit.
+
+**What to do:** switch the request to one of the units listed in `details.expected_units`, or create a budget in the requested unit via `POST /v1/admin/budgets`.
 
 ### OVERDRAFT_LIMIT_EXCEEDED (409)
 
@@ -178,9 +218,12 @@ An unexpected server error occurred.
 | BUDGET_EXCEEDED | 409 | Insufficient budget |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+); every mutation on owned objects rejects |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Scope is over-limit |
 | DEBT_OUTSTANDING | 409 | Scope has unresolved debt (no overdraft limit configured) |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
+| NOT_FOUND | 404 | No budget exists at any derived scope in any unit (message: `"Budget not found for provided scope: ..."`) |
+| UNIT_MISMATCH | 400 | `estimate.unit` does not match any budget at the derived scopes (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
@@ -189,12 +232,13 @@ An unexpected server error occurred.
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| UNIT_MISMATCH | 400 | `estimate.unit` does not match any budget at the derived scopes (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
 
-Note: decide returns `200` with `decision: DENY` for budget or debt conditions, not a `409` error.
+Note: decide returns `200` with `decision: DENY` for budget-state conditions (insufficient remaining, debt, overdraft, and the "no budget exists at any scope" case — surfaced via `reason_code` from the [DecisionReasonCode enum](#decision-reason-codes)), not a `409` or `404` error. Request-validity errors like `UNIT_MISMATCH` are still returned as 400. The same applies to `POST /v1/reservations` when `dry_run=true`.
 
 ### Commit errors
 
@@ -203,6 +247,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | BUDGET_EXCEEDED | 409 | Actual exceeds budget (REJECT only) |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
@@ -216,6 +261,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 
 | Error | HTTP | Meaning |
 |---|---|---|
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | RESERVATION_EXPIRED | 410 | Past TTL + grace period |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
@@ -228,6 +274,7 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | Error | HTTP | Meaning |
 |---|---|---|
 | INVALID_REQUEST | 400 | Missing or invalid fields |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | RESERVATION_EXPIRED | 410 | Past TTL (no grace period for extend) |
 | RESERVATION_FINALIZED | 409 | Already committed or released |
 | MAX_EXTENSIONS_EXCEEDED | 409 | Tenant max_reservation_extensions limit reached |
@@ -243,12 +290,31 @@ Note: decide returns `200` with `decision: DENY` for budget or debt conditions, 
 | BUDGET_EXCEEDED | 409 | Insufficient budget (REJECT only) |
 | BUDGET_FROZEN | 409 | Budget scope is frozen |
 | BUDGET_CLOSED | 409 | Budget scope is permanently closed |
+| TENANT_CLOSED | 409 | Owning tenant is closed (v0.1.25.35+) |
 | OVERDRAFT_LIMIT_EXCEEDED | 409 | Debt would exceed limit (ALLOW_WITH_OVERDRAFT) |
-| UNIT_MISMATCH | 400 | Unit not supported for scope |
+| NOT_FOUND | 404 | No budget exists at any derived scope in any unit (message: `"Budget not found for provided scope: ..."`) |
+| UNIT_MISMATCH | 400 | `actual.unit` does not match any budget at the target scope (budget exists in a different unit) |
 | INVALID_REQUEST | 400 | Malformed request |
 | UNAUTHORIZED | 401 | Invalid API key |
 | FORBIDDEN | 403 | Tenant mismatch |
 | IDEMPOTENCY_MISMATCH | 409 | Same key, different payload |
+
+## Decision reason codes
+
+Separately from the 4xx error code list, `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true` may return `200 OK` with `decision: DENY` and a machine-readable `reason_code`. As of v0.1.25, `DecisionReasonCode` is an **open string** (was a closed enum in v0.1.24 and earlier — widened so future extension specs can add reason codes without a breaking protocol bump). Documented known values:
+
+| reason_code | Meaning |
+|---|---|
+| `BUDGET_EXCEEDED` | Remaining amount insufficient on at least one derived scope (evaluated against the requested `estimate.amount`). |
+| `BUDGET_FROZEN` | A derived scope has a budget in `FROZEN` status (operator-set, no mutations allowed). |
+| `BUDGET_CLOSED` | A derived scope has a budget in `CLOSED` status (permanently closed). |
+| `BUDGET_NOT_FOUND` | No budget exists at any derived scope in the requested unit. On non-dry reserve and `/v1/events` paths this same underlying condition surfaces as `HTTP 404` with `error=NOT_FOUND` instead. |
+| `OVERDRAFT_LIMIT_EXCEEDED` | Either `debt + delta > overdraft_limit` on commit, OR the scope is in over-limit state (`is_over_limit=true`) and no new reservations are permitted until reconciled. |
+| `DEBT_OUTSTANDING` | A derived scope has `debt > 0` and `overdraft_limit == 0` (no policy permits further debt accrual). |
+
+**Why this is a separate enum.** The 4xx error codes surface request-level failures in the `error` field. Decision reason codes surface budget-state outcomes in the `reason_code` field on successful HTTP responses. Some labels overlap (e.g. `BUDGET_EXCEEDED`) because the same underlying condition is reported differently depending on the endpoint: `/decide` and dry-run reserve surface it as a non-4xx DENY decision, while non-dry reserve surfaces it as a `409` error.
+
+**Forward compatibility.** Because `DecisionReasonCode` is an open string (since v0.1.25), **clients MUST handle unknown values gracefully** — treat as DENY, log the raw string, do not crash on enum parsing. Known values above are stable; future values will always be additive (e.g., v0.1.26 extension specs may emit `ACTION_QUOTA_EXCEEDED`, `ACTION_KIND_DENIED`, `ACTION_KIND_NOT_ALLOWED`).
 
 ## Idempotency and error handling
 
@@ -258,37 +324,57 @@ Errors interact with idempotency in specific ways:
 - **Payload mismatch:** if you reuse a key with a different payload, you get `409 IDEMPOTENCY_MISMATCH`.
 - **Failed original:** if the original request failed (e.g., BUDGET_EXCEEDED), retrying with the same key sends a fresh request. Idempotency only applies to successful operations.
 
-## The request_id field
+## Correlation identifiers
 
-Every error response includes a `request_id`.
+Every error response carries two server-generated identifiers:
 
-This is a server-generated identifier useful for:
+- **`request_id`** — unique per HTTP request. Useful for correlating errors with server logs, debugging with the Cycles operator, and tracking specific failures in client-side monitoring.
+- **`trace_id`** — 32-hex W3C Trace Context identifier. OPTIONAL on the schema; populated by conformant v0.1.25.14+ runtime and v0.1.25.31+ admin servers. Scopes a logical operation that may span multiple HTTP requests. Also echoed in the `X-Cycles-Trace-Id` response header.
 
-- correlating errors with server logs
-- debugging with the Cycles server operator
-- tracking specific failures in client-side monitoring
+Log both when handling errors. `trace_id` is usually the right choice for cross-plane root-cause analysis:
 
-Log the request_id when handling errors.
+```bash
+# Find everything that happened under one trace
+GET /v1/admin/audit/logs?trace_id=<32-hex>
+GET /v1/admin/events?trace_id=<32-hex>
+```
+
+`request_id` narrows to the side effects of one specific HTTP call. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract.
 
 ## Summary
 
-Cycles provides 15 specific error codes that tell the client exactly what went wrong:
+Cycles provides 16 specific error codes that tell the client exactly what went wrong:
 
 - **400** for request validation issues (INVALID_REQUEST, UNIT_MISMATCH)
 - **401** for authentication failures (UNAUTHORIZED)
 - **403** for authorization failures (FORBIDDEN)
-- **404** for missing reservations (NOT_FOUND)
-- **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
+- **404** for missing resources (NOT_FOUND) — covers both missing reservations and missing budgets, distinguished by the `message` field
+- **409** for budget and state conflicts (BUDGET_EXCEEDED, BUDGET_FROZEN, BUDGET_CLOSED, TENANT_CLOSED, OVERDRAFT_LIMIT_EXCEEDED, DEBT_OUTSTANDING, RESERVATION_FINALIZED, IDEMPOTENCY_MISMATCH, MAX_EXTENSIONS_EXCEEDED)
 - **410** for expired reservations (RESERVATION_EXPIRED)
 - **500** for server errors (INTERNAL_ERROR)
 
+Additionally, `/v1/decide` and dry-run reserve surface budget-state conditions via a `reason_code` field on `200 DENY` responses rather than as 4xx errors. These values come from a separate [DecisionReasonCode](#decision-reason-codes) enum — distinct from the 4xx error code list.
+
 Handling these codes correctly is the difference between a fragile integration and a production-grade one.
+
+## Debugging with `trace_id`
+
+When an error response carries `trace_id`, the fastest way to reconstruct the full operation is a three-call walk across the admin plane:
+
+```bash
+TID=<value from X-Cycles-Trace-Id header or error-body trace_id>
+curl -s "http://localhost:7979/v1/admin/audit/logs?trace_id=$TID" -H "X-Admin-API-Key: $ADMIN_KEY"
+curl -s "http://localhost:7979/v1/admin/events?trace_id=$TID"     -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract (W3C Trace Context precedence, outbound headers on webhook deliveries, cross-plane propagation rules).
 
 ## Next steps
 
 To explore the Cycles stack:
 
 - Read the [Cycles Protocol](https://github.com/runcycles/cycles-protocol)
+- [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) — `trace_id` as the cross-plane join key for debugging
 - Run the [Cycles Server](https://github.com/runcycles/cycles-server)
 - Manage budgets with [Cycles Admin](https://github.com/runcycles/cycles-server-admin)
 - Integrate with Python using the [Python Client](/quickstart/getting-started-with-the-python-client)

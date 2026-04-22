@@ -23,8 +23,12 @@ The server uses Spring Boot's configuration system. Properties can be set in `ap
 | `redis.host` | `localhost` | `REDIS_HOST` | Redis server hostname |
 | `redis.port` | `6379` | `REDIS_PORT` | Redis server port |
 | `redis.password` | (empty) | `REDIS_PASSWORD` | Redis password (optional) |
+| `redis.pool.max-total` | `128` | — | JedisPool max active connections |
+| `redis.pool.max-idle` | `32` | — | JedisPool max idle connections |
+| `redis.pool.min-idle` | `16` | — | JedisPool min idle connections kept warm |
+| `redis.pool.max-wait-ms` | `2000` | — | Max ms a caller waits for a pooled connection before `JedisException` |
 
-The server uses a JedisPool with a maximum of 50 connections by default. Redis 7+ is required for Lua script compatibility.
+Redis 7+ is required for Lua script compatibility. Tune `redis.pool.max-total` upward on high-concurrency instances — the reservation Lua script holds a connection for the duration of the atomic script call.
 
 ## Reservation expiry
 
@@ -40,6 +44,25 @@ The expiry sweep scans for reservations past their TTL and marks them as `EXPIRE
 - **Higher values** (e.g., 30000ms): less Redis overhead, but expired reservations hold budget longer before cleanup.
 
 For most deployments, the default 5000ms is a good balance.
+
+## Runtime audit log retention (v0.1.25.15)
+
+The runtime server writes audit entries for admin-on-behalf-of operations (force-release) to `audit:log:{id}` keys in Redis. v0.1.25.15 adds TTL-based retention so these rows respect the same 400-day authenticated tier as the admin plane.
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `audit.retention.days` | `400` | `AUDIT_RETENTION_DAYS` | TTL in days for runtime-written audit rows. Set to `0` for indefinite retention (legal hold, HIPAA-adjacent deployments, environments that offload to an archive store). |
+| `audit.sweep.cron` | `0 0 3 * * *` | `AUDIT_SWEEP_CRON` | Cron for the daily `@Scheduled` sweep that prunes expired `audit:logs:{tenantId}` and `audit:logs:_all` ZSET pointers. Safe to run alongside admin's sweep (idempotent `ZREMRANGEBYSCORE`). |
+
+Runtime audit rows never use the admin-plane `__admin__` / `__unauth__` sentinels — the runtime never fails pre-auth for admin keys, so a single tier is sufficient.
+
+## Metrics
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `cycles.metrics.tenant-tag.enabled` | `true` | `CYCLES_METRICS_TENANT_TAG_ENABLED` | When `true`, Prometheus counters include a `tenant` label. Set to `false` in deployments with many thousands of tenants to bound series cardinality. |
+
+The runtime server publishes these domain counters (introduced in v0.1.25.10): `cycles_reservations_reserve_total`, `cycles_reservations_commit_total`, `cycles_reservations_release_total`, `cycles_reservations_extend_total`, `cycles_reservations_expired_total`, `cycles_events_total`, `cycles_overdraft_incurred_total`. The events service mirrors the same toggle for its `cycles_webhook_*` counters so both services can be flipped together.
 
 ## JSON serialization
 
@@ -76,6 +99,17 @@ logging.level.io.runcycles.protocol.data=DEBUG
 
 This logs Lua script execution details, scope derivation, and balance calculations.
 
+### Structured (JSON) logging
+
+Cycles does not register a custom JSON log format. Because the services run on Spring Boot 3.4+, you can opt into Spring's built-in structured logging by setting one of the following at deploy time:
+
+| Variable | Value | Description |
+|---|---|---|
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `ecs` | Emit logs in Elastic Common Schema JSON (Spring Boot built-in). |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | `logstash` | Emit logs in Logstash JSON format (Spring Boot built-in). |
+
+When either value is set, Spring Boot overrides `logging.pattern.console` in favor of JSON output. This is stock Spring Boot behavior, not a Cycles-specific feature — the same env var works on the admin and events services.
+
 ## OpenAPI / Swagger
 
 | Property | Default | Description |
@@ -96,22 +130,25 @@ The OpenAPI spec at `/api-docs` can remain enabled for tooling.
 
 | Property | Default | Description |
 |---|---|---|
-| `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
+| `management.endpoints.web.exposure.include` | `health,info,prometheus` | Exposed actuator endpoints (runtime server default) |
 | `management.endpoint.health.show-details` | `when-authorized` | Show health details |
 
-### Available health endpoints
+### Available endpoints (default)
 
 ```
-GET /actuator/health   — basic health check
-GET /actuator/info     — application info
+GET /actuator/health      — aggregate health check
+GET /actuator/info        — application info
+GET /actuator/prometheus  — Micrometer metrics in Prometheus exposition format
 ```
+
+The runtime server also whitelists `/actuator/prometheus` in `SecurityConfig` so it can be scraped without an API key. The admin server requires default Spring Security on its actuator paths.
 
 ### Adding more endpoints
 
-To expose additional actuator endpoints:
+To expose additional actuator endpoints (e.g., `metrics`, `loggers`, `env`):
 
 ```properties
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoints.web.exposure.include=health,info,prometheus,metrics,loggers
 ```
 
 ## Security configuration
@@ -190,6 +227,43 @@ The Cycles Admin Server (`cycles-admin-service`) is a separate service that mana
 | `redis.host` | (required) | `REDIS_HOST` | Redis server hostname |
 | `redis.port` | (required) | `REDIS_PORT` | Redis server port |
 | `redis.password` | (required) | `REDIS_PASSWORD` | Redis password (set empty string if none) |
+| `dashboard.cors.origin` | `http://localhost:5173` | `DASHBOARD_CORS_ORIGIN` | Allowed CORS origin for the [admin dashboard](/quickstart/deploying-the-cycles-dashboard). Only needed when the browser calls the admin server directly (dev mode); unused in standard production (nginx reverse-proxies same-origin). |
+| `springdoc.swagger-ui.enabled` | `false` | `SWAGGER_ENABLED` | Swagger UI is disabled by default on the admin server; set to `true` to enable. |
+| `logging.level.io.runcycles.admin` | `INFO` | `LOG_LEVEL` | Admin-specific log level. |
+
+### Audit log retention
+
+Introduced in `cycles-server-admin` v0.1.25.20 for SOC2-compliant defaults. Failed requests (401/403/400/404/409/500) are now recorded alongside successes; retention is tiered so pre-auth failures expire faster than authenticated entries.
+
+| Property | Default | Env Variable | Description |
+|---|---|---|---|
+| `audit.retention.authenticated.days` | `400` | `AUDIT_RETENTION_AUTHENTICATED_DAYS` | TTL on authenticated audit entries (success + authenticated failures). `400` covers the SOC2 Type II 12-month lookback + 1-month auditor-engagement buffer. Set to `0` for indefinite retention (legal hold, HIPAA-adjacent). |
+| `audit.retention.unauthenticated.days` | `30` | `AUDIT_RETENTION_UNAUTHENTICATED_DAYS` | TTL on pre-auth failures (sentinel tenant `<unauthenticated>`). Enough for brute-force / credential-stuffing post-mortem. Aggregate volume stays visible via Prometheus regardless of TTL. Set to `0` for indefinite. |
+| `audit.sample.unauthenticated` | `1` | `AUDIT_SAMPLE_UNAUTHENTICATED` | Sampling rate on unauthenticated entries (`1` = every entry, `100` = 1 in 100). Opt-in hardening against failed-auth floods on internet-exposed admin endpoints. Authenticated entries are **never** sampled. |
+| `audit.sweep.cron` | `0 0 3 * * *` | — | Cron for the daily audit-index sweep. Purges TTL-expired pointers from the `audit:logs:_all` + per-tenant sorted-set indexes. Skipped entirely when `audit.retention.authenticated.days=0`. |
+
+**Alerting.** The Prometheus counter `cycles_admin_audit_writes_total{path_class, outcome}` tracks audit-write health. Alert on `outcome=error` nonzero — audit writes are non-fatal to the request, but silent coverage loss is the exact failure mode the tiered TTL is designed to prevent:
+
+```
+sum(rate(cycles_admin_audit_writes_total{outcome="error"}[5m])) > 0
+```
+
+**Semantic change for audit-log consumers.** Dashboards that assumed "audit entry exists ⇒ operation succeeded" must now check the entry's `status` or `error_code` field. Queries filtered by `status=201/200/204` return exactly the same rows as v0.1.25.19. See [Admin API guide](/admin-api/guide) for field semantics.
+
+### Admin server Kubernetes probes
+
+Unlike the runtime and events services, the admin server enables Spring Boot's liveness/readiness probes out of the box (`management.endpoint.health.probes.enabled=true`). In Kubernetes, wire probes to these paths:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 7979
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 7979
+```
 
 ### Admin authentication
 
@@ -246,7 +320,22 @@ The admin server exposes powerful management operations. In production:
 
 ## Events Service Configuration
 
-The events delivery service (`cycles-server-events`, port 7980) is an optional component for webhook delivery.
+The events delivery service (`cycles-server-events`) is an optional component for webhook delivery.
+
+### Ports (v0.1.25.9)
+
+As of v0.1.25.9 the events service separates its public API port from its management (actuator) port:
+
+| Port | Default | Env Variable | Purpose |
+|---|---|---|---|
+| Public API | `7980` | `SERVER_PORT` | Webhook dispatch control surface |
+| Management | `9980` | `MANAGEMENT_PORT` | Actuator endpoints (`/actuator/health`, `/actuator/info`, `/actuator/prometheus`) |
+
+**Migration from pre-.9:** Prometheus scrape configs must point to `:9980/actuator/prometheus`. Kubernetes liveness / readiness probes and Docker `HEALTHCHECK` must hit `:9980/actuator/health`. The published Docker image `HEALTHCHECK` has already been updated. No wire-format change for the dispatch surface.
+
+Expose `7980` via public ingress or external ClusterIP; keep `9980` on an internal-only ClusterIP scraped by Prometheus.
+
+### Core config
 
 | Variable | Default | Description |
 |---|---|---|
@@ -256,12 +345,42 @@ The events delivery service (`cycles-server-events`, port 7980) is an optional c
 | `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Must match admin and runtime. Generate: `openssl rand -base64 32` |
 | `dispatch.pending.timeout-seconds` | 5 | BRPOP blocking timeout |
 | `dispatch.retry.poll-interval-ms` | 5000 | Retry queue poll interval (ms) |
-| `dispatch.http.timeout-seconds` | 30 | HTTP timeout for webhook delivery |
+| `dispatch.retry.batch-size` | 100 | Max ready-for-retry deliveries processed per poll tick |
+| `dispatch.http.timeout-seconds` | 30 | HTTP request timeout for webhook delivery |
 | `dispatch.http.connect-timeout-seconds` | 5 | HTTP connect timeout |
-| `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail (24h) |
+| `dispatch.max-delivery-age-ms` / `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail without further retries (24h) |
 | `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
 | `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
-| `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+| `events.retention.cleanup-interval-ms` / `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
+| `cycles.metrics.tenant-tag.enabled` | `true` | Same toggle as the runtime. When `false`, `cycles_webhook_*` counters drop the `tenant` label to bound cardinality. |
+
+### Per-subscription retry policy
+
+Each subscription carries a `retry_policy` applied by the dispatcher's exponential-backoff loop in `DeliveryHandler`. Defaults (used when a subscription omits the field):
+
+| Field | Default | Description |
+|---|---|---|
+| `max_retries` | 5 | Number of retry attempts before the delivery is marked failed. |
+| `initial_delay_ms` | 1000 | First retry delay. Doubles with each attempt up to `max_delay_ms`. |
+| `backoff_multiplier` | 2.0 | Exponential backoff factor. Delay for attempt *n* = `min(initial_delay_ms × multiplier^(n-1), max_delay_ms)`. |
+| `max_delay_ms` | 60000 | Ceiling for the computed backoff delay. |
+
+A delivery that exceeds `dispatch.max-delivery-age-ms` (default 24h) is failed immediately regardless of remaining retries.
+
+### Events service metrics
+
+Introduced in `cycles-server-events` v0.1.25.6. Seven counters and one latency timer under the `cycles_webhook_*` namespace, with `tenant` and `event_type` labels (gated by `cycles.metrics.tenant-tag.enabled`):
+
+- `cycles_webhook_delivery_attempts_total` — every attempted delivery.
+- `cycles_webhook_delivery_success_total{status_code_family}` — 2xx responses.
+- `cycles_webhook_delivery_failed_total{reason}` — terminal failures (post-retry).
+- `cycles_webhook_delivery_retried_total` — retries scheduled.
+- `cycles_webhook_delivery_stale_total` — dropped due to `MAX_DELIVERY_AGE_MS`.
+- `cycles_webhook_subscription_auto_disabled_total{reason}` — subscriptions disabled after consecutive failures (`disable_after_failures`, default `10`).
+- `cycles_webhook_events_payload_invalid_total{type, rule}` — non-fatal payload-validator warnings. Never drops events.
+- `cycles_webhook_delivery_latency_seconds{outcome}` — attempt latency histogram.
+
+See the events service `OPERATIONS.md` for full alerting recipes.
 
 ### Encryption key (shared across all services)
 

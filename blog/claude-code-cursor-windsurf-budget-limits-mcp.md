@@ -20,7 +20,7 @@ The agent was productive. It was also unsupervised for three hours. No one told 
 
 MCP hosts — Claude Code, Cursor, Windsurf — are built for long autonomous sessions. A developer starts a task, the agent runs independently, calling tools, reading files, making model calls, sometimes for hours. That is the value proposition: autonomous productivity.
 
-But autonomy without a budget boundary creates open-ended economic exposure.
+But autonomy without a budget boundary creates open-ended economic [exposure](/glossary#exposure).
 
 Traditional API usage is human-paced. A developer writes a prompt, gets a response, writes the next prompt. Each request has a natural pause where a human is in the loop. In a coding agent session, the agent decides when to make the next call, how many files to read, whether to retry, whether to spawn sub-tasks. The developer is not watching every step — they are writing code in another tab, or they walked away to get coffee.
 
@@ -44,7 +44,7 @@ The result: a single MCP host session can cost more than thousands of traditiona
 
 The key differentiator for MCP hosts: you do not need to write any code.
 
-The Cycles MCP Server is added to the host's configuration file. The agent discovers it as a tool provider through MCP's standard tool discovery protocol. From that point, the agent has access to budget tools — `cycles_reserve`, `cycles_commit`, `cycles_release`, `cycles_check_balance`, `cycles_decide`, and more. No SDK. No wrapper functions. No changes to the agent or its code.
+The Cycles [MCP Server](/glossary#mcp-server) is added to the host's configuration file. The agent discovers it as a tool provider through MCP's standard tool discovery protocol. From that point, the agent has access to budget tools — `cycles_reserve`, `cycles_commit`, `cycles_release`, `cycles_check_balance`, `cycles_decide`, and more. No SDK. No wrapper functions. No changes to the agent or its code.
 
 **Claude Code:**
 
@@ -93,7 +93,7 @@ export CYCLES_BASE_URL=http://localhost:7878
 
 That is the entire setup. No `pip install`. No npm dependency in the project. No code changes to the agent. The budget tools appear alongside the agent's other tools, and the agent can call them as part of its normal reasoning loop.
 
-For local development without a running Cycles server, enable mock mode by setting `CYCLES_MOCK=true` — the server returns realistic responses with deterministic data, no API key required. For complete per-host setup instructions, see [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server). For how the MCP server fits into the full stack, see [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together).
+For local development without a running [Cycles server](/glossary#cycles-server), enable mock mode by setting `CYCLES_MOCK=true` — the server returns realistic responses with deterministic data, no API key required. For complete per-host setup instructions, see [Getting Started with the MCP Server](/quickstart/getting-started-with-the-mcp-server). For how the MCP server fits into the full stack, see [Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together).
 
 ## Session-Level and Tool-Level Budget Enforcement
 
@@ -109,7 +109,7 @@ This is the ceiling. No matter how many tool calls the agent makes, no matter ho
 
 ### Tool-level budget
 
-Each individual LLM call or expensive tool invocation gets its own reservation within the session scope. This prevents any single operation from consuming the whole session budget — a GPT-4o call with a 128k context window cannot drain the entire $10 in one step.
+Each individual LLM call or expensive tool invocation gets its own [reservation](/glossary#reservation) within the session scope. This prevents any single operation from consuming the whole session budget — a GPT-4o call with a 128k context window cannot drain the entire $10 in one step.
 
 Here is how the two levels interact during a typical coding session:
 
@@ -143,13 +143,13 @@ Session starts → cycles_check_balance (remaining: $10.00)
 
 This flow happens within the agent's normal tool-calling loop. The developer sees the budget state reflected in the agent's output — "budget is getting tight, wrapping up" — and the session ends cleanly instead of running indefinitely.
 
-For the six MCP integration patterns (simple reserve/commit, preflight, graceful degradation, long-running, fire-and-forget, multi-step), see [Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp). For per-run and per-conversation budget recipes, see [Common Budget Patterns](/how-to/common-budget-patterns).
+For the six MCP integration patterns (simple reserve/commit, preflight, [graceful degradation](/glossary#graceful-degradation), long-running, fire-and-forget, multi-step), see [Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp). For per-run and per-conversation budget recipes, see [Common Budget Patterns](/how-to/common-budget-patterns).
 
 ## The Three-Way Decision: What Happens When Budget Gets Tight
 
 This is where MCP-based enforcement becomes more useful than a simple kill switch.
 
-When the session budget is getting low, the runtime authority does not just deny — it returns `ALLOW_WITH_CAPS` with constraints the agent can use to self-regulate:
+When the session budget is getting low, the [runtime authority](/glossary#runtime-authority) does not just deny — it returns `ALLOW_WITH_CAPS` with constraints the agent can use to self-regulate:
 
 - **`maxTokens: 500`** — the agent generates shorter responses, completing the thought in fewer words
 - **`maxStepsRemaining: 3`** — the agent knows to wrap up in three more steps, so it prioritizes finishing the current task over starting new ones
@@ -171,13 +171,13 @@ Without enforcement, the agent would have kept going — researching, generating
 | `ALLOW_WITH_CAPS` | Budget getting tight, caps returned | Shorter responses, fewer tools, plan to wrap up |
 | `DENY` | Budget exhausted | Stop gracefully, summarize work done, inform developer |
 
-For the full protocol reference on the three-way decision model, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For designing degradation strategies, see [Degradation Paths: Deny, Downgrade, Disable, or Defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
+For the full protocol reference on the [three-way decision](/glossary#three-way-decision) model, see [Caps and the Three-Way Decision Model](/protocol/caps-and-the-three-way-decision-model-in-cycles). For designing degradation strategies, see [Degradation Paths: Deny, Downgrade, Disable, or Defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer).
 
 ## Wrapper vs. Authority: Why Config Beats Code
 
 A natural objection: "Can I just put budget tracking in my agent's system prompt?"
 
-Yes, you can tell the agent to count tokens and stop after a threshold. Some developers do this. But prompt-based budget tracking is a wrapper, not an authority. The agent is policing itself — and agents are not reliable self-policers.
+Yes, you can tell the agent to count [tokens](/glossary#tokens) and stop after a threshold. Some developers do this. But prompt-based budget tracking is a wrapper, not an authority. The agent is policing itself — and agents are not reliable self-policers.
 
 Prompt-based tracking breaks in practice because:
 

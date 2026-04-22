@@ -7,21 +7,122 @@ description: "Release history and version notes for the Cycles Protocol, server,
 
 Release history for the Cycles Protocol and reference implementations.
 
-## v0.1.25 — April 2026 (Current)
+## v0.1.25.x — patch releases (April 2026)
+
+Since the initial v0.1.25 Events & Webhooks release, each component has shipped a stream of patch releases. Wire format is stable within `0.1.x`; every change below is **additive** unless explicitly marked breaking.
+
+**Current component versions:**
+
+| Component | Version | Release date |
+|---|---|---|
+| Protocol spec (runtime) | v0.1.25 (revision 2026-04-18) | 2026-04-18 |
+| Governance spec (admin) | v0.1.25.31 | 2026-04-20 |
+| `cycles-server` (runtime) | v0.1.25.17 | 2026-04-20 |
+| `cycles-server-admin` | v0.1.25.36 | 2026-04-20 |
+| `cycles-server-events` | v0.1.25.10 | 2026-04-20 |
+| `cycles-dashboard` | v0.1.25.43 | 2026-04-20 |
+
+### Protocol spec suite (v0.1.26)
+
+- The cycles-protocol repo added [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) — a formal MUST / SHOULD / MAY statement of what a conformant Cycles implementation has to do. Defines ~23 operations across the runtime base, action-kind registry, governance extensions, and 8 specifically-normative operations inside the otherwise-reference governance-admin spec.
+- The README repositioned the spec suite as **v0.1.26** (runtime base still v0.1.25). v0.1.26 extensions (action-kinds, action-quotas, observe mode, DenyDetail, `ACTION_QUOTA_EXCEEDED` / `ACTION_KIND_DENIED` / `ACTION_KIND_NOT_ALLOWED` reason codes) are marked normative for conformance but **not yet implemented** in runcycles' servers. Tracked for a future release.
+- Spec-only trace_id alignment bumps on extension specs (`cycles-action-kinds`, `cycles-governance-extensions` to v0.1.27) — declare `trace_id` on `ErrorResponse` and `X-Cycles-Trace-Id` on `components.headers` for OpenAPI tooling consistency. Behavioral contract unchanged from what's documented in [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
+### Runtime server (`cycles-server`)
+
+- **v0.1.25.17** (2026-04-20) — Pin `commons-lang3` 3.18.0 to close CVE-2025-48924. No wire or behavior change.
+- **v0.1.25.16** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
+- **v0.1.25.15** (2026-04-18) — **Runtime audit-log retention TTL.** New `audit.retention.days` config (default `400`, env `AUDIT_RETENTION_DAYS`) applies a TTL to `audit:log:{id}` keys — previously these persisted indefinitely until Redis eviction, silently escaping the authenticated-tier retention the admin plane applies. New `audit.sweep.cron` (default `0 0 3 * * *`, env `AUDIT_SWEEP_CRON`) prunes stale ZSET pointers. Set to `0` for indefinite retention.
+- **v0.1.25.14** (2026-04-18) — **W3C Trace Context correlation.** Every response now carries `X-Cycles-Trace-Id` (32-hex lowercase). Inbound precedence: `traceparent` → `X-Cycles-Trace-Id` → server-generate. New optional `trace_id` field on `ErrorResponse`, `Event`, `WebhookDelivery`, `AuditLogEntry`. `WebhookDelivery` also gains `trace_flags` and `traceparent_inbound_valid`. Malformed inbound correlation headers are tolerated (fall through to next rule) — server never rejects on a bad header. SLF4J MDC carries `traceId` alongside `requestId`. `ReservationExpiryService` mints a fresh trace_id per sweep batch so sibling `reservation.expired` events correlate. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+- **v0.1.25.13** (2026-04-16) — `SORTED_HYDRATE_CAP = 2000` guard on `GET /v1/reservations` sorted path. Capped WARN log; cursor page still fills from the capped slice. Narrow filters to see past the cap.
+- **v0.1.25.12** (2026-04-16) — `GET /v1/reservations` accepts `sort_by` and `sort_dir` query params. Valid keys: `reservation_id`, `tenant`, `scope_path`, `status`, `reserved`, `created_at_ms`, `expires_at_ms`. Default `desc`. Opaque sorted cursor binds to the `(sort_by, sort_dir, filters)` tuple; reusing under a different tuple returns HTTP 400.
+- **v0.1.25.10** (2026-04-14) — Seven domain-level Prometheus counters (`cycles_reservations_reserve_total`, `..._commit_total`, `..._release_total`, `..._extend_total`, `..._expired_total`, `cycles_events_total`, `cycles_overdraft_incurred_total`). New flag `cycles.metrics.tenant-tag.enabled` (default `true`) controls per-tenant cardinality. **Fixed** — `reservation.expired` webhook now actually fires (was no-op since v0.1.25.3 due to wrong Redis key prefix).
+- **v0.1.25.8** (2026-04-13) — **Admin-on-behalf-of release.** `POST /v1/reservations/{id}/release` accepts either `X-Cycles-API-Key` (tenant) or `X-Admin-API-Key` (admin). Admin-driven releases write audit entries with `actor_type=admin_on_behalf_of`. New property `admin.api-key` for admin key configuration.
+- **v0.1.25.6** (2026-04-10) — Reserve / commit / decide now distinguish `UNIT_MISMATCH` from `BUDGET_NOT_FOUND` when a scope has a budget under a different unit.
+- **v0.1.25.5** (2026-04-08) — Fixed duplicate emission of `budget.approaching_limit`, `budget.at_limit`, `budget.over_limit`, `debt.incurred` on multi-scope operations.
+- **v0.1.25.4** (2026-04-07) — Event payloads now include all fields webhook consumers need for correct dedup/ordering (`reservation_id`, `scope`, `unit`, `actor`, timestamps).
+- **v0.1.25.3** (2026-04-03) — Runtime event emission wired: `reservation.reserved`, `reservation.committed`, `reservation.released`, `reservation.expired`, `reservation.extended`, `event.applied`, plus budget-state transitions (`budget.approaching_limit`, `budget.at_limit`, `budget.over_limit`).
+- **v0.1.25.2** (2026-04-02) — `getBalances` and `listReservations` lowercase the stored scope before segment matching.
+- **v0.1.25.1** (2026-04-01) — Initial runtime event emission. `EventEmitterService` with async, non-blocking emission on a dedicated daemon thread pool. TTL retention — `EVENT_TTL_DAYS` (90) / `DELIVERY_TTL_DAYS` (14). Pipelined event save + subscription lookup for near-zero overhead on non-event paths. **Fixed** — `reservation.commit_overage` now emits only when `actual > estimate` (was firing on every commit).
+
+### Admin server (`cycles-server-admin`)
+
+- **v0.1.25.36** (2026-04-20) — **Rule 2 terminal-owner mutation guard coverage completed.** Every mutation on an object whose owning tenant is CLOSED now returns `409 TENANT_CLOSED` from every admin-mutating endpoint, per spec v0.1.25.30. New guard callsites: `POST /v1/admin/policies`, `PATCH /v1/admin/policies/{id}`, `POST /v1/admin/api-keys`, `PATCH /v1/admin/api-keys/{id}`, `DELETE /v1/admin/api-keys/{id}`, `POST /v1/admin/webhooks`, `PATCH`, `DELETE`, `POST .../test`, and per-row in `bulkActionWebhooks`. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
+- **v0.1.25.35** (2026-04-20) — **Tenant-close cascade + TENANT_CLOSED guard shipped (Mode B).** Closing a tenant (`PATCH /v1/admin/tenants/{id}` or bulk-action) now cascades: `BudgetLedger → CLOSED`, `ApiKey → REVOKED`, open `Reservation → RELEASED` (reason `tenant_closed`), `WebhookSubscription → DISABLED`. One audit entry per mutated object under the same `correlation_id` as the originating `tenant.closed`. New event kinds: `budget.closed_via_tenant_cascade`, `api_key.revoked_via_tenant_cascade`, `reservation.released_via_tenant_cascade`, `webhook.disabled_via_tenant_cascade`. Rule 2 guard — 409 TENANT_CLOSED — active on budget/reservation mutation endpoints (full Rule 2 coverage shipped in v0.1.25.36). Spec v0.1.25.29 / .30 / .31 alignment. runcycles' reference server uses Mode B (flip-first-with-guarded-cascade); Mode A (atomic) is also conformant.
+- **v0.1.25.34** (2026-04-20) — Pin `commons-lang3` 3.18.0 to close CVE-2025-48924. No wire or behavior change.
+- **v0.1.25.33** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
+- **v0.1.25.32** (2026-04-18) — **Lenient deserialization on cross-plane read schemas.** `Event` and `WebhookDelivery` now set `@JsonIgnoreProperties(ignoreUnknown = true)` at the class level. Runtime is the authoritative writer of these records; admin only reads them. Previously admin POJOs were strict, so runtime shipping an additive field in a patch would break `listEvents` / `listWebhookDeliveries` until admin lockstep-updated. Now runtime can ship additive fields without forcing an admin release. Internal only — no wire contract change.
+- **v0.1.25.31** (2026-04-18) — **W3C Trace Context cross-surface correlation** — server-side implementation of spec v0.1.25.28. New optional `trace_id` (32-hex) on `ErrorResponse`, `AuditLogEntry`, `Event` response bodies. New `X-Cycles-Trace-Id` response header on every response (2xx, 4xx, 5xx). Inbound precedence: `traceparent` → `X-Cycles-Trace-Id` → server-generate. New exact-match query params on `GET /v1/admin/audit/logs` and `GET /v1/admin/events`: `trace_id`, `request_id`. `WebhookDelivery` persists `trace_id` + `trace_flags` + `traceparent_inbound_valid` so the events sidecar can construct outbound `traceparent` preserving inbound sampling. Historical entries without `trace_id` continue to round-trip through strict Jackson. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+- **v0.1.25.30** (2026-04-18) — **Bulk-action audit metadata enrichment.** Single `AuditLogEntry` per bulk-action invocation (`bulkActionTenants`, `bulkActionWebhooks`, `bulkActionBudgets`) now carries the full per-row outcome arrays plus filter echo plus wall-clock `duration_ms`. New keys: `succeeded_ids`, `failed_rows`, `skipped_rows`, `filter`. Worst-case audit row size ~40KB at 500-row cap. Fully additive — existing metadata keys unchanged; spec `AuditLogEntry.metadata` is already typed `object` with `additionalProperties: true` so no info.version bump. Triage now works from audit alone without re-running the op.
+- **v0.1.25.29** (2026-04-18) — **Budget bulk-action endpoint.** `POST /v1/admin/budgets/bulk-action` — AdminKeyAuth only. Five actions: `CREDIT`, `DEBIT`, `RESET`, `REPAY_DEBT`, `RESET_SPENT`. `filter.tenant_id` REQUIRED (cross-tenant budget bulk out of scope — 400 if blank). `amount` required for all 5 actions; `spent` honored only on `RESET_SPENT`. Filter mirrors `listBudgets` — `scope_prefix`, `unit`, `status`, `over_limit`, `has_debt`, `utilization_min/max`, `search`. Same 500-row cap, `expected_count`, idempotency-key safety gates as tenants/webhooks bulk. Per-row idempotency derived from `{bulkKey}:{scope}:{unit}` so retrying the failed subset cannot double-apply. Aligned with governance-admin spec v0.1.25.26.
+- **v0.1.25.28** (2026-04-17) — **Audit `tenant_id` sentinel split.** The previous single `<unauthenticated>` sentinel is replaced by two: `__admin__` (admin-plane operations not scoped to a tenant, authenticated-tier retention, never sampled) and `__unauth__` (pre-auth failures, unauthenticated-tier retention, subject to sampling). URL-safe underscored form — no percent-encoding needed. **Migration:** dashboards and auditor queries using `?tenant_id=<unauthenticated>` keep matching historical rows but stop matching fresh writes; migrate to `__unauth__` or `__admin__`. Historical rows age out on the correct schedule. Aligned with governance-admin spec v0.1.25.25.
+- **v0.1.25.27** (2026-04-17) — **Audit log filter DSL upgrade** on `GET /v1/admin/audit/logs`. New params: `error_code` (array, maxItems 25, IN-list, NULL-excluding), `error_code_exclude` (NOT-IN-list, NULL-passing, combinable with `error_code`), `status_min` / `status_max` (integer range, mutex with exact `status`). `operation` and `resource_type` promoted from scalar to array (comma-separated; single scalar still parses). `search` match set extended to include `error_code` + `operation` in addition to `resource_id` / `log_id`. Aligned with governance-admin spec v0.1.25.24.
+- **v0.1.25.26** (2026-04-17) — **Bulk-action endpoints.** `POST /v1/admin/tenants/bulk-action` (SUSPEND | REACTIVATE | CLOSE) and `POST /v1/admin/webhooks/bulk-action` (PAUSE | RESUME | DELETE). Filter-only body (no id arrays), 500-row hard cap (`LIMIT_EXCEEDED` on overflow), optional `expected_count` → 409 `COUNT_MISMATCH` if the list changed between preview and submit. Response envelope splits `succeeded[]` / `failed[]` / `skipped[]`. `idempotency_key` required; 15-minute replay window served from the new `IdempotencyStore` primitive.
+- **v0.1.25.25** (2026-04-17) — **Free-text `search` query param** on six admin list endpoints (`/v1/admin/tenants`, `.../api-keys`, `.../budgets`, `.../webhooks/subscriptions`, `.../events`, `.../audit/logs`). Case-insensitive substring match, ≤128 characters, AND-combined with every other filter. Pre-.25 servers ignore the unknown param (additive guarantee).
+- **v0.1.25.24** (2026-04-16) — `sort_by` + `sort_dir` on the six list endpoints. Per-endpoint whitelists; unknown keys → 400 `INVALID_REQUEST`. **Default ordering changes for `listBudgets` (`utilization DESC`) and `listWebhookSubscriptions` (`consecutive_failures DESC`)** — callers relying on the prior set-iteration order must pass `sort_by=created_at&sort_dir=desc` explicitly. Total-order cursor with primary-key tie-breaker; `SORTED_HYDRATE_CAP = 2000` on time-indexed endpoints.
+- **v0.1.25.23** (2026-04-16) — `BudgetLedger.tenant_id` exposed on the wire (`@JsonInclude(NON_NULL)`). Cross-tenant list responses now carry per-row tenant attribution without scope-string parsing.
+- **v0.1.25.22** (2026-04-16) — **Cross-tenant list** for `GET /v1/admin/api-keys` and `GET /v1/admin/budgets` under `AdminKeyAuth`. Omit `tenant_id` to walk every tenant; composite cursor `{tenantId}|{keyId}` / `{tenantId}|{ledgerId}`. Four new budget filters: `over_limit`, `has_debt`, `utilization_min`, `utilization_max`. Deleted-cursor-tenant handling skips forward instead of stalling.
+- **v0.1.25.20** (2026-04-16) — **Audit log now captures failed requests** (401/403/400/404/409/500) with `error_code`, sanitized `metadata.error_message`, `metadata.method`, `metadata.path`. New sentinel tenant `<unauthenticated>` for pre-auth failures. **Tiered TTL** with SOC2-compliant defaults: `audit.retention.authenticated.days=400`, `audit.retention.unauthenticated.days=30` (both `0` = indefinite). Optional `audit.sample.unauthenticated` for DDoS exposure. Daily index sweep `audit.sweep.cron` (default `0 0 3 * * *`). New counter `cycles_admin_audit_writes_total{path_class, outcome}` — **alert on `outcome=error` nonzero**. **Semantic change**: dashboards that assumed "audit entry exists ⇒ operation succeeded" must now check `status` / `error_code`.
+- **v0.1.25.19** (2026-04-16) — `GET /v1/auth/introspect` accepts both `AdminKeyAuth` and `ApiKeyAuth`. Tenant keys return `auth_type=tenant` shape with `tenant_id`, optional `scope_filter`, and a per-capability boolean table. Admin-plane capabilities forced to `false` under tenant auth.
+- **v0.1.25.18** (2026-04-15) — **`RESET_SPENT` funding operation** on `POST /v1/admin/budgets/fund`. Clears (or overrides) `spent` for billing-period rollover, distinct from `RESET` which preserves `spent`. Optional `spent >= 0` override for migration / proration / credit-back. New event `budget.reset_spent`. `BudgetFundingResponse` gains nullable `previous_spent` + `new_spent`.
+- **v0.1.25.17** (2026-04-14) — Fixed cjson empty-array round-trip bug that dropped records from `GET /v1/admin/api-keys` (and defensively on `Policy.caps.tool_allowlist` / `tool_denylist` / `Tenant.metadata`). `revokeApiKey` on already-revoked key now returns 409 `KEY_REVOKED` (was 200).
+- **v0.1.25.16** (2026-04-13) — Dual-auth on six tenant-scoped webhook endpoints (`GET/PATCH/DELETE /v1/webhooks/{id}`, `POST /v1/webhooks/{id}/test`, `GET /v1/webhooks`, `GET /v1/webhooks/{id}/deliveries`). Admin operators can pause / inspect / force-delete tenant webhooks during incident response. `POST /v1/webhooks` (create) remains tenant-only.
+- **v0.1.25.15** (2026-04-13) — `ScopeValidator` enforces canonical scope grammar (`tenant:<id>` first; canonical kind order `tenant → workspace → app → workflow → agent → toolset`; wildcards only terminal in policy patterns).
+- **v0.1.25.14** (2026-04-13) — Dual-auth on `POST /v1/admin/budgets`, `POST /v1/admin/policies`, `PATCH /v1/admin/policies/{id}`. Admin auth requires `tenant_id` in the body; audit-log records `actor_type=admin_on_behalf_of`.
+- **v0.1.25.13** (2026-04-13) — Fixed CORS `allowedMethods` missing `PUT`, which blocked browser dashboards from calling `PUT /v1/admin/config/webhook-security`.
+- **v0.1.25.12** (2026-04-12) — Targeted 404/409 error responses on admin endpoints; documented 400 across every admin operation; spec-compliance hardening pass.
+- **v0.1.25.11** (2026-04-12) — Contract testing default ON. `*ControllerTest` validates every 2xx/4xx/5xx JSON body against the pinned spec at build time. Offline builds: `CONTRACT_VALIDATION_ENABLED=false`.
+- **v0.1.25.10** (2026-04-12) — Typed `Permission` enum + `Capabilities` class; spec-compliance hardening.
+
+### Events service (`cycles-server-events`)
+
+- **v0.1.25.10** (2026-04-20) — Bump Spring Boot 3.5.11 → 3.5.13, pin embedded tomcat 10.1.54 (CVE remediation). No wire or behavior change.
+- **v0.1.25.9** (2026-04-18) — **Management port split.** `health`, `info`, and `prometheus` actuator endpoints moved from public API port `7980` to a dedicated management port (default `9980`, env `MANAGEMENT_PORT`). **Migration:** Prometheus scrape configs must update target port from `:7980` → `:9980`; kubelet probes and Docker `HEALTHCHECK` same. Published Docker image `HEALTHCHECK` already updated. No wire-format change for dispatch. Expose `7980` publicly; keep `9980` internal-only.
+- **v0.1.25.8** (2026-04-18) — **Cross-surface correlation on `WebhookDelivery`.** Three new OPTIONAL fields: `trace_id` (captured at dispatch time from originating event), `trace_flags` (W3C trace-flags byte for outbound `traceparent`), `traceparent_inbound_valid` (whether upstream sent valid W3C traceparent). Aligns with governance-admin spec v0.1.25.28. Dispatcher honors `trace_flags` when `traceparent_inbound_valid=true`, otherwise defaults to `01` (sampled). Proactive `trace_id` stamping on `Delivery` as rolling-upgrade safety net for pre-.31 admin servers.
+- **v0.1.25.7** (2026-04-18) — **trace_id and W3C Trace Context headers on every outbound webhook delivery.** New outbound headers: `X-Cycles-Trace-Id` (always present), `traceparent: 00-<trace_id>-<16-hex-span>-<flags>` (fresh span-id per delivery, never reused from inbound), `X-Request-Id` (when event carries `request_id`). New `Event.trace_id` field, optional. Non-fatal `trace_id_shape` validation rule — malformed `trace_id` increments `cycles_webhook_events_payload_invalid_total{rule="trace_id_shape"}` and the dispatcher falls back to minting a fresh id so outbound header stays well-formed. Aligns with governance-admin spec v0.1.25.27.
+- **v0.1.25.6** (2026-04-16) — `BUDGET_RESET_SPENT` added to the `EventType` vocabulary. **Eight new Prometheus metrics** under `cycles_webhook_*`: `delivery_attempts_total`, `delivery_success_total`, `delivery_failed_total`, `delivery_retried_total`, `delivery_stale_total`, `subscription_auto_disabled_total`, `events_payload_invalid_total`, plus `cycles_webhook_delivery_latency_seconds` timer. `cycles.metrics.tenant-tag.enabled` flag mirrors the runtime. Non-fatal `EventPayloadValidator` on every ingested event (WARN + counter on violation; never drops).
+- **v0.1.25.5** (2026-04-08) — **Force HTTP/1.1 on outbound webhook deliveries.** Fixes silent body-drop against HTTP/2 reverse proxies that upgrade to h2c.
+- **v0.1.25.4** (2026-04-07) — `SubscriptionRepository.updateDeliveryState` switched to partial merge (previously overwrote admin-side PATCH writes under contention).
+- **v0.1.25.3** (2026-04-03) — `micrometer-registry-prometheus` dependency added (`/actuator/prometheus` was 404 without it). Typed `DeliveryStatus` / `WebhookStatus` enums.
+- **v0.1.25.1** (2026-04-01) — Initial release. Redis-driven dispatcher consuming `dispatch:pending` via BRPOP. HMAC-SHA256 signing, exponential-backoff retry, auto-disable after consecutive failures. AES-256-GCM encryption of signing secrets at rest (`WEBHOOK_SECRET_ENCRYPTION_KEY`, 32-byte key). TTL retention (90d events / 14d deliveries). Configurable `dispatch.http.connect-timeout-seconds` + `dispatch.http.timeout-seconds`.
+
+### Dashboard (`cycles-dashboard`)
+
+- **v0.1.25.43** (2026-04-20) — **Closed-tenant tombstone + cascade preview UI.** Consumes admin v0.1.25.36 cascade implementation. New TenantDetailView amber banner when `tenant.status === 'CLOSED'` ("Tenant closed — all owned objects are read-only."). CLOSE confirm-dialog now previews what the cascade will terminate (budgets, webhook subscriptions, API keys, open reservations with counts). `TENANT_CLOSED` 409 humanizer ("Tenant is closed — this object is read-only.") on race conditions. Audit + event-timeline rows render a small amber "tenant cascade" chip when the event kind carries `_via_tenant_cascade`, letting operators distinguish cascade-triggered state changes from user-driven ones when correlating by `correlation_id`. Admin image pin 0.1.25.32 → 0.1.25.36 (cascade requires admin .36). New shared `isTerminalTenant()` predicate in `src/utils/tenantStatus.ts`. Spec pointer v0.1.25.29 → v0.1.25.31.
+- **v0.1.25.42** (2026-04-19) — Security: base-image bumps (`nginx:1.27-alpine` → `nginx:1.29-alpine`, `node:20.19` → `20.20`) resolving 57 Alpine-layer CVEs flagged by Trivy.
+- **v0.1.25.41** (2026-04-19) — Dependabot-bundled dependency bumps including `vue-router 4.6.4 → 5.0.4` (major, no breaking changes for this app). TypeScript typecheck clean; 742 tests green.
+- **v0.1.25.40** (2026-04-19) — **Shared icon library** at `src/components/icons/` — 24 reusable SVG components (CopyJsonIcon, CopyIcon, KebabIcon, etc.). Stroke-width unified to `1.5`; four icons upgraded to Heroicons v2 geometry. Copy JSON moved from dedicated rows/columns to overlay icons and kebab menus — WebhookDetailView delivery column shrinks 88px → 40px; panels lose ~35–50px footer rows.
+- **v0.1.25.39** (2026-04-18) — **Cross-surface trace / request correlation chip** on Events, Audit, and WebhookDeliveries rows. Click `trace_id` on Audit → EventsView filtered to the same trace; click `trace_id` on Events → AuditView filtered to originating entry. Requires `cycles-server-admin` v0.1.25.31+. **Webhook delivery history fixes:** interface field mapping (`http_status` → `response_status`, `delivered_at` → `completed_at`), StatusBadge delivery-status colors, Error column on FAILED rows, CSV export enrichment.
+- **v0.1.25.38** (2026-04-18) — **Structured bulk-action audit detail** in AuditView expanded row. Renders `succeeded_ids` / `failed_rows` / `skipped_rows` / `filter` echo / `duration_ms` as a first-class layout (not raw JSON). Requires `cycles-server-admin` v0.1.25.30+.
+- **v0.1.25.37** (2026-04-18) — **Per-row Copy JSON** affordance across EventsView, AuditView, EventTimeline, WebhookDeliveries. Row-select bulk failures open `BulkActionResultDialog`. EventTimeline `correlation_id` click → EventsView filtered.
+- **v0.1.25.36** (2026-04-18) — **BudgetsView row-select + bulk Freeze / Unfreeze.** Row-select checkboxes + floating bulk toolbar mirror the TenantsView pattern.
+- **v0.1.25.35** (2026-04-18) — **Budget bulk-action UI.** Filter-apply toolbar on BudgetsView for `CREDIT`, `DEBIT`, `RESET`, `RESET_SPENT`, `REPAY_DEBT`. Requires `cycles-server-admin` v0.1.25.29+.
+- **v0.1.25.34** (2026-04-18) — **`BulkActionResultDialog` component** — per-row outcome triage for bulk operations. New `errorCodeMessages.ts` utility — single source of truth for operator-facing error code prose.
+- **v0.1.25.33** (2026-04-18) — **AuditView filter DSL completeness** against governance-admin v0.1.25.24: `error_code_exclude`, `operation` IN-list, `resource_type` typeahead datalist, `status_min` / `status_max` range. Deep-link support via query params.
+- **v0.1.25.28** (2026-04-17) — Bulk-action UI on TenantsView + WebhooksView (filter-apply path in addition to row-select). Image tag `ghcr.io/runcycles/cycles-dashboard:0.1.25.28`. Spec alignment bumped to v0.1.25.23. CI gate runs 6 new e2e bulk-action probes (empty filter → 400, invalid action → 400, zero-match → 200, idempotency replay, webhook mirror) against the published image on every release.
+- **v0.1.25.27** — Free-text `search` wired into six admin list views (Tenants, Budgets, ApiKeys, Audit, Webhooks, Events). Debounced page-1 refetch honors cursor-tuple invalidation. Client-side fallback on pre-.25 servers. **RESET_SPENT funding** operation available from BudgetDetail → Fund (requires admin v0.1.25.18+).
+- **v0.1.25.26** — V4 server-side sort across six admin views + `ReservationsView` (runtime plane). TenantsView "+N more" and inline child-links thread `?parent=<src>` so the back arrow returns to the source parent. Scale hardening: row virtualization via `@tanstack/vue-virtual` across seven list views; pagination + N+1 mitigation; cancel-button on long exports; dark-mode and a11y (WCAG AA) passes.
+- **v0.1.25.22** — ApiKeysView + BudgetsView consume the cross-tenant `/v1/admin/api-keys` and `/v1/admin/budgets` endpoints. `BudgetLedger.tenant_id` rendered as a first-class column.
+- New routes introduced across the window: `/api-keys` (first-class cross-tenant list), `/reservations` (runtime-plane force-release), `/tenants/:id` (detail with parent/children breadcrumb), `/webhooks/:id` (single subscription detail).
+- Global command palette: `Cmd/Ctrl+K` or `/` opens a tenant search (3-page prefetch, 60s cache, substring filter, "Load more" for scale).
+
+---
+
+## v0.1.25 — April 2026 (Initial release)
 
 **Pillar 4: Events & Webhooks (Observability Plane)**
 
 New event-driven observability system spanning all three services.
 
 **Protocol spec (non-breaking, guidance only):**
-- Added WEBHOOK EVENT GUIDANCE section documenting 40 event types, payload schema, delivery protocol, and X-Cycles-Signature HMAC verification
+- Added WEBHOOK EVENT GUIDANCE section documenting 41 event types, payload schema, delivery protocol, and X-Cycles-Signature HMAC verification
 - No new API endpoints — guidance is informational, not normative
 
 **Admin server (20 new endpoints):**
 - 12 admin webhook/event endpoints at `/v1/admin/webhooks` and `/v1/admin/events`
 - 8 tenant self-service endpoints at `/v1/webhooks` and `/v1/events` (requires `webhooks:read/write`, `events:read`)
 - `GET/PUT /v1/admin/config/webhook-security` — SSRF protection with blocked CIDR ranges
-- 40 event types across 6 categories: budget (15), reservation (5), tenant (6), api_key (6), policy (3), system (5)
+- 41 event types across 6 categories: budget (16), reservation (5), tenant (6), api_key (6), policy (3), system (5)
 - Event emission wired into all existing controllers
 
 **Runtime server (event emission):**
@@ -120,15 +221,41 @@ The default `commit_overage_policy` changed from **`REJECT`** to **`ALLOW_IF_AVA
 
 | SDK / Component | Version | Compatible server |
 |---|---|---|
-| `runcycles` (Python) | 0.2.0 | v0.1.23+, v0.1.24+ |
-| `runcycles` (TypeScript) | 0.2.0 | v0.1.23+, v0.1.24+ |
-| `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+ |
-| `@runcycles/mcp-server` | 0.2.0 | v0.1.23+, v0.1.24+ |
-| `@runcycles/openclaw-budget-guard` | 0.8.0 | v0.1.23+, v0.1.24+ |
-| Cycles Server | v0.1.24 | Protocol v0.1.24 |
-| Cycles Admin Server | v0.1.24 | Protocol v0.1.24 |
+| `runcycles` (Python) | 0.3.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `runcycles` (TypeScript) | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `runcycles` (Rust) | 0.2.3 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `cycles-client-java-spring` | 0.2.0 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `@runcycles/mcp-server` | 0.2.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| `@runcycles/openclaw-budget-guard` | 0.8.2 | v0.1.23+, v0.1.24+, v0.1.25+ |
+| Cycles Server (runtime) | v0.1.25.17 | Protocol v0.1.25 (revision 2026-04-18) |
+| Cycles Admin Server | v0.1.25.36 | Governance spec v0.1.25.31 |
+| Cycles Events Service | v0.1.25.10 | Shared Redis dispatch queue |
+| Cycles Dashboard | v0.1.25.43 | Admin v0.1.25.36+ (tenant-close cascade); v0.1.25.31+ (correlation chip); v0.1.25.29+ (budget bulk); v0.1.25.18+ (RESET_SPENT) |
 
-All 0.2.0 SDKs are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24.
+All current SDK versions are backward-compatible with server v0.1.23. New v0.1.24 features (budget patch, policy patch, capped `ALLOW_IF_AVAILABLE` commits) require server v0.1.24+. New v0.1.25 features (event emission, webhook delivery, events service, `policy_id` / `deny_detail` on `reservation.denied`) require server v0.1.25.
+
+### Minimum versions for specific features
+
+| Feature | Minimum component |
+|---|---|
+| Tenant-close cascade + `TENANT_CLOSED` (409) error code + 4 `_via_tenant_cascade` event kinds | `cycles-server-admin` v0.1.25.35 (initial Mode B cascade) / v0.1.25.36 (full Rule 2 guard coverage); `cycles-dashboard` v0.1.25.43 (tombstone + cascade preview UI); governance-admin spec v0.1.25.29 / .30 / .31 |
+| W3C Trace Context (`trace_id` on responses + audit/events filter) | `cycles-server` v0.1.25.14, `cycles-server-admin` v0.1.25.31, `cycles-server-events` v0.1.25.7, `cycles-dashboard` v0.1.25.39 |
+| Runtime audit-log retention TTL (`AUDIT_RETENTION_DAYS`) | `cycles-server` v0.1.25.15 |
+| Events service management port split (9980) | `cycles-server-events` v0.1.25.9 |
+| Bulk-action audit metadata enrichment (`succeeded_ids`, `failed_rows`, `filter`, `duration_ms`) | `cycles-server-admin` v0.1.25.30 |
+| Budget bulk-action endpoint (`POST /v1/admin/budgets/bulk-action`) | `cycles-server-admin` v0.1.25.29, `cycles-dashboard` v0.1.25.35 |
+| Audit tenant sentinel split (`__admin__` / `__unauth__`) | `cycles-server-admin` v0.1.25.28 |
+| Audit log filter DSL (`error_code_exclude`, `status_min/max`, array `operation`/`resource_type`) | `cycles-server-admin` v0.1.25.27, `cycles-dashboard` v0.1.25.33 |
+| Sorted pagination on `GET /v1/reservations` (`sort_by`, `sort_dir`) | `cycles-server` v0.1.25.12 |
+| Admin-on-behalf-of release (`X-Admin-API-Key` on `/v1/reservations/{id}/release`) | `cycles-server` v0.1.25.8 |
+| Bulk-action endpoints on tenants + webhooks | `cycles-server-admin` v0.1.25.26 |
+| Free-text `search` on admin list endpoints | `cycles-server-admin` v0.1.25.25 |
+| Server-side sort on admin list endpoints | `cycles-server-admin` v0.1.25.24 |
+| Cross-tenant list for API keys + budgets | `cycles-server-admin` v0.1.25.22 |
+| Failed-request audit capture + tiered TTL | `cycles-server-admin` v0.1.25.20 |
+| `RESET_SPENT` funding operation | `cycles-server-admin` v0.1.25.18 |
+| Dual-auth on tenant webhook endpoints | `cycles-server-admin` v0.1.25.16 |
+| Webhook delivery via HTTP/1.1 (h2c fix) | `cycles-server-events` v0.1.25.5 |
 
 ---
 

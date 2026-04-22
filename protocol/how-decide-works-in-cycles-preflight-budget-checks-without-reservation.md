@@ -1,5 +1,5 @@
 ---
-title: "How Decide Works in Cycles: Preflight Budget Checks Without Reservation"
+title: "How Decide Works in Cycles"
 description: "Use the Cycles decide endpoint to perform read-only preflight budget checks without creating a reservation. Ideal for UI gating and capability checks."
 ---
 
@@ -68,9 +68,22 @@ The server evaluates the request against current balances and returns:
 
 - **decision** — ALLOW, ALLOW_WITH_CAPS, or DENY
 - **caps** — soft constraints (only present when decision is ALLOW_WITH_CAPS)
-- **reason_code** — machine-readable reason when decision is DENY
+- **reason_code** — machine-readable reason when decision is DENY (`DecisionReasonCode`, see below)
 - **retry_after_ms** — optional guidance on when to retry
 - **affected_scopes** — which scopes were evaluated
+
+`DecisionReasonCode` is an **open string** (not a closed enum) with the following documented known values:
+
+| reason_code | Meaning |
+|---|---|
+| `BUDGET_EXCEEDED` | Remaining amount insufficient on at least one derived scope |
+| `BUDGET_FROZEN` | A derived scope has a budget in `FROZEN` status |
+| `BUDGET_CLOSED` | A derived scope has a budget in `CLOSED` status |
+| `BUDGET_NOT_FOUND` | No budget exists at any derived scope in the requested unit (on non-dry reserve and `/v1/events`, this same condition surfaces as `HTTP 404` with `error=NOT_FOUND`) |
+| `OVERDRAFT_LIMIT_EXCEEDED` | Either `debt + delta > overdraft_limit`, or the scope is in over-limit state (`is_over_limit=true`) |
+| `DEBT_OUTSTANDING` | A derived scope has `debt > 0` and `overdraft_limit == 0` |
+
+`DecisionReasonCode` was widened from a closed enum to an open string in v0.1.25 so future extension specs can add new reason codes without a breaking protocol bump. **Clients MUST handle unknown values gracefully** (treat as DENY, log the raw string, do not crash on enum parsing). Known values above are stable; future values will always be additive. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for full semantics.
 
 ## Decide does not guarantee future reservation
 

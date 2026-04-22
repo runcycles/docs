@@ -30,7 +30,7 @@ These are all reasonable tools. They each solve real problems.
 
 But none of them solve the problem Cycles is designed for: **governing bounded execution before autonomous work proceeds**.
 
-This article walks through each alternative, explains what it does well, where it falls short, and how Cycles differs.
+This article walks through each alternative, explains what it does well, where it falls short, and how Cycles differs. For the short-form essay version of the same argument — focused on *why* tool-local controls cannot stretch to cover an agent that spans providers, tools, tenants, and workers — see [Agents Are Cross-Cutting. Your Controls Aren't.](/blog/agents-are-cross-cutting-your-controls-arent).
 
 ## Rate limiting vs Cycles
 

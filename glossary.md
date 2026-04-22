@@ -73,7 +73,7 @@ The three possible responses to a reservation or decide request: **ALLOW** (proc
 
 ### Overage Policy
 
-Configures what happens when the actual cost committed exceeds the original estimate. Three policies are available: **REJECT** (deny the commit), **ALLOW_IF_AVAILABLE** (permit if remaining budget covers the difference), and **ALLOW_WITH_OVERDRAFT** (permit even if it creates debt). See [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft).
+Configures what happens when the actual cost committed exceeds the original estimate. Three policies are available: **REJECT** (deny the commit), **ALLOW_IF_AVAILABLE** (permit if remaining budget covers the difference), and **ALLOW_WITH_OVERDRAFT** (permit even if it creates debt). The default tenant policy is **ALLOW_IF_AVAILABLE** as of v0.1.24 (was REJECT in v0.1.23 and earlier). See [Commit Overage Policies](/protocol/commit-overage-policies-in-cycles-reject-allow-if-available-and-allow-with-overdraft).
 
 ## Units
 
@@ -213,7 +213,7 @@ An HTTP POST callback triggered by a state change event. Cycles delivers webhook
 
 ### Event (Webhook)
 
-An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 40 event types across 6 categories. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
+An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 45 event types across 7 categories (budget, reservation, tenant, api_key, policy, webhook, system — the webhook category was added in v0.1.25.35 for `webhook.disabled_via_tenant_cascade`). Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
 
 ### Signing Secret
 
@@ -233,4 +233,62 @@ A single attempt to deliver an event to a webhook endpoint via HTTP POST. Tracke
 
 ### Events Service
 
-The async webhook delivery service (`cycles-server-events`, port 7980). Consumes from shared Redis queue via BRPOP and delivers via HTTP POST with HMAC signing. Optional — admin and runtime operate without it.
+The async webhook delivery service (`cycles-server-events`). Consumes from shared Redis queue via BRPOP and delivers via HTTP POST with HMAC signing. Optional — admin and runtime operate without it. As of v0.1.25.9, binds public API port `7980` and management/actuator port `9980` (was consolidated on `7980` pre-.9).
+
+### Dashboard
+
+The Cycles Admin Dashboard (`cycles-dashboard`) — a Vue 3 SPA that provides operator-facing UIs for tenants, budgets, API keys, webhooks, events, audit logs, reservations, and policies. Reads through `cycles-server-admin`'s REST API; performs no business logic of its own. Includes capability gating (UI affordances reflect the calling key's permissions), bulk-action lanes, the cross-surface correlation chip (v0.1.25.39+), and a `Cmd/Ctrl+K` command palette. See [Using the Cycles Dashboard](/how-to/using-the-cycles-dashboard).
+
+### Tenant Self-Service
+
+The set of governance endpoints exposed at `/v1/webhooks` and `/v1/events` (no `/admin` prefix) that tenants can call directly with their own `X-Cycles-API-Key` to manage their webhook subscriptions and query their event stream — without going through a platform operator. Permissions: `webhooks:read`, `webhooks:write`, `events:read` (opt-in; not part of the default tenant key permission set). Six of these endpoints are also dual-auth (admin can call them on a tenant's behalf as of v0.1.25.16). See [Managing Webhooks](/how-to/managing-webhooks#tenant-self-service).
+
+## Correlation and Tracing
+
+_For the full normative contract (W3C Trace Context precedence, outbound propagation, cross-plane queries), see [Correlation and Tracing in Cycles](/protocol/correlation-and-tracing-in-cycles)._
+
+### request_id
+
+A server-generated identifier unique to one HTTP request. Appears in every `ErrorResponse`, audit-log entry, and event that is causally downstream of that request. Used to find the side effects of a single call. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
+### trace_id
+
+A 32-hex-character W3C Trace Context-compatible identifier for a logical operation that may span many HTTP requests. Derived from inbound `traceparent` (when valid) → `X-Cycles-Trace-Id` (when valid) → server-generated. Echoed on every response as the `X-Cycles-Trace-Id` header and carried on webhook deliveries, events, audit rows, and (as of governance-admin v0.1.25.28) on `WebhookDelivery` schema fields. Introduced across the stack on 2026-04-18 (cycles-server v0.1.25.14, cycles-server-admin v0.1.25.31, cycles-server-events v0.1.25.7). Distinct from the application-level `metadata.trace_id` documented in [Standard Metrics and Metadata](/protocol/standard-metrics-and-metadata-in-cycles) (that one is operator-free-form; this one is server-managed W3C). See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
+### traceparent
+
+The W3C Trace Context HTTP header (`00-<trace_id>-<span_id>-<flags>`). Cycles accepts it as the highest-precedence inbound correlation signal. On outbound webhook deliveries, Cycles emits `traceparent` with a freshly generated span-id per delivery and preserves the inbound `trace-flags` byte when available (otherwise defaults to `01`, sampled). See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
+### correlation_id
+
+An opaque, operator-populated identifier that groups a family of related events (for example, every event from a scheduled batch run). Cycles does not derive or inspect it — it only carries it through on event payloads. Distinct from `trace_id` (which Cycles owns) and `request_id` (which the server generates).
+
+## Admin Plane
+
+### AdminKeyAuth
+
+The authentication scheme keyed on the `X-Admin-API-Key` header. Used for platform-operator and fleet-management operations on the admin plane, and for admin-on-behalf-of operations on three runtime endpoints (listReservations, getReservation, releaseReservation) and six tenant-scoped governance webhook endpoints. See [Force-releasing stuck reservations as an operator](/how-to/force-releasing-stuck-reservations-as-an-operator).
+
+### Admin-on-Behalf-of
+
+An operation where a platform operator uses their admin key to act against tenant-owned resources (e.g., force-release a tenant's stuck reservation during incident response). Audit rows carry `actor_type=admin_on_behalf_of` for clear attribution. Intentionally excluded from admin auth: create/commit/extend reservations, create tenant webhook subscriptions, replay — operations where admin impersonation would distort semantics.
+
+### Bulk Action
+
+A single request that applies an action across many resources selected by a filter. Three bulk endpoints (tenants, webhooks, budgets) share a common envelope (`filter`, `action`, `expected_count`, `idempotency_key`) and safety rules: 500-row cap, count-mismatch preflight, 15-minute idempotency, per-row outcomes (`succeeded` / `failed` / `skipped`), one enriched audit row per invocation. See [Using Bulk Actions](/how-to/using-bulk-actions-for-tenants-and-webhooks).
+
+### Audit Sentinels
+
+Two reserved `tenant_id` values on audit-log entries (v0.1.25.28+): `__admin__` (admin-plane operation, not scoped to a tenant, authenticated-tier retention, never sampled) and `__unauth__` (pre-authentication failure, unauthenticated-tier retention, subject to sampling). URL-safe underscored form — no percent-encoding needed. Both are queryable with exact match. Historical `<unauthenticated>` values written pre-.28 keep their literal and age out under the unauth-tier TTL. See [Audit log failure capture](/admin-api/guide#audit-log-failure-capture-v0-1-25-20).
+
+### TENANT_CLOSED
+
+A `409` error code (v0.1.25.35+) returned by every mutating admin-plane operation on an object whose owning tenant is `CLOSED`. Enforced by the "Rule 2 — Terminal-Owner Mutation Guard" half of the cascade contract; GET endpoints remain available for post-mortem audit reads. See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) and [Error Codes — TENANT_CLOSED](/protocol/error-codes-and-error-handling-in-cycles#tenant-closed-409).
+
+### Tenant-Close Cascade
+
+The two-rule contract (governance-admin spec v0.1.25.29/.30/.31) that makes `* → CLOSED` tenant transitions atomic (or eventually-atomic) across owned objects. **Rule 1 — Close Cascade**: server drives owned `BudgetLedger` → `CLOSED`, `ApiKey` → `REVOKED`, open `Reservation` → `RELEASED`, `WebhookSubscription` → `DISABLED`, emitting one `*_via_tenant_cascade` event per mutated object under the originating `tenant.closed` audit entry's `correlation_id`. **Rule 2 — Terminal-Owner Mutation Guard**: mutations on a closed tenant's children return `409 TENANT_CLOSED`. Two conformant modes: **Mode A** (atomic single-transaction) or **Mode B** (flip-first with guarded cascade; runcycles uses this). See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
+
+### RESET_SPENT
+
+A budget funding operation (v0.1.25.18+) distinct from `RESET`: sets `allocated` and clears or overrides `spent` while preserving `reserved` and `debt`. Used for billing-period rollovers where outstanding reservations and debt must survive the boundary. See [Rolling Over Billing Periods](/how-to/rolling-over-billing-periods-with-reset-spent).

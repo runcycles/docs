@@ -13,7 +13,7 @@ featured: false
 
 At [scalerX](https://scalerx.ai), we built a custom rate limiter to track spend across LLMs, image generation, video generation, and a growing list of paid third-party APIs — stock charts, market data, web search. We built three versions of it over several months. Each version fixed the problem the previous one had. Each version revealed a new problem we hadn't anticipated.
 
-By the time we were planning v4, the realization was hard to avoid: **we weren't building a rate limiter anymore. We were building a runtime authority platform, badly.**
+By the time we were planning v4, the realization was hard to avoid: **we weren't building a rate limiter anymore. We were building a [runtime authority](/glossary#runtime-authority) platform, badly.**
 
 This is a post-mortem of why that happened, and why I think most teams building custom multi-provider rate limiters are on the same trajectory.
 
@@ -108,7 +108,7 @@ We started sketching a v4 that would:
 - Track a separate "action budget" alongside the dollar budget
 - Score different tool calls by risk (send_email = high, search = low)
 - Return something richer than ALLOW/DENY — maybe a "proceed but with these restrictions" response
-- Support per-run, per-user, per-tenant scopes atomically
+- Support per-run, per-user, per-[tenant](/glossary#tenant) scopes atomically
 - Emit events so downstream systems could react to budget exhaustion
 - Handle delegation — when agent A spawns agent B, B shouldn't inherit A's full budget
 
@@ -131,7 +131,7 @@ Put together, those aren't features of a rate limiter. They're the core primitiv
 
 We were building infrastructure we didn't want to own. Every week we added to it was a week not building product. And the hard parts — the concurrency correctness, the multi-provider coordination, the risk scoring — are problems other people were already solving as general infrastructure.
 
-That's why I started building [Cycles](/blog/why-i-am-building-cycles). Not because rate limiters are bad. They're fine for what they are. But if what you actually need is pre-execution enforcement across providers, across tenants, across risk tiers, with atomic reservations and delegation-aware scoping — you're not building a rate limiter. You're building a runtime authority platform. And there's no advantage to each team rebuilding it in isolation.
+That's why I started building [Cycles](/blog/why-i-am-building-cycles). Not because rate limiters are bad. They're fine for what they are. But if what you actually need is pre-execution enforcement across providers, across tenants, across risk tiers, with atomic [reservations](/glossary#reservation) and delegation-aware scoping — you're not building a rate limiter. You're building a runtime authority platform. And there's no advantage to each team rebuilding it in isolation.
 
 ## The Build-vs-Buy Pattern for AI Agent Rate Limiters
 
@@ -142,7 +142,7 @@ Looking back, every wall we hit had the same shape:
 - Take it seriously enough to survive concurrency → you need atomic operations
 - Take it seriously enough to handle multiple providers → you need per-provider scopes with hierarchical aggregation
 - Take it seriously enough to handle risk, not just cost → you need action-level authority, not just spend counters
-- Take it seriously enough to handle multi-tenant isolation → you need scoped budgets with per-tenant limits
+- Take it seriously enough to handle multi-[tenant isolation](/glossary#tenant-isolation) → you need scoped budgets with per-tenant limits
 - Take it seriously enough for multi-agent systems → you need attenuation, not trust propagation
 
 Each individual requirement is implementable. The combination is a general infrastructure layer that most product teams don't want to own and shouldn't need to.

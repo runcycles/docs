@@ -51,7 +51,7 @@ services:
       timeout: 3s
       retries: 5
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.1
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.36
     ports: ["7979:7979"]
     environment:
       REDIS_HOST: redis
@@ -61,7 +61,7 @@ services:
     depends_on:
       redis: { condition: service_healthy }
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.1
+    image: ghcr.io/runcycles/cycles-server:0.1.25.17
     ports: ["7878:7878"]
     environment:
       REDIS_HOST: redis
@@ -71,7 +71,7 @@ services:
       redis: { condition: service_healthy }
   # Optional: webhook event delivery service (port 7980)
   cycles-events:
-    image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+    image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
     ports: ["7980:7980"]
     environment:
       REDIS_HOST: redis
@@ -163,6 +163,10 @@ A complete Cycles deployment has four components that share a single Redis insta
 
 Your application only talks to the **Cycles Server** (port 7878). You use the **Admin Server** (port 7979) to set up tenants, keys, and budgets before your app starts enforcing. The **Events Service** (port 7980) is optional — it delivers webhook notifications asynchronously. See [Deploying the Events Service](/quickstart/deploying-the-events-service).
 
+::: info Optional: deploy the admin dashboard
+For a web UI on top of this stack — operator workflows for tenants, budgets, webhooks, events, audit, and incident response (freeze, suspend, force-release) — also deploy the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard). It's a Vue 3 SPA that proxies through to the admin server (and to the runtime server for force-release). Skip if you only need SDK integration.
+:::
+
 ## Prerequisites
 
 - **Docker** and **Docker Compose** (for the quick path — no Java needed), or
@@ -202,7 +206,7 @@ services:
       retries: 5
 
   cycles-admin:
-    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.1
+    image: ghcr.io/runcycles/cycles-server-admin:0.1.25.36
     ports:
       - "7979:7979"
     environment:
@@ -215,7 +219,7 @@ services:
         condition: service_healthy
 
   cycles-server:
-    image: ghcr.io/runcycles/cycles-server:0.1.25.1
+    image: ghcr.io/runcycles/cycles-server:0.1.25.17
     ports:
       - "7878:7878"
     environment:
@@ -231,7 +235,7 @@ services:
   # for production: export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
   # Docs: https://runcycles.io/quickstart/deploying-the-events-service
   # cycles-events:
-  #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  #   image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
   #   ports:
   #     - "7980:7980"
   #   environment:
@@ -254,7 +258,7 @@ docker compose up -d
 ```
 
 ::: tip Version pinning
-The examples above pin version `0.1.25.1`. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions.
+The examples above pin specific versions (admin `0.1.25.26`, server `0.1.25.13`, events `0.1.25.6`). Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for newer versions. Admin, runtime, and events ship on independent release cadences — bumping one does not require bumping the others.
 :::
 
 Verify all services are healthy:
@@ -309,7 +313,7 @@ Build and start the admin server:
 cd cycles-server-admin/cycles-admin-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD= ADMIN_API_KEY=admin-bootstrap-key \
-  java -jar cycles-admin-service-api/target/cycles-admin-service-api-0.1.25.1.jar
+  java -jar cycles-admin-service-api/target/cycles-admin-service-api-*.jar
 ```
 
 In a second terminal, build and start the cycles server:
@@ -318,7 +322,7 @@ In a second terminal, build and start the cycles server:
 cd cycles-server/cycles-protocol-service
 mvn clean package -DskipTests
 REDIS_HOST=localhost REDIS_PORT=6379 \
-  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-0.1.25.1.jar
+  java -jar cycles-protocol-service-api/target/cycles-protocol-service-api-*.jar
 ```
 
 ## Step 2: Create a tenant

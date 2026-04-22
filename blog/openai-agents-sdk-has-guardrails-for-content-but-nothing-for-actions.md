@@ -16,9 +16,9 @@ Two scenarios. Same agent. Very different outcomes.
 
 **Scenario B.** The same agent enters a retry loop on a failing API call. It calls `send_email` 200 times. It triggers a staging deployment via `run_deploy`. It burns through $50 in OpenAI API fees. Nothing stops it — because there's nothing _to_ stop it. The SDK has no mechanism for controlling what tools an agent calls, how many times, or at what cost.
 
-The OpenAI Agents SDK handles content safety well. It does not handle action authority at all.
+The OpenAI Agents SDK handles content safety well. It does not handle [action authority](/glossary#action-authority) at all.
 
-Once `Runner.run()` starts, every tool call executes with full authority. There's no way to say: "this agent can search freely, but must check authorization before sending emails." There's no spending limit per tenant or per session. There's no distinction between a read-only lookup and a destructive side-effect.
+Once `Runner.run()` starts, every tool call executes with full authority. There's no way to say: "this agent can search freely, but must check authorization before sending emails." There's no spending limit per [tenant](/glossary#tenant) or per session. There's no distinction between a read-only lookup and a destructive side-effect.
 
 The SDK's `RunHooks` interface — designed for observability — turns out to be the exact insertion point for fixing this.
 
@@ -46,13 +46,13 @@ The SDK's `RunHooks` interface exposes seven lifecycle events that fire during a
 
 When `on_tool_start` fires before a tool call, any exception it raises cancels the tool execution. The tool never runs. The agent receives an error and can decide how to proceed.
 
-This is exactly what a pre-execution authorization check needs. Here's how the hooks map to a runtime authority lifecycle:
+This is exactly what a pre-execution authorization check needs. Here's how the hooks map to a [runtime authority](/glossary#runtime-authority) lifecycle:
 
 | Hook | Authorization question | On DENY |
 |------|----------------------|---------|
 | `on_tool_start` | "Is this agent authorized to call this tool right now, given its risk level and remaining budget?" | Raise `BudgetExceededError` — tool never executes |
 | `on_tool_end` | "Record what actually happened — commit the real cost." | — |
-| `on_llm_start` | "Does this agent have budget for another LLM call?" | Raise `BudgetExceededError` — no tokens consumed |
+| `on_llm_start` | "Does this agent have budget for another LLM call?" | Raise `BudgetExceededError` — no [tokens](/glossary#tokens) consumed |
 | `on_llm_end` | "Commit the reserved amount and record actual token counts as metrics." | — |
 | `on_handoff` | "Record that Agent A delegated to Agent B." | — (audit only) |
 
@@ -62,8 +62,8 @@ This is the difference between runtime authority and observability. Observabilit
 
 The reserve-commit pattern makes this concrete:
 
-1. **Before the action:** Reserve budget or risk points. The Cycles server checks the tenant's remaining balance and returns ALLOW or DENY.
-2. **Execute the action:** Only if authorized. The reservation holds the estimated cost so concurrent requests don't over-allocate.
+1. **Before the action:** Reserve budget or risk points. The [Cycles server](/glossary#cycles-server) checks the tenant's remaining balance and returns ALLOW or DENY.
+2. **Execute the action:** Only if authorized. The [reservation](/glossary#reservation) holds the estimated cost so concurrent requests don't over-allocate.
 3. **After the action:** Commit usage and record token metrics from `response.usage` for observability.
 4. **On failure:** Release the reservation to return budget to the pool.
 

@@ -81,6 +81,27 @@ Responses are paginated:
 - `has_more` — whether more results exist
 - `next_cursor` — cursor for the next page
 
+### Sorting (v0.1.25.12+)
+
+`GET /v1/reservations` accepts two optional query parameters to order results server-side:
+
+- `sort_by` — one of `reservation_id`, `tenant`, `scope_path`, `status`, `reserved`, `created_at_ms`, `expires_at_ms`. When omitted, the server uses its default Redis-SCAN order.
+- `sort_dir` — `asc` or `desc`. Defaults to `desc` when `sort_by` is provided.
+
+The `reserved` key sorts by the integer `amount` within each row (well-defined because the v0 single-unit-per-reservation invariant holds). The `scope_path` key sorts lexicographically over the canonical scope path string (e.g. `tenant:acme/workspace:prod/agent:x`). The `tenant` key sorts over `Subject.tenant` only.
+
+Unknown `sort_by` or `sort_dir` values return HTTP 400 `INVALID_REQUEST`. Older servers that don't recognize the params ignore them without error (additive-parameter guarantee).
+
+**Cursor binding.** When `sort_by` is provided, the returned cursor binds to the `(sort_by, sort_dir, filters)` tuple. Reusing a cursor under a different sort key or filter set returns HTTP 400. Reset the cursor whenever you change sort key, direction, or filters.
+
+**Hydration cap (v0.1.25.13+).** The sorted path caps the pre-sort working set at `SORTED_HYDRATE_CAP = 2000` rows per page. If your filter matches more than 2000 reservations, a WARN is logged and the page fills from the capped slice. Narrow filters (`status`, `idempotency_key`, `workspace` / `app` / `workflow` / `agent` / `toolset`) to see past the cap.
+
+```
+GET /v1/reservations?status=ACTIVE&sort_by=expires_at_ms&sort_dir=asc&limit=100
+```
+
+This returns the 100 oldest-expiring active reservations — useful for incident response when you need to force-release soon-to-expire reservations before they churn.
+
 ## Getting reservation details
 
 ```

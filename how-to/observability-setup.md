@@ -16,19 +16,19 @@ The Cycles Server is a Spring Boot application. To expose Prometheus-format metr
 Set the following property via environment variable or `application.properties`:
 
 ```properties
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoints.web.exposure.include=health,info,prometheus
 ```
 
 In Docker Compose:
 
 ```yaml
 cycles-server:
-  image: ghcr.io/runcycles/cycles-server:0.1.25.1
+  image: ghcr.io/runcycles/cycles-server:0.1.25.17
   environment:
     REDIS_HOST: redis
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
-    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
   ports:
     - "7878:7878"
 ```
@@ -111,9 +111,31 @@ Key `uri` labels for Cycles endpoints:
 | `system_cpu_usage` | System CPU utilization (0.0–1.0) |
 | `process_cpu_usage` | Process CPU utilization (0.0–1.0) |
 
-::: info Custom Cycles metrics
-The Cycles Server currently uses standard Spring Boot Actuator metrics. It does not emit custom Micrometer metrics (e.g. `cycles_reservations_total`). Use the HTTP endpoint metrics (`http_server_requests_seconds`) filtered by `uri` and `status` as proxies. The alert rules in [Monitoring and Alerting](/how-to/monitoring-and-alerting) use custom metric names (`cycles_budget_utilization`, etc.) which assume you push these from a polling monitor — see that guide for the polling script.
-:::
+### Custom Cycles metrics
+
+The runtime server (`cycles-server` ≥ `0.1.25.8`) emits custom Micrometer counters under the `cycles.*` namespace, exposed in Prometheus format as `cycles_*`:
+
+| Metric | Tags | Description |
+|---|---|---|
+| `cycles_reservations_reserve_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every `POST /v1/reservations` call. `decision=ALLOW\|ALLOW_WITH_CAPS\|DENY`; `reason` carries the deny/caps code; `overage_policy` carries the budget's commit-overage policy (`BLOCK`, `ALLOW_WITH_OVERDRAFT`, etc.). |
+| `cycles_reservations_commit_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every commit. `decision=COMMITTED\|DENY`. |
+| `cycles_reservations_release_total` | `tenant`, `actor_type`, `decision`, `reason` | Every successful release. `actor_type` distinguishes tenant-driven from admin-on-behalf-of releases. |
+| `cycles_reservations_extend_total` | `tenant`, `decision`, `reason` | Every extend attempt. |
+| `cycles_reservations_expired_total` | `tenant` | Per reservation actually marked EXPIRED by the sweep (not per candidate). |
+| `cycles_events_total` | `tenant`, `decision`, `reason`, `overage_policy` | Outcome of every `POST /v1/events` one-shot debit. |
+| `cycles_overdraft_incurred_total` | `tenant` | Count of commits/events that actually accrued non-zero debt (unit-free — amount is in the balance store, not leaked to metrics). |
+
+The admin server (`cycles-server-admin` ≥ `0.1.25.18`) additionally exposes:
+
+| Metric | Description |
+|---|---|
+| `cycles_admin_webhook_dispatched_total` | Webhook deliveries attempted. |
+| `cycles_admin_events_emitted_total` | Events produced by admin controllers (budget/tenant/policy/api_key/system). |
+| `cycles_admin_events_payload_invalid_total` | Payload contract violations caught at emit time. |
+
+The high-cardinality `tenant` tag can be disabled via `cycles.metrics.tenant-tag.enabled=false` in deployments with many thousands of tenants. Empty/null tag values are normalised to the sentinel `UNKNOWN` so series names stay stable.
+
+For denial-rate, overdraft-rate, and tenant-level alerts, prefer these `cycles_*` counters over `http_server_requests_seconds_count` — HTTP histograms can't see the response body (reservation DENY returns HTTP 200), so they would miscount.
 
 ## PromQL query cookbook
 

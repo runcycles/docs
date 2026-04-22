@@ -56,7 +56,7 @@ Model committed: anthropic/claude-sonnet-4-20250514 (cost=3000000 USD_MICROCENTS
 Agent session budget summary: remaining=15000000 spent=485000000 reservations=34
 ```
 
-Every reservation, commit, downgrade, and block is visible. No digging through provider dashboards. This is what AI agent cost management looks like when it's built into the execution lifecycle — not bolted on after the fact.
+Every [reservation](/glossary#reservation), commit, downgrade, and block is visible. No digging through provider dashboards. This is what AI agent cost management looks like when it's built into the execution lifecycle — not bolted on after the fact.
 
 ## What the agent saw
 
@@ -122,7 +122,7 @@ Three things we learned the hard way:
 
 **Enable `enableEventLog` from day one.** When a session behaves unexpectedly, the event log tells you exactly what happened — which tools were blocked, when models were downgraded, why a reservation was denied. Without it, you're reading tea leaves from the session summary.
 
-**Model costs are estimates.** The plugin reserves a fixed amount per Opus call regardless of how many tokens are actually used. A short response costs the same as a long one. The `modelCostEstimator` callback can improve this if you have a proxy that tracks token usage, but out of the box, expect ±20% variance.
+**Model costs are estimates.** The plugin reserves a fixed amount per Opus call regardless of how many [tokens](/glossary#tokens) are actually used. A short response costs the same as a long one. The `modelCostEstimator` callback can improve this if you have a proxy that tracks token usage, but out of the box, expect ±20% variance.
 
 **OpenClaw doesn't pass the model name in hook events.** We had to add `defaultModelName` to the config because the `before_model_resolve` event only contains `{ prompt }`. We've filed a [feature request](https://github.com/openclaw/openclaw/issues/55771) — until it's resolved, set `defaultModelName` to your agent's model.
 
@@ -167,7 +167,7 @@ Three things we learned the hard way:
 }
 ```
 
-> **New to Cycles?** [Cycles](https://runcycles.io) is an open-source runtime authority system for AI agents. It enforces budgets, action limits, and resource boundaries — before execution, not after. The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin brings Cycles to OpenClaw without changing agent logic. See [What is Cycles?](/quickstart/what-is-cycles) to learn more.
+> **New to Cycles?** [Cycles](https://runcycles.io) is an open-source [runtime authority](/glossary#runtime-authority) system for AI agents. It enforces budgets, action limits, and resource boundaries — before execution, not after. The [`cycles-openclaw-budget-guard`](https://github.com/runcycles/cycles-openclaw-budget-guard) plugin brings Cycles to OpenClaw without changing agent logic. See [What is Cycles?](/quickstart/what-is-cycles) to learn more.
 
 ## Try it
 
@@ -175,7 +175,7 @@ Three things we learned the hard way:
 openclaw plugins install @runcycles/openclaw-budget-guard
 ```
 
-Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see degradation without a Cycles server. Then [deploy the full stack](/quickstart/deploying-the-full-cycles-stack) and watch your agent adapt instead of crash. Full documentation: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw). Source: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard).
+Start with [dry-run mode](/how-to/integrating-cycles-with-openclaw#try-it-without-a-server) to see degradation without a [Cycles server](/glossary#cycles-server). Then [deploy the full stack](/quickstart/deploying-the-full-cycles-stack) and watch your agent adapt instead of crash. Full documentation: [Integrating Cycles with OpenClaw](/how-to/integrating-cycles-with-openclaw). Source: [github.com/runcycles/cycles-openclaw-budget-guard](https://github.com/runcycles/cycles-openclaw-budget-guard).
 
 ## Related reading
 

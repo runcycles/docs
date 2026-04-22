@@ -52,6 +52,10 @@ If the decision is ALLOW or DENY, `caps` is absent.
 
 When a dry run returns DENY, the `reason_code` field should be populated. This is the primary diagnostic signal for understanding why the dry run was denied.
 
+`DecisionReasonCode` is an open string (as of v0.1.25) with six documented known values: `BUDGET_EXCEEDED`, `BUDGET_FROZEN`, `BUDGET_CLOSED`, `BUDGET_NOT_FOUND`, `OVERDRAFT_LIMIT_EXCEEDED`, `DEBT_OUTSTANDING`. Clients MUST handle unknown values gracefully — extension specs may add new reason codes additively. See [Decision reason codes](/protocol/error-codes-and-error-handling-in-cycles#decision-reason-codes) for full semantics.
+
+The same field is used by `/v1/decide` responses. Note that on dry_run reserve, the `BUDGET_NOT_FOUND` reason code corresponds to a condition that non-dry reserve would surface as `HTTP 404` with `error=NOT_FOUND` — the wire shape is different, but the underlying "no budget at any derived scope" condition is the same.
+
 ### balances are recommended but optional
 
 The server may include balance snapshots in the response. These reflect the current state without any mutation — they show what balances look like without the reservation being applied.

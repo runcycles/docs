@@ -25,7 +25,7 @@ export default defineConfig({
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Cycles',
-  srcExclude: ['**/README.md', '**/CLAUDE.md', 'cycles-protocol/**', 'cycles-server-admin/**'],
+  srcExclude: ['**/README.md', '**/CLAUDE.md', 'cycles-protocol/**'],
   head: [
     ['link', { rel: 'preload', href: '/fonts/inter-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
     ['link', { rel: 'preload', href: '/fonts/jetbrains-mono-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
@@ -42,6 +42,7 @@ export default defineConfig({
     ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { property: 'og:image:alt', content: 'Cycles logo' }],
     ['meta', { name: 'theme-color', content: '#0B0F1A' }],
+    ['meta', { name: 'twitter:site', content: '@runcycles' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:image', content: 'https://runcycles.io/runcycles-og.png' }],
     ['meta', { name: 'twitter:image:alt', content: 'Cycles logo' }],
@@ -212,6 +213,8 @@ export default defineConfig({
             { text: 'Deploy the Full Stack', link: '/quickstart/deploying-the-full-cycles-stack' },
             { text: 'Self-Hosting the Server', link: '/quickstart/self-hosting-the-cycles-server' },
             { text: 'Deploy the Events Service', link: '/quickstart/deploying-the-events-service' },
+            { text: 'Deploy the Admin Dashboard', link: '/quickstart/deploying-the-cycles-dashboard' },
+            { text: 'Migrate from Custom Rate Limiter', link: '/how-to/migrating-from-custom-rate-limiter-to-cycles' },
           ]
         },
         {
@@ -234,6 +237,9 @@ export default defineConfig({
                 { text: 'vs Rate Limiting', link: '/concepts/cycles-vs-rate-limiting' },
                 { text: 'vs LangSmith', link: '/concepts/cycles-vs-langsmith' },
                 { text: 'vs Guardrails AI', link: '/concepts/cycles-vs-guardrails-ai' },
+                { text: 'vs LiteLLM', link: '/concepts/cycles-vs-litellm' },
+                { text: 'vs Helicone', link: '/concepts/cycles-vs-helicone' },
+                { text: 'vs OpenRouter', link: '/concepts/cycles-vs-openrouter' },
                 { text: 'vs Provider Caps', link: '/concepts/cycles-vs-provider-spending-caps' },
                 { text: 'vs Token Counters', link: '/concepts/cycles-vs-custom-token-counters' },
               ]
@@ -254,12 +260,14 @@ export default defineConfig({
               items: [
                 { text: 'Choosing the Right Overage Policy', link: '/how-to/choosing-the-right-overage-policy' },
                 { text: 'Multi-Tenant SaaS Guide', link: '/how-to/multi-tenant-saas-with-cycles' },
+                { text: 'Budget Templates', link: '/how-to/budget-templates' },
                 { text: 'Common Budget Patterns', link: '/how-to/common-budget-patterns' },
                 { text: 'Multi-Agent Shared Budgets', link: '/how-to/multi-agent-shared-workspace-budget-patterns' },
                 { text: 'Cost Estimation Cheat Sheet', link: '/how-to/cost-estimation-cheat-sheet' },
                 { text: 'Budget Allocation and Management', link: '/how-to/budget-allocation-and-management-in-cycles' },
                 { text: 'Tenant, Workflow, and Run Budgets', link: '/how-to/how-to-model-tenant-workflow-and-run-budgets-in-cycles' },
                 { text: 'Estimate Exposure Before Execution', link: '/how-to/how-to-estimate-exposure-before-execution-practical-reservation-strategies-for-cycles' },
+                { text: 'Assigning RISK_POINTS to Tools', link: '/how-to/assigning-risk-points-to-agent-tools' },
                 { text: 'Degradation Paths', link: '/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer' },
                 { text: 'Budget Control for LangChain Agents', link: '/how-to/how-to-add-budget-control-to-a-langchain-agent' },
                 { text: 'Shadow Mode Rollout', link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production' },
@@ -379,6 +387,10 @@ export default defineConfig({
             { text: 'Metrics and Metadata', link: '/protocol/standard-metrics-and-metadata-in-cycles' },
             { text: 'Error Codes and Error Handling', link: '/protocol/error-codes-and-error-handling-in-cycles' },
             { text: 'Webhook Event Delivery Protocol', link: '/protocol/webhook-event-delivery-protocol' },
+            { text: 'Event Payloads Reference', link: '/protocol/event-payloads-reference' },
+            { text: 'Webhook Scope Filter Syntax', link: '/protocol/webhook-scope-filter-syntax' },
+            { text: 'Correlation and Tracing', link: '/protocol/correlation-and-tracing-in-cycles' },
+            { text: 'Tenant-Close Cascade Semantics', link: '/protocol/tenant-close-cascade-semantics' },
           ]
         },
         {
@@ -415,13 +427,19 @@ export default defineConfig({
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Managing Webhooks', link: '/how-to/managing-webhooks' },
             { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },
-            { text: 'Changelog', link: '/changelog' },
+            { text: 'Using the Dashboard', link: '/how-to/using-the-cycles-dashboard' },
+            { text: 'Bulk Actions for Tenants and Webhooks', link: '/how-to/using-bulk-actions-for-tenants-and-webhooks' },
+            { text: 'Searching and Sorting Admin Lists', link: '/how-to/searching-and-sorting-admin-list-endpoints' },
+            { text: 'Rolling Over Billing Periods (RESET_SPENT)', link: '/how-to/rolling-over-billing-periods-with-reset-spent' },
+            { text: 'Force-Releasing Stuck Reservations', link: '/how-to/force-releasing-stuck-reservations-as-an-operator' },
           ]
         },
         {
-          text: 'Community',
-          collapsed: true,
+          text: 'Help',
+          collapsed: false,
           items: [
+            { text: 'Troubleshooting & FAQ', link: '/how-to/troubleshooting-and-faq' },
+            { text: 'Changelog', link: '/changelog' },
             { text: 'Built with Cycles Badges', link: '/community/badges' },
           ]
         }

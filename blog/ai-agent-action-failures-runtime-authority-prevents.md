@@ -10,9 +10,9 @@ sidebar: false
 
 # 5 AI Agent Failures Only Action Controls Would Prevent
 
-The companion post — [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — covers the cost dimension: runaway loops, retry storms, scope leaks. Every scenario is measured in dollars of model spend. But agents have a second failure dimension that dollar budgets cannot touch: **actions with consequences**.
+The companion post — [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — covers the cost dimension: runaway loops, [retry storms](/glossary#retry-storm), scope leaks. Every scenario is measured in dollars of model spend. But agents have a second failure dimension that dollar budgets cannot touch: **actions with consequences**.
 
-An agent that sends 200 wrong emails costs $1.40 in tokens. An agent that triggers a production deploy costs $0.80. An agent that deletes production records costs $2.00. No spending limit — $100, $50, even $5 — would have stopped any of them. The damage is not monetary. It is operational, reputational, and in some cases regulatory.
+An agent that sends 200 wrong emails costs $1.40 in [tokens](/glossary#tokens). An agent that triggers a production deploy costs $0.80. An agent that deletes production records costs $2.00. No spending limit — $100, $50, even $5 — would have stopped any of them. The damage is not monetary. It is operational, reputational, and in some cases regulatory.
 
 These five patterns come up across teams deploying agents with tool-calling capabilities. Each one is preventable with [action authority](/concepts/action-authority-controlling-what-agents-do) — the dimension of [runtime authority](/blog/what-is-runtime-authority-for-ai-agents) that controls what agents *do*, not just what they *spend*.
 
@@ -20,7 +20,7 @@ These five patterns come up across teams deploying agents with tool-calling capa
 
 ## How Action Authority Works
 
-Action authority uses the same reserve-commit lifecycle as budget authority, but with a different unit: **RISK_POINTS** instead of dollars. Teams assign point values to each action class based on blast radius — a read costs 1 point, an email costs 20, a deploy costs 50. A workflow gets a fixed risk-point budget. Every consequential action deducts from it. When the budget is exhausted, the agent can still read and reason, but it cannot act.
+[Action authority](/glossary#action-authority) uses the same reserve-commit lifecycle as [budget authority](/glossary#budget-authority), but with a different unit: **[RISK_POINTS](/glossary#risk-points)** instead of dollars. Teams assign point values to each action class based on blast radius — a read costs 1 point, an email costs 20, a deploy costs 50. A workflow gets a fixed risk-point budget. Every consequential action deducts from it. When the budget is exhausted, the agent can still read and reason, but it cannot act.
 
 For the full mechanism, see [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do). For the unit system, see [Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points).
 
@@ -54,7 +54,7 @@ Assign `send_email` a cost of 20 risk points. Set the workflow's risk-point budg
 | Generate email body | 1 | ~80 |
 | Send email | 20 | **5** |
 
-The agent sends 5 emails, then the 6th reservation is denied with `BUDGET_EXCEEDED`. Five wrong emails is a bad day. Two hundred is a public incident. The difference is containment.
+The agent sends 5 emails, then the 6th [reservation](/glossary#reservation) is denied with `BUDGET_EXCEEDED`. Five wrong emails is a bad day. Two hundred is a public incident. The difference is containment.
 
 The team discovers the template bug after 5 emails instead of 200. They fix it and re-run. Total damage: 5 confused customers, zero social media complaints, zero pipeline impact.
 
@@ -104,11 +104,11 @@ For an additional layer: a tool denylist can block `execute_delete` for any agen
 
 **The scenario:**
 
-A support agent is debugging a customer issue. It needs to check internal logs and share findings with the support team. The agent posts a diagnostic message — including internal system names, error codes, and a reference to another customer's tenant ID — to a Slack channel. The wrong Slack channel. Instead of `#support-internal`, the message goes to `#acme-corp-support`, a shared channel visible to the customer.
+A support agent is debugging a customer issue. It needs to check internal logs and share findings with the support team. The agent posts a diagnostic message — including internal system names, error codes, and a reference to another customer's [tenant](/glossary#tenant) ID — to a Slack channel. The wrong Slack channel. Instead of `#support-internal`, the message goes to `#acme-corp-support`, a shared channel visible to the customer.
 
 **The impact:**
 
-The agent made 2 LLM calls to analyze the issue and 1 tool call to post the message. Total model spend: approximately $0.30. The business impact is a **data exposure incident** — internal infrastructure details and another customer's tenant ID are visible to an external party. Depending on the industry and the data involved, this can trigger a security review, a customer notification obligation, or a compliance investigation.
+The agent made 2 LLM calls to analyze the issue and 1 tool call to post the message. Total model spend: approximately $0.30. The business impact is a **data [exposure](/glossary#exposure) incident** — internal infrastructure details and another customer's tenant ID are visible to an external party. Depending on the industry and the data involved, this can trigger a security review, a customer notification obligation, or a compliance investigation.
 
 A $2 per-conversation budget would not have prevented this. The agent was well within any cost limit. The problem was not how much it spent but *where it posted*.
 
@@ -177,6 +177,6 @@ Teams that implement only dollar budgets have half of [runtime authority](/blog/
 - **[5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent)** — the companion post covering the cost dimension
 - **[AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects)** — deep dive on RISK_POINTS, toolset budgets, and progressive capability narrowing
 - **[Action Authority](/concepts/action-authority-controlling-what-agents-do)** — the concept page
-- **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, USD_MICROCENTS, TOKENS, and CREDITS
+- **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, [USD_MICROCENTS](/glossary#usd-microcents), TOKENS, and [CREDITS](/glossary#credits)
 - **[Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer)** — deny, downgrade, disable, or defer when action budgets are exhausted
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — hands-on walkthrough of the reserve-commit lifecycle

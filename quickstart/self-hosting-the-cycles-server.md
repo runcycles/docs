@@ -8,7 +8,7 @@ description: "Run the Cycles budget enforcement server locally, with Docker, or 
 The Cycles server is a Spring Boot application that enforces budget reservations backed by Redis. This guide covers how to run it locally, with Docker, and in production.
 
 ::: tip This guide covers the runtime Cycles Server (port 7878) only
-The full Cycles stack includes three services: the **Cycles Server** (runtime enforcement, covered here), the **Admin Server** (port 7979, tenant/budget management), and the optional **Events Service** (port 7980, webhook delivery). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the end-to-end guide covering all components.
+The full Cycles stack includes three services: the **Cycles Server** (runtime enforcement, covered here), the **Admin Server** (port 7979, tenant/budget management), and the optional **Events Service** (port 7980, webhook delivery). See [Deploying the Full Cycles Stack](/quickstart/deploying-the-full-cycles-stack) for the end-to-end guide covering all components. For a web UI on top of the stack, see [Deploy the Admin Dashboard](/quickstart/deploying-the-cycles-dashboard).
 :::
 
 ## Prerequisites
@@ -31,7 +31,7 @@ docker compose -f docker-compose.prod.yml up -d
 This pulls `ghcr.io/runcycles/cycles-server:latest` and starts it with Redis.
 
 ::: tip Pinning versions
-Replace `:latest` with a specific version tag (e.g., `:0.1.25.1`) in `docker-compose.prod.yml` for reproducible deployments.
+Replace `:latest` with a specific version tag (e.g., `:0.1.25.8`) in `docker-compose.prod.yml` for reproducible deployments. Check [GitHub releases](https://github.com/runcycles/cycles-server/releases) for the current stable version.
 :::
 
 ### Building from source with Docker

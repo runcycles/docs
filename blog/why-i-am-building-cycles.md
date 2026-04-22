@@ -41,7 +41,7 @@ That scalerX incident brought the pattern into focus: today's AI agents have the
 
 When I started sketching what became Cycles, I kept coming back to three principles from the middleware governance world:
 
-**1. Enforcement must be atomic.** In enterprise middleware, a half-applied policy is worse than no policy. If you reserve capacity for a transaction, that reservation must be atomic — either the full budget is locked or none of it is. Cycles uses a reserve-commit lifecycle borrowed directly from this principle. Budget is atomically reserved before an agent acts, actual usage is committed after, and unused budget is released. No race conditions. No [time-of-check-to-time-of-use](https://dev.to/amavashev/your-ai-agent-budget-check-has-a-race-condition-33ei) gaps.
+**1. Enforcement must be atomic.** In enterprise middleware, a half-applied policy is worse than no policy. If you reserve capacity for a transaction, that [reservation](/glossary#reservation) must be atomic — either the full budget is locked or none of it is. Cycles uses a reserve-commit lifecycle borrowed directly from this principle. Budget is atomically reserved before an agent acts, actual usage is committed after, and unused budget is released. No race conditions. No [time-of-check-to-time-of-use](https://dev.to/amavashev/your-ai-agent-budget-check-has-a-race-condition-33ei) gaps.
 
 **2. Authority must attenuate, not propagate.** In middleware, a message broker doesn't grant downstream systems the same permissions as the originating system. Each hop in the chain has narrower scope. Cycles applies the same principle to agent delegation: when an agent spawns a sub-agent, the sub-agent gets a carved-out sub-budget and a restricted action mask. Authority can only decrease with depth, never increase.
 
@@ -59,7 +59,7 @@ That's it. One question, answered deterministically, at every tool call, for eve
 
 ## The Road Ahead
 
-Cycles is early and open source under [Apache 2.0](https://github.com/runcycles). The protocol, server, and client SDKs are available across Python, TypeScript, Java, and Rust. We integrate with [26 frameworks and LLM providers](/blog/26-integrations-every-ai-framework-one-budget-protocol).
+Cycles is early and open source under [Apache 2.0](https://github.com/runcycles). The protocol, server, and client SDKs are available across Python, TypeScript, Java, and Rust. We integrate with [27 frameworks and LLM providers](/blog/26-integrations-every-ai-framework-one-budget-protocol).
 
 I've seen this movie before. I know how the first act goes — the technology is exciting, adoption outpaces governance, incidents accumulate, and eventually the industry builds the enforcement layer it should have built from the start.
 

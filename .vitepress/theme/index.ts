@@ -3,6 +3,7 @@ import type { Theme } from 'vitepress'
 import { useRoute } from 'vitepress'
 import { theme, useOpenapi } from 'vitepress-openapi/client'
 import { nextTick, onMounted, watch } from 'vue'
+import mediumZoom from 'medium-zoom'
 import 'vitepress-openapi/dist/style.css'
 import './custom.css'
 import spec from '../../public/openapi.json'
@@ -12,6 +13,7 @@ import BlogPost from './BlogPost.vue'
 import StackDiagram from './StackDiagram.vue'
 import ArchDiagram from './ArchDiagram.vue'
 import ArchDiagramFull from './ArchDiagramFull.vue'
+import DashboardArchDiagram from './DashboardArchDiagram.vue'
 import DecisionTree from './DecisionTree.vue'
 import ScopeDiagram from './ScopeDiagram.vue'
 import DeploymentDiagram from './DeploymentDiagram.vue'
@@ -31,6 +33,7 @@ export default {
     app.component('StackDiagram', StackDiagram)
     app.component('ArchDiagram', ArchDiagram)
     app.component('ArchDiagramFull', ArchDiagramFull)
+    app.component('DashboardArchDiagram', DashboardArchDiagram)
     app.component('DecisionTree', DecisionTree)
     app.component('ScopeDiagram', ScopeDiagram)
     app.component('DeploymentDiagram', DeploymentDiagram)
@@ -42,12 +45,20 @@ export default {
   setup() {
     const route = useRoute()
     onMounted(() => {
+      // Click-to-zoom on all content images
+      const initZoom = () => {
+        mediumZoom('.vp-doc img:not(.no-zoom)', {
+          background: 'var(--vp-c-bg)',
+        })
+      }
+      initZoom()
       watch(
         () => route.path,
         () => {
           if (document.startViewTransition) {
             document.startViewTransition(() => nextTick())
           }
+          nextTick(initZoom)
         }
       )
     })

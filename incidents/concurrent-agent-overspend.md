@@ -171,11 +171,16 @@ curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
 
 ### Alerting rules
 
+::: warning Planned metrics — not yet registered
+`cycles_scope_spent_total`, `cycles_scope_allocated_total`, `cycles_scope_remaining_total`, and `cycles_active_reservations_count` are on the roadmap but are not emitted by the current server builds (runtime 0.1.25.8). Build these alerts from a balance-polling sidecar that pushes `GET /v1/balances` fields as gauges — see [Query balances for monitoring](/how-to/monitoring-and-alerting#query-balances-for-monitoring). Once the sidecar pushes `cycles_budget_spent` / `cycles_budget_allocated` / `cycles_budget_remaining` / `cycles_active_reservations`, the rules below apply as-is against your own gauge names.
+:::
+
 ```yaml
 # Alert when spent exceeds allocated for any scope
+# Requires gauges pushed by a balance-polling sidecar (see note above)
 - alert: CyclesBudgetOvershoot
   expr: |
-    cycles_scope_spent_total > cycles_scope_allocated_total
+    cycles_budget_spent > cycles_budget_allocated
   for: 0m
   labels:
     severity: critical
@@ -185,7 +190,7 @@ curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
 # Alert on high concurrent reservation count (pre-incident warning)
 - alert: CyclesHighConcurrentReservations
   expr: |
-    cycles_active_reservations_count > 20
+    cycles_active_reservations > 20
   for: 1m
   labels:
     severity: warning
@@ -195,8 +200,8 @@ curl -s "http://localhost:7878/v1/balances?tenant=acme-corp" \
 # Alert when remaining budget drops below 10% with active reservations
 - alert: CyclesBudgetNearExhaustion
   expr: |
-    cycles_scope_remaining_total / cycles_scope_allocated_total < 0.1
-    and cycles_active_reservations_count > 0
+    cycles_budget_remaining / cycles_budget_allocated < 0.1
+    and cycles_active_reservations > 0
   for: 0m
   labels:
     severity: critical

@@ -5,7 +5,9 @@ description: "How to deploy the Cycles events service (cycles-server-events) for
 
 # Deploying the Events Service
 
-The events service (`cycles-server-events`, port 7980) delivers webhook events asynchronously — use it to get real-time alerts in Slack, PagerDuty, or your own systems when budgets run out, thresholds are crossed, or reservations are denied.
+The events service (`cycles-server-events`) delivers webhook events asynchronously — use it to get real-time alerts in Slack, PagerDuty, or your own systems when budgets run out, thresholds are crossed, or reservations are denied.
+
+As of v0.1.25.9 the service binds two ports: the public API port `7980` (dispatch control surface) and a separate management port `9980` for actuator endpoints (`/actuator/health`, `/actuator/info`, `/actuator/prometheus`). Expose `7980` via public ingress; keep `9980` internal-only.
 
 It is optional — the admin and runtime servers operate normally without it. When deployed, it consumes delivery jobs from Redis and sends HTTP POST requests to webhook endpoints with HMAC-SHA256 signatures.
 
@@ -19,7 +21,7 @@ export WEBHOOK_SECRET_ENCRYPTION_KEY=$(openssl rand -base64 32)
 docker compose -f docker-compose.full-stack.yml up
 ```
 
-Services: Redis (6379), Admin (7979), Runtime (7878), Events (7980).
+Services: Redis (6379), Admin (7979), Runtime (7878), Events API (7980), Events management/actuator (9980).
 
 ## Standalone deployment
 
@@ -28,12 +30,15 @@ Services: Redis (6379), Admin (7979), Runtime (7878), Events (7980).
 ```bash
 docker run -d --name cycles-events \
   -p 7980:7980 \
+  -p 9980:9980 \
   -e REDIS_HOST=redis.example.com \
   -e REDIS_PORT=6379 \
   -e REDIS_PASSWORD=your-redis-password \
   -e WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-  ghcr.io/runcycles/cycles-server-events:0.1.25.1
+  ghcr.io/runcycles/cycles-server-events:0.1.25.10
 ```
+
+Only `7980` needs to be reachable from clients and downstream webhook targets. `9980` should remain internal — scrape it from your Prometheus cluster on its own network path.
 
 ### From JAR
 
@@ -42,7 +47,7 @@ REDIS_HOST=redis.example.com \
 REDIS_PORT=6379 \
 REDIS_PASSWORD=your-redis-password \
 WEBHOOK_SECRET_ENCRYPTION_KEY=your-base64-key \
-java -jar cycles-server-events-0.1.25.1.jar
+java -jar cycles-server-events-*.jar
 ```
 
 ## Configuration
@@ -93,14 +98,14 @@ RETENTION_CLEANUP_INTERVAL_MS=3600000
 
 ## Health check
 
-The events service exposes a Spring Boot Actuator health endpoint:
+The events service exposes a Spring Boot Actuator health endpoint on the management port (9980 by default as of v0.1.25.9):
 
 ```bash
-curl http://localhost:7980/actuator/health
+curl http://localhost:9980/actuator/health
 # {"status":"UP"}
 ```
 
-In Docker, the Dockerfile includes a built-in health check (30s interval, 60s start period, 5 retries).
+Pre-v0.1.25.9 deployments exposed `/actuator/health` on the public API port 7980. Update kubelet probes and Docker `HEALTHCHECK` commands to hit `:9980` when upgrading. The published Docker image's built-in `HEALTHCHECK` (30s interval, 60s start period, 5 retries) has already been updated.
 
 ## What happens when the events service is down
 
@@ -112,6 +117,33 @@ In Docker, the Dockerfile includes a built-in health check (30s interval, 60s st
    - Fresh deliveries are processed normally via BRPOP
    - `RetentionCleanupService` trims orphaned ZSET index entries hourly
 5. **No data loss for events** — event records persist in Redis for 90 days regardless of delivery status
+
+## Auto-disable for persistently failing subscriptions
+
+The events service tracks `consecutive_failures` per subscription. When the counter reaches `disable_after_failures` (default **10**), the subscription transitions to `DISABLED` and no further deliveries are attempted. The counter resets to 0 on any successful delivery. Re-enable a disabled subscription with `PATCH /v1/admin/webhooks/{id}` once the receiver is healthy.
+
+Stale deliveries (older than `MAX_DELIVERY_AGE_MS`, default 24h) are marked `FAILED` without attempting HTTP delivery. This prevents a large backlog from triggering thundering-herd traffic against a receiver after a long events-service outage.
+
+Signing secrets are encrypted at rest with AES-256-GCM using `WEBHOOK_SECRET_ENCRYPTION_KEY` (v0.1.25.2+). The events service decrypts per delivery; plaintext never lives on disk.
+
+## Prometheus metrics
+
+The events service publishes webhook delivery metrics under the `cycles_webhook_*` namespace on `/actuator/prometheus`, served on the management port (9980 by default as of v0.1.25.9; was 7980 on pre-.9 builds). Update Prometheus scrape targets accordingly — the metric names and labels are unchanged.
+
+| Metric | Tags | Description |
+|--------|------|-------------|
+| `cycles_webhook_delivery_attempts_total` | `tenant`, `event_type` | Every outbound HTTP attempt (including retries) |
+| `cycles_webhook_delivery_success_total` | `tenant`, `event_type`, `status_code_family` (`2xx`/`3xx`/`4xx`/`5xx`) | Attempts that received HTTP 2xx |
+| `cycles_webhook_delivery_failed_total` | `tenant`, `event_type`, `reason` | Failed attempts, bucketed by failure reason |
+| `cycles_webhook_delivery_retried_total` | `tenant`, `event_type` | Retry attempts scheduled on the `dispatch:retry` ZSET |
+| `cycles_webhook_delivery_stale_total` | `tenant` | Deliveries auto-failed by the `MAX_DELIVERY_AGE_MS` gate |
+| `cycles_webhook_subscription_auto_disabled_total` | `tenant`, `reason` | Subscriptions transitioned to `DISABLED` after `disable_after_failures` |
+| `cycles_webhook_delivery_latency_seconds` | `tenant`, `event_type`, `outcome` | Timer — HTTP RTT per delivery attempt |
+| `cycles_webhook_events_payload_invalid_total` | `type`, `rule` | Event payload validation discrepancies (no tenant tag — shape issue, not traffic) |
+
+The `tenant` tag on all counters is gated by `cycles.metrics.tenant-tag.enabled` (default `true`) — set to `false` in deployments with many thousands of tenants to bound Prometheus cardinality.
+
+Alert on `cycles_webhook_subscription_auto_disabled_total` (any increase is a receiver health issue) and on a sustained rise in `cycles_webhook_delivery_failed_total{reason=!~"client_4xx"}` (non-client-error failures indicate dispatch issues).
 
 ## Scaling
 

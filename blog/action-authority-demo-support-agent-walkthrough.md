@@ -12,7 +12,7 @@ sidebar: false
 
 A support agent handles a billing dispute. Its workflow has four steps: read the case, log an internal note, update the CRM status, and send the customer a reply. Without a runtime decision layer, all four steps execute — including the email. With Cycles, the first three steps proceed normally. The fourth — `send_customer_email` — is blocked before execution because the `send-email` toolset has a zero-dollar budget. The email function never runs. The customer never receives an unauthorized message.
 
-The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The action authority is real. This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
+The tools in this demo are mocked. No real CRM, email service, or ticketing system is involved. The [action authority](/glossary#action-authority) is real. This post walks through the [action authority demo](https://github.com/runcycles/cycles-agent-action-authority-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
 <!-- more -->
 
@@ -67,7 +67,7 @@ The agent did exactly what it was told. That is the problem. No authorization ga
 
 ## With Cycles: the email is blocked
 
-Same agent, same tools, same workflow. The only difference is that each tool call now passes through the Cycles server before execution. The first three steps still succeed. The fourth does not:
+Same agent, same tools, same workflow. The only difference is that each tool call now passes through the [Cycles server](/glossary#cycles-server) before execution. The first three steps still succeed. The fourth does not:
 
 ```
 ╭──────────── Support Case #4782 ───────────────╮
@@ -103,7 +103,7 @@ Same agent, same tools, same workflow. The only difference is that each tool cal
 ╰───────────────────────────────────────────────╯
 ```
 
-The `send_customer_email` function never executed. Not "rolled back." Not "logged and flagged for review." The function body never ran. The Cycles server returned `409 BUDGET_EXCEEDED` on the reservation attempt, the `@cycles` decorator raised `BudgetExceededError`, and the agent caught the exception and reported: *"Email blocked — not approved for autonomous execution. Escalated to human review."*
+The `send_customer_email` function never executed. Not "rolled back." Not "logged and flagged for review." The function body never ran. The Cycles server returned `409 BUDGET_EXCEEDED` on the [reservation](/glossary#reservation) attempt, the `@cycles` decorator raised `BudgetExceededError`, and the agent caught the exception and reported: *"Email blocked — not approved for autonomous execution. Escalated to human review."*
 
 ## The code change
 
@@ -170,7 +170,7 @@ tenant:demo-tenant
             └─ toolset:send-email       → $0 budget     ✗
 ```
 
-The provisioning script creates $1.00 budgets at every level of the hierarchy — tenant, workspace, app, workflow, agent — and then creates toolset-level budgets. Approved actions get $1.00; blocked actions get $0:
+The provisioning script creates $1.00 budgets at every level of the hierarchy — [tenant](/glossary#tenant), workspace, app, workflow, agent — and then creates toolset-level budgets. Approved actions get $1.00; blocked actions get $0:
 
 ```bash
 # Toolset budgets — approved actions get $1.00
@@ -225,8 +225,8 @@ The script starts the Cycles stack (Redis + server + admin), provisions the tena
 This demo shows action authority for a single agent with three tools. The same mechanism works with multiple agents sharing a budget, risk-point caps instead of dollar budgets, or progressive capability narrowing as budget runs low.
 
 For the conceptual foundation behind this demo:
-- [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — the taxonomy of consequential actions and why budget authority alone is not enough
-- [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the definition of runtime authority and how it differs from observability and rate limits
+- [AI Agent Action Control: Hard Limits on Side Effects](/blog/ai-agent-action-control-hard-limits-side-effects) — the taxonomy of consequential actions and why [budget authority](/glossary#budget-authority) alone is not enough
+- [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the definition of [runtime authority](/glossary#runtime-authority) and how it differs from observability and rate limits
 
 To add Cycles to your own application:
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to a working budget-guarded app in 10 minutes

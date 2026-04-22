@@ -81,30 +81,36 @@ Track reservation lifecycle events:
 
 ### Server health metrics
 
-All three Cycles services expose Spring Boot Actuator metrics:
+All three Cycles services expose Spring Boot Actuator. The exposed endpoints are `health`, `info`, and `prometheus`:
 
 ```bash
-# Cycles Server
+# Cycles Server (runtime)
 curl http://localhost:7878/actuator/health
+curl http://localhost:7878/actuator/prometheus
 
-# Admin Server
+# Admin Server — also exposes Kubernetes liveness/readiness probes
 curl http://localhost:7979/actuator/health
+curl http://localhost:7979/actuator/health/liveness
+curl http://localhost:7979/actuator/health/readiness
+curl http://localhost:7979/actuator/prometheus
 
 # Events Service
 curl http://localhost:7980/actuator/health
-
-# JVM metrics (if metrics endpoint is enabled)
-curl http://localhost:7878/actuator/metrics
+curl http://localhost:7980/actuator/prometheus
 ```
 
-Key server metrics:
+::: tip Liveness/readiness probes
+Only the Admin Server enables Spring's liveness/readiness probes (`management.endpoint.health.probes.enabled=true`). The runtime server and events service expose only the aggregate `/actuator/health` endpoint.
+:::
+
+Key server metrics (all derived from Spring Boot's default Micrometer registrations — see [Observability Setup](/how-to/observability-setup) for the full metric list):
 
 | Metric | Component | Threshold |
 |---|---|---|
-| Response latency (p99) | Cycles Server | Alert if > 50ms |
-| Error rate (5xx) | Cycles Server, Admin Server | Alert if > 1% |
-| Redis connection pool usage | All services | Alert if > 80% |
-| JVM heap usage | All services | Alert if > 80% |
+| Response latency (p99) — `http_server_requests_seconds_bucket` | Cycles Server | Alert if > 50ms |
+| Error rate (5xx) — `http_server_requests_seconds_count{status=~"5.."}` | Cycles Server, Admin Server | Alert if > 1% |
+| JVM heap usage — `jvm_memory_used_bytes{area="heap"}` / `jvm_memory_max_bytes{area="heap"}` | All services | Alert if > 80% |
+| Redis connection pool usage | All services | No server-side metric exposed today — monitor via Redis `CLIENT LIST` or a Redis exporter. |
 
 ### Events Service metrics
 
@@ -120,86 +126,115 @@ The Events Service (port 7980) delivers webhooks asynchronously. Monitor separat
 
 ## Alerting rules
 
-### Prometheus example
+::: info Custom `cycles_*` metrics ship with the server
+Runtime `cycles-server` ≥ `0.1.25.8` and admin `cycles-server-admin` ≥ `0.1.25.18` emit custom Micrometer counters under the `cycles.*` namespace, exposed at `/actuator/prometheus` as `cycles_*`. See [Custom Cycles metrics](./observability-setup#custom-cycles-metrics) for the full catalogue (reservation lifecycle, events, overdraft, admin webhooks/events).
 
-If you export Cycles metrics to Prometheus:
+The alert rules below use these counters directly where they exist. For signals without a first-class counter (budget utilization, active-reservation count, dispatch-queue depth), derive from balance polling or Redis directly — shown where relevant.
+:::
+
+### Prometheus example (using default metrics)
 
 ```yaml
 groups:
   - name: cycles
     rules:
-      - alert: CyclesBudgetWarning
-        expr: cycles_budget_utilization > 0.8
+      # Latency — default Spring Boot HTTP histogram
+      - alert: CyclesServerLatency
+        expr: histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application="cycles-protocol-service",uri=~"/v1/reservations.*|/v1/decide"}[5m]))) > 0.05
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Budget utilization above 80% for {{ $labels.scope }}"
+          summary: "Cycles Server p99 latency above 50ms on reservation/decide path"
 
-      - alert: CyclesBudgetCritical
-        expr: cycles_budget_utilization > 0.95
-        for: 1m
+      # 5xx error rate
+      - alert: CyclesServerErrors
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application=~"cycles-.*",status=~"5.."}[5m]))
+            / sum(rate(http_server_requests_seconds_count{application=~"cycles-.*"}[5m]))
+            > 0.01
+        for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "Budget nearly exhausted for {{ $labels.scope }}"
+          summary: "Cycles 5xx error rate above 1%"
 
-      - alert: CyclesHighDenialRate
-        expr: rate(cycles_reservations_denied_total[5m]) / rate(cycles_reservations_total[5m]) > 0.1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Over 10% of reservations being denied"
-
-      - alert: CyclesReservationLeak
-        expr: cycles_active_reservations > 1000
+      # JVM heap pressure
+      - alert: CyclesJvmHeapHigh
+        expr: |
+          jvm_memory_used_bytes{application=~"cycles-.*",area="heap"}
+            / jvm_memory_max_bytes{application=~"cycles-.*",area="heap"}
+            > 0.8
         for: 10m
         labels:
           severity: warning
         annotations:
-          summary: "High number of active reservations — possible leak"
-
-      - alert: CyclesServerLatency
-        expr: histogram_quantile(0.99, cycles_request_duration_seconds) > 0.05
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Cycles Server p99 latency above 50ms"
-
-      - alert: CyclesWebhookQueueBacklog
-        expr: cycles_dispatch_pending_length > 100
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Webhook delivery queue depth above 100 — Events Service may be falling behind"
-
-      - alert: CyclesWebhookDeliveryFailures
-        expr: rate(cycles_webhook_deliveries_failed_total[5m]) > 0
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Sustained webhook delivery failures — check endpoint availability"
+          summary: "JVM heap usage above 80% for {{ $labels.application }}"
 ```
 
-### Debt monitoring
+### Denial-rate and overdraft alerts (from `cycles_*` counters)
 
-Track outstanding debt separately. Any non-zero debt is worth alerting on:
+::: tip Why denial rate can't come from `http_server_requests_seconds*`
+`POST /v1/reservations` always returns **HTTP 200** — the DENY outcome is surfaced as `"decision": "DENY"` in the response body. The default Spring Boot HTTP histogram has no body-content label. Use the `cycles_reservations_reserve_total` counter instead: its `decision` tag carries `ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`, and `reason` carries the deny/caps code. (`ALLOW_WITH_OVERDRAFT` is a value on the separate `overage_policy` tag — the budget's commit-overage policy — not a reservation decision.)
+:::
 
 ```yaml
-- alert: CyclesDebtOutstanding
-  expr: cycles_budget_debt > 0
+- alert: CyclesHighDenialRate
+  expr: |
+    sum by (tenant) (rate(cycles_reservations_reserve_total{decision="DENY"}[5m]))
+    / sum by (tenant) (rate(cycles_reservations_reserve_total[5m]))
+    > 0.1
   for: 5m
   labels:
     severity: warning
   annotations:
-    summary: "Scope {{ $labels.scope }} has outstanding debt"
+    summary: "Over 10% of reservations being denied for {{ $labels.tenant }}"
+    description: "Top deny reasons: {{ $labels.reason }}"
+
+- alert: CyclesOverdraftSpike
+  expr: |
+    sum by (tenant) (rate(cycles_overdraft_incurred_total[5m])) > 0
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Tenant {{ $labels.tenant }} incurring overdraft debt for 10m+"
+
+- alert: CyclesReservationExpirySpike
+  expr: |
+    sum by (tenant) (rate(cycles_reservations_expired_total[5m])) > 1
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Reservation expiry rate elevated for {{ $labels.tenant }} — callers likely failing to commit"
 ```
 
+### Balance-polling alerts (for signals without a counter)
+
+Some operational questions don't have a direct counter — point-in-time utilization (`spent / allocated`), total debt, and active-reservation counts are all derivable from the ledger but not emitted as gauges. For those, a lightweight sidecar that calls `GET /v1/admin/budgets/{id}` on a schedule and pushes the sampled values (e.g. `cycles_budget_utilization`, `cycles_budget_debt`) via pushgateway or statsd is the standard pattern. See [Query balances for monitoring](#query-balances-for-monitoring).
+
+### Webhook delivery queue depth
+
+The events service has no `cycles_dispatch_pending_length` gauge yet. Scrape Redis directly with `redis_exporter` — the exporter exposes `redis_list_length{list="dispatch:pending"}` when configured with `--check-single-keys=dispatch:pending`:
+
+```yaml
+- alert: CyclesWebhookQueueBacklog
+  expr: redis_list_length{list="dispatch:pending"} > 100
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Webhook delivery queue depth above 100 — Events Service may be falling behind"
+```
+
+For delivery success / failure rates and auto-disabled subscriptions, query the admin API (`GET /v1/admin/webhooks/{id}/deliveries?status=FAILED`) on a schedule and push the sampled counts to your metrics pipeline.
+
 ## Dashboard suggestions
+
+::: tip Ready-made operations dashboard
+Before building a custom Grafana dashboard, consider the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — a Vue 3 SPA that ships with an Overview page covering entity counts, top offenders, failing webhooks, and over-limit scopes, plus drill-downs for budgets, events, webhooks, audit, and reservations. It's not a Prometheus dashboard (no time-series charts), but it covers the operator workflows below without any setup. Use it for day-two ops; build the Grafana dashboards described here for time-series alerting and trend analysis.
+:::
 
 ### Budget overview dashboard
 

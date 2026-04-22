@@ -36,18 +36,18 @@ The webhook doesn't make humans faster. It eliminates the detection delay entire
 
 This is why we built a webhook event system into Cycles v0.1.25.
 
-## 40 event types across 6 categories
+## 41 event types across 6 categories
 
 Every observable state change in the system produces an event. We organized them into 6 categories covering the full lifecycle:
 
 | Category | Count | Covers |
 |---|---|---|
-| **budget** | 15 | Created, funded, debited, frozen, closed, threshold crossed, exhausted, over-limit, debt incurred, burn rate anomaly |
-| **reservation** | 5 | Denied, denial rate spike, expired, expiry rate spike, commit overage |
-| **tenant** | 6 | Created, updated, suspended, reactivated, closed, settings changed |
+| **budget** | 16 | Created, funded, debited, reset, reset_spent (billing period), frozen, closed, threshold crossed, exhausted, over-limit, debt incurred, burn rate anomaly |
+| **[reservation](/glossary#reservation)** | 5 | Denied, denial rate spike, expired, expiry rate spike, commit overage |
+| **[tenant](/glossary#tenant)** | 6 | Created, updated, suspended, reactivated, closed, settings changed |
 | **api_key** | 6 | Created, revoked, expired, permissions changed, auth failed, auth failure rate spike |
 | **policy** | 3 | Created, updated, deleted |
-| **system** | 5 | Store connection lost/restored, high latency, webhook delivery failed, webhook test |
+| **system** | 5 | Store connection lost/restored, high latency, [webhook delivery](/glossary#webhook-delivery) failed, webhook test |
 
 The six events that matter most for incident response:
 
@@ -60,7 +60,7 @@ The six events that matter most for incident response:
 | `api_key.auth_failed` | Authentication attempt with invalid key | Security event — possible credential leak or misconfiguration |
 | `system.store_connection_lost` | Redis connection failed | Infrastructure incident — budget enforcement depends on Redis availability |
 
-Every event includes a standard payload: who caused it (`actor`), what changed (`data`), where it happened (`scope` path like `tenant:acme-corp/workspace:prod/agent:support-bot`), and a millisecond-precision `timestamp`. Events are emitted by both the runtime enforcement server (reserve/commit operations) and the admin control plane (CRUD operations) — a single webhook subscription captures both.
+Every event includes a standard payload: who caused it (`actor`), what changed (`data`), where it happened (`scope` path like `tenant:acme-corp/workspace:prod/agent:support-bot`), and a millisecond-precision `timestamp`. Events are emitted by both the runtime enforcement server (reserve/commit operations) and the admin control plane (CRUD operations) — a single [webhook subscription](/glossary#webhook-subscription) captures both.
 
 ## Architecture: why a separate delivery service
 
@@ -86,9 +86,9 @@ Three services, three workloads, three scaling profiles:
 
 Why not embed delivery in the runtime server? Webhook endpoints are external HTTP services with unpredictable latency. A slow endpoint or DNS timeout would add hundreds of milliseconds to the reserve/commit path. For a system designed to enforce budgets at sub-10ms latency, that's unacceptable. Even running delivery on a background thread doesn't help — thread pool exhaustion from slow endpoints would eventually affect the main request threads.
 
-Why not embed in the admin server? Same problem, different magnitude. Admin API latency matters less (operators tolerate 200ms), but a webhook endpoint that hangs for 30 seconds ties up a thread pool slot. Multiply by 50 subscriptions and a burst of events, and the admin API becomes unresponsive for tenant management.
+Why not embed in the [admin server](/glossary#admin-server)? Same problem, different magnitude. Admin API latency matters less (operators tolerate 200ms), but a webhook endpoint that hangs for 30 seconds ties up a thread pool slot. Multiply by 50 subscriptions and a burst of events, and the admin API becomes unresponsive for tenant management.
 
-The shared Redis queue solves both problems. Admin and runtime servers fire-and-forget — LPUSH a delivery ID to `dispatch:pending` and return immediately. The events service does the slow work: load the event, look up the subscription, compute the HMAC signature, make the HTTP call, handle retries. If the events service falls behind, the queue buffers. If the events service is down entirely, events accumulate in Redis with a 90-day TTL and drain when it restarts.
+The shared Redis queue solves both problems. Admin and runtime servers fire-and-forget — LPUSH a delivery ID to `dispatch:pending` and return immediately. The [events service](/glossary#events-service) does the slow work: load the event, look up the subscription, compute the HMAC signature, make the HTTP call, handle retries. If the events service falls behind, the queue buffers. If the events service is down entirely, events accumulate in Redis with a 90-day TTL and drain when it restarts.
 
 Multiple events service instances can run concurrently. BRPOP is atomic — each delivery is processed by exactly one consumer. No distributed locking, no coordination, no split-brain risk. Scale horizontally by adding instances.
 
@@ -107,11 +107,11 @@ We evaluated four approaches for webhook payload verification:
 | Bearer token in header | Yes | No | Low | Common but incomplete |
 | IP allowlisting | Partial | No | Medium | Brittle with CDNs/proxies |
 | mTLS | Yes | Yes | High | Heavy for webhook receivers |
-| **HMAC-SHA256** | **Yes** | **Yes** | **Low** | **GitHub, Stripe, Slack** |
+| **[HMAC-SHA256](/glossary#hmac-sha256)** | **Yes** | **Yes** | **Low** | **GitHub, Stripe, Slack** |
 
 HMAC-SHA256 proves both identity (the sender knows the shared secret) and integrity (the body hasn't been modified in transit). It requires no certificate infrastructure, no IP management, and no special HTTP client configuration. Receivers verify with 3 lines of code in any language.
 
-The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. Signing secrets can be encrypted at rest in Redis using AES-256-GCM (enabled via the `WEBHOOK_SECRET_ENCRYPTION_KEY` environment variable). When configured, a compromise of the Redis data store doesn't expose the signing secrets.
+The signature is sent in the `X-Cycles-Signature` header as `sha256=<hex>`, matching GitHub's webhook signature format. [Signing secrets](/glossary#signing-secret) can be encrypted at rest in Redis using AES-256-GCM (enabled via the `WEBHOOK_SECRET_ENCRYPTION_KEY` environment variable). When configured, a compromise of the Redis data store doesn't expose the signing secrets.
 
 ## Failure handling: what happens when things break
 
@@ -168,7 +168,7 @@ The response includes a signing secret (returned once — store it). Your middle
 
 We have full integration guides with code examples for [PagerDuty, Slack, Datadog, Microsoft Teams, Opsgenie, and ServiceNow](/how-to/webhook-integrations), plus a [custom receiver pattern](/how-to/webhook-integrations#integration-custom-receiver-direct) with signature verification in Python, Node.js, and Go.
 
-Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (26 of 40 types). Admin-only events (api_key, policy, system) require admin key access.
+Tenants can also create their own webhook subscriptions via `/v1/webhooks` using their API key — restricted to budget, reservation, and tenant events (27 of 41 types). Admin-only events (api_key, policy, system) require admin key access.
 
 Webhook URLs are validated at creation time with SSRF protection enabled by default: RFC 1918 private IP ranges, loopback, and link-local addresses are blocked, and HTTPS is required in production. These can be configured via `PUT /v1/admin/config/webhook-security` for environments that need internal endpoint access.
 
@@ -180,7 +180,7 @@ The v0.1.25 event system delivers threshold alerts at the default levels (80%, 9
 - **Burn rate anomaly detection**: alert when spend rate exceeds the rolling average by a configurable multiplier
 - **Rate spike detection**: alert on reservation denial rate spikes and expiry rate spikes across rolling windows
 
-These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-server-admin/blob/main/complete-budget-governance-v0.1.25.yaml) as `WebhookThresholdConfig`. The schema is finalized; server-side implementation is on the roadmap.
+These are defined in the [v0.1.25 spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) as `WebhookThresholdConfig`. The schema is finalized; server-side implementation is on the roadmap.
 
 ---
 

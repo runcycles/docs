@@ -10,11 +10,11 @@ sidebar: false
 
 # The True Cost of Uncontrolled AI Agents
 
-A development team ships a coding agent on Friday afternoon. It works beautifully in staging — summarizing PRs, generating tests, refactoring modules. By Monday morning, the agent has made 14,000 API calls, consumed 380 million tokens, and run up a $12,400 bill against a model provider. No one noticed because the dashboard updates hourly and the alerts were configured for _daily_ spend thresholds. The agent wasn't malicious. It wasn't buggy in the traditional sense. It simply did what agents do: it kept working.
+A development team ships a coding agent on Friday afternoon. It works beautifully in staging — summarizing PRs, generating tests, refactoring modules. By Monday morning, the agent has made 14,000 API calls, consumed 380 million [tokens](/glossary#tokens), and run up a $12,400 bill against a model provider. No one noticed because the dashboard updates hourly and the alerts were configured for _daily_ spend thresholds. The agent wasn't malicious. It wasn't buggy in the traditional sense. It simply did what agents do: it kept working.
 
 <!-- more -->
 
-This scenario isn't hypothetical. Variations of it play out every week as more teams deploy autonomous agents into production. The economics of AI APIs — where a single GPT-4-class call can cost $0.03–$0.12 in tokens — seem manageable until you multiply by the loop count of an unsupervised agent.
+This scenario isn't hypothetical. Variations of it play out every week as more teams deploy [autonomous agents](/glossary#autonomous-agent) into production. The economics of AI APIs — where a single GPT-4-class call can cost $0.03–$0.12 in tokens — seem manageable until you multiply by the loop count of an unsupervised agent.
 
 ## The Math: How Agents Amplify API Costs
 
@@ -28,11 +28,11 @@ Consider a typical agentic workflow: a coding assistant that reads a file, propo
 | Single-step tool use | 3 | 4,000 | $0.36 |
 | Multi-step agent run | 15–40 | 6,000 | $2.70–$7.20 |
 | Deep research agent | 80–200 | 8,000 | $19.20–$48.00 |
-| Runaway agent (tool loop) | 500+ | 10,000 | $150+ |
+| Runaway agent ([tool loop](/glossary#tool-loop)) | 500+ | 10,000 | $150+ |
 
 For detailed per-provider pricing tables and real-world scenario calculators (support bots, coding agents, data pipelines), see [How Much Do AI Agents Actually Cost?](/blog/how-much-do-ai-agents-cost).
 
-Now multiply by concurrency. Ten users triggering deep research agents simultaneously? That's potentially $500 in a few minutes. A retry storm on a flaky tool? Thousands of calls in seconds.
+Now multiply by concurrency. Ten users triggering deep research agents simultaneously? That's potentially $500 in a few minutes. A [retry storm](/glossary#retry-storm) on a flaky tool? Thousands of calls in seconds.
 
 ## The Four Categories of Cost
 
@@ -40,7 +40,7 @@ Teams that track only their API invoice are seeing roughly 40% of the real pictu
 
 ### 1. Direct API spend
 
-The obvious one: tokens in, tokens out, dollars billed. Model providers charge per token, and agents are token-hungry by nature. Fan-out patterns — where an agent spawns sub-agents or parallel tool calls — can multiply costs by 5–10x compared to a sequential design.
+The obvious one: tokens in, tokens out, dollars billed. Model providers charge per token, and agents are token-hungry by nature. [Fan-out](/glossary#fan-out) patterns — where an agent spawns sub-agents or parallel tool calls — can multiply costs by 5–10x compared to a sequential design.
 
 ### 2. Compute and infrastructure
 
@@ -68,7 +68,7 @@ A downstream service returns a 500. The agent retries. The SDK retries. The orch
 
 ### Concurrent Overspend
 
-Five agents, each individually within budget, all drawing from the same pool simultaneously. No single agent is over limit, but the aggregate exceeds the budget by 3x before any dashboard refreshes. This is the most common failure mode we see in multi-tenant systems. See [Concurrent Agent Overspend](/incidents/concurrent-agent-overspend).
+Five agents, each individually within budget, all drawing from the same pool simultaneously. No single agent is over limit, but the aggregate exceeds the budget by 3x before any dashboard refreshes. This is the most common failure mode we see in multi-[tenant](/glossary#tenant) systems. See [Concurrent Agent Overspend](/incidents/concurrent-agent-overspend).
 
 ### Scope Misconfiguration
 
@@ -91,7 +91,7 @@ The fundamental gap looks like this:
 
 We wrote extensively about this progression in [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) and [Why Rate Limits Are Not Enough for Autonomous Systems](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems).
 
-The missing layer is **pre-execution runtime authority**: a system that checks _before_ each call whether the budget allows it, atomically decrements the balance, and denies the call if the budget is exhausted. This is fundamentally different from post-hoc observation.
+The missing layer is **pre-execution [runtime authority](/glossary#runtime-authority)**: a system that checks _before_ each call whether the budget allows it, atomically decrements the balance, and denies the call if the budget is exhausted. This is fundamentally different from post-hoc observation.
 
 ## Runtime Authority as Infrastructure
 

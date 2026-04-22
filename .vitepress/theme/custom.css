@@ -124,6 +124,28 @@ samp {
   color: var(--vp-c-brand-1) !important;
 }
 
+/* ══ Home layout: tighten gap between last section and footer ══
+   Two VitePress defaults create excessive whitespace below HomeContact:
+
+   1. The empty .vp-doc.container rendered after #home-features-after
+      (wrapper for optional markdown body content from index.md — our
+      index.md is frontmatter-only so it's always empty but still
+      carries default doc-page padding).
+   2. .VPHome { margin-bottom: 96px/128px } — designed for home pages
+      that end with the stock features grid and need breathing room
+      before the footer. Our custom HomeContact section handles its
+      own bottom spacing, so this default is additive and too large.
+
+   Both are scoped to .VPHome so regular doc pages are unaffected. */
+.VPHome .vp-doc.container {
+  padding: 0;
+  margin: 0;
+}
+
+.VPHome {
+  margin-bottom: 0 !important;
+}
+
 /* ══ Hero Image ══ */
 
 /* Hero image — remove VitePress card decoration */
@@ -845,4 +867,16 @@ samp {
   .mobile-theme-toggle {
     display: none;
   }
+}
+
+/* ══ Image zoom ══ */
+.vp-doc img:not(.no-zoom) {
+  cursor: zoom-in;
+  border-radius: 8px;
+}
+.medium-zoom-overlay {
+  z-index: 100;
+}
+.medium-zoom-image--opened {
+  z-index: 101;
 }

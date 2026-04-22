@@ -106,22 +106,27 @@ Metadata is a separate field from metrics. It is an open map for arbitrary key-v
   "idempotency_key": "commit-run-42-step-7",
   "actual": { "unit": "USD_MICROCENTS", "amount": 285000 },
   "metadata": {
-    "request_id": "req-abc-123",
-    "trace_id": "trace-xyz-789",
     "user_id": "user-456",
-    "session_id": "session-001"
+    "session_id": "session-001",
+    "feature_flag_bucket": "variant-b",
+    "external_trace_id": "otel-abc-xyz-789"
   }
 }
 ```
 
-Metadata is intended for audit, debugging, and correlation — not for operational metrics.
+Metadata is intended for application-level audit, debugging, and correlation to systems outside Cycles — not for operational metrics, and not for the server-managed `trace_id` and `request_id` (those flow through first-class response headers and response-body fields; see the next section).
 
-### Metrics vs metadata
+::: tip Don't put the server trace_id in metadata
+As of v0.1.25 the server manages its own 32-hex W3C Trace Context `trace_id` and per-request `request_id`. Both flow on response headers (`X-Cycles-Trace-Id`) and in response bodies — you don't need to (and shouldn't) shove them into `metadata`. Use `metadata` for application-level values like your own OpenTelemetry / Datadog trace id, user id, or session id. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+:::
 
-- **Metrics** are about what happened during execution (tokens, latency, model version)
-- **Metadata** is about context and correlation (request IDs, trace IDs, user IDs)
+### Metrics vs metadata vs server correlation identifiers
 
-Both are optional. Both are stored with the commit or event record. But they serve different analytical purposes.
+- **Metrics** are about what happened during execution (tokens, latency, model version).
+- **Metadata** is about application-level context (user IDs, session IDs, feature flags, external trace ids).
+- **Server correlation identifiers** — `request_id`, `trace_id`, `correlation_id` — are managed natively by the Cycles server. You do not need to pack them into `metadata`.
+
+All three are optional. All three are stored with the commit or event record. But they serve different analytical purposes. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the server's three-tier identifier model.
 
 ## Where metadata also appears
 
@@ -250,6 +255,28 @@ Standard metrics and metadata enrich budget operations with execution context:
 - **metadata** — correlation IDs, audit context, and debugging data
 
 These fields are optional but recommended. They turn budget accounting from raw cost numbers into actionable operational data.
+
+## Server-side operational metrics
+
+The metrics above describe the **execution-context fields** a client attaches to each commit or event. They are stored with the protocol record and surface on commit / event responses and in admin audit trails.
+
+Cycles also exposes **Prometheus metrics** on each service's `/actuator/prometheus` endpoint for operational monitoring. These are aggregate counters and histograms — they do not replace per-request metrics, they complement them.
+
+The runtime server (`cycles-server` v0.1.25.10+) publishes seven domain counters under the `cycles_*` namespace:
+
+- `cycles_reservations_reserve_total{tenant, decision, reason, overage_policy}`
+- `cycles_reservations_commit_total{tenant, decision, reason, overage_policy}`
+- `cycles_reservations_release_total{tenant, actor_type, decision, reason}`
+- `cycles_reservations_extend_total{tenant, decision, reason}`
+- `cycles_reservations_expired_total{tenant}`
+- `cycles_events_total{tenant, decision, reason, overage_policy}`
+- `cycles_overdraft_incurred_total{tenant}`
+
+The admin server (`cycles-server-admin` v0.1.25.20+) adds `cycles_admin_audit_writes_total{path_class, outcome}` — **alert on `outcome=error` nonzero** to catch silent audit-coverage loss.
+
+The events service (`cycles-server-events` v0.1.25.6+) publishes eight webhook delivery metrics under `cycles_webhook_*` — see [Server Configuration Reference → Events service metrics](/configuration/server-configuration-reference-for-cycles#events-service-metrics) for the full inventory.
+
+The `tenant` label on all three services is gated by `cycles.metrics.tenant-tag.enabled` (default `true`) — set to `false` in deployments with many thousands of tenants to bound Prometheus cardinality.
 
 ## Next steps
 

@@ -52,15 +52,20 @@ When the user invokes `/blog "topic"` or asks to write a blog post, follow this 
 21. Add external references where they strengthen credibility
 22. Soften any claims that can't be externally verified
 
-## Phase 8: User Review Loop
-23. Present the post to the user for review
-24. User will send external reviewer feedback — apply it precisely
-25. Repeat until feedback says "publishable"
+## Phase 8: Glossary Linking
+23. Run `node scripts/link-glossary-terms.js --file=blog/<slug>.md` on the new post
+24. This auto-links first-use glossary terms to `/glossary#anchor` canonical definitions
+25. Review the diff — the script is conservative but may need manual adjustment for edge cases
 
-## Phase 9: Publish
-26. Commit with message: `blog: add <descriptive summary>`
-27. Push branch and create PR with summary + test plan
-28. Return PR URL
+## Phase 9: User Review Loop
+26. Present the post to the user for review
+27. User will send external reviewer feedback — apply it precisely
+28. Repeat until feedback says "publishable"
+
+## Phase 10: Publish
+29. Commit with message: `blog: add <descriptive summary>`
+30. Push branch and create PR with summary + test plan
+31. Return PR URL
 
 ## Key Rules
 - **Never overclaim.** Posts go through external fact-checking. Precision > boldness.

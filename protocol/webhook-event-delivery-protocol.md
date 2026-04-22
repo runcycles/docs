@@ -1,6 +1,6 @@
 ---
 title: "Webhook Event Delivery Protocol"
-description: "Complete reference for Cycles webhook delivery: 40 event types, HTTP headers, payload format, HMAC-SHA256 signing, retry policy, delivery status lifecycle, and at-least-once guarantees."
+description: "Complete reference for Cycles webhook delivery: 45 event types, HTTP headers, payload format, HMAC-SHA256 signing, retry policy, delivery status lifecycle, and at-least-once guarantees."
 ---
 
 # Webhook Event Delivery Protocol
@@ -17,8 +17,13 @@ Every webhook delivery includes these HTTP headers:
 | `X-Cycles-Signature` | `sha256=<hex>` | HMAC-SHA256 of the raw body using the signing secret. Omitted if no signing secret is configured. |
 | `X-Cycles-Event-Id` | `evt_abc123...` | Unique event ID. Use for deduplication. |
 | `X-Cycles-Event-Type` | `budget.exhausted` | Dot-notation event type for routing. |
-| `User-Agent` | `cycles-server-events/0.1.25.1` | Service identifier and version. |
+| `X-Cycles-Trace-Id` | `0af7651916cd43dd8448eb211c80319c` | 32-hex W3C Trace Context identifier for the logical operation this event belongs to. Always present on deliveries from v0.1.25.7+ events services. |
+| `traceparent` | `00-<trace_id>-<16-hex-span>-<flags>` | W3C Trace Context v00. `trace_id` matches `X-Cycles-Trace-Id`. `span-id` is freshly generated per delivery (not reused from the inbound request). `trace-flags` preserves the inbound sampling decision when the originating request had a valid `traceparent`, otherwise defaults to `01` (sampled). Always present on v0.1.25.7+ events services. |
+| `X-Request-Id` | `req-abc-123` | Present when the originating event carries `request_id`. Narrows to side effects of one HTTP request (vs. `X-Cycles-Trace-Id` which may span many). v0.1.25.7+ events services. |
+| `User-Agent` | `cycles-server-events/0.1.25.x` | Service identifier and version. Exact patch suffix tracks the shipped events-service build. |
 | Custom headers | Per subscription | From the subscription's `headers` map. |
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract on `trace_id` precedence and propagation.
 
 ## Payload format
 
@@ -46,29 +51,36 @@ The body is a JSON-serialized Event object:
     "remaining": 0,
     "spent": 10000
   },
-  "correlation_id": "req_789",
+  "correlation_id": "batch_nightly_2026_04_18",
   "request_id": "req_789",
+  "trace_id": "0af7651916cd43dd8448eb211c80319c",
   "metadata": {}
 }
 ```
 
-Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` are optional (omitted when null).
+Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, `trace_id`, and `metadata` are optional (omitted when null).
 
-## Event types (40)
+**Correlation fields.** `request_id` narrows to one HTTP request; `trace_id` (32-hex W3C) narrows to one logical operation (may span many requests); `correlation_id` is operator-populated and groups a family of related events. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
 
-### Budget events (15)
+## Event types (45)
+
+Cycles emits 45 event types across seven categories: budget (17), reservation (6), tenant (6), api_key (7), policy (3), webhook (1), system (5). Four of these are `_via_tenant_cascade` variants added in v0.1.25.35 for the tenant-close cascade contract — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics).
+
+### Budget events (17)
 
 | Event Type | Trigger |
 |------------|---------|
 | `budget.created` | Budget ledger created |
 | `budget.updated` | Budget ledger configuration changed |
-| `budget.funded` | CREDIT, DEBIT, RESET, or REPAY_DEBT funding operation |
+| `budget.funded` | CREDIT, DEBIT, RESET, REPAY_DEBT, or RESET_SPENT funding operation |
 | `budget.debited` | Budget debited (funds removed) |
-| `budget.reset` | Budget reset to a new allocated amount |
+| `budget.reset` | Budget resized (`allocated` changed; `spent`/`reserved`/`debt` preserved) |
+| `budget.reset_spent` | New billing period started (`allocated` set; `spent` cleared or explicitly set; `reserved`/`debt` preserved) |
 | `budget.debt_repaid` | Outstanding debt repaid |
 | `budget.frozen` | Budget set to FROZEN status (no new reservations) |
 | `budget.unfrozen` | Budget restored to ACTIVE from FROZEN |
-| `budget.closed` | Budget permanently closed |
+| `budget.closed` | Budget permanently closed (operator action) |
+| `budget.closed_via_tenant_cascade` | Budget auto-closed by owning tenant's CLOSE cascade (v0.1.25.35+). Carries `correlation_id` of the originating `tenant.closed` entry. |
 | `budget.threshold_crossed` | Utilization crossed a configured threshold (e.g., 80%, 95%) |
 | `budget.exhausted` | Remaining budget reached zero |
 | `budget.over_limit_entered` | Debt exceeded overdraft limit |
@@ -76,7 +88,7 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 | `budget.debt_incurred` | New debt created via ALLOW_WITH_OVERDRAFT commit |
 | `budget.burn_rate_anomaly` | Spend rate exceeds baseline multiplier within the configured window |
 
-### Reservation events (5)
+### Reservation events (6)
 
 | Event Type | Trigger |
 |------------|---------|
@@ -85,6 +97,7 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 | `reservation.expired` | Reservation TTL expired without commit |
 | `reservation.expiry_rate_spike` | Expiry rate exceeded threshold within window |
 | `reservation.commit_overage` | Commit actual exceeded reserved estimate |
+| `reservation.released_via_tenant_cascade` | Open reservation auto-released by owning tenant's CLOSE cascade (v0.1.25.35+). Reason `tenant_closed`; no overage debt recorded. Carries `correlation_id` of the originating `tenant.closed` entry. |
 
 ### Tenant events (6)
 
@@ -97,12 +110,13 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 | `tenant.closed` | Tenant permanently closed |
 | `tenant.settings_changed` | Tenant settings (TTL, overage policy, etc.) modified |
 
-### API key events (6)
+### API key events (7)
 
 | Event Type | Trigger |
 |------------|---------|
 | `api_key.created` | New API key generated |
-| `api_key.revoked` | API key permanently revoked |
+| `api_key.revoked` | API key permanently revoked (operator action) |
+| `api_key.revoked_via_tenant_cascade` | API key auto-revoked by owning tenant's CLOSE cascade (v0.1.25.35+). Carries `correlation_id` of the originating `tenant.closed` entry. |
 | `api_key.expired` | API key reached its expiration date |
 | `api_key.permissions_changed` | API key permissions modified |
 | `api_key.auth_failed` | Authentication attempt with invalid key |
@@ -116,6 +130,12 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 | `policy.updated` | Policy configuration changed |
 | `policy.deleted` | Policy removed |
 
+### Webhook events (1)
+
+| Event Type | Trigger |
+|------------|---------|
+| `webhook.disabled_via_tenant_cascade` | Webhook subscription auto-disabled by owning tenant's CLOSE cascade (v0.1.25.35+). Re-enable is blocked by the Rule 2 guard, making DISABLED effectively-terminal for closed-owner subscriptions. Carries `correlation_id` of the originating `tenant.closed` entry. |
+
 ### System events (5)
 
 | Event Type | Trigger |
@@ -128,7 +148,20 @@ Fields `scope`, `actor`, `data`, `correlation_id`, `request_id`, and `metadata` 
 
 ### Tenant-accessible events
 
-Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events (26 of 40 types). API key, policy, and system events are admin-only.
+Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events (29 of 45 types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`). API key, policy, webhook, and system events are admin-only.
+
+### Tenant-close cascade event family
+
+Four event kinds share the `_via_tenant_cascade` suffix and are all emitted as side effects of a `* → CLOSED` tenant transition (Rule 1 — Close Cascade):
+
+- `budget.closed_via_tenant_cascade` — one per owned `BudgetLedger`.
+- `reservation.released_via_tenant_cascade` — one per open owned reservation. Reason `tenant_closed`; no overage debt.
+- `api_key.revoked_via_tenant_cascade` — one per owned API key.
+- `webhook.disabled_via_tenant_cascade` — one per owned webhook subscription.
+
+All four carry the `correlation_id` of the originating `tenant.closed` audit entry, letting subscribers correlate cascade side effects to the operator action that triggered them. The dashboard (v0.1.25.43+) renders a "tenant cascade" chip on audit and event-timeline rows with these suffixes.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract and Mode A / Mode B semantics.
 
 ## Delivery status lifecycle
 
@@ -167,6 +200,12 @@ After `disable_after_failures` (default 10) consecutive delivery failures, the s
 ### Stale delivery handling
 
 Deliveries older than `MAX_DELIVERY_AGE_MS` (default 24 hours) are automatically marked FAILED without attempting HTTP delivery. This prevents delivering stale events after a prolonged events service outage.
+
+## Transport
+
+Outbound webhook deliveries negotiate **HTTP/1.1 only** (no HTTP/2 / h2c). This was pinned in `cycles-server-events` v0.1.25.5 to close a silent body-drop bug against HTTP/2 reverse proxies that upgrade `http://` to h2c (closes `cycles-server-events#16`). Receivers behind HTTP/1.1-only proxies were unaffected; receivers behind HTTP/2-capable proxies gain consistent body delivery.
+
+Response bodies are discarded (`HttpResponse.BodyHandlers.discarding()`) so large responses from misbehaving receivers don't pin memory.
 
 ## Signature verification
 

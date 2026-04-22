@@ -5,18 +5,38 @@ description: "How to use the Cycles Admin API for tenant management, API key lif
 
 # Admin API Guide
 
-The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies. All requests use the `X-Admin-API-Key` header.
+The Cycles Admin API runs on port **7979** (separate from the runtime API on port 7878) and provides endpoints for managing tenants, API keys, budgets, and policies.
+
+**Authentication:** Budget create uses `X-Cycles-API-Key` with `budgets:write` permission. Budget list and fund accept either `X-Cycles-API-Key` or `X-Admin-API-Key` (admin requires `tenant_id` query param). Budget patch, freeze, and unfreeze use `X-Admin-API-Key`. The `admin:write` and `admin:read` permissions act as wildcards — `admin:write` satisfies any `*:write` requirement. See the [budget allocation guide](/how-to/budget-allocation-and-management-in-cycles) for details.
+
+**Conformance note.** Most of this admin API is **runcycles-reference**: implementers of the Cycles protocol MAY diverge — use GitOps YAML for policies, OAuth/OIDC for auth, direct DB writes for budget allocation, etc.
+
+A small set of operations and schemas inside the governance-admin YAML are labeled `x-conformance: normative` because they expose the protocol's event stream, webhook delivery contract, and cross-plane auth introspection:
+
+- **Operations (8):** events list / get / replay, webhook deliveries (admin + tenant paths), admin balances view, auth introspect.
+- **Schemas:** `Event`, `EventType`, `EventData*` variants, `WebhookDelivery`, `WebhookRetryPolicy`, `Permission`.
+
+See [CONFORMANCE.md](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) for the authoritative MUST / SHOULD / MAY statement.
 
 For the full interactive API reference, see the [Admin API Reference](/admin-api/).
 
 ## Authentication
 
+The admin API uses two authentication mechanisms:
+
 ```bash
-# All admin requests use this header
--H "X-Admin-API-Key: admin-bootstrap-key"
+# Tenant/key/policy/webhook management + budget PATCH/freeze/unfreeze
+-H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Budget create (tenant-scoped)
+-H "X-Cycles-API-Key: $CYCLES_API_KEY"  # requires budgets:write or admin:write
+
+# Budget list, fund (dual-auth — either works)
+-H "X-Cycles-API-Key: $CYCLES_API_KEY"  # tenant derived from key
+-H "X-Admin-API-Key: $ADMIN_KEY"        # requires tenant_id query param
 ```
 
-The admin key is set via the `ADMIN_API_KEY` environment variable when starting the admin server.
+The admin key is set via the `ADMIN_API_KEY` environment variable. `admin:write` acts as a wildcard that satisfies any `*:write` permission. `admin:read` satisfies any `*:read` permission. Budget patch, freeze, and unfreeze require the admin bootstrap key. Budget list and fund accept either auth method (v0.1.25.5+) — when using `X-Admin-API-Key`, the `tenant_id` query parameter is required.
 
 ## Tenant management
 
@@ -28,8 +48,7 @@ curl -s -X POST http://localhost:7979/v1/admin/tenants \
   -H "X-Admin-API-Key: admin-bootstrap-key" \
   -d '{
     "tenant_id": "acme-corp",
-    "name": "Acme Corporation",
-    "status": "ACTIVE"
+    "name": "Acme Corporation"
   }' | jq .
 ```
 
@@ -60,6 +79,21 @@ curl -s -X PATCH http://localhost:7979/v1/admin/tenants/acme-corp \
 
 Status values: `ACTIVE`, `SUSPENDED`, `CLOSED`.
 
+### Tenant-close cascade semantics (v0.1.25.35+)
+
+Closing a tenant is not just a status flip. As of `cycles-server-admin` v0.1.25.35, the `* → CLOSED` transition cascades owned objects to terminal states automatically:
+
+| Owned object | Terminal state | Event emitted |
+|---|---|---|
+| `BudgetLedger` | `CLOSED` | `budget.closed_via_tenant_cascade` |
+| `ApiKey` | `REVOKED` | `api_key.revoked_via_tenant_cascade` |
+| Open `Reservation` | `RELEASED` (reason `tenant_closed`) | `reservation.released_via_tenant_cascade` |
+| `WebhookSubscription` | `DISABLED` | `webhook.disabled_via_tenant_cascade` |
+
+All cascade events share the `correlation_id` of the originating `tenant.closed` audit entry. After the cascade completes, every mutating admin-plane operation on the closed tenant's owned objects returns **`409 TENANT_CLOSED`** (Rule 2 — Terminal-Owner Mutation Guard). GET endpoints remain available for audit reads. runcycles' server uses the Mode B (flip-first-with-guarded-cascade) cascade implementation; both Mode A (atomic) and Mode B are conformant per spec v0.1.25.31.
+
+See [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full Rule 1 / Rule 2 contract, affected endpoints, and operator recipes.
+
 ## API key management
 
 ### Create a key
@@ -77,8 +111,7 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
       "reservations:release",
       "reservations:extend",
       "reservations:list",
-      "balances:read",
-      "events:create"
+      "balances:read"
     ]
   }' | jq .
 ```
@@ -91,6 +124,22 @@ The response includes `key_secret` (e.g., `cyc_live_abc123...`). **Save it immed
 curl -s http://localhost:7979/v1/admin/api-keys?tenant_id=acme-corp \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
+
+### Update a key
+
+*New in v0.1.25.7:*
+
+```bash
+curl -s -X PATCH http://localhost:7979/v1/admin/api-keys/{key_id} \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{
+    "permissions": ["reservations:create", "reservations:commit", "reservations:release", "balances:read", "budgets:write"],
+    "name": "support-bot-v2"
+  }' | jq .
+```
+
+Updates key permissions, scope_filter, name, description, or metadata without rotating the secret. Emits `api_key.permissions_changed` when permissions or scope_filter change. Returns 400 for invalid permission names, 409 for revoked or expired keys.
 
 ### Revoke a key
 
@@ -106,28 +155,30 @@ curl -s -X DELETE http://localhost:7979/v1/admin/api-keys/{key_id} \
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/budgets \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "scope": "tenant:acme-corp",
     "unit": "USD_MICROCENTS",
-    "allocated": 100000000
+    "allocated": { "amount": 100000000, "unit": "USD_MICROCENTS" }
   }' | jq .
 ```
+
+The tenant is derived from the authenticated API key — no `tenant_id` field in the request body.
 
 ### Fund an existing budget (CREDIT)
 
 ```bash
-curl -s -X POST http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS \
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "CREDIT",
-    "amount": 50000000
+    "amount": { "amount": 50000000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "fund-acme-001"
   }' | jq .
 ```
 
-Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (reset to specified amount), `REPAY_DEBT` (reduce outstanding debt).
+Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (resize `allocated` ceiling, preserving `spent`/`reserved`/`debt`), `RESET_SPENT` (start new billing period — set `allocated`, clear `spent` or set via optional `spent` override, preserve `reserved`/`debt`), `REPAY_DEBT` (reduce outstanding debt).
 
 ### Patch budget settings
 
@@ -136,14 +187,71 @@ Operations: `CREDIT` (add funds), `DEBIT` (remove funds), `RESET` (reset to spec
 ```bash
 curl -s -X PATCH 'http://localhost:7979/v1/admin/budgets?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
   -d '{
     "commit_overage_policy": "REJECT",
-    "overdraft_limit": 10000000
+    "overdraft_limit": { "amount": 10000000, "unit": "USD_MICROCENTS" }
   }' | jq .
 ```
 
 This atomically recalculates `is_over_limit` based on the new settings.
+
+### Freeze a budget
+
+*New in v0.1.25.6:*
+
+```bash
+curl -s -X POST 'http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigating runaway agent"}' | jq .
+```
+
+Transitions budget status from ACTIVE → FROZEN. All new reservations, commits, and fund operations against this budget will be blocked (reservations return `BUDGET_FROZEN`, commits and fund return 409). Existing active reservations can only be released, not committed. Emits a `budget.frozen` event.
+
+### Unfreeze a budget
+
+```bash
+curl -s -X POST 'http://localhost:7979/v1/admin/budgets/unfreeze?scope=tenant:acme-corp&unit=USD_MICROCENTS' \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigation complete, resuming"}' | jq .
+```
+
+Transitions FROZEN → ACTIVE. Reservations resume. Emits a `budget.unfrozen` event. Returns 409 if the budget is already active or has been closed.
+
+### Look up a specific budget
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/admin/budgets/lookup?scope=tenant:acme-corp/workspace:prod&unit=USD_MICROCENTS" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" | jq .
+```
+
+Returns the single budget ledger for an exact scope + unit pair. Also accepts `X-Admin-API-Key` — no `tenant_id` needed because the budget is uniquely identified by the (scope, unit) pair.
+
+### Dashboard overview
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/admin/overview" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+Returns a server-wide summary: entity counts (tenants, budgets, webhooks), top offenders, and recent event summaries. Designed for admin dashboard UIs — this endpoint is what powers the Overview page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard).
+
+### API key introspection
+
+*New in v0.1.25.5:*
+
+```bash
+curl -s "http://localhost:7979/v1/auth/introspect" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+Returns server-level auth introspection. Useful for debugging auth configuration. Admin-key only.
 
 ## Policy management
 
@@ -156,13 +264,12 @@ In v0, policies are **stored but not yet enforced at runtime**. The protocol ser
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/policies \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
-    "tenant_id": "acme-corp",
     "name": "limit-gpt4",
     "scope_pattern": "tenant:acme-corp/agent:*",
     "caps": {"max_tokens": 4096},
-    "overage_policy": "REJECT",
+    "commit_overage_policy": "REJECT",
     "priority": 100
   }' | jq .
 ```
@@ -174,7 +281,7 @@ curl -s -X POST http://localhost:7979/v1/admin/policies \
 ```bash
 curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
   -H "Content-Type: application/json" \
-  -H "X-Admin-API-Key: admin-bootstrap-key" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "caps": {"max_tokens": 8192},
     "status": "ACTIVE"
@@ -186,7 +293,7 @@ curl -s -X PATCH http://localhost:7979/v1/admin/policies/{policy_id} \
 Query the audit trail for compliance and debugging:
 
 ```bash
-curl -s 'http://localhost:7979/v1/admin/audit-logs?tenant_id=acme-corp&limit=10' \
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=acme-corp&limit=10' \
   -H "X-Admin-API-Key: admin-bootstrap-key" | jq .
 ```
 
@@ -199,7 +306,7 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 - **Delivery tracking**: list delivery attempts per subscription with status/date filters
 - **Event replay**: re-deliver historical events to a subscription
 - **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
-- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (26 of 40 event types)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (29 of 45 event types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`)
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 
@@ -283,7 +390,181 @@ curl -X POST http://localhost:7979/v1/webhooks \
   }'
 ```
 
-See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 40-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 41-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+
+## List-endpoint features (v0.1.25.22+)
+
+Six admin list endpoints (`/v1/admin/tenants`, `/api-keys`, `/budgets`, `/webhooks/subscriptions`, `/events`, `/audit/logs`) gained three operator features across the v0.1.25.22–.25 window. See [Searching and sorting admin list endpoints](/how-to/searching-and-sorting-admin-list-endpoints) for the full cursor-invalidation rules.
+
+**Cross-tenant lists (v0.1.25.22).** `GET /v1/admin/api-keys` and `GET /v1/admin/budgets` accept an omitted `tenant_id` under admin auth — the walk covers every tenant and returns a composite cursor (`{tenantId}|{keyId}` or `{tenantId}|{ledgerId}`). Dashboards that previously ran N+1 per-tenant loops should replace them with a single cross-tenant call.
+
+**Budget filters (v0.1.25.22).** `GET /v1/admin/budgets` adds `over_limit` (boolean), `has_debt` (boolean), `utilization_min` (`[0,1]`), and `utilization_max` (`[0,1]`). AND-combined with every other filter; applied before cursor traversal so pagination stays stable. `utilization_min > utilization_max` → 400.
+
+**Server-side sort (v0.1.25.24).** `sort_by` + `sort_dir` on all six endpoints. Per-endpoint whitelists; unknown keys → 400. `listBudgets` and `listWebhookSubscriptions` **change default row order** (utilization DESC / consecutive_failures DESC) — pass `sort_by=created_at&sort_dir=desc` to restore prior behavior.
+
+**Free-text search (v0.1.25.25).** `search` query param on all six endpoints. Case-insensitive substring match on natural identifier fields, ≤128 characters, AND-combined with other filters.
+
+## Audit log failure capture (v0.1.25.20)
+
+`GET /v1/admin/audit/logs` now returns entries for **failed** requests (401/403/400/404/409/500) alongside successes. Each failure entry carries `status`, `error_code`, `metadata.error_message` (sanitized, 1024-char capped), `metadata.method`, `metadata.path`, and — on 500 — `metadata.exception_class`.
+
+Four query features landed in rapid succession on top of this foundation — sentinels (how pre-auth and admin-plane rows are tagged), filter DSL (how to slice the failure stream), correlation filters (how to join across planes), and tiered retention (how long each slice lives). They are covered separately below.
+
+### Tenant sentinels (v0.1.25.28)
+
+v0.1.25.28 split the previous single `<unauthenticated>` sentinel into two URL-safe values:
+
+| Sentinel | Meaning | Retention tier |
+|---|---|---|
+| `__admin__` | Request authenticated via `X-Admin-API-Key`, not scoped to a tenant (governance ops, cross-tenant reads, admin-plane 4xx/5xx) | Authenticated (default 400 days). Never sampled. |
+| `__unauth__` | Pre-authentication failure (missing / invalid / revoked key) | Unauthenticated (default 30 days). Subject to `audit.sample.unauthenticated`. |
+
+```bash
+# Admin-plane activity (new in v0.1.25.28)
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=__admin__&limit=50' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+
+# Pre-auth failures (was <unauthenticated>)
+curl -s 'http://localhost:7979/v1/admin/audit/logs?tenant_id=__unauth__&limit=50' \
+  -H "X-Admin-API-Key: $ADMIN_KEY" | jq .
+```
+
+**Migration note.** Auditor queries and dashboard filters hard-coded to `?tenant_id=<unauthenticated>` (or its URL-encoded form `%3Cunauthenticated%3E`) stop matching fresh writes the moment a server upgrades to v0.1.25.28. Historical rows written pre-.28 keep their literal `<unauthenticated>` value and age out under the unauth-tier TTL; no rewrite happens. Migrate queries to `__unauth__` (pre-auth failures only) or `__admin__` (new platform-admin slice).
+
+**Tiered TTL defaults** (SOC2 compliant out of the box): authenticated entries retained 400 days, unauthenticated entries 30 days. Set either `audit.retention.authenticated.days` or `audit.retention.unauthenticated.days` to `0` for indefinite retention. See [Server Configuration Reference → Audit log retention](/configuration/server-configuration-reference-for-cycles#audit-log-retention).
+
+**Semantic change for consumers.** Queries without a `status` filter (or with `status=4xx/5xx`) now surface failure entries that didn't exist in v0.1.25.19. Dashboards that assumed "audit entry exists ⇒ operation succeeded" must switch to checking `status` or `error_code`.
+
+### Filter DSL (v0.1.25.27)
+
+Four new query parameters on `GET /v1/admin/audit/logs` and two promoted to arrays:
+
+| Parameter | Type | Purpose |
+|---|---|---|
+| `error_code` | array (max 25) | Exact-or-IN-list on `AuditLogEntry.error_code`. NULL `error_code` (success rows) MUST NOT match. |
+| `error_code_exclude` | array (max 25) | NOT-IN-list. NULL `error_code` MUST always pass — don't hide successes when excluding failure codes. |
+| `status_min` | integer 100..599 | Inclusive lower bound. Mutually exclusive with exact `status`. |
+| `status_max` | integer 100..599 | Inclusive upper bound. `status_min > status_max` returns 400. |
+| `operation` | array (max 25) | Promoted from scalar. Comma-separated form: `?operation=createBudget,updateBudget`. Single scalar still parses correctly. |
+| `resource_type` | array (max 25) | Same shape. |
+
+Search was extended to match `error_code` and `operation` in addition to `resource_id` / `log_id` (128-char substring cap unchanged).
+
+```bash
+# All 4xx failures for budget operations today
+curl -s 'http://localhost:7979/v1/admin/audit/logs?status_min=400&status_max=499&resource_type=budget&from_ts=2026-04-18T00:00:00Z' \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+
+# Narrow to a set, minus a noisy subset
+curl -s 'http://localhost:7979/v1/admin/audit/logs?error_code=BUDGET_EXCEEDED,OVERDRAFT_LIMIT_EXCEEDED&error_code_exclude=IDEMPOTENCY_MISMATCH' \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+### Correlation filters (v0.1.25.31)
+
+Two exact-match filters that JOIN audit entries with events and webhook deliveries:
+
+| Parameter | Purpose |
+|---|---|
+| `trace_id` | 32-hex W3C Trace Context identifier. Narrows to audit rows for one logical operation. May span multiple HTTP requests. |
+| `request_id` | Narrows to audit rows for one specific HTTP request. |
+
+```bash
+# Walk one logical operation across planes
+TID=0af7651916cd43dd8448eb211c80319c
+curl -s "http://localhost:7979/v1/admin/audit/logs?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+curl -s "http://localhost:7979/v1/admin/events?trace_id=$TID" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles) for the full contract.
+
+## Bulk actions (v0.1.25.26)
+
+Two filter-driven bulk endpoints for operators who need to suspend / reactivate / close many tenants — or pause / resume / delete many webhooks — in a single atomic call.
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/tenants/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "status": "ACTIVE", "search": "preview-" },
+    "action": "SUSPEND",
+    "expected_count": 12,
+    "idempotency_key": "'"$(uuidgen)"'"
+  }'
+```
+
+**Safety gates:**
+- Empty filter → 400 (prevents accidental all-rows action).
+- More than 500 matches → 400 `LIMIT_EXCEEDED` with `total_matched` in the body.
+- `expected_count` mismatch → 409 `COUNT_MISMATCH` with no writes.
+- `idempotency_key` required; 15-minute replay window returns the cached outcome.
+
+**Response envelope** splits results three ways:
+
+```json
+{
+  "action": "SUSPEND",
+  "total_matched": 12,
+  "succeeded": ["tenant_1", "tenant_2", "..."],
+  "failed": [{"id": "tenant_7", "error_code": "INVALID_TRANSITION", "message": "..."}],
+  "skipped": [{"id": "tenant_9", "reason": "ALREADY_IN_TARGET_STATE"}],
+  "idempotency_key": "..."
+}
+```
+
+Supported actions: `SUSPEND | REACTIVATE | CLOSE` on `/v1/admin/tenants/bulk-action`; `PAUSE | RESUME | DELETE` on `/v1/admin/webhooks/bulk-action`; `CREDIT | DEBIT | RESET | REPAY_DEBT | RESET_SPENT` on `/v1/admin/budgets/bulk-action` (v0.1.25.29+).
+
+### Budget bulk-action (v0.1.25.29)
+
+```bash
+curl -X POST http://localhost:7979/v1/admin/budgets/bulk-action \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": { "tenant_id": "acme-corp", "unit": "USD_MICROCENTS" },
+    "action": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "expected_count": 8,
+    "idempotency_key": "period-rollover-2026-05-01-acme"
+  }'
+```
+
+- `filter.tenant_id` is REQUIRED (cross-tenant budget bulk is explicitly out of scope — 400 if blank). Optional filters: `scope_prefix`, `unit`, `status`, `over_limit`, `has_debt`, `utilization_min`, `utilization_max`, `search`.
+- `amount` is required for all 5 actions. `spent` is honored only on `RESET_SPENT`.
+- Per-row idempotency is derived from `{idempotency_key}:{scope}:{unit}`, so retrying the failed subset on a tighter filter cannot double-apply CREDIT / DEBIT / RESET / RESET_SPENT / REPAY_DEBT.
+- Per-row `error_code` values: `BUDGET_EXCEEDED`, `INVALID_TRANSITION` (unit mismatch / FROZEN / CLOSED), `NOT_FOUND`, `INTERNAL_ERROR`.
+- `skipped` with `reason=ALREADY_IN_TARGET_STATE` is produced today only by `REPAY_DEBT` on `debt==0` rows.
+
+### Audit metadata enrichment (v0.1.25.30)
+
+The single `AuditLogEntry` emitted per bulk invocation (`bulkActionTenants`, `bulkActionWebhooks`, `bulkActionBudgets`) now carries the full per-row outcome arrays, the filter echo, and the wall-clock duration. This lets triage happen from audit alone without re-running the op:
+
+| Key | Type | Purpose |
+|---|---|---|
+| `succeeded_ids` | `string[]` | Per-row ids that succeeded — paper trail. |
+| `failed_rows` | `BulkActionRowOutcome[]` | Full `{id, error_code, message}` per failure. |
+| `skipped_rows` | `BulkActionRowOutcome[]` | Full `{id, reason}` per skip — distinguishes `ALREADY_IN_TARGET_STATE` from `ALREADY_DELETED`. |
+| `filter` | object | Normalized filter echoed as-is — reconstructs operator intent from audit alone. |
+| `duration_ms` | int64 | Handler-entry → audit-emit wall-clock for SLO triage. |
+
+Worst-case audit row size is ~40 KB at the 500-row bulk cap. Audit tooling that caps on entry-level JSON size should review.
+
+See [Using bulk actions for tenants and webhooks](/how-to/using-bulk-actions-for-tenants-and-webhooks) for idempotency patterns, filter construction, and operator workflow.
+
+## Admin-on-behalf-of (v0.1.25.14 / v0.1.25.16)
+
+Several mutating endpoints accept admin auth with an explicit `tenant_id` in the body — useful for onboarding, migration, and incident response:
+
+- `POST /v1/admin/budgets` (budget creation)
+- `POST /v1/admin/policies`, `PATCH /v1/admin/policies/{id}` (policy creation + update)
+- Six tenant-scoped webhook endpoints: `GET /v1/webhooks`, `GET/PATCH/DELETE /v1/webhooks/{id}`, `POST /v1/webhooks/{id}/test`, `GET /v1/webhooks/{id}/deliveries`
+
+All admin-driven mutations tag the audit entry with `metadata.actor_type=admin_on_behalf_of` so the provenance is queryable. `POST /v1/webhooks` (create) remains tenant-only — admin-creating-on-tenant-behalf would obscure the audit trail.
+
+Incident-response bonus: `POST /v1/reservations/{id}/release` on the runtime server (port 7878) also accepts `X-Admin-API-Key` as of cycles-server v0.1.25.8 — see [Force-releasing stuck reservations as an operator](/how-to/force-releasing-stuck-reservations-as-an-operator).
 
 ## Next steps
 

@@ -10,7 +10,7 @@ sidebar: false
 
 # AI Agent Cost Management: The Complete Guide
 
-An infrastructure team we work with had monitoring in place. Good monitoring. They had dashboards showing real-time spend per model, per tenant, per workflow. They had daily cost reports emailed to engineering leads. They caught their first overspend incident within 4 hours and considered it a success. Then the second incident happened — a retry storm on a Friday evening that burned through $1,800 in 12 minutes. The dashboard showed it clearly. The alert fired on time. The on-call engineer saw it within 15 minutes. But by then, the money was already spent. That's when they realized: monitoring tells you what happened. It doesn't stop it from happening.
+An infrastructure team we work with had monitoring in place. Good monitoring. They had dashboards showing real-time spend per model, per [tenant](/glossary#tenant), per workflow. They had daily cost reports emailed to engineering leads. They caught their first overspend incident within 4 hours and considered it a success. Then the second incident happened — a [retry storm](/glossary#retry-storm) on a Friday evening that burned through $1,800 in 12 minutes. The dashboard showed it clearly. The alert fired on time. The on-call engineer saw it within 15 minutes. But by then, the money was already spent. That's when they realized: monitoring tells you what happened. It doesn't stop it from happening.
 
 <!-- more -->
 
@@ -24,7 +24,7 @@ This guide presents a maturity model for AI agent cost management. Five tiers, f
 | 1 | Monitoring | Dashboards and cost visibility | No | Hours |
 | 2 | Alerting | Automated notifications on thresholds | No | Minutes |
 | 3 | Soft Limits | Rate limiting, provider caps, counters | Partially | Seconds (but leaky) |
-| 4 | Hard Enforcement | Pre-execution runtime authority | Yes | Milliseconds (before execution) |
+| 4 | Hard Enforcement | Pre-execution [runtime authority](/glossary#runtime-authority) | Yes | Milliseconds (before execution) |
 
 Each tier builds on the one below it. You don't skip tiers — you add capabilities. A team at Tier 4 still uses dashboards (Tier 1) and alerts (Tier 2). The difference is that dashboards are no longer the _last_ line of defense.
 
@@ -103,7 +103,7 @@ Consider a retry storm generating 100 LLM calls per minute at $0.03 per call:
 | 15 minutes | 1,500 | $45.00 |
 | 60 minutes (off-hours) | 6,000 | $180.00 |
 
-Now consider a more expensive scenario — a coding agent with tool loops at $0.15 per call generating 50 calls per minute:
+Now consider a more expensive scenario — a coding agent with [tool loops](/glossary#tool-loop) at $0.15 per call generating 50 calls per minute:
 
 | Response time | Calls before intervention | Cost before intervention |
 |---|---|---|
@@ -123,7 +123,7 @@ Alerts are essential. They are not sufficient. Every dollar spent between "alert
 **Tools:**
 | Tool | Mechanism | Limitation |
 |---|---|---|
-| Provider rate limits | Requests per minute / tokens per minute | Not cost-aware — 100 RPM doesn't distinguish $0.01 and $5.00 calls |
+| Provider rate limits | Requests per minute / [tokens](/glossary#tokens) per minute | Not cost-aware — 100 RPM doesn't distinguish $0.01 and $5.00 calls |
 | Provider spending caps | Monthly/daily hard caps | Too coarse for per-run control, often have propagation delay |
 | Application-level counters | In-process tracking of spend | Single-process only, breaks under concurrency |
 | API gateway rate limiting | Request-level throttling | No visibility into token counts or costs |
@@ -149,7 +149,7 @@ This is the tier where prevention replaces response. There is no gap between det
 **How it works:**
 
 1. Agent estimates the cost of the next LLM call
-2. Agent requests a reservation from the runtime authority
+2. Agent requests a [reservation](/glossary#reservation) from the runtime authority
 3. Runtime authority atomically checks the balance and decrements it
 4. If approved: the call proceeds, and actual cost is reconciled afterward
 5. If denied: the agent receives a budget-exhausted signal and follows its degradation path
@@ -164,7 +164,7 @@ The atomic check-and-decrement is critical. It's what prevents the TOCTOU race c
 | Atomic concurrency control | No race conditions between concurrent agents |
 | Per-run granularity | Each agent run has its own budget, independent of daily/monthly caps |
 | Hierarchical budgets | Tenant > workspace > app > workflow > agent > toolset budgets, each enforced independently |
-| Graceful degradation | Agents receive a clear signal to downgrade instead of crashing |
+| [Graceful degradation](/glossary#graceful-degradation) | Agents receive a clear signal to downgrade instead of crashing |
 | Audit trail | Every reservation and denial is logged with full context |
 
 **What Cycles provides at this tier:**

@@ -1,5 +1,5 @@
 ---
-title: "Commit Overage Policies in Cycles: REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT"
+title: "Commit Overage Policies in Cycles"
 description: "How Cycles handles commits that exceed the reserved amount using three overage policies: REJECT, ALLOW_IF_AVAILABLE, and ALLOW_WITH_OVERDRAFT."
 ---
 

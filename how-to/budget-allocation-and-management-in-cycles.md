@@ -1,6 +1,6 @@
 ---
 title: "Budget Allocation and Management in Cycles"
-description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, reset for billing periods, and manage hierarchical budget structures."
+description: "How budget allocation works in Cycles — set up scope-level budgets, fund them, resize ceilings (RESET) and start new billing periods (RESET_SPENT), and manage hierarchical budget structures."
 ---
 
 # Budget Allocation and Management in Cycles
@@ -47,15 +47,17 @@ Budget allocation is managed through the [Cycles Admin Server](https://github.co
 
 ### Authentication
 
-Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate admin permissions:
+Budget, policy, and balance endpoints on the admin server require a tenant-scoped API key (`X-Cycles-API-Key`) with the appropriate permissions:
 
-- **`admin:write`** — required for creating budgets, funding, resetting, updating budgets, and managing policies
-- **`admin:read`** — required for querying budgets and policies
+- **`budgets:write`** — required for creating budgets, funding, and resetting (or `admin:write` as wildcard)
+- **`budgets:read`** — required for listing and querying budgets (or `admin:read` as wildcard)
+- **`policies:write`** — required for creating and updating policies (or `admin:write` as wildcard)
+- **`policies:read`** — required for listing and querying policies (or `admin:read` as wildcard)
 
-Default API keys (with only `reservations:*` and `balances:read`) will receive a `403 INSUFFICIENT_PERMISSIONS` error on budget endpoints. You must explicitly include `admin:write` and/or `admin:read` when [creating the key](/how-to/api-key-management-in-cycles#available-permissions).
+Default API keys (created without explicit permissions) include `budgets:write` and `budgets:read` as of v0.1.25.6 and will work for budget operations. Keys created before v0.1.25.6 with explicitly specified permission sets may need `budgets:write` and/or `budgets:read` added. See [API Key Management](/how-to/api-key-management-in-cycles#available-permissions) for the full permission list.
 
 ::: warning X-Admin-API-Key vs X-Cycles-API-Key
-The bootstrap admin key (`X-Admin-API-Key`) is used for tenant management, API key management, and audit log access. It does **not** authenticate budget or policy endpoints — those require `X-Cycles-API-Key` with admin permissions.
+The bootstrap admin key (`X-Admin-API-Key`) is used for tenant management, API key management, audit log access, **and budget PATCH/freeze/unfreeze** (admin-only operations). Budget create, fund, and list require `X-Cycles-API-Key` with `budgets:write` / `budgets:read` permissions.
 :::
 
 ### Using the Cycles Admin API
@@ -133,7 +135,7 @@ When the server processes a reservation, it derives scope paths from the subject
 
 1. Scopes **with** a budget ledger are checked for sufficient funds
 2. Scopes **without** a budget ledger are skipped — they do not block the reservation
-3. If **no** derived scope has a budget ledger, the reservation is rejected with `NOT_FOUND` (404)
+3. If **no** derived scope has a budget ledger, the reservation is rejected with `NOT_FOUND` (404) — the response message is `"Budget not found for provided scope: ..."`. (On `/v1/decide` and dry-run reserve, the same condition surfaces as `200 DENY` with `reason_code=BUDGET_NOT_FOUND`.)
 4. If **any** budgeted scope has insufficient funds, the reservation is rejected with `BUDGET_EXCEEDED` (409)
 
 This means you only need budgets at the scope levels where you want enforcement. For example, if you only set a tenant-level budget, workspace and app scopes are skipped — the tenant budget is the only constraint.
@@ -142,7 +144,7 @@ This means you only need budgets at the scope levels where you want enforcement.
 |---|---|
 | Budget at tenant only, reservation targets tenant/workspace/app | Reserves against tenant budget; workspace and app skipped |
 | Budget at tenant and app, not workspace | Reserves against both; workspace skipped |
-| No budget at any scope | `NOT_FOUND` (404) |
+| No budget at any scope | `NOT_FOUND` (404) — message: `"Budget not found for provided scope: ..."` |
 | Budget exists with zero allocation | `BUDGET_EXCEEDED` (409) |
 
 ## Common allocation patterns
@@ -206,7 +208,7 @@ Use `PATCH /v1/admin/budgets?scope={scope}&unit={unit}` to update mutable budget
 ```bash
 curl -s -X PATCH "http://localhost:7979/v1/admin/budgets?scope=tenant:acme&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
-  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
   -d '{
     "overdraft_limit": { "amount": 500000, "unit": "USD_MICROCENTS" },
     "commit_overage_policy": "ALLOW_WITH_OVERDRAFT",
@@ -222,6 +224,42 @@ You can update:
 
 Fields not included in the request are left unchanged. Returns `404` if the budget does not exist, `403` for tenant mismatch, and `409` if the budget is `CLOSED`.
 
+## Freezing and unfreezing budgets
+
+*New in v0.1.25.6.*
+
+Use freeze to immediately halt all new reservations against a budget without deleting or modifying it. This is useful during incident investigations, compliance holds, or when a runaway agent is detected.
+
+::: tip Freeze from the dashboard
+Freeze and unfreeze are also one-click actions on the Budgets page in the [Cycles Admin Dashboard](/quickstart/deploying-the-cycles-dashboard) — typically faster during an active incident than crafting a curl. The dashboard also exposes an **Emergency Freeze (tenant-wide)** action that sequentially freezes every ACTIVE budget for a tenant with a confirm + blast-radius summary.
+:::
+
+### Freeze
+
+```bash
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/freeze?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigating runaway agent in support workflow"}' | jq .
+```
+
+All new reservations return `DENY` with reason code `BUDGET_FROZEN`. Commits and fund operations return 409. Existing active reservations can only be released, not committed. Emits a `budget.frozen` webhook event.
+
+### Unfreeze
+
+```bash
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/unfreeze?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"reason": "Investigation complete — root cause was prompt loop, now fixed"}' | jq .
+```
+
+Transitions FROZEN → ACTIVE. Reservations resume immediately. Emits a `budget.unfrozen` webhook event. Returns 409 if the budget is already active or closed.
+
+::: tip When to freeze vs. adjust budget
+**Freeze** when you need to stop all activity immediately while investigating. The budget allocation and history are preserved. **Adjust the budget** (PATCH or fund) when you want to change how much is available. Freeze is an operational control; budget adjustment is a financial control.
+:::
+
 ## Adjusting budget allocation
 
 ### Increasing a budget
@@ -232,9 +270,9 @@ Increase the `allocated` value to give a scope more room. This takes effect imme
 
 Decrease the `allocated` value. If the new value is less than `spent + reserved`, existing reservations are not affected, but new reservations may be denied.
 
-### Resetting budgets
+### Resizing a budget (RESET)
 
-To reset a scope for a new billing period, use the `RESET` funding operation:
+To **change the allocated ceiling** while preserving consumption history (`spent`, `reserved`, `debt`), use `RESET`:
 
 ```bash
 curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
@@ -242,13 +280,107 @@ curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
   -d '{
     "operation": "RESET",
-    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
-    "idempotency_key": "reset-march-2026",
-    "reason": "Monthly budget reset"
+    "amount": { "amount": 1500000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "resize-acme-q2",
+    "reason": "Plan upgrade — Pro tier"
   }'
 ```
 
-`RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Release any active reservations first to avoid unexpected budget pressure.
+`RESET` sets `allocated = amount` and recalculates `remaining = amount - reserved - spent - debt`. Spent stays where it was. Use this for **plan changes, policy tightening, ceiling adjustments** — the typical "this customer moved to a bigger plan" or "we're tightening this team's limit" scenarios.
+
+Release active reservations first if you're shrinking the ceiling below `spent + reserved` and want a clean cutover.
+
+::: warning RESET is for resizing, not period boundaries
+For a fresh billing period (clearing consumption), use `RESET_SPENT` below. A same-amount `RESET` on an exhausted budget is a no-op — `spent` stays at its old value, so `remaining` stays at 0.
+:::
+
+### Starting a new billing period (RESET_SPENT)
+
+To **start a new billing period** — clearing accumulated spend so the scope can transact fresh — use `RESET_SPENT`:
+
+```bash
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "idempotency_key": "reset-march-2026",
+    "reason": "Monthly billing period reset — March 2026"
+  }'
+```
+
+`RESET_SPENT` sets `allocated = amount`, **clears spent to 0**, and preserves `reserved` (active reservations straddle the period boundary and will land in the new period's spent when they commit) and `debt` (period boundaries don't forgive debt — use `REPAY_DEBT` to clear it explicitly).
+
+#### Optional `spent` override
+
+For migrations, prorated signups, and corrections, supply an explicit `spent`:
+
+```bash
+# Migration: import an existing customer with their consumption already reflected
+curl -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{
+    "operation": "RESET_SPENT",
+    "amount": { "amount": 1000000, "unit": "USD_MICROCENTS" },
+    "spent":  { "amount": 400000,  "unit": "USD_MICROCENTS" },
+    "idempotency_key": "migrate-acme-from-billing-vendor",
+    "reason": "Imported from billing vendor — current period 40% consumed"
+  }'
+```
+
+The `spent` field is honoured **only** for `RESET_SPENT`. Common patterns:
+
+| Scenario | `spent` value | Notes |
+|---|---|---|
+| Routine billing-period rollover | omit (defaults to 0) | The 90% case. |
+| Migration from another billing system | actual current consumption | Customer arrives with history; reflect it. |
+| Prorated mid-period signup | `allocated × (days_remaining / period_days)` | New customer joins partway through. |
+| Credit-back / compensation | reduced consumption value | Refund a portion after a service incident. |
+| State correction | corrected value | Fix a miscounted `spent` from an upstream bug. |
+
+Constraints:
+- `spent` must be `>= 0`.
+- The unit must match the budget's unit.
+- The audit log records whether `spent` was explicitly supplied or defaulted to 0, distinguishing routine rollovers from operator-initiated consumption adjustments for compliance review.
+
+##### What `remaining` looks like after RESET_SPENT
+
+In the common case — no outstanding `debt`, no active `reserved`, `spent` omitted — `RESET_SPENT(amount=X)` produces `allocated = X` and `remaining = X`. A clean fresh period.
+
+`remaining` can start the new period **negative** in two specific situations:
+
+- **Carryover.** Preserved `debt` (and/or active `reserved`) exceed the new `allocated`. Periods don't forgive debt by design — use `REPAY_DEBT` if you want to clear it. Example: old period ended with `debt=1200`; `RESET_SPENT(amount=1000)` yields `remaining = 1000 - 0 - 0 - 1200 = -200`.
+- **Explicit override.** You pass `spent` larger than `allocated - reserved - debt`. Example: migrating a customer already partway through a period with `RESET_SPENT(amount=1000, spent=1200)` yields `remaining = -200`.
+
+Both cases are valid ledger states, not errors. The response returns the negative value, and the invariant `remaining = allocated - spent - reserved - debt` holds.
+
+##### Recovery pattern: truly starting fresh when the prior period ended in debt
+
+`RESET_SPENT` preserves `debt` by design — periods don't silently forgive obligations. If you want a customer to start the new period with a clean slate (no carryover debt, full ceiling available), pair `REPAY_DEBT` with `RESET_SPENT`:
+
+```bash
+# Prior period ended with: allocated=1000, spent=1000, debt=200, remaining=0
+
+# Step 1: Clear the outstanding debt (e.g., after the customer paid their invoice).
+curl -X POST https://admin.example.com/v1/admin/budgets/<id>/fund \
+  -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  -d '{"operation":"REPAY_DEBT","amount":200,"reason":"invoice paid"}'
+# State now: allocated=1000, spent=1000, debt=0, remaining=0
+
+# Step 2: Start the new billing period with a fresh ceiling.
+curl -X POST https://admin.example.com/v1/admin/budgets/<id>/fund \
+  -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  -d '{"operation":"RESET_SPENT","amount":1000,"reason":"monthly rollover"}'
+# State now: allocated=1000, spent=0, debt=0, remaining=1000
+```
+
+Order matters: if you skip step 1, the carryover `debt` will make the new period's `remaining` start negative. That's the correct behaviour for "customer still owes from last period", but it's not what you want if the debt has already been settled externally. Run `REPAY_DEBT` first whenever you want the next period to begin at the full ceiling.
+
+#### Event emission
+
+`RESET_SPENT` emits `budget.reset_spent` (distinct from `budget.reset`) so dashboards and webhook handlers can route period boundaries separately from resize events. The payload's `spent_override_provided` boolean flags which mode was used.
 
 ::: info Why budgets cannot be deleted
 The admin API has no delete endpoint for budgets. A budget ledger is the permanent audit record for all spend within a scope — committed reservations reference it, and historical balances are derived from it. Deleting a ledger would create orphaned transactions and break spend reporting.

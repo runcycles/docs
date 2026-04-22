@@ -40,7 +40,7 @@ features:
       src: /icons/wrench.svg
       alt: How-To icon
     title: "How-To Guides"
-    details: "26 integrations: OpenAI, Anthropic, Groq, AutoGen, Spring AI, LangChain, LangGraph, AnyAgent, Vercel AI, Next.js, Django, Flask, MCP, and more. Budget patterns, estimation, error handling."
+    details: "27 integrations: OpenAI, Anthropic, Groq, AutoGen, Spring AI, LangChain, LangGraph, AnyAgent, Vercel AI, Next.js, Django, Flask, MCP, and more. Budget patterns, estimation, error handling."
     link: /how-to/adding-cycles-to-an-existing-application
     linkText: Browse guides
   - icon:

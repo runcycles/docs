@@ -11,9 +11,15 @@ Common issues when integrating and operating Cycles, with solutions.
 
 ### NOT_FOUND on first reservation
 
-**Symptom:** The very first reservation attempt returns `404 NOT_FOUND`.
+**Symptom:** The very first reservation attempt returns `404 NOT_FOUND` with a response message like `"Budget not found for provided scope: tenant:acme-corp"`.
 
-**Cause:** No budget ledger exists for any derived scope. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+**Cause:** No budget ledger exists for any derived scope in any unit. Creating a tenant does not automatically create a budget. The server checks all scope levels (tenant, workspace, app, etc.) and skips those without a budget — but at least one must exist.
+
+The runtime plane uses a single `NOT_FOUND` wire code for all resource-not-found conditions (missing reservation, missing budget). The `message` field distinguishes them: `"Reservation not found: ..."` vs. `"Budget not found for provided scope: ..."`.
+
+This is distinct from `400 UNIT_MISMATCH` — if a budget exists at the scope but in a different unit (e.g., you requested USD_MICROCENTS but only TOKENS is funded), you get `UNIT_MISMATCH` instead, with `details.expected_units` listing the units that are funded.
+
+On `POST /v1/decide` and `POST /v1/reservations` with `dry_run=true`, the same "no budget" condition doesn't surface as a 404. Those endpoints return `200 OK` with `decision: DENY` and `reason_code: "BUDGET_NOT_FOUND"` in the response body — so a preflight check can distinguish "no budget" from "insufficient budget" without catching an exception.
 
 **Fix:** Create a budget via the admin API:
 
@@ -262,7 +268,7 @@ By design. Cycles uses **status-based lifecycle management** instead of hard del
 Instead, use the cleanup mechanism for each object type:
 
 - **Tenants:** `PATCH status → CLOSED` — blocks all operations, retains data. See [Tenant Lifecycle](/how-to/tenant-creation-and-management-in-cycles#tenant-status-lifecycle).
-- **Budgets:** `POST fund` with `RESET` to zero — prevents new reservations, retains ledger history. See [Resetting Budgets](/how-to/budget-allocation-and-management-in-cycles#resetting-budgets).
+- **Budgets:** `POST fund` with `RESET` to zero — sets allocated to 0 to block new reservations; retains ledger history. See [Resizing a budget](/how-to/budget-allocation-and-management-in-cycles#resizing-a-budget-reset). (For clearing spent at billing-period boundaries, use `RESET_SPENT` — [Starting a new billing period](/how-to/budget-allocation-and-management-in-cycles#starting-a-new-billing-period-reset_spent).)
 - **API Keys:** `DELETE` revokes the key (ACTIVE → REVOKED) but retains the record. See [Revoking API Keys](/how-to/api-key-management-in-cycles#revoking-api-keys).
 
 ### Can I use Cycles without Docker?
@@ -279,14 +285,30 @@ Yes. Each application uses its own tenant (or its own workspace within a tenant)
 
 ### How do I reset a budget to zero?
 
-Use the RESET funding operation:
+Two different "reset to zero" intents — use the right operation for the one you mean.
+
+**To block new reservations** (allocated → 0, decommission a scope):
 
 ```bash
+# RESET with amount=0 — sets allocated to 0. Spent is preserved in the ledger
+# for historical accounting; remaining goes negative if spent > 0.
 curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
   -H "Content-Type: application/json" \
   -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
-  -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001"}' | jq .
+  -d '{"operation": "RESET", "amount": {"amount": 0, "unit": "USD_MICROCENTS"}, "idempotency_key": "decommission-001"}' | jq .
 ```
+
+**To start a new billing period** (spent → 0, keep allocated at the new period's ceiling):
+
+```bash
+# RESET_SPENT with the new period's allocation — sets allocated AND clears spent.
+curl -s -X POST "http://localhost:7979/v1/admin/budgets/fund?scope=tenant:acme-corp&unit=USD_MICROCENTS" \
+  -H "Content-Type: application/json" \
+  -H "X-Cycles-API-Key: $CYCLES_API_KEY" \
+  -d '{"operation": "RESET_SPENT", "amount": {"amount": 1000000000, "unit": "USD_MICROCENTS"}, "idempotency_key": "reset-001", "reason": "Monthly billing period reset"}' | jq .
+```
+
+See [Starting a new billing period](/how-to/budget-allocation-and-management-in-cycles#starting-a-new-billing-period-reset_spent) for more detail including the optional `spent` override for migrations, prorated signups, and corrections.
 
 ### How do I see what's using my budget?
 
@@ -358,7 +380,7 @@ Use [shadow mode / dry-run](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget
 **Checklist:**
 
 1. **Scope path mismatch.** The scope in the fund request must exactly match the budget scope. `tenant:acme-corp` is not the same as `tenant:acme-corp/workspace:prod`.
-2. **Wrong operation.** The `operation` field must be one of `CREDIT`, `DEBIT`, `RESET`, or `REPAY_DEBT`. If you used `RESET` with the same amount as the current allocation, there is no visible change.
+2. **Wrong operation.** The `operation` field must be one of `CREDIT`, `DEBIT`, `RESET`, `RESET_SPENT`, or `REPAY_DEBT`. Common confusion: `RESET` with the same amount as the current allocation is a **no-op by design** — it resizes the allocated ceiling but preserves spent, so `remaining` stays at its current value. If you wanted to clear spent for a new billing period, use `RESET_SPENT`. See [Starting a new billing period](/how-to/budget-allocation-and-management-in-cycles#starting-a-new-billing-period-reset_spent).
 3. **Check the response.** The fund endpoint returns the updated balance. Verify the response body confirms the change.
 
 ### Fund endpoint returns 404 for workspace budget
@@ -429,6 +451,96 @@ See [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents
 - Budget uses a different tenant ID than the one in the subject
 
 **Fix:** Check that the scope path on the budget matches the scopes derived from the reservation subject. Use the [Scope Derivation](/protocol/how-scope-derivation-works-in-cycles) reference to understand which scopes are derived. See also [Tenants, Scopes, and Budgets](/how-to/understanding-tenants-scopes-and-budgets-in-cycles).
+
+## Webhook and event delivery issues
+
+### Webhook endpoint not receiving events
+
+**Symptom:** You created a webhook subscription and events are occurring (e.g., reservations being denied), but your endpoint isn't receiving HTTP requests.
+
+**Checklist:**
+
+1. **Is the events service running?** Webhook delivery requires the events service (`cycles-server-events`) to be deployed and connected to the same Redis instance. Check with `curl http://localhost:7980/actuator/health`.
+2. **Is the subscription active?** Subscriptions are auto-disabled after 10 consecutive delivery failures. Check status: `GET /v1/admin/webhooks/{id}` — look for `"status": "DISABLED"`.
+3. **Does the subscription match the event type?** Check the `event_types` array in your subscription. If it's empty, the subscription receives all event types. If it lists specific types, the event must match.
+4. **Does the scope filter match?** If you set a `scope_filter`, only events whose scope matches the filter will be delivered. See [Scope Filter Syntax](/protocol/webhook-scope-filter-syntax) for matching rules.
+5. **Is the endpoint reachable from the events service?** The events service makes outbound HTTP POST requests. Verify network connectivity, DNS resolution, and firewall rules.
+6. **Is the endpoint returning 2xx?** Non-2xx responses trigger retries. After 5 retries (exponential backoff: 1s, 2s, 4s, 8s, 16s), the delivery is marked FAILED. After 10 consecutive failures, the subscription is disabled.
+
+**Diagnostic:** Test the subscription manually:
+```bash
+curl -X POST http://localhost:7979/v1/admin/webhooks/{id}/test \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+This sends a `system.webhook_test` event to your endpoint. If it arrives, the delivery pipeline works and the issue is in event matching (types or scope filter).
+
+### Events received but signature verification fails
+
+**Symptom:** Your endpoint receives events but HMAC signature verification fails.
+
+**Common causes:**
+
+1. **Wrong signing secret.** The secret must match the one returned when you created the subscription. It cannot be retrieved again — only rotated.
+2. **Reading parsed body instead of raw bytes.** Signature is computed over the **raw request body bytes**, not a re-serialized JSON object. Middleware that parses JSON before your verification code runs will produce different bytes.
+3. **Encoding mismatch.** The signature is a hex-encoded HMAC-SHA256 digest. Verify you're comparing hex strings, not raw bytes.
+
+**Fix for common frameworks:**
+- **Express:** Use `express.raw({ type: 'application/json' })` on the webhook route, not `express.json()`
+- **Flask:** Use `request.get_data()`, not `request.json`
+- **Spring Boot:** Inject `HttpServletRequest` and read `getInputStream()` before any `@RequestBody` binding
+
+### Subscription auto-disabled
+
+**Symptom:** Events stop arriving. The subscription status is `DISABLED`.
+
+**Cause:** 10 consecutive delivery attempts failed (non-2xx response, timeout, or DNS error). This is a safety mechanism to prevent hammering a broken endpoint.
+
+**Fix:**
+1. Fix the underlying endpoint issue (check logs for the failure reason)
+2. Re-enable the subscription: `PATCH /v1/admin/webhooks/{id}` with `{"status": "ACTIVE"}`
+3. Optionally replay missed events: `POST /v1/admin/webhooks/{id}/replay` with a time range
+
+### Duplicate events received
+
+**Symptom:** Your endpoint processes the same event twice.
+
+**Cause:** Cycles delivers events **at-least-once**. Network timeouts or slow responses can cause the events service to retry a delivery that your endpoint actually processed.
+
+**Fix:** Deduplicate by `event_id`. Track processed event IDs (e.g., in a Redis SET with 24-hour TTL) and skip duplicates:
+
+```python
+def handle_webhook(event):
+    event_id = event["event_id"]
+    if redis.sismember("processed_events", event_id):
+        return  # Already processed
+    redis.sadd("processed_events", event_id)
+    redis.expire("processed_events", 86400)  # 24h TTL
+    # Process event...
+```
+
+### Events delayed or arriving out of order
+
+**Symptom:** Events arrive minutes after the triggering action, or events from different actions arrive in unexpected order.
+
+**Causes:**
+
+1. **Normal delivery latency.** Events are dispatched asynchronously. Under normal load, latency is sub-second. Under high load or after retries, latency can increase.
+2. **Retry backoff.** If your endpoint returned a non-2xx response, the next retry is delayed by exponential backoff (1s → 2s → 4s → 8s → 16s).
+3. **Stale delivery protection.** Deliveries older than 24 hours are auto-failed on pickup. If the events service was down for 24+ hours, events from that period are not delivered — use the replay API to recover them.
+
+**Ordering guarantee:** Events for the same tenant are dispatched in order. Cross-tenant ordering is not guaranteed.
+
+### Expected event type not firing
+
+**Symptom:** You expect a `budget.threshold_crossed` or `tenant.suspended` event but it never arrives.
+
+**Cause:** As of v0.1.25, only **6 event types** are actively emitted by the Cycles server. See the [Event Payloads Reference](/protocol/event-payloads-reference) for the current list. The remaining 34 event types are defined in the protocol but not yet emitted.
+
+**Currently emitted:**
+- `reservation.denied`, `reservation.commit_overage`, `reservation.expired`
+- `budget.exhausted`, `budget.over_limit_entered`, `budget.debt_incurred`
+
+If you're subscribed to an event type that isn't in this list, no events will arrive because the server doesn't emit them yet.
 
 ## Debugging production incidents
 

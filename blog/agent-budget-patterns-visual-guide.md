@@ -20,7 +20,7 @@ These patterns aren't mutually exclusive — most production systems combine two
 
 ## Pattern 1: Tenant Isolation Budgets
 
-**When to use:** Multi-tenant platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
+**When to use:** Multi-[tenant](/glossary#tenant) platforms where each customer or team gets their own AI agent access and you need hard spend isolation between them.
 
 The simplest and most common starting point. Each tenant gets an independent budget that cannot be exceeded, regardless of what other tenants are doing.
 
@@ -202,7 +202,7 @@ Our [shadow mode rollout guide](/how-to/shadow-mode-in-cycles-how-to-roll-out-bu
 
 ## Pattern 6: Hybrid Model (Tokens + Dollars)
 
-**When to use:** When you need to track both the raw resource consumption (tokens) and the monetary cost (dollars), because they don't always move in lockstep.
+**When to use:** When you need to track both the raw resource consumption ([tokens](/glossary#tokens)) and the monetary cost (dollars), because they don't always move in lockstep.
 
 Token counts and dollar costs diverge when you use multiple models, when pricing changes, or when non-LLM tools (web search, code execution) are part of the agent's toolkit.
 
@@ -242,9 +242,9 @@ async def execute_hybrid(task):
 
 Most production systems layer two or three of these patterns. A common combination:
 
-1. **Tenant isolation** (Pattern 1) as the outer boundary
+1. **[Tenant isolation](/glossary#tenant-isolation)** (Pattern 1) as the outer boundary
 2. **Workflow caps** (Pattern 2) within each tenant
-3. **Graceful degradation** (Pattern 3) within each workflow run
+3. **[Graceful degradation](/glossary#graceful-degradation)** (Pattern 3) within each workflow run
 4. **Shadow mode** (Pattern 5) for rollout
 
 This gives you hard isolation between customers, right-sized limits per use case, user-friendly behavior at the limits, and a safe path to enforcement.

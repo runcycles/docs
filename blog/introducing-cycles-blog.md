@@ -10,7 +10,7 @@ sidebar: false
 
 # Introducing the Cycles Blog
 
-We're excited to launch the Cycles blog — a space for engineering deep-dives, product updates, and practical guidance on runtime authority for autonomous agents.
+We're excited to launch the Cycles blog — a space for engineering deep-dives, product updates, and practical guidance on [runtime authority](/glossary#runtime-authority) for [autonomous agents](/glossary#autonomous-agent).
 
 <!-- more -->
 
