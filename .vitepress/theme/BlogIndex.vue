@@ -55,6 +55,17 @@ function isNew(dateStr) {
   return diff < 7 * 24 * 60 * 60 * 1000
 }
 
+function goToPage(next) {
+  page.value = next
+  // Scroll back to the top of the listing. Without this, paginating from
+  // page 1 (which has Start Here + Featured + 10 cards = long) would leave
+  // the reader near the bottom, as if page 2's first post were the 11th
+  // card in a continuous scroll.
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
 function selectTag(tag) {
   selectedTag.value = tag
   if (tag) featuredOnly.value = false
@@ -131,7 +142,7 @@ onMounted(() => {
       </a>
     </div>
 
-    <section v-if="!selectedTag && !featuredOnly" class="blog-start-here">
+    <section v-if="!selectedTag && !featuredOnly && page === 1" class="blog-start-here">
       <button class="blog-start-here-toggle" @click="startHereOpen = !startHereOpen" :aria-expanded="startHereOpen">
         Start Here <span class="blog-tags-arrow" :class="{ open: startHereOpen }">▸</span>
       </button>
@@ -149,7 +160,7 @@ onMounted(() => {
     </section>
 
     <section
-      v-if="featuredStrip.length"
+      v-if="featuredStrip.length && page === 1"
       class="blog-featured-strip"
       aria-label="Featured posts"
     >
@@ -211,9 +222,9 @@ onMounted(() => {
     </p>
 
     <nav class="blog-pagination" v-if="totalPages > 1" aria-label="Blog pagination">
-      <button :disabled="page <= 1" @click="page--" aria-label="Newer posts">&larr; Newer</button>
+      <button :disabled="page <= 1" @click="goToPage(page - 1)" aria-label="Newer posts">&larr; Newer</button>
       <span class="blog-page-info">Page {{ page }} of {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="page++" aria-label="Older posts">&rarr; Older</button>
+      <button :disabled="page >= totalPages" @click="goToPage(page + 1)" aria-label="Older posts">&rarr; Older</button>
     </nav>
   </div>
 </template>
