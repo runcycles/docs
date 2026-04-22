@@ -52,7 +52,7 @@ The full spec lives in [Webhook Event Delivery Protocol](/protocol/webhook-event
 
 The most expensive consequence of skipping dedup isn't double-pager noise. It's cost amplification downstream.
 
-A Cycles `budget.threshold_crossed` event that fires twice, each triggering a Slack notification plus a Datadog metric plus a database row, multiplies its downstream footprint by two. A `reservation.committed` event duplicated through a receiver that debits an internal ledger will double-charge. A `tenant.closed` cascade event that naively triggers a customer-email flow sends two emails on the same close.
+A Cycles `budget.threshold_crossed` event that fires twice, each triggering a Slack notification plus a Datadog metric plus a database row, multiplies its downstream footprint by two. A `budget.debited` event duplicated through a receiver that writes to an internal ledger will double-charge that ledger. A `tenant.closed` cascade event that naively triggers a customer-email flow sends two emails on the same close.
 
 The shape of the damage is consistent: the Cycles event is the root-of-trust statement ("this happened once"), and every duplicate processing of that event multiplies its side effects in downstream systems that have no way to know the event was a retry. Dedup at the receiver is what closes that gap.
 
@@ -198,7 +198,7 @@ The easiest replay loop uses the admin API's webhook-delivery history:
 curl -s -H "X-Admin-API-Key: $ADMIN_KEY" \
   "http://localhost:7979/v1/admin/webhooks/whsub_abc/deliveries?limit=5" | jq
 
-# Replay the most-recent failed delivery on this subscription
+# Trigger a replay on this subscription
 curl -X POST -H "X-Admin-API-Key: $ADMIN_KEY" \
   "http://localhost:7979/v1/admin/webhooks/whsub_abc/replay"
 ```
