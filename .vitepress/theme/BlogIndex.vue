@@ -56,6 +56,7 @@ function isNew(dateStr) {
 }
 
 function goToPage(next) {
+  if (next < 1 || next > totalPages.value) return
   page.value = next
   // Scroll back to the top of the listing. Without this, paginating from
   // page 1 (which has Start Here + Featured + 10 cards = long) would leave
@@ -65,6 +66,23 @@ function goToPage(next) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
+
+// Numbered-page window: always show first, last, and up to 2 on each side
+// of the current page. Insert ellipsis markers for any gaps. Keeps the
+// control under ~9 items even on a 50-page listing.
+const pageWindow = computed(() => {
+  const total = totalPages.value
+  const cur = page.value
+  if (total <= 1) return []
+  const pages = new Set([1, total, cur - 2, cur - 1, cur, cur + 1, cur + 2])
+  const sorted = [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b)
+  const items = []
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] > sorted[i - 1] + 1) items.push({ type: 'gap' })
+    items.push({ type: 'page', page: sorted[i] })
+  }
+  return items
+})
 
 function selectTag(tag) {
   selectedTag.value = tag
@@ -222,9 +240,23 @@ onMounted(() => {
     </p>
 
     <nav class="blog-pagination" v-if="totalPages > 1" aria-label="Blog pagination">
-      <button :disabled="page <= 1" @click="goToPage(page - 1)" aria-label="Newer posts">&larr; Newer</button>
-      <span class="blog-page-info">Page {{ page }} of {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="goToPage(page + 1)" aria-label="Older posts">&rarr; Older</button>
+      <button class="blog-page-step" :disabled="page <= 1" @click="goToPage(1)" aria-label="First page">&laquo; First</button>
+      <button class="blog-page-step" :disabled="page <= 1" @click="goToPage(page - 1)" aria-label="Newer posts">&larr; Newer</button>
+      <ol class="blog-page-numbers" role="list">
+        <template v-for="(item, idx) in pageWindow" :key="idx">
+          <li v-if="item.type === 'gap'" class="blog-page-gap" aria-hidden="true">&hellip;</li>
+          <li v-else>
+            <button
+              class="blog-page-num"
+              :class="{ active: item.page === page }"
+              :aria-current="item.page === page ? 'page' : undefined"
+              @click="goToPage(item.page)"
+            >{{ item.page }}</button>
+          </li>
+        </template>
+      </ol>
+      <button class="blog-page-step" :disabled="page >= totalPages" @click="goToPage(page + 1)" aria-label="Older posts">Older &rarr;</button>
+      <button class="blog-page-step" :disabled="page >= totalPages" @click="goToPage(totalPages)" aria-label="Last page">Last &raquo;</button>
     </nav>
   </div>
 </template>
