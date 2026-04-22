@@ -42,7 +42,7 @@ An agent budget system has at least four:
 | **Events** | Which downstream consumers hear about a decision | Webhook delivery to PagerDuty, Slack, Datadog |
 | **Audit** | What the operator-facing record of the decision looks like | `GET /v1/admin/audit/logs` |
 
-Each plane generates its own request ID. The LLM observability layer sees only the leaf call, not the reserve-commit pair around it. And every plane has its own clock and its own log pipeline, so time-range filters collide with any decision taken inside a single-digit-millisecond reservation flow.
+Each HTTP request gets its own `request_id`. The LLM observability layer sees only the leaf call, not the reserve-commit pair around it. And every plane has its own clock and its own log pipeline, so time-range filters collide with any decision taken inside a single-digit-millisecond reservation flow.
 
 You can build correlation after the fact — cross-joining on tenant + scope + timestamp is a 2-hour analytics exercise. You can't run that cross-join in real time, which is exactly what an incident needs.
 
@@ -144,7 +144,7 @@ For signature verification, idempotency, and delivery retries, see [Operational 
 
 ## Phased rollout and version pins
 
-Not every plane shipped `trace_id` at the same time. When you're upgrading in a staged environment, the minimum versions matter:
+Not every plane shipped `trace_id` at the same time. When you're upgrading in a staged environment, the minimum versions matter. These are current as of publication; confirm against each service's release notes before planning your upgrade:
 
 | Plane | Minimum version to populate `trace_id` |
 |---|---|
