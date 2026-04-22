@@ -9,7 +9,7 @@ tags:
   - runtime-authority
   - production
   - operations
-description: "How Cycles wires W3C Trace Context across admin, runtime, events, and audit planes so you can correlate an AI agent's budget decisions end-to-end in minutes."
+description: "How Cycles wires W3C Trace Context across admin, runtime, events, and audit planes so you can correlate an AI agent's budget decisions across every plane at once."
 blog: true
 sidebar: false
 featured: false
@@ -109,7 +109,7 @@ curl -s -H "X-Admin-API-Key: $ADMIN_KEY" \
   "http://localhost:7979/v1/admin/events?trace_id=4bf92f3577b34da6a3ce929d0e0e4736" | jq
 ```
 
-Two queries — executed in parallel, returning in sub-second — give you the full causal picture: the reservation that consumed the budget, the commit that tipped over the cap, the events emitted to downstream webhooks, and the audit rows stamped with `actor` + `scope` + `trace_id`. No time-range guessing. No tenant-by-tenant cross-join. Thirty minutes becomes thirty seconds.
+Two queries — executed in parallel — give you the full causal picture: the reservation that consumed the budget, the commit that tipped over the cap, the events emitted to downstream webhooks, and the audit rows stamped with `actor` + `scope` + `trace_id`. No time-range guessing. No tenant-by-tenant cross-join. A thirty-minute debug session compresses into a couple of API calls.
 
 Cycles' [Where Did My Tokens Go?](/blog/where-did-my-tokens-go-debugging-agent-spend) post walks a similar debug using `correlation_id` and scope path. `trace_id` is the layer below that: for a *single operation*, it pinpoints the exact reservation + commit + event chain; `correlation_id` scales that up to a whole batch run.
 

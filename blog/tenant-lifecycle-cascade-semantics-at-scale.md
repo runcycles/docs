@@ -41,7 +41,7 @@ In an AI-agent budget system, zombies are particularly expensive because every o
 | **Webhook subscription** | Keep delivering events to third-party endpoints past the off-boarding date |
 | **Policy / rate limiter** | Keep enforcing rules the operator thought were decommissioned |
 
-Any one of these is an incident waiting to happen. Several of them together are a compliance finding.
+Any combination of these carries real operational and security risk: silent post-termination spend, leftover attack surface, and audit-trail gaps that are awkward to explain after the fact.
 
 ## Two rules that close the gap
 
@@ -77,7 +77,7 @@ The important property is that both modes produce the same *client-observable* o
 
 ## Where operators actually trip
 
-In several years of watching teams deploy tenant-lifecycle code, three failure modes show up far more often than the zombie-budget story itself:
+Three failure modes are worth watching for — they tend to surface far more often than the zombie-budget story itself:
 
 **Mistaking closure for suspension.** Operators hit "close tenant" when they want "suspend tenant." Closure is terminal. The spec allows `* → CLOSED` from any prior state — including direct `ACTIVE → CLOSED` — but no transitions out of `CLOSED`: `CLOSED → ACTIVE` is not valid, and neither is `CLOSED → SUSPENDED`. Once a tenant is closed, it remains read-only — recovery from `CLOSED` is not supported by design. The reversible path is `ACTIVE → SUSPENDED → ACTIVE`. This mirrors how AWS Organizations treats member-account closure: a deliberate one-way operation, not a toggle.
 
@@ -163,7 +163,7 @@ Before you close a tenant in production, the five things worth checking:
 
 Closing a tenant is a statement about an entire subtree of owned objects, not a single row. Multi-tenant platforms that tried to make it a single-row state flip built themselves a permanent source of zombie-budget incidents. Cycles' two-rule contract — cascade on close, guard every owned mutation — makes the safe path the default path, and lets both atomic and flip-first implementations meet the same observable contract.
 
-The right way to think about a tenant close isn't "I'll turn this customer off." It's "I'm committing to a terminal statement about every reservation, key, budget, webhook, and policy they own," with the confidence that the stack will enforce that statement even against requests that were already in flight when you clicked the button.
+A useful way to reason about a tenant close isn't "I'll turn this customer off." It's "I'm committing to a terminal statement about every reservation, key, budget, webhook, and policy they own," knowing that the stack enforces that statement even against requests that were already in flight when you clicked the button.
 
 ## Related reading
 
