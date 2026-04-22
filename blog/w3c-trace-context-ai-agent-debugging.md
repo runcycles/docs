@@ -133,8 +133,8 @@ async def handle_webhook(request: Request):
     ctx = extract(dict(request.headers))
     with tracer.start_as_current_span("cycles.webhook.process", context=ctx) as span:
         event = await request.json()
-        span.set_attribute("cycles.event.type", event.get("kind"))
-        span.set_attribute("cycles.tenant", event["subject"]["tenant"])
+        span.set_attribute("cycles.event.type", event.get("event_type"))
+        span.set_attribute("cycles.tenant", event["tenant_id"])
         # ...route to PagerDuty / Slack / Datadog per your runbook
 ```
 
