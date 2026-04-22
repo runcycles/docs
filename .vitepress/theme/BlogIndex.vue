@@ -242,19 +242,18 @@ onMounted(() => {
     <nav class="blog-pagination" v-if="totalPages > 1" aria-label="Blog pagination">
       <button class="blog-page-step" :disabled="page <= 1" @click="goToPage(1)" aria-label="First page">&laquo; First</button>
       <button class="blog-page-step" :disabled="page <= 1" @click="goToPage(page - 1)" aria-label="Newer posts">&larr; Newer</button>
-      <ol class="blog-page-numbers" role="list">
+      <div class="blog-page-numbers">
         <template v-for="(item, idx) in pageWindow" :key="idx">
-          <li v-if="item.type === 'gap'" class="blog-page-gap" aria-hidden="true">&hellip;</li>
-          <li v-else>
-            <button
-              class="blog-page-num"
-              :class="{ active: item.page === page }"
-              :aria-current="item.page === page ? 'page' : undefined"
-              @click="goToPage(item.page)"
-            >{{ item.page }}</button>
-          </li>
+          <span v-if="item.type === 'gap'" class="blog-page-gap" aria-hidden="true">&hellip;</span>
+          <button
+            v-else
+            class="blog-page-num"
+            :class="{ active: item.page === page }"
+            :aria-current="item.page === page ? 'page' : undefined"
+            @click="goToPage(item.page)"
+          >{{ item.page }}</button>
         </template>
-      </ol>
+      </div>
       <button class="blog-page-step" :disabled="page >= totalPages" @click="goToPage(page + 1)" aria-label="Older posts">Older &rarr;</button>
       <button class="blog-page-step" :disabled="page >= totalPages" @click="goToPage(totalPages)" aria-label="Last page">Last &raquo;</button>
     </nav>

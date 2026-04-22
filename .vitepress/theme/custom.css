@@ -657,12 +657,17 @@ samp {
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 0 10px;
+  height: 32px;
   font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
   cursor: pointer;
   color: var(--vp-c-text-1);
   transition: all 0.15s;
-  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .blog-pagination button:hover:not(:disabled) {
@@ -683,18 +688,28 @@ samp {
   display: flex;
   align-items: center;
   gap: 4px;
-  list-style: none;
-  padding: 0;
   margin: 0 6px;
+  padding: 0;
 }
 
-.blog-page-num {
+/* Explicit sizing + font so the numbered buttons match First/Newer/Older/Last
+   exactly — VitePress prose styles can otherwise inherit into this region
+   and make numbers a different size/weight than their sibling controls. */
+.blog-pagination .blog-page-num {
   min-width: 34px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.blog-page-num.active {
+.blog-pagination .blog-page-num.active {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
   background: var(--vp-c-bg);
@@ -703,10 +718,14 @@ samp {
 }
 
 .blog-page-gap {
-  padding: 0 4px;
+  padding: 0 2px;
   color: var(--vp-c-text-3);
   font-size: 13px;
+  line-height: 1;
   user-select: none;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
 }
 
 /* On narrow screens, hide First/Last verbose labels to keep the row
