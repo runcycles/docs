@@ -50,15 +50,23 @@ The docker-compose block for an events service that works on `v0.1.25.9+` looks 
 cycles-events:
   image: ghcr.io/runcycles/cycles-server-events:0.1.25.10
   restart: unless-stopped
-  ports:
-    - "7980:7980"      # traffic plane (outbound delivery)
-    - "9980:9980"      # management plane (internal only)
+  # No `ports:` stanza — the service has no public inbound surface.
+  # Traffic-plane is outbound-only (dispatches webhooks to tenant URLs);
+  # management-plane (9980) is scraped from inside the Docker network
+  # by a co-located Prometheus. Publishing either to the host is only
+  # needed for ad-hoc local inspection.
+  expose:
+    - "7980"
+    - "9980"
   environment:
     REDIS_HOST: redis
     REDIS_PORT: 6379
     REDIS_PASSWORD: ${REDIS_PASSWORD}
-    # Required for webhook signing-secret encryption at rest.
-    # Empty string is allowed for dev (plaintext); production MUST set it.
+    # In the current reference implementation, the AES-256-GCM key
+    # used to encrypt webhook signing secrets at rest in Redis. An
+    # empty value is accepted (plaintext fallback) for backward
+    # compatibility with older dev deployments; production should set
+    # a 32-byte base64-encoded key.
     WEBHOOK_SECRET_ENCRYPTION_KEY: ${WEBHOOK_SECRET_ENCRYPTION_KEY}
   healthcheck:
     test: ["CMD", "wget", "--spider", "-q", "http://localhost:9980/actuator/health"]
@@ -71,16 +79,21 @@ cycles-events:
       condition: service_healthy
 ```
 
-Two things to note:
+Three things to note:
 
+- **No published ports.** The events service doesn't accept inbound HTTP, so there's no reason to publish `7980`. `9980` stays reachable only inside the Docker network, where a co-located Prometheus scrapes it. Publish `9980` to the host only when an operator needs local inspection.
 - **`start_period: 30s`.** The events service needs time to connect to Redis, warm connection pools, and load signing secrets before health should matter. Set this too short and a slow Redis round-trip during startup will trigger a premature restart loop.
-- **`WEBHOOK_SECRET_ENCRYPTION_KEY`.** If empty, signing secrets round-trip through Redis in plaintext. This is backward-compatible with older deployments but shouldn't ship to production. Generate a 32-byte AES-256-GCM key, base64-encode it, and treat it like any other secret.
+- **`WEBHOOK_SECRET_ENCRYPTION_KEY`** (implementation detail). The plaintext-fallback behavior described above is specific to the current reference implementation — if you're on a different build or a forked image, confirm against that image's release notes before relying on it in production.
 
 For stacks using the dashboard's reference compose, the `7980 → 9980` healthcheck edit was the fix that unblocked yesterday's upgrade incident; worth a branch-blame check if your stack's compose file dates from before mid-April 2026.
 
-## Kubernetes: separate probes, one port
+## Kubernetes: probing an outbound-only worker
 
-Under Kubernetes, liveness and readiness probes point at the same management port but answer different questions. Keep them both pointed at `9980/actuator/health` and tune the timings to match their distinct purposes:
+The Cycles events service is an outbound-only worker — it reads from Redis, posts to tenant-configured URLs, and never accepts inbound application HTTP. That shape matters for probe design, because Spring Boot's documentation explicitly warns that [probing an actuator endpoint on a separate management context/port can succeed even when the main application can't accept new connections](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html). For a typical inbound HTTP service, that warning is the reason to probe the traffic port rather than the management port.
+
+For an outbound worker like the events service, the same warning doesn't bite the same way — there is no "main server" accepting connections, only a dispatcher loop consuming from Redis. Probing `9980/actuator/health` reflects whether the Spring context booted, its Redis connection is live, and the dispatcher is healthy. That's sufficient for this specific service shape. Still worth acknowledging the tradeoff rather than presenting it as a universal pattern.
+
+A minimal probe config:
 
 ```yaml
 spec:
@@ -94,14 +107,14 @@ spec:
           containerPort: 9980
       livenessProbe:
         httpGet:
-          path: /actuator/health
+          path: /actuator/health/liveness
           port: management
         initialDelaySeconds: 60
         periodSeconds: 10
         failureThreshold: 3
       readinessProbe:
         httpGet:
-          path: /actuator/health
+          path: /actuator/health/readiness
           port: management
         initialDelaySeconds: 20
         periodSeconds: 5
@@ -116,21 +129,24 @@ spec:
               key: webhook-encryption-key
 ```
 
-The asymmetric tuning matters. Liveness with a 60-second `initialDelaySeconds` gives the service room to do its full startup cycle before Kubernetes decides to kill it. Readiness with 20 seconds gets the pod into the service endpoint list as soon as Redis connectivity is confirmed, which means deliveries don't pile up in queue waiting for a pod that's actually ready. Both probes fail open enough that a single slow Redis round-trip doesn't cause a cascading restart.
+Two things worth calling out:
 
-A NetworkPolicy that restricts port 9980 to the monitoring namespace (or equivalent) is the other half of the story — the management surface should not be reachable from anywhere the tenant-visible API can be reached.
+- **Use Spring Boot's `liveness` / `readiness` health groups** rather than the plain `/actuator/health` endpoint. Spring Boot's [built-in probe groups](https://docs.spring.io/spring-boot/docs/2.4.1/reference/html/production-ready-features.html) separate "is this instance alive" from "is this instance ready to do work," with their own `HealthIndicator` registration points. If your operator cares about Redis specifically, the readiness group is where the `RedisHealthIndicator` output lands; liveness stays true as long as the JVM is responsive. If you don't need the separation, aliasing both probes to plain `/actuator/health` is a reasonable default.
+- **Asymmetric timing**. Liveness with a 60-second `initialDelaySeconds` gives the service room for its full startup cycle before Kubernetes decides to kill it. Readiness with 20 seconds gets the pod into the service endpoint list as soon as Redis connectivity is confirmed. Both probes fail open enough that a single slow Redis round-trip doesn't cause a cascading restart.
+
+A NetworkPolicy that restricts port 9980 to the monitoring namespace (or equivalent) is the other half of the story — the management surface should not be reachable from anywhere a tenant-visible API surface can be reached.
 
 ## What Prometheus actually scrapes
 
-The `/actuator/prometheus` endpoint returns standard Micrometer output. The metric family worth knowing by name:
+The `/actuator/prometheus` endpoint returns standard Micrometer output. The metric families in the current reference implementation (exact names and tag lists are subject to change between releases — confirm against your build's emitted output):
 
-| Metric | Meaning |
+| Metric family | Meaning |
 |---|---|
 | `cycles_webhook_delivery_attempts_total` | Every HTTP attempt. Tags: `tenant`, `event_type`. |
 | `cycles_webhook_delivery_success_total` | Attempts that returned 2xx. Tags: `tenant`, `event_type`, `status_code_family`. |
 | `cycles_webhook_delivery_failed_total` | Attempts that failed. Tags: `tenant`, `event_type`, `reason`. |
 | `cycles_webhook_delivery_retried_total` | Retries scheduled. Tags: `tenant`, `event_type`. |
-| `cycles_webhook_delivery_stale_total` | Deliveries marked failed without another HTTP attempt (exceeded 24-hour ceiling). Tags: `tenant`. |
+| `cycles_webhook_delivery_stale_total` | Deliveries marked failed without another HTTP attempt (exceeded the delivery-age ceiling). Tags: `tenant`. |
 | `cycles_webhook_subscription_auto_disabled_total` | Subscriptions that hit the consecutive-failure threshold and were paused. Tags: `tenant`, `reason`. |
 | `cycles_webhook_delivery_latency_seconds` | HTTP round-trip timer. Tags: `tenant`, `event_type`, `outcome`. |
 | `cycles_webhook_events_payload_invalid_total` | Schema-validation discrepancies on emitted events. Tags: `type`, `rule`. |
@@ -171,7 +187,7 @@ Thirty-second scrape interval is a reasonable default. Faster isn't free — a 5
 
 Every metric above is tagged with `tenant`. For deployments with a few dozen tenants, that's fine. For SaaS environments with thousands of tenants, the label-cardinality explosion will hurt Prometheus before anything else notices.
 
-The `cycles.metrics.tenant-tag.enabled` config flag (default `true`) strips the `tenant` label when set to `false`, keeping the metrics aggregable across all tenants. Per-tenant visibility then lives in the admin API's delivery history or a dedicated log-based observability path, not Prometheus. If you're north of a few hundred tenants, this flag is usually worth flipping.
+The current reference implementation exposes a `cycles.metrics.tenant-tag.enabled` config flag (default `true`) that strips the `tenant` label when set to `false`, keeping the metrics aggregable across all tenants. Per-tenant visibility then lives in the admin API's delivery history or a dedicated log-based observability path, not Prometheus. If you're north of a few hundred tenants this is usually worth flipping; confirm the exact flag name against your build before relying on it.
 
 ## Alerts that actually page the right person
 
@@ -184,10 +200,15 @@ groups:
   - name: cycles-events
     rules:
       - alert: CyclesWebhookFailureRateHigh
+        # Guard against divide-by-zero on windows with no attempts —
+        # the AND clause only evaluates the ratio when there's at least
+        # one attempt/sec in the window.
         expr: |
-          sum by (tenant) (rate(cycles_webhook_delivery_failed_total[5m]))
-          / sum by (tenant) (rate(cycles_webhook_delivery_attempts_total[5m]))
-          > 0.05
+          (
+            sum by (tenant) (rate(cycles_webhook_delivery_failed_total[5m]))
+            / sum by (tenant) (rate(cycles_webhook_delivery_attempts_total[5m]))
+          ) > 0.05
+          and sum by (tenant) (rate(cycles_webhook_delivery_attempts_total[5m])) > 0
         for: 10m
         labels:
           severity: warning
@@ -237,12 +258,12 @@ For a concrete replay loop — taking a failed delivery and re-sending it throug
 
 ## Migrating deployments that pre-date v0.1.25.9
 
-If your compose or Helm chart was written before `v0.1.25.9`, the healthcheck is the one thing that's guaranteed to break silently on upgrade. Two-step migration:
+If your compose or Helm chart was written before `v0.1.25.9`, the healthcheck is the one thing most likely to break silently on upgrade. The safe sequencing — verified against your own image's release notes for the specifics of any given build — is:
 
-1. **Before upgrading the image**, update your healthchecks and probes from `7980/actuator/health` to `9980/actuator/health`. This is a no-op on older images (the endpoint exists on both ports on `.8` and earlier).
-2. **Upgrade the image to v0.1.25.9+**. The `.8` → `.9` transition is otherwise clean; the port separation is the only externally observable change.
+1. **Before upgrading the image**, update your healthchecks and probes to use `9980/actuator/health` rather than `7980/actuator/health`. On builds where the health endpoint was dual-homed in the transition period, this is a no-op; on builds that hard-moved it, this is the fix.
+2. **Upgrade the image to v0.1.25.9+**.
 
-If you skip step 1, the symptom is exactly what opened this post: image pulls, container starts, healthcheck 404s, orchestrator cycles the container. Easy to diagnose, easy to fix, but better to avoid by sequencing the config change ahead of the image bump.
+If the compose change is skipped, the symptom is exactly what opened this post: image pulls, container starts, healthcheck 404s, orchestrator cycles the container. Easy to diagnose once you look at the manifest, easy to fix, but better to avoid by sequencing the config change ahead of the image bump.
 
 ## The takeaway
 
