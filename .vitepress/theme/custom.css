@@ -194,6 +194,7 @@ samp {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .blog-tags {
@@ -273,6 +274,70 @@ samp {
   color: var(--vp-c-brand-1);
   font-weight: 600;
 }
+
+/* ── Blog featured strip ──
+   Up to 5 most-recent featured posts pinned to the top of /blog/.
+   Hidden when a tag filter or featured-only filter is active.
+   No section heading — each card carries the FEATURED badge, matching
+   the main-stream card pattern below.
+*/
+.blog-featured-strip {
+  /* No border-bottom on the section itself — the last card's border is
+     the divider. Prevents a double-line stack against Start Here below. */
+  margin-bottom: 12px;
+}
+
+.blog-featured-strip-footer {
+  padding: 8px 0 12px;
+  text-align: right;
+}
+
+.blog-featured-strip-more {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.blog-featured-strip-more:hover {
+  text-decoration: underline;
+}
+
+.blog-featured-filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 6px;
+  background: var(--vp-c-bg-soft);
+  font-size: 0.9rem;
+  color: var(--vp-c-text-1);
+  flex-wrap: wrap;
+}
+
+.blog-featured-filter-banner .blog-tags-clear {
+  background: transparent;
+  border: none;
+  color: var(--vp-c-brand-1);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.blog-featured-filter-banner .blog-tags-clear:hover {
+  text-decoration: underline;
+}
+
+/* Featured strip items reuse the standard .blog-card styling for
+   visual consistency with the main stream — the heading above plus the
+   divider below delimit the section. */
 
 /* ── Blog start-here block ── */
 .blog-start-here {
@@ -439,6 +504,24 @@ samp {
   margin-left: 16px;
 }
 
+/* Stack the thumbnail above the content on narrow screens — 120×80 to
+   the right of text crowds the description on phones and causes title
+   wraps to look ragged. Below 520px the thumb moves above content and
+   stretches to fill the card width at a friendlier 16:9 aspect. */
+@media (max-width: 520px) {
+  .blog-card {
+    flex-direction: column-reverse;
+  }
+  .blog-card-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 180px;
+    margin-left: 0;
+    margin-bottom: 12px;
+  }
+}
+
 .blog-meta {
   font-size: 13px;
   color: var(--vp-c-text-3);
@@ -581,21 +664,28 @@ samp {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 6px;
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--vp-c-divider);
+  flex-wrap: wrap;
 }
 
 .blog-pagination button {
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
+  border-radius: 6px;
+  padding: 0 10px;
+  height: 32px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
   cursor: pointer;
   color: var(--vp-c-text-1);
-  transition: all 0.2s;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .blog-pagination button:hover:not(:disabled) {
@@ -608,9 +698,91 @@ samp {
   cursor: not-allowed;
 }
 
-.blog-page-info {
-  font-size: 14px;
+.blog-page-step {
+  font-weight: 500;
+}
+
+.blog-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 6px;
+  padding: 0;
+}
+
+/* Explicit sizing + font so the numbered buttons match First/Newer/Older/Last
+   exactly — VitePress prose styles can otherwise inherit into this region
+   and make numbers a different size/weight than their sibling controls. */
+.blog-pagination .blog-page-num {
+  min-width: 34px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blog-pagination .blog-page-num.active {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg);
+  font-weight: 600;
+  cursor: default;
+}
+
+.blog-page-gap {
+  padding: 0 2px;
   color: var(--vp-c-text-3);
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+}
+
+/* On narrow screens tighten the pagination row. Under 420px, collapse
+   "« First" and "Last »" to the glyphs alone so all five controls fit
+   on a single line next to the number window. */
+@media (max-width: 520px) {
+  .blog-pagination {
+    gap: 4px;
+  }
+  .blog-pagination .blog-page-step {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  .blog-pagination .blog-page-num {
+    min-width: 30px;
+    padding: 0 6px;
+  }
+  .blog-page-numbers {
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .blog-pagination .blog-page-step[aria-label="First page"] {
+    font-size: 0;
+    padding: 0 8px;
+  }
+  .blog-pagination .blog-page-step[aria-label="First page"]::before {
+    content: "\00ab";
+    font-size: 14px;
+  }
+  .blog-pagination .blog-page-step[aria-label="Last page"] {
+    font-size: 0;
+    padding: 0 8px;
+  }
+  .blog-pagination .blog-page-step[aria-label="Last page"]::before {
+    content: "\00bb";
+    font-size: 14px;
+  }
 }
 
 /* ── Prev/next nav ── */
