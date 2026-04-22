@@ -137,7 +137,7 @@ onMounted(() => {
       aria-label="Featured posts"
     >
       <div class="blog-featured-strip-header">
-        <h2 class="blog-featured-strip-heading">Editor's picks</h2>
+        <h2 class="blog-featured-strip-heading">Featured</h2>
         <button
           v-if="hasMoreFeatured"
           type="button"
@@ -145,18 +145,24 @@ onMounted(() => {
           @click="toggleFeaturedOnly(true)"
         >See all {{ featuredPosts.length }} featured &rarr;</button>
       </div>
-      <div class="blog-featured-strip-grid">
-        <a
-          v-for="post in featuredStrip"
-          :key="post.url"
-          :href="post.url"
-          class="blog-featured-card"
-        >
-          <span class="blog-featured-card-date">{{ formatDate(post.date) }}</span>
-          <h3 class="blog-featured-card-title">{{ post.title }}</h3>
-          <p class="blog-featured-card-desc">{{ post.description }}</p>
-        </a>
-      </div>
+      <article v-for="post in featuredStrip" :key="post.url" class="blog-card">
+        <div class="blog-card-content">
+          <h2>
+            <a :href="post.url">{{ post.title }}</a>
+            <span v-if="isNew(post.date)" class="blog-new-badge">NEW</span>
+          </h2>
+          <div class="blog-meta">
+            <time class="blog-date" :datetime="post.date">{{ formatDate(post.date) }}</time>
+            <span class="blog-author"> &middot; {{ post.author }}</span>
+            <span class="blog-reading-time"> &middot; {{ post.readingTime }} min read</span>
+          </div>
+          <p class="blog-description">{{ post.description }}</p>
+          <div class="blog-card-tags" v-if="post.tags.length">
+            <button v-for="tag in post.tags" :key="tag" class="blog-tag blog-tag-clickable" @click="selectTag(tag)">{{ tag }}</button>
+          </div>
+        </div>
+        <img v-if="post.image" :src="post.image" :alt="post.title" class="blog-card-thumb" loading="lazy" />
+      </article>
     </section>
 
     <div v-if="featuredOnly" class="blog-featured-filter-banner">
