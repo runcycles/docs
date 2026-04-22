@@ -42,8 +42,9 @@ export default createContentLoader('blog/**/*.md', {
         image: page.frontmatter.image ?? null,
       }))
       .sort((a, b) => {
-        // Featured posts first
-        if (a.featured !== b.featured) return a.featured ? -1 : 1
+        // Strict reverse-chronological. Featured posts are surfaced via a
+        // dedicated strip in BlogIndex.vue, not by queue-jumping the main
+        // stream — so new writing always lands on page 1.
         const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime()
         if (dateDiff !== 0) return dateDiff
         return a.title.localeCompare(b.title)

@@ -25,6 +25,15 @@ const filteredPosts = computed(() =>
     : posts
 )
 
+// Top 5 most-recent featured posts. Hidden under a tag filter — the filtered
+// view is deliberately chronological for scanning a topic, and editorial
+// picks from other topics would be noise there.
+const featuredStrip = computed(() =>
+  selectedTag.value
+    ? []
+    : posts.filter(p => p.featured).slice(0, 5)
+)
+
 const totalPages = computed(() =>
   Math.ceil(filteredPosts.value.length / perPage)
 )
@@ -93,6 +102,26 @@ onMounted(() => {
         RSS
       </a>
     </div>
+
+    <section
+      v-if="featuredStrip.length"
+      class="blog-featured-strip"
+      aria-label="Featured posts"
+    >
+      <h2 class="blog-featured-strip-heading">Editor's picks</h2>
+      <div class="blog-featured-strip-grid">
+        <a
+          v-for="post in featuredStrip"
+          :key="post.url"
+          :href="post.url"
+          class="blog-featured-card"
+        >
+          <span class="blog-featured-card-date">{{ formatDate(post.date) }}</span>
+          <h3 class="blog-featured-card-title">{{ post.title }}</h3>
+          <p class="blog-featured-card-desc">{{ post.description }}</p>
+        </a>
+      </div>
+    </section>
 
     <section v-if="!selectedTag" class="blog-start-here">
       <button class="blog-start-here-toggle" @click="startHereOpen = !startHereOpen" :aria-expanded="startHereOpen">
