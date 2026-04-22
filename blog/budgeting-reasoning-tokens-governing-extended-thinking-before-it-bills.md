@@ -15,7 +15,7 @@ A team migrated a triage agent from `claude-3-5-sonnet` to `claude-sonnet-4-6` w
 
 <!-- more -->
 
-Reasoning models — Claude extended thinking (Sonnet/Opus 4.x), OpenAI o3, Gemini 2.5 thinking, DeepSeek R1 — have quietly invalidated a generation of agent cost controls. Each provider offers some per-call knob (`budget_tokens`, adaptive effort, `thinkingBudget`), but if your production budget layer was built around visible output tokens, prompt length, request count, or provider spending caps, none of those knobs plug into it. The result: you're enforcing a budget that bears only loose correlation to what you actually pay. This post shows why, and how to fix it with a runtime authority layer that caps thinking spend before the model runs.
+Reasoning models — Claude extended thinking (Sonnet/Opus 4.x), OpenAI o3, Gemini 2.5 thinking, DeepSeek R1 — have quietly invalidated a generation of agent cost controls. Each provider offers some per-call control (`budget_tokens` or adaptive `effort` on Anthropic, `reasoning.effort` on OpenAI, `thinkingBudget` on Gemini), but if your production budget layer was built around visible output tokens, prompt length, request count, or provider spending caps, none of those knobs plug into it. The result: you're enforcing a budget that bears only loose correlation to what you actually pay. This post shows why, and how to fix it with a runtime authority layer that caps thinking spend before the model runs.
 
 ## Why reasoning tokens break existing controls
 
@@ -25,7 +25,7 @@ Reasoning tokens have three properties that existing governance layers don't han
 
 2. **They can vary from a few hundred to tens of thousands of tokens per call.** OpenAI documents this range explicitly for o-series models, and the same shape shows up on Anthropic extended thinking and Gemini 2.5. The same prompt with the same model can produce a small amount of reasoning one time and a much larger amount the next, depending on question-difficulty heuristics the model chooses internally. Unlike visible output tokens, you cannot bound reasoning with a character-count estimate of the task.
 
-3. **They are usually not surfaced to end users, even when the API returns them.** Your agent UI shows a clean four-sentence answer. Behind it, the model burned through 25,000 tokens of chain-of-thought the user never sees — whether the API hid the reasoning (Anthropic, OpenAI, Gemini) or returned it and your app stripped it (DeepSeek). Every existing observability dashboard that samples "response length" is lying to you.
+3. **They are usually not surfaced to end users, even when the API returns them.** Your agent UI shows a clean four-sentence answer. Behind it, the model burned through 25,000 tokens of chain-of-thought the user never sees — whether the API hid the reasoning (Anthropic, OpenAI, Gemini) or returned it and your app stripped it (DeepSeek). Any observability dashboard that samples "response length" as a cost proxy will understate your real spend.
 
 The practical consequence: `max_tokens` is now a cost cap in a way it never was before. In the pre-reasoning era, `max_tokens=4096` meant "at most 4096 tokens of visible output." Today, on a reasoning model, it means "at most 4096 tokens of *anything*, thinking included" — and if you set it too low, the model truncates mid-thought and returns an empty or garbage answer. If you set it high to be safe, you've silently uncapped per-call cost by 10x.
 
@@ -79,14 +79,14 @@ def run_reasoning_task(tenant_id: str, prompt: str, tool_risk: str):
     # Reserve worst-case: output tokens + thinking budget.
     # For a reasoning model, thinking is typically 3-10x expected output.
     worst_case_microcents = estimate_cost(
-        output=2000, thinking=12000, model="claude-opus-4-6"
+        output=2000, thinking=12000, model="claude-sonnet-4-6"
     )
 
     res = client.create_reservation(ReservationCreateRequest(
         subject=Subject(tenant=tenant_id, workflow="reasoning"),
         action=Action(kind="llm.reason", name="anthropic-thinking"),
         estimate=Amount(amount=worst_case_microcents, unit=Unit.USD_MICROCENTS),
-        metadata={"tool_risk": tool_risk, "model": "claude-opus-4-6"},
+        metadata={"tool_risk": tool_risk, "model": "claude-sonnet-4-6"},
     ))
 
     if res.decision == "DENY":
@@ -99,7 +99,7 @@ def run_reasoning_task(tenant_id: str, prompt: str, tool_risk: str):
 
     try:
         response = anthropic.messages.create(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
             max_tokens=max_tokens,
             thinking={"type": "enabled", "budget_tokens": thinking_budget},
             messages=[{"role": "user", "content": prompt}],
@@ -110,7 +110,7 @@ def run_reasoning_task(tenant_id: str, prompt: str, tool_risk: str):
         actual_microcents = cost_from_tokens(
             input=response.usage.input_tokens,
             output=response.usage.output_tokens,
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
         )
         client.commit_reservation(
             reservation_id=res.reservation_id,
