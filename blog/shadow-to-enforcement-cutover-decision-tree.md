@@ -23,7 +23,7 @@ head:
 
 An engineering lead two weeks into a Cycles rollout asks the question everybody asks eventually: *when do we turn on enforcement?*
 
-Shadow mode has been instrumented on every model call for ten days. Dry-run reservations are landing in the events stream. Dashboards show a would-be denial rate around 4%. Some of those denials look like legitimate overages. Some look like estimate drift on a specific agent. The team has a working budget policy for three tenants. A fourth is still draft. Marketing wants a date on the cutover milestone.
+Shadow mode has been instrumented on every model call for ten days. Dry-run reservations are being evaluated and logged. Dashboards show a would-be denial rate around 4%. Some of those denials look like legitimate overages. Some look like estimate drift on a specific agent. The team has a working budget policy for three tenants. A fourth is still draft. Marketing wants a date on the cutover milestone.
 
 The bad version of this decision is calendar-driven: "it's been two weeks, flip the switch." The good version is signal-driven: "the shape of what we're seeing matches what hard enforcement looks like in production." The difference between those two decisions is the difference between a clean cutover and a 3 AM rollback — and most teams don't know until afterwards which version they made.
 
@@ -37,7 +37,7 @@ The failure isn't in the duration. The failure is that a calendar has no opinion
 
 Industry patterns learned this years ago. Stripe's rate-limiter post puts it plainly: ["Dark launch each rate limiter to watch the traffic they would block"](https://stripe.com/blog/rate-limiters). Istio ships an `istio.io/dry-run: "true"` annotation (Alpha status) that lets `AuthorizationPolicy` evaluate without blocking so teams can measure. OPA Gatekeeper's [`enforcementAction: dryrun`](https://open-policy-agent.github.io/gatekeeper/website/docs/violations/) does the same for Kubernetes admission, surfacing violations in the constraint's `status` field. Cloudflare's WAF offers a `Log` action before `Block`. Every maturing enforcement tool converges on the same shape — evaluate, measure, calibrate, then flip — and none of them recommend a fixed duration. They recommend a set of signals.
 
-Cycles' shadow mode is `dry_run: true` on a reservation request: the server runs the full scope-derivation, budget-check, and caps-computation logic, returns the decision (`ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`) along with affected scopes and optional balance snapshots, and leaves budget state untouched. Your agent proceeds regardless of the result. See [How to Add Runtime Enforcement Without Breaking Your Agents](/blog/how-to-add-runtime-enforcement-without-breaking-your-agents) for the basic instrumentation playbook. This post is about what to read off those dry-run responses before you stop reading and start blocking.
+Cycles' shadow mode is `dry_run: true` on a reservation request: the server runs the full scope-derivation, budget-check, and caps-computation logic, returns the decision (`ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`) along with affected scopes and optional balance snapshots, and leaves budget state untouched. No reservation is persisted, no balance is modified, and base `dry_run` does not emit a reservation event — the decision round-trips in the response. (A separate `observe_mode` extension exists for teams that do want emission-driven observation; that's a different track.) Your agent proceeds regardless of the result. See [How to Add Runtime Enforcement Without Breaking Your Agents](/blog/how-to-add-runtime-enforcement-without-breaking-your-agents) for the basic instrumentation playbook. This post is about what to read off those dry-run responses before you stop reading and start blocking.
 
 ## The four signal categories
 
@@ -92,20 +92,9 @@ The last category is the one that's often skipped because it feels defeatist. It
 
 **Kill-switch design.** A feature flag, a config toggle, or a small code path that flips every call back to `dry_run: true` without a deploy. On a managed Cycles cloud, this can be done per-scope via a budget setting; on self-hosted, it's usually a process environment variable. Either way, the engineer on call shouldn't have to push code to roll back.
 
-A minimal scope-level freeze via the admin API looks like:
+The effect you're after is a scope-level freeze via the admin API: once a budget is frozen, subsequent reservations against that scope return `BUDGET_FROZEN` until the scope is unfrozen, and in-flight commits are not affected. The exact admin route shape varies by deployment — check your admin API surface for the freeze/unfreeze endpoints it exposes; the semantics matter more than the literal path.
 
-```bash
-# Freeze a scope's budget — new reservations return BUDGET_FROZEN
-# until the scope is unfrozen. In-flight commits are not affected.
-curl -i -X POST \
-  -H "X-Admin-API-Key: $ADMIN_KEY" \
-  -H "Idempotency-Key: freeze-tenant-acme-2026-04-23" \
-  "http://localhost:7979/v1/admin/budgets/acme-corp:prod/freeze"
-# → HTTP/1.1 200 OK
-# → { "scope": "acme-corp:prod", "status": "FROZEN", "frozen_at": "..." }
-```
-
-The freeze is a hard kill switch on one scope: subsequent reservations get `BUDGET_FROZEN` until it's unfrozen. The softer version — flipping the scope's policy back to `dry_run: true` without losing the data path — is usually the preferred first move.
+The hard freeze isn't always the right first move. The softer version — flipping the scope's policy back to `dry_run: true` without losing the data path — is usually preferable, because it leaves the shadow signal intact while stopping the blocking behavior.
 
 **Rollback plan written down.** Two steps minimum: (1) flip the kill switch to restore shadow mode; (2) triage the signals that prompted the rollback before attempting re-enforcement. Teams that write this down in advance spend minutes on rollback, not hours.
 
@@ -130,7 +119,7 @@ Signals that enforcement is misbehaving post-cutover — and therefore reasons t
 | Denial rate | Sustained 3× shadow baseline for >10 minutes |
 | Business-critical workflow error rate | Any noticeable spike in a monitored production flow |
 | `BUDGET_FROZEN` responses | Any appearance on a scope you didn't explicitly freeze |
-| `ESTIMATE_MISMATCH` warnings | Sustained >2% for a single scope — usually means a model change invalidated estimates |
+| Commit-overage rate on a single scope | Sustained >2% — usually means a model change invalidated the reserve-to-commit estimate for that scope |
 | Escalation volume from tenants | Any concentrated cluster, especially within the first hour |
 
 A rollback isn't a failure — it's the plan working. The follow-up is: what category of signal turned out to be under-calibrated, and what needs to change in the shadow data before the next cutover attempt?
