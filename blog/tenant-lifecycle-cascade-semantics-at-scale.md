@@ -62,7 +62,7 @@ Rule 1 is about *reaching* a consistent terminal state. Rule 2 is about *defendi
 
 ## Two implementation modes that look the same to clients
 
-A protocol spec that only accepted one implementation shape would be unnecessarily restrictive. Cycles' cascade section describes two conformant modes:
+How these rules are implemented can vary. A protocol spec that only accepted one shape would be unnecessarily restrictive, so Cycles' cascade section describes two conformant modes:
 
 **Mode A — Atomic Cascade.** All owned-object terminal transitions plus the tenant flip commit in a single transaction. Rollback on failure. Strongest guarantee and easiest to reason about, but requires a transactional store that can hold the whole cascade under one commit. Works well on SQL; harder on Redis without scripting everything into one Lua call.
 
@@ -81,7 +81,7 @@ Cycles' managed cloud runs on Mode B, backed by Redis. On a healthy cluster, the
 
 In several years of watching teams deploy tenant-lifecycle code, three failure modes show up far more often than the zombie-budget story itself:
 
-**Mistaking closure for suspension.** Operators hit "close tenant" when they want "suspend tenant." Closure is terminal. `CLOSED → ACTIVE` is not a valid transition in the Cycles state machine; neither is `CLOSED → SUSPENDED`. Once a tenant is closed, it's read-only forever. The transition diagram only allows `ACTIVE → SUSPENDED → ACTIVE` or `ACTIVE → SUSPENDED → CLOSED`. This mirrors how AWS Organizations treats account closure: a deliberate one-way door with a waiting period, not a toggle.
+**Mistaking closure for suspension.** Operators hit "close tenant" when they want "suspend tenant." Closure is terminal. `CLOSED → ACTIVE` is not a valid transition in the Cycles state machine; neither is `CLOSED → SUSPENDED`. Once a tenant is closed, it remains read-only — recovery from `CLOSED` is not supported by design. The transition diagram only allows `ACTIVE → SUSPENDED → ACTIVE` or `ACTIVE → SUSPENDED → CLOSED`. This mirrors how AWS Organizations treats member-account closure: a deliberate one-way operation, not a toggle.
 
 **Forgetting bulk-action semantics.** If a bulk endpoint — say, mass-revoke of 500 API keys across a tenant — runs while the tenant is closing, the per-row behavior matters. Cycles bulk actions return a mixed response: every row that was mutated reports success; every row that hit the terminal-owner guard lands in `failed[]` with `error_code: TENANT_CLOSED`, and the rest of the batch proceeds. Operators who reach for `--exit-on-error`-style semantics are surprised when a partial bulk continues. The right default is a partial-success rollup, because the alternative — failing the whole batch on any `TENANT_CLOSED` — would mean a concurrent tenant close effectively poisons every unrelated bulk action in the stack.
 
@@ -128,10 +128,10 @@ The cascade pattern isn't novel. It's the default in well-designed multi-tenant 
 
 | Platform | Closure model | What cascades | Reversibility |
 |---|---|---|---|
-| **AWS Organizations** | Account → suspended → closed (90-day waiting period) | IAM users, access keys, resource cleanup orchestrated by AWS | One-way; closed accounts cannot rejoin |
-| **Stripe Connect** | Account deactivation | Charges refused, payouts held, API keys de-scoped | One-way after deactivation |
+| **AWS Organizations** | Member account closure | IAM users, access keys, and resource cleanup orchestrated by AWS; the closed account stays visible with a `CLOSED` label for up to 90 days before removal from the console | One-way |
+| **Stripe Connect** | Account rejection via `POST /v1/accounts/:id/reject` | Charges refused, payouts held, API keys de-scoped | One-way after rejection |
 | **Okta** | Tenant deletion | SSO sessions terminated, service accounts deprovisioned | One-way after hard delete |
-| **Slack** | Workspace archival | Channels made read-only, integrations disabled | Reversible (archival is suspension-equivalent) |
+| **Slack** | Channel archival (workspace-level has its own process) | Channels made read-only, integrations disabled | Channel archival is reversible (archive/unarchive) |
 | **Cycles** | Tenant CLOSED via two-rule cascade | Budgets, keys, reservations, webhook subscriptions, policies | One-way; use `SUSPENDED` for reversible block |
 
 The pattern is consistent: *terminal states must enforce themselves against the whole subtree*, and operators need a distinct *suspended* state for the much more common case of "pause this customer without terminating anything."

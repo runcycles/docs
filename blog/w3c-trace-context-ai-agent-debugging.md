@@ -31,7 +31,7 @@ This post is about what that debugging loop looks like when every plane shares a
 
 ## Observability alone hits a wall on multi-plane systems
 
-Most LLM observability tools — Langfuse, LangSmith, Helicone, and their cousins — live in one slice of the stack: they proxy the LLM call, capture the prompt and response, and surface cost and latency. That's real value for a single-agent workload. It falls short the moment your system has more than one plane of decision-making.
+Most LLM observability tools — Langfuse, LangSmith, Helicone, and their cousins — live in one slice of the stack: they proxy the LLM call, capture prompt and response, and surface cost and latency. That's real value for a single-agent workload. It falls short the moment your system has more than one plane of decision-making.
 
 An agent budget system has at least four:
 
@@ -52,7 +52,7 @@ W3C Trace Context solves this by making the correlation identifier *travel with 
 
 As of Cycles protocol revision 2026-04-18, every plane in the stack participates in one `trace_id`. When a request arrives, Cycles takes this identifier from one of three sources, in strict order:
 
-1. **`traceparent` header** (W3C Trace Context v00) — adopted when present and well-formed.
+1. **`traceparent` header** — adopted when present and well-formed. The current format is identified by a `version` field of `00`, per the W3C Trace Context Recommendation (23 Nov 2021).
 2. **`X-Cycles-Trace-Id` header** — a 32-character lowercase hex string, used when no valid `traceparent` is present.
 3. **Server-generated** — 16 random bytes, 32 lowercase hex, all-zero trace IDs are rejected and re-rolled per the W3C [§3.2.2.3 trace-id format rules](https://www.w3.org/TR/trace-context/#trace-id).
 
@@ -66,7 +66,7 @@ From there, the same `trace_id` lands on every downstream artifact:
 - **Every `AuditLogEntry`** persists the `trace_id` of the HTTP request that triggered it.
 - **Every webhook delivery** POSTs an outbound `traceparent: 00-<trace_id>-<16-hex-span>-<trace-flags>` header plus an `X-Cycles-Trace-Id` mirror. The span-id is freshly generated per delivery; the trace-flags byte preserves the inbound W3C sampling decision when `traceparent_inbound_valid` was true, and defaults to `01` (sampled) otherwise.
 
-That one identifier is the end-to-end thread through admin → runtime → events → webhook consumer. And because the webhook outbound headers are W3C v00, your consumer's tracing infrastructure — Datadog APM, Honeycomb, Jaeger, Tempo, OpenTelemetry Collector — picks up the span automatically, without a custom adapter.
+That one identifier is the end-to-end thread through admin → runtime → events → webhook consumer. And because the webhook outbound headers follow the current `traceparent` format, your consumer's tracing infrastructure — Datadog APM, Honeycomb, Jaeger, Tempo, OpenTelemetry Collector — picks up the span automatically, without a custom adapter.
 
 ## Three identifiers, three different questions
 
@@ -146,7 +146,7 @@ For signature verification, idempotency, and delivery retries, see [Operational 
 
 Not every plane shipped `trace_id` at the same time. When you're upgrading in a staged environment, the minimum versions matter:
 
-| Plane | First version to populate `trace_id` |
+| Plane | Minimum version to populate `trace_id` |
 |---|---|
 | `cycles-server` (runtime) | v0.1.25.14 — `ErrorResponse`, emitted events |
 | `cycles-server-events` | v0.1.25.7 — outbound webhook `traceparent` + `X-Cycles-Trace-Id` headers |

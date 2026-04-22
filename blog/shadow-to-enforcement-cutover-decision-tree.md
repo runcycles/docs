@@ -35,7 +35,7 @@ Every platform engineer has seen this pattern. The team picks a duration — "ru
 
 The failure isn't in the duration. The failure is that a calendar has no opinion about whether the data you gathered covers the workload you're about to enforce against.
 
-Industry patterns learned this years ago. Stripe's rate-limiter rollout guide puts it plainly: [dark-launch each rate limiter to watch the traffic it would block before going live](https://stripe.com/blog/rate-limiters). Istio's `istio.io/dry-run: "true"` annotation lets policies evaluate without blocking so teams can measure. OPA Gatekeeper's `enforcementAction: dryrun` does the same thing for Kubernetes admission. Cloudflare's WAF offers a `Log` action before `Block`. The shape is consistent across every maturing enforcement tool: evaluate, measure, calibrate, then flip. And none of them recommend a fixed duration — they recommend a set of signals.
+Industry patterns learned this years ago. Stripe's rate-limiter post puts it plainly: ["Dark launch each rate limiter to watch the traffic they would block"](https://stripe.com/blog/rate-limiters). Istio ships an `istio.io/dry-run: "true"` annotation (Alpha status) that lets `AuthorizationPolicy` evaluate without blocking so teams can measure. OPA Gatekeeper's [`enforcementAction: dryrun`](https://open-policy-agent.github.io/gatekeeper/website/docs/violations/) does the same for Kubernetes admission, surfacing violations in the constraint's `status` field. Cloudflare's WAF offers a `Log` action before `Block`. Every maturing enforcement tool converges on the same shape — evaluate, measure, calibrate, then flip — and none of them recommend a fixed duration. They recommend a set of signals.
 
 Cycles' shadow mode is `dry_run: true` on a reservation request: the server runs the full scope-derivation, budget-check, and caps-computation logic, returns the decision (`ALLOW`, `ALLOW_WITH_CAPS`, or `DENY`) along with affected scopes and optional balance snapshots, and leaves budget state untouched. Your agent proceeds regardless of the result. See [How to Add Runtime Enforcement Without Breaking Your Agents](/blog/how-to-add-runtime-enforcement-without-breaking-your-agents) for the basic instrumentation playbook. This post is about what to read off those dry-run responses before you stop reading and start blocking.
 
@@ -56,7 +56,9 @@ Each category is a veto. If any of them is red, cutover is premature regardless 
 
 This is where most teams focus first, and where dry-run data is most directly useful.
 
-**False-positive denial rate.** Not every `DENY` in shadow mode is a denial you actually want in production. Some fraction represent estimate errors, misconfigured budgets, or legitimate overages the team chose to tolerate. A rough target: fewer than 5% of would-be denials represent work you'd want to let through. Higher than that, and your first day of enforcement produces a tide of pages. The healthiest teams classify a sample of shadow denials manually for at least a few days before cutover — it's the only way to separate "the policy caught a real problem" from "the estimate was too tight."
+**False-positive denial rate.** Not every `DENY` in shadow mode is a denial you actually want in production. Some fraction represent estimate errors, misconfigured budgets, or legitimate overages the team chose to tolerate. A reasonable target is the 3–8% band on the fraction of would-be denials that represent work you'd want to let through. Higher than that, and your first day of enforcement produces a tide of pages. The healthiest teams classify a sample of shadow denials manually for at least a few days before cutover — it's the only way to separate "the policy caught a real problem" from "the estimate was too tight."
+
+A note on terminology: *false-positive denial rate* is the percentage of shadow denials that were unintended. *Sustained denial rate*, referenced in the rollback table later, is the absolute frequency of denials after cutover. The two signals are distinct; don't compare them directly.
 
 **Reserve-to-commit ratio.** When reservations commit with the actual usage they reserved, the ratio hovers near 1.0. The band that's safe to enforce on is roughly 0.8–1.2 — held steady for at least a week, not just a single two-day sample. A ratio trending downward (you're over-reserving) means enforcement will reject legitimate work because your estimates are inflated. A ratio trending upward (you're under-reserving) means enforcement will under-protect. See [Estimate Drift: The Silent Killer of Budget Enforcement](/blog/estimate-drift-silent-killer-of-enforcement) for the operator diagnostic on this ratio.
 
@@ -95,13 +97,15 @@ A minimal scope-level freeze via the admin API looks like:
 ```bash
 # Freeze a scope's budget — new reservations return BUDGET_FROZEN
 # until the scope is unfrozen. In-flight commits are not affected.
-curl -X POST \
+curl -i -X POST \
   -H "X-Admin-API-Key: $ADMIN_KEY" \
   -H "Idempotency-Key: freeze-tenant-acme-2026-04-23" \
   "http://localhost:7979/v1/admin/budgets/acme-corp:prod/freeze"
+# → HTTP/1.1 200 OK
+# → { "scope": "acme-corp:prod", "status": "FROZEN", "frozen_at": "..." }
 ```
 
-The freeze is a hard kill switch on one scope. The softer version — flipping the scope's policy back to dry-run without losing the data path — is usually the preferred first move.
+The freeze is a hard kill switch on one scope: subsequent reservations get `BUDGET_FROZEN` until it's unfrozen. The softer version — flipping the scope's policy back to `dry_run: true` without losing the data path — is usually the preferred first move.
 
 **Rollback plan written down.** Two steps minimum: (1) flip the kill switch to restore shadow mode; (2) triage the signals that prompted the rollback before attempting re-enforcement. Teams that write this down in advance spend minutes on rollback, not hours.
 
