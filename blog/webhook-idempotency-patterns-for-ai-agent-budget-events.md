@@ -95,7 +95,7 @@ async def handle_webhook(request: Request):
     return {"status": "processed", "event_id": event_id}
 ```
 
-A 48-hour TTL leaves comfortable margin above Cycles' 24-hour stale-delivery ceiling. Shorter TTLs risk processing a replayed event as new; longer TTLs cost Redis memory without closing any additional delivery window.
+A 48-hour TTL leaves comfortable margin above Cycles' 24-hour stale-delivery ceiling. Shorter TTLs risk processing a replayed event as new; longer TTLs cost Redis memory without materially improving protection for the default delivery window. Operators who run their own long-tail replay processes may want to keep a longer dedup window deliberately.
 
 The `hmac.compare_digest` call is doing real work. A naive `==` comparison leaks the position of the first mismatched byte through timing, which is enough for a sufficiently motivated attacker to forge a valid signature one byte at a time. Use the standard library's constant-time compare — every modern language ships one.
 
@@ -112,6 +112,8 @@ async def handle_webhook_durable(request: Request, db):
 
     if not verify(body, sig):
         raise HTTPException(401, "bad signature")
+    if not event_id:
+        raise HTTPException(400, "missing event id")
 
     # Returns 1 row inserted if new, 0 if duplicate
     inserted = await db.execute("""
