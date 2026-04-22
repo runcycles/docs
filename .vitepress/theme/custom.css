@@ -274,35 +274,21 @@ samp {
   font-weight: 600;
 }
 
-/* ── Blog featured strip (editor's picks) ──
+/* ── Blog featured strip ──
    Up to 5 most-recent featured posts pinned to the top of /blog/.
-   Hidden when a tag filter is active — the filtered stream is deliberately
-   chronological; editorial picks from other topics would be noise there.
+   Hidden when a tag filter or featured-only filter is active.
+   No section heading — each card carries the FEATURED badge, matching
+   the main-stream card pattern below.
 */
 .blog-featured-strip {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-
-.blog-featured-strip-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  /* No border-bottom on the section itself — the last card's border is
+     the divider. Prevents a double-line stack against Start Here below. */
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
-.blog-featured-strip-heading {
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--vp-c-text-2);
-  margin: 0;
-  border: none;
-  padding: 0;
+.blog-featured-strip-footer {
+  padding: 8px 0 12px;
+  text-align: right;
 }
 
 .blog-featured-strip-more {

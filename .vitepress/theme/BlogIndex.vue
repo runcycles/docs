@@ -131,46 +131,7 @@ onMounted(() => {
       </a>
     </div>
 
-    <section
-      v-if="featuredStrip.length"
-      class="blog-featured-strip"
-      aria-label="Featured posts"
-    >
-      <div class="blog-featured-strip-header">
-        <h2 class="blog-featured-strip-heading">Featured</h2>
-        <button
-          v-if="hasMoreFeatured"
-          type="button"
-          class="blog-featured-strip-more"
-          @click="toggleFeaturedOnly(true)"
-        >See all {{ featuredPosts.length }} featured &rarr;</button>
-      </div>
-      <article v-for="post in featuredStrip" :key="post.url" class="blog-card">
-        <div class="blog-card-content">
-          <h2>
-            <a :href="post.url">{{ post.title }}</a>
-            <span v-if="isNew(post.date)" class="blog-new-badge">NEW</span>
-          </h2>
-          <div class="blog-meta">
-            <time class="blog-date" :datetime="post.date">{{ formatDate(post.date) }}</time>
-            <span class="blog-author"> &middot; {{ post.author }}</span>
-            <span class="blog-reading-time"> &middot; {{ post.readingTime }} min read</span>
-          </div>
-          <p class="blog-description">{{ post.description }}</p>
-          <div class="blog-card-tags" v-if="post.tags.length">
-            <button v-for="tag in post.tags" :key="tag" class="blog-tag blog-tag-clickable" @click="selectTag(tag)">{{ tag }}</button>
-          </div>
-        </div>
-        <img v-if="post.image" :src="post.image" :alt="post.title" class="blog-card-thumb" loading="lazy" />
-      </article>
-    </section>
-
-    <div v-if="featuredOnly" class="blog-featured-filter-banner">
-      <span>Showing all {{ featuredPosts.length }} featured posts, newest first.</span>
-      <button type="button" class="blog-tags-clear" @click="toggleFeaturedOnly(false)" aria-label="Clear featured filter">&larr; Back to all posts</button>
-    </div>
-
-    <section v-if="!selectedTag" class="blog-start-here">
+    <section v-if="!selectedTag && !featuredOnly" class="blog-start-here">
       <button class="blog-start-here-toggle" @click="startHereOpen = !startHereOpen" :aria-expanded="startHereOpen">
         Start Here <span class="blog-tags-arrow" :class="{ open: startHereOpen }">▸</span>
       </button>
@@ -186,6 +147,44 @@ onMounted(() => {
         <p class="blog-start-here-cta">Ready to try Cycles? Jump to the <a href="/quickstart/end-to-end-tutorial">End-to-End Tutorial</a>.</p>
       </div>
     </section>
+
+    <section
+      v-if="featuredStrip.length"
+      class="blog-featured-strip"
+      aria-label="Featured posts"
+    >
+      <article v-for="post in featuredStrip" :key="post.url" class="blog-card">
+        <div class="blog-card-content">
+          <h2>
+            <a :href="post.url">{{ post.title }}</a>
+            <span class="blog-featured-badge">FEATURED</span>
+            <span v-if="isNew(post.date)" class="blog-new-badge">NEW</span>
+          </h2>
+          <div class="blog-meta">
+            <time class="blog-date" :datetime="post.date">{{ formatDate(post.date) }}</time>
+            <span class="blog-author"> &middot; {{ post.author }}</span>
+            <span class="blog-reading-time"> &middot; {{ post.readingTime }} min read</span>
+          </div>
+          <p class="blog-description">{{ post.description }}</p>
+          <div class="blog-card-tags" v-if="post.tags.length">
+            <button v-for="tag in post.tags" :key="tag" class="blog-tag blog-tag-clickable" @click="selectTag(tag)">{{ tag }}</button>
+          </div>
+        </div>
+        <img v-if="post.image" :src="post.image" :alt="post.title" class="blog-card-thumb" loading="lazy" />
+      </article>
+      <div v-if="hasMoreFeatured" class="blog-featured-strip-footer">
+        <button
+          type="button"
+          class="blog-featured-strip-more"
+          @click="toggleFeaturedOnly(true)"
+        >See all {{ featuredPosts.length }} featured &rarr;</button>
+      </div>
+    </section>
+
+    <div v-if="featuredOnly" class="blog-featured-filter-banner">
+      <span>Showing all {{ featuredPosts.length }} featured posts, newest first.</span>
+      <button type="button" class="blog-tags-clear" @click="toggleFeaturedOnly(false)" aria-label="Clear featured filter">&larr; Back to all posts</button>
+    </div>
 
     <article v-for="(post, i) in paginatedPosts" :key="post.url" class="blog-card">
       <div class="blog-card-content">
