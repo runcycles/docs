@@ -23,7 +23,7 @@ head:
 
 An engineering lead two weeks into a Cycles rollout asks the question everybody asks eventually: *when do we turn on enforcement?*
 
-Shadow mode has been instrumented on every model call for ten days. Dry-run reservations are being evaluated and logged. Dashboards show a would-be denial rate around 4%. Some of those denials look like legitimate overages. Some look like estimate drift on a specific agent. The team has a working budget policy for three tenants. A fourth is still draft. Marketing wants a date on the cutover milestone.
+Shadow mode has been instrumented on every model call for ten days. Dry-run decisions are being evaluated and logged. Dashboards show a would-be denial rate around 4%. Some of those denials look like legitimate overages. Some look like estimate drift on a specific agent. The team has a working budget policy for three tenants. A fourth is still draft. Marketing wants a date on the cutover milestone.
 
 The bad version of this decision is calendar-driven: "it's been two weeks, flip the switch." The good version is signal-driven: "the shape of what we're seeing matches what hard enforcement looks like in production." The difference between those two decisions is the difference between a clean cutover and a 3 AM rollback — and most teams don't know until afterwards which version they made.
 
