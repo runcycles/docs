@@ -56,7 +56,7 @@ The Cycles governance-admin spec addresses this directly with a two-rule contrac
 
 Each mutated object writes a dedicated audit entry using a reserved `event_kind` value — `budget.closed_via_tenant_cascade`, `api_key.revoked_via_tenant_cascade`, `reservation.released_via_tenant_cascade`, `webhook.disabled_via_tenant_cascade` — all sharing the `correlation_id` of the originating `tenant.closed` entry, so an auditor can reconstruct the cascade in a single query over the audit trail.
 
-**Rule 2 — Terminal-Owner Mutation Guard.** Every mutating endpoint on an owned object first checks the parent tenant's status. If the tenant is `CLOSED`, the endpoint returns `409 Conflict` with `error_code: TENANT_CLOSED`, regardless of the per-object terminal state. The guard applies across the budget, reservation, policy, API key, and webhook planes. `GET` endpoints remain available — closed-tenant state is readable for post-mortems and compliance evidence.
+**Rule 2 — Terminal-Owner Mutation Guard.** Every mutating endpoint on an owned object first checks the parent tenant's status. If the tenant is `CLOSED`, the endpoint returns `409 Conflict` with `error: "TENANT_CLOSED"`, regardless of the per-object terminal state. The guard applies across the budget, reservation, policy, API key, and webhook planes. `GET` endpoints remain available — closed-tenant state is readable for post-mortems and compliance evidence.
 
 Rule 1 is about *reaching* a consistent terminal state. Rule 2 is about *defending* that terminal state against the inevitable race with in-flight requests.
 
@@ -73,7 +73,7 @@ How these rules are implemented can vary. A protocol spec that only accepted one
 - Convergence within a documented bound.
 - Observable reads of non-terminal children remain consistent until the cascade reaches them.
 
-The important property is that both modes produce the same *client-observable* outcome: once the tenant is `CLOSED`, every mutation against any owned object returns `409 TENANT_CLOSED`, regardless of which per-object row flipped first. The mode is an implementation detail the spec deliberately leaves open — a transactional SQL backend can deliver Mode A cleanly, while a Redis-backed admin can opt into Mode B as long as the guard activates at or before the flip's durability.
+The important property is that both modes produce the same *client-observable* outcome: once the tenant is `CLOSED`, every mutation against any owned object returns a `409` with `error: "TENANT_CLOSED"`, regardless of which per-object row flipped first. The mode is an implementation detail the spec deliberately leaves open — a transactional SQL backend can deliver Mode A cleanly, while a Redis-backed admin can opt into Mode B as long as the guard activates at or before the flip's durability.
 
 ## Where operators actually trip
 
@@ -81,7 +81,7 @@ In several years of watching teams deploy tenant-lifecycle code, three failure m
 
 **Mistaking closure for suspension.** Operators hit "close tenant" when they want "suspend tenant." Closure is terminal. The spec allows `* → CLOSED` from any prior state — including direct `ACTIVE → CLOSED` — but no transitions out of `CLOSED`: `CLOSED → ACTIVE` is not valid, and neither is `CLOSED → SUSPENDED`. Once a tenant is closed, it remains read-only — recovery from `CLOSED` is not supported by design. The reversible path is `ACTIVE → SUSPENDED → ACTIVE`. This mirrors how AWS Organizations treats member-account closure: a deliberate one-way operation, not a toggle.
 
-**Forgetting bulk-action semantics.** If a bulk endpoint — say, mass-revoke of 500 API keys across a tenant — runs while the tenant is closing, the per-row behavior matters. Cycles bulk actions return a mixed response: every row that was mutated reports success; every row that hit the terminal-owner guard lands in `failed[]` with `error_code: TENANT_CLOSED`, and the rest of the batch proceeds. Operators who reach for `--exit-on-error`-style semantics are surprised when a partial bulk continues. The right default is a partial-success rollup, because the alternative — failing the whole batch on any `TENANT_CLOSED` — would mean a concurrent tenant close effectively poisons every unrelated bulk action in the stack.
+**Forgetting bulk-action semantics.** If a bulk endpoint — say, mass-revoke of 500 API keys across a tenant — runs while the tenant is closing, the per-row behavior matters. Cycles bulk actions return a mixed response: every row that was mutated reports success; every row that hit the terminal-owner guard lands in `failed[]` with an `error_code` of `TENANT_CLOSED`, and the rest of the batch proceeds. Operators who reach for `--exit-on-error`-style semantics are surprised when a partial bulk continues. The right default is a partial-success rollup, because the alternative — failing the whole batch on any `TENANT_CLOSED` — would mean a concurrent tenant close effectively poisons every unrelated bulk action in the stack.
 
 **Assuming webhook disablement is reversible.** Once a webhook subscription goes to `DISABLED` via cascade, re-enabling it is blocked by Rule 2: the subscription is an owned object of a closed tenant, and the parent check rejects the mutation. Rule 2 is what makes `DISABLED` effectively terminal in the cascade flow. If you need to migrate webhook deliveries to a new tenant, the operator pattern is to provision a new subscription under a new (or still-`ACTIVE`) tenant and drain delivery there — never try to reopen the old one.
 
@@ -111,15 +111,15 @@ curl -s -H "X-Admin-API-Key: $ADMIN_KEY" \
 
 You'll see one audit entry per owned object: one `budget.closed_via_tenant_cascade` per ledger, one `api_key.revoked_via_tenant_cascade` per key, one `webhook.disabled_via_tenant_cascade` per subscription, and one `reservation.released_via_tenant_cascade` per open reservation that was drained. All share a `correlation_id` with the top-level `tenant.closed` entry, which is how an auditor reconstructs the cascade without having to cross-join on timestamp.
 
-A subsequent attempt to mutate an owned object under the closed tenant returns the terminal-owner guard's `409`:
+A subsequent attempt to mutate an owned object under the closed tenant returns the terminal-owner guard's `409`. Reservation lifecycle lives on the runtime plane:
 
 ```bash
 # Mutation on a released reservation under a closed tenant
 curl -i -X POST \
-  -H "X-Admin-API-Key: $ADMIN_KEY" \
-  "http://localhost:7979/v1/admin/reservations/res-xyz/extend"
+  -H "X-Cycles-API-Key: $TENANT_KEY" \
+  "http://localhost:7878/v1/reservations/res-xyz/commit"
 # → HTTP/1.1 409 Conflict
-# → { "error_code": "TENANT_CLOSED", "tenant_id": "acme-corp", "trace_id": "..." }
+# → { "error": "TENANT_CLOSED", "trace_id": "..." }
 ```
 
 A request that tries to authenticate with a key revoked by the cascade takes a different path — the API key check fails at the auth layer before the terminal-owner guard is ever consulted:
