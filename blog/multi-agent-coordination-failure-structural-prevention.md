@@ -29,13 +29,13 @@ The short version: most multi-agent failures aren't prompt problems, and the fix
 
 ## Three failure categories, three prevention layers
 
-MAST grouped 14 observed failure modes into three categories, with distinct distributions:
+MAST grouped 14 observed failure modes into three categories, with distinct distributions (roughly 44 / 32 / 24% — see the paper's Section 4 breakdown for the precise per-mode counts):
 
-| Category | Share of failures | Examples | Prevention layer |
+| Category | Approx. share | Examples | Prevention layer |
 |---|---|---|---|
-| **System design** | 44.2% | Role overlap, missing escalation, scope ambiguity, unclear termination condition | Architecture (before the agents are written) |
-| **Inter-agent misalignment** | 32.3% | Handoff losing context, contradictory plans, infinite loops across agent boundaries | Protocol (coordination contract) |
-| **Task verification** | 23.5% | No final check on output, premature completion, verification bypassed under time pressure | Runtime (post-execution checks) |
+| **System design** | ~44% | Role overlap, missing escalation, scope ambiguity, unclear termination condition | Architecture (before the agents are written) |
+| **Inter-agent misalignment** | ~32% | Handoff losing context, contradictory plans, infinite loops across agent boundaries | Protocol (coordination contract) |
+| **Task verification** | ~24% | No final check on output, premature completion, verification bypassed under time pressure | Runtime (post-execution checks) |
 
 The categories don't prevent each other. A perfect architecture with no protocol will still produce misalignment failures. A perfect protocol with no verification will still produce task-verification failures. Each layer needs its own pattern.
 
@@ -51,13 +51,13 @@ The failures in the 44% bucket — the ones MAST called "system design" — are 
 
 **Scope ambiguity.** An agent has access to a broader set of tools or data than the task requires. A "customer support agent" can reach the refund API. A "code review agent" has write access to the repository. Prompt-level fixes ("only use these tools for these tasks") work until the agent is prompt-injected, or until the task crosses a boundary the instructions didn't anticipate.
 
-The structural answer is to make the boundaries enforceable rather than advisory. In Cycles, this is the scope hierarchy: every reservation derives a scope path like `tenant:acme/workspace:support/app:triage/workflow:refund/agent:executor/toolset:refunds`. Each node in that path is an independent budget boundary. An agent at one node can't reach budget allocated to a sibling node, no matter what its prompt says. Role overlap becomes impossible to express in the budget model — if two agents want to decide on the same refund, they both need a reservation against the `agent:executor` scope, and only one of them gets one atomically. For the full pattern, see [Agent Delegation Chains and Authority Attenuation](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation).
+The structural answer is to make the boundaries enforceable rather than advisory. In Cycles, this is the scope hierarchy: every reservation derives a scope path like `tenant:acme/workspace:support/app:triage/workflow:refund/agent:executor/toolset:refunds`. Each node in that path is an independent budget boundary. An agent at one node can't reach budget allocated to a sibling node, no matter what its prompt says. Role overlap becomes materially bounded in the budget model — two agents trying to act on the same refund both need reservations against the `agent:executor` scope, and the budget ledger caps how much the overlap can cost even if both proceed. What the budget ledger does *not* do is prove that only one agent ultimately commits the refund against the downstream system; that still needs a workflow-level idempotency key or application-owned lock. Budget atomicity bounds the *authority*; business-object atomicity is still the application's job. For the full pattern, see [Agent Delegation Chains and Authority Attenuation](/blog/agent-delegation-chains-authority-attenuation-not-trust-propagation).
 
 The other structural pattern is *authority attenuation*: the child agent's budget is a strict subset of the parent's, at the moment of delegation. A parent with $100 and access to `toolset:refund` + `toolset:email` can hand its child a sub-budget of $10 with access to `toolset:refund` only. A prompt-injected child can't escalate out of its parent's attenuated authority because the attenuation is enforced in the budget ledger, not the prompt.
 
 ## Layer 2: protocol prevention (inter-agent misalignment)
 
-The failures in the 32% bucket are the ones where two agents both did their jobs correctly but disagreed about what the job was. The 2025 SEMAP paper ([arXiv:2510.12120](https://arxiv.org/abs/2510.12120)) measured a 69.6% reduction in function-level failure rate by introducing structured inter-agent protocols — explicit contracts, lifecycle-guided execution, verification gates at each handoff. The SEMAP result isn't specific to coding agents; the pattern generalizes.
+The failures in the ~32% bucket are the ones where two agents both did their jobs correctly but disagreed about what the job was. The 2025 SEMAP paper ([arXiv:2510.12120](https://arxiv.org/abs/2510.12120)) shows that structured protocols can dramatically reduce coordination failures in software-engineering multi-agent systems — specifically a 69.6% reduction on function-level development tasks through explicit contracts, lifecycle-guided execution, and verification gates at each handoff. The paper's evidence is domain-specific, but the pattern likely generalizes: the same structural moves have shown up under different names in distributed-systems work for decades.
 
 The pattern is that handoffs between agents need a *contract*, not just a message. Three concrete moves:
 
@@ -71,9 +71,9 @@ Protocols live above the runtime, in the orchestration layer. Cycles provides th
 
 ## Layer 3: runtime prevention (verification + backstop)
 
-The third category — the 23% of failures that are task-verification issues — is the one where a correctly-architected, correctly-protocoled agent chain still produces a wrong answer, and no internal check catches it. This is the "200 OK" category: the system looks healthy at every layer but the output is wrong.
+The third category — the ~24% of failures that are task-verification issues — is the one where a correctly-architected, correctly-protocoled agent chain still produces a wrong answer, and no internal check catches it. This is the "200 OK" category: the system looks healthy at every layer but the output is wrong.
 
-Prompt-level verification is brittle here for the same reason it's brittle in the first two layers: the verifier is another LLM call, subject to the same failure modes as the agent it's verifying. The Cloud Security Alliance's [March 2026 analysis of delegation chain vulnerabilities](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) documents a class of attacks ("Agent Session Smuggling," "Cross-Agent Privilege Escalation") where a compromised sub-agent silently rewrites the verification state. Every agent in the chain looks fine in isolation.
+Prompt-level verification is brittle here for the same reason it's brittle in the first two layers: the verifier is another LLM call, subject to the same failure modes as the agent it's verifying. The Cloud Security Alliance's industry analysis ["Fixing AI Agent Delegation for Secure Chains"](https://cloudsecurityalliance.org/articles/control-the-chain-secure-the-system-fixing-ai-agent-delegation) documents exploit patterns ("Agent Session Smuggling," "Cross-Agent Privilege Escalation") where a compromised sub-agent silently rewrites the verification state — every agent in the chain looks fine in isolation. Industry write-ups like the CSA's aren't peer-reviewed research, but the documented exploit classes are real and worth designing against.
 
 What works at this layer is *external enforcement that doesn't trust the agents*. Three backstops:
 
@@ -87,15 +87,15 @@ The runtime layer is deliberately not the first layer of defense — architectur
 
 Every major multi-agent framework ships some subset of these prevention layers. None ships all three by default, and the gaps are worth understanding:
 
-| Framework | Hierarchical budget attenuation | Structured handoff contracts | Pre-execution enforcement | Coordination-budget cap |
+| Framework | Built-in budget attenuation | Built-in handoff contracts | Built-in pre-execution enforcement | Built-in coordination-budget cap |
 |---|---|---|---|---|
-| **CrewAI** | Per-agent roles, shared budget pool | Role-based task assignment (loose) | No | No |
-| **LangGraph** | Graph-based state, no budget hierarchy | Typed node inputs/outputs (partial) | No | No |
-| **AutoGen** | Conversation model, shared pool | Conversation turns (unstructured) | No | No |
-| **Semantic Kernel** | Per-agent tool scoping (loose) | Application-defined | Application-dependent | No |
-| **MS Agent Framework** | Checkpointing, scope supported but not enforced | Five orchestration patterns | No | No |
+| **CrewAI** | Per-agent roles; budget pool is shared | Role-based task assignment (loose) | App-defined | App-defined |
+| **LangGraph** | Graph-based typed state; no budget hierarchy | Typed node inputs/outputs (partial) | App-defined | App-defined |
+| **AutoGen** | Conversation model; budget pool is shared | Conversation turns (unstructured) | App-defined | App-defined |
+| **Semantic Kernel** | Per-agent tool scoping (loose) | App-defined | App-defined | App-defined |
+| **MS Agent Framework** | Checkpointing; scope supported, not enforced | Five built-in orchestration patterns | App-defined | App-defined |
 
-All five do the orchestration well. What none of them do natively is pre-execution budget enforcement at the scope boundary, which means none of them can stop a prompt-injected sub-agent from draining the parent's budget before the orchestrator notices. This isn't a criticism of the frameworks — orchestration is a genuinely hard problem and they're solving it well — but it's why a coordination-failure incident at 2 AM usually bottoms out in the budget layer, not the orchestration layer.
+All five do the orchestration well. What none of them ship natively is pre-execution budget enforcement at the scope boundary — it's solvable at the application layer in each of them, but nothing stops a prompt-injected sub-agent from draining the parent's budget before the orchestrator notices unless that enforcement has been explicitly wired in. This isn't a criticism of the frameworks — orchestration is a genuinely hard problem and they're solving it well — but it's why a coordination-failure incident at 2 AM usually bottoms out in the budget layer, not the orchestration layer.
 
 The pattern teams converge on in practice is framework *plus* a runtime authority layer: use CrewAI or LangGraph for the orchestration, delegate the budget boundary enforcement to a dedicated layer like Cycles. See [Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI Agents SDK](/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk) for the integration patterns.
 
@@ -136,5 +136,5 @@ The frameworks do good work at one or two of these layers. Holding the third —
 - [When Budget Runs Out: Graceful Degradation Patterns](/blog/when-budget-runs-out-graceful-degradation-patterns-for-ai-agents) — fallback patterns when a reservation is denied
 - [UC Berkeley MAST study](https://arxiv.org/abs/2503.13657) — 1,642-trace annotated multi-agent failure taxonomy
 - [SEMAP: structured protocols for multi-agent coordination](https://arxiv.org/abs/2510.12120) — 69.6% failure reduction via explicit contracts
-- [Cloud Security Alliance: Fixing AI Agent Delegation](https://cloudsecurityalliance.org/blog/2026/03/25/control-the-chain-secure-the-system-fixing-ai-agent-delegation) — documented delegation-chain attack patterns
+- [Cloud Security Alliance: Fixing AI Agent Delegation for Secure Chains](https://cloudsecurityalliance.org/articles/control-the-chain-secure-the-system-fixing-ai-agent-delegation) — industry analysis with documented delegation-chain exploit patterns
 - [DeepMind: Towards a Science of Scaling Agent Systems](https://arxiv.org/html/2512.08296v1) — error amplification across unstructured multi-agent networks
