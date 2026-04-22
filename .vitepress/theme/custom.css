@@ -194,6 +194,7 @@ samp {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .blog-tags {
@@ -299,7 +300,6 @@ samp {
   border: none;
   padding: 0;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .blog-featured-strip-more:hover {
@@ -502,6 +502,24 @@ samp {
   border-radius: 8px;
   flex-shrink: 0;
   margin-left: 16px;
+}
+
+/* Stack the thumbnail above the content on narrow screens — 120×80 to
+   the right of text crowds the description on phones and causes title
+   wraps to look ragged. Below 520px the thumb moves above content and
+   stretches to fill the card width at a friendlier 16:9 aspect. */
+@media (max-width: 520px) {
+  .blog-card {
+    flex-direction: column-reverse;
+  }
+  .blog-card-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 180px;
+    margin-left: 0;
+    margin-bottom: 12px;
+  }
 }
 
 .blog-meta {
@@ -728,19 +746,42 @@ samp {
   height: 32px;
 }
 
-/* On narrow screens, hide First/Last verbose labels to keep the row
-   from wrapping aggressively. Newer/Older and numbered pages stay. */
+/* On narrow screens tighten the pagination row. Under 420px, collapse
+   "« First" and "Last »" to the glyphs alone so all five controls fit
+   on a single line next to the number window. */
 @media (max-width: 520px) {
   .blog-pagination {
     gap: 4px;
   }
   .blog-pagination .blog-page-step {
-    padding: 6px 8px;
+    padding: 0 8px;
     font-size: 12px;
   }
-  .blog-page-num {
+  .blog-pagination .blog-page-num {
     min-width: 30px;
-    padding: 6px 6px;
+    padding: 0 6px;
+  }
+  .blog-page-numbers {
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .blog-pagination .blog-page-step[aria-label="First page"] {
+    font-size: 0;
+    padding: 0 8px;
+  }
+  .blog-pagination .blog-page-step[aria-label="First page"]::before {
+    content: "\00ab";
+    font-size: 14px;
+  }
+  .blog-pagination .blog-page-step[aria-label="Last page"] {
+    font-size: 0;
+    padding: 0 8px;
+  }
+  .blog-pagination .blog-page-step[aria-label="Last page"]::before {
+    content: "\00bb";
+    font-size: 14px;
   }
 }
 

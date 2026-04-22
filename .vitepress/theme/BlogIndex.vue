@@ -96,6 +96,9 @@ function selectTag(tag) {
     url.searchParams.delete('tag')
   }
   history.replaceState(null, '', url.toString())
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 function toggleFeaturedOnly(on) {
@@ -110,6 +113,9 @@ function toggleFeaturedOnly(on) {
     url.searchParams.delete('featured')
   }
   history.replaceState(null, '', url.toString())
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 function formatDate(dateStr) {
@@ -118,6 +124,11 @@ function formatDate(dateStr) {
   })
 }
 
+// URL param precedence on load: ?featured=1 wins over ?tag=X. The two
+// filters are mutually exclusive in the UI, so when both are present we
+// pick featured and silently drop the tag rather than rendering an
+// impossible state. selectTag/toggleFeaturedOnly keep the URL in sync
+// going forward — this only matters for a hand-crafted link.
 onMounted(() => {
   const url = new URL(window.location.href)
   const tagParam = url.searchParams.get('tag')
@@ -206,7 +217,7 @@ onMounted(() => {
           type="button"
           class="blog-featured-strip-more"
           @click="toggleFeaturedOnly(true)"
-        >See all {{ featuredPosts.length }} featured &rarr;</button>
+        >See all {{ featuredPosts.length }} featured posts &rarr;</button>
       </div>
     </section>
 
