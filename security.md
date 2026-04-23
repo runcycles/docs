@@ -9,12 +9,11 @@ Cycles is infrastructure that sits in the execution path of autonomous agents. S
 
 ## Data residency
 
-All Cycles state lives in Redis.
-
-- **Self-hosted**: Redis runs in your infrastructure. No data leaves your network. You control the region, the instance type, and the retention policy.
-- **Managed cloud** (RunCycles.io): Redis runs in the cloud region you select at provisioning. Data does not leave the selected region.
+All Cycles state lives in Redis. Cycles is currently self-hosted only: Redis runs in your infrastructure, no data leaves your network, and you control the region, the instance type, and the retention policy.
 
 Cycles stores budget state — reservation amounts, balances, event records, and tenant configuration. It does not store LLM prompts, responses, or any content from agent interactions.
+
+A managed cloud offering (RunCycles.io) is planned. It is not yet available.
 
 ## Event audit trail
 
@@ -74,15 +73,11 @@ All Cycles services run on the internal network. Only the load balancer is expos
 - **Revocation**: Immediate. A revoked key is rejected on the next request.
 - **Storage**: Keys should live in a secrets manager (AWS Secrets Manager, HashiCorp Vault), never in source control.
 
-## Self-hosted vs managed cloud
+## Deployment model
 
-| | Self-Hosted | Managed Cloud (RunCycles.io) |
-|---|---|---|
-| Data location | Your infrastructure | Cloud region you select |
-| Network exposure | Your network only | TLS-terminated, access-controlled |
-| Redis management | You operate | We operate |
-| Admin server access | You control | Role-based access |
-| Compliance scope | Your audit perimeter | SOC 2 Type I in progress |
+Cycles ships today as self-hosted open source. Redis, the runtime server, the admin server, and the events service all run inside your infrastructure. Data location, network exposure, Redis operation, admin-server access, and compliance scope are all under your control and inherit your existing audit perimeter.
+
+A managed cloud offering (RunCycles.io) is on the roadmap. When it ships, this page will document its data-residency, access-control, and certification posture.
 
 ## Webhook security
 
@@ -118,9 +113,9 @@ Webhooks are delivered at least once. Network retries, service restarts, or repl
 
 ## Certification status
 
-SOC 2 Type I certification is in progress for the managed cloud offering. This page and the [Security Hardening Guide](/how-to/security-hardening) document exactly what we log, how we store it, and how access is controlled.
+Cycles is currently self-hosted only, so compliance posture inherits whatever your own infrastructure and audit perimeter already provide. This page and the [Security Hardening Guide](/how-to/security-hardening) document exactly what we log, how we store it, and how access is controlled, so your security and compliance teams can evaluate Cycles against your existing controls.
 
-For self-hosted deployments, Cycles runs entirely within your infrastructure and inherits your existing compliance posture.
+A formal certification program (starting with SOC 2 Type I) will accompany the planned managed cloud offering. It is not yet in progress.
 
 ## Next steps
 
