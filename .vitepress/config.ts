@@ -445,10 +445,6 @@ export default defineConfig({
         }
       ],
     },
-    footer: {
-      message: 'Released under the Apache 2.0 License.',
-      copyright: 'Copyright 2025-present RunCycles.io'
-    },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/runcycles/docs' }
     ]
