@@ -12,6 +12,7 @@ import BlogPostNav from './BlogPostNav.vue'
 import PageFeedback from './PageFeedback.vue'
 import Breadcrumb from './Breadcrumb.vue'
 import MobileThemeToggle from './MobileThemeToggle.vue'
+import SiteFooter from './SiteFooter.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
@@ -41,6 +42,7 @@ const { frontmatter } = useData()
     </template>
     <template #layout-bottom>
       <MobileThemeToggle />
+      <SiteFooter />
     </template>
   </Layout>
 </template>
