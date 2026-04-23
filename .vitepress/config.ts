@@ -296,7 +296,6 @@ export default defineConfig({
               ]
             },
             { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
-            { text: 'Troubleshooting and FAQ', link: '/how-to/troubleshooting-and-faq' },
           ]
         },
         {
