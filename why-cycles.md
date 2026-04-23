@@ -73,7 +73,7 @@ The event log is queryable via the REST API. Retention is 90 days in hot storage
 
 Access control separates the runtime plane (port 7878, scoped API keys with least-privilege permissions) from the management plane (port 7979, admin-only, never exposed to the public internet). API keys support rotation, revocation, and per-permission scoping.
 
-Self-hosted deployments keep all data in your infrastructure — nothing leaves your network. SOC 2 Type I is in progress for the managed cloud offering.
+Cycles is self-hosted open source today, so all data stays in your infrastructure and inherits your existing compliance posture. A managed cloud offering is planned but not yet available.
 
 [Security overview →](/security) · [Event log API →](/protocol/how-events-work-in-cycles-direct-debit-without-reservation) · [Security hardening →](/how-to/security-hardening)
 

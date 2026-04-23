@@ -90,7 +90,7 @@ Signal category most often underweighted. When the first legitimate denial fires
 
 The last category is the one that's often skipped because it feels defeatist. It isn't. It's the category that lets you cut over *aggressively* on the signals above, because you have a clean exit if reality disagrees with the data.
 
-**Kill-switch design.** A feature flag, a config toggle, or a small code path that flips every call back to `dry_run: true` without a deploy. On a managed Cycles cloud, this can be done per-scope via a budget setting; on self-hosted, it's usually a process environment variable. Either way, the engineer on call shouldn't have to push code to roll back.
+**Kill-switch design.** A feature flag, a config toggle, or a small code path that flips every call back to `dry_run: true` without a deploy. On self-hosted Cycles, this is usually a process environment variable or an admin-API budget setting toggled per scope. Either way, the engineer on call shouldn't have to push code to roll back.
 
 The effect you're after is a scope-level freeze via the admin API: once a budget is frozen, subsequent reservations against that scope return `BUDGET_FROZEN` until the scope is unfrozen, and in-flight commits are not affected. The exact admin route shape varies by deployment — check your admin API surface for the freeze/unfreeze endpoints it exposes; the semantics matter more than the literal path.
 
