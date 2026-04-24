@@ -17,18 +17,21 @@ description: "Cycles documentation — quickstart guides, integration tutorials,
 
 - [Python Client](/quickstart/getting-started-with-the-python-client) — `pip install runcycles`
 - [TypeScript Client](/quickstart/getting-started-with-the-typescript-client) — `npm install runcycles`
+- [Rust Client](/quickstart/getting-started-with-the-rust-client) — native reserve/commit client
 - [Spring Boot Starter](/quickstart/getting-started-with-the-cycles-spring-boot-starter) — `@Cycles` annotation
 - [MCP Server](/quickstart/getting-started-with-the-mcp-server) — zero-code for Claude / Cursor / Windsurf
 
 ## Integrations
 
-27 framework integrations — [view all](/how-to/integrations-overview)
+27 integrations — [view all](/how-to/integrations-overview)
 
 **LLM Providers:** [OpenAI](/how-to/integrating-cycles-with-openai) · [OpenAI (TS)](/how-to/integrating-cycles-with-openai-typescript) · [Anthropic](/how-to/integrating-cycles-with-anthropic) · [Anthropic (TS)](/how-to/integrating-cycles-with-anthropic-typescript) · [AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock) · [Google Gemini](/how-to/integrating-cycles-with-google-gemini) · [Groq](/how-to/integrating-cycles-with-groq) · [Ollama](/how-to/integrating-cycles-with-ollama)
 
 **AI Frameworks:** [LangChain](/how-to/integrating-cycles-with-langchain) · [LangChain.js](/how-to/integrating-cycles-with-langchain-js) · [LangGraph](/how-to/integrating-cycles-with-langgraph) · [AutoGen](/how-to/integrating-cycles-with-autogen) · [AnyAgent](/how-to/integrating-cycles-with-anyagent) · [Spring AI](/how-to/integrating-cycles-with-spring-ai) · [Vercel AI](/how-to/integrating-cycles-with-vercel-ai-sdk) · [LlamaIndex](/how-to/integrating-cycles-with-llamaindex) · [CrewAI](/how-to/integrating-cycles-with-crewai) · [Pydantic AI](/how-to/integrating-cycles-with-pydantic-ai)
 
 **Agent Platforms:** [MCP](/how-to/integrating-cycles-with-mcp) · [OpenAI Agents](/how-to/integrating-cycles-with-openai-agents) · [OpenClaw](/how-to/integrating-cycles-with-openclaw)
+
+**Runtime SDKs:** [Rust](/how-to/integrating-cycles-with-rust)
 
 **Web Frameworks:** [Next.js](/how-to/integrating-cycles-with-nextjs) · [Express](/how-to/integrating-cycles-with-express) · [Django](/how-to/integrating-cycles-with-django) · [Flask](/how-to/integrating-cycles-with-flask) · [FastAPI](/how-to/integrating-cycles-with-fastapi)
 
