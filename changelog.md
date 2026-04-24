@@ -22,6 +22,20 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 | `cycles-server-events` | v0.1.25.11 | 2026-04-23 |
 | `cycles-dashboard` | v0.1.25.59 | 2026-04-23 |
 
+**Client SDKs and plugins.** The language clients and plugin integrations are versioned independently from the protocol / server / dashboard tracks — they track the client API surface rather than the wire spec. Current releases:
+
+| SDK / plugin | Version | Release date | Runtime | Release notes |
+|---|---|---|---|---|
+| `cycles-client-typescript` | 0.2.0 | 2026-03-24 | Node 20+ (native fetch) | [CHANGELOG](https://github.com/runcycles/cycles-client-typescript/blob/main/CHANGELOG.md) |
+| `cycles-client-rust` | 0.2.3 | 2026-04-10 | Rust 1.88+ MSRV | [CHANGELOG](https://github.com/runcycles/cycles-client-rust/blob/main/CHANGELOG.md) |
+| `cycles-client-python` | 0.3.0 | 2026-04-08 | Python 3.10+ (httpx, Pydantic v2) | [CHANGELOG](https://github.com/runcycles/cycles-client-python/blob/main/CHANGELOG.md) — adds streaming support |
+| `cycles-spring-boot-starter` | 0.2.0 | 2026-03-24 | Spring Boot 3.5+, Java 21 | [CHANGELOG](https://github.com/runcycles/cycles-spring-boot-starter/blob/main/CHANGELOG.md) |
+| `cycles-mcp-server` | 0.2.2 | 2026-04-20 | Node 20+, MCP protocol | [CHANGELOG](https://github.com/runcycles/cycles-mcp-server/blob/main/CHANGELOG.md) |
+| `cycles-openai-agents` | 0.2.0 | — | OpenAI Agents SDK (Python) | [CHANGELOG](https://github.com/runcycles/cycles-openai-agents/blob/main/CHANGELOG.md) |
+| `cycles-openclaw-budget-guard` | 0.8.2 | — | OpenClaw plugin (Node) | [CHANGELOG](https://github.com/runcycles/cycles-openclaw-budget-guard/blob/main/CHANGELOG.md) |
+
+Each client repo's AUDIT.md records the specific protocol revision that release was validated against (currently v0.1.23 or v0.1.24 for most of the 0.2.x line). Because the wire contract is additive-only within `0.1.x`, clients validated against an earlier revision work unchanged against a newer server — pre-v0.1.25 clients tolerate the v0.1.25 event / webhook / audit additions. See each CHANGELOG for the exact revision.
+
 ### Protocol spec suite (v0.1.26)
 
 - The cycles-protocol repo added [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) — a formal MUST / SHOULD / MAY statement of what a conformant Cycles implementation has to do. Defines ~23 operations across the runtime base, action-kind registry, governance extensions, and 8 specifically-normative operations inside the otherwise-reference governance-admin spec.
