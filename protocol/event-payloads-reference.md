@@ -8,7 +8,7 @@ description: "Complete payload reference for all Cycles webhook events — curre
 This page documents the payload structure for every webhook event Cycles can emit. Each event wraps a standard envelope with an event-specific `data` object.
 
 ::: info Currently Emitted Events
-As of v0.1.25.13, the runtime server emits **14 event types** (all five reservation-lifecycle events, the three budget-state-transition events, `event.applied`, and the budget-exhaust / over-limit / debt events). The admin server adds `budget.reset_spent` (v0.1.25.18). The remaining event types are **defined in the protocol** and will be emitted as the admin service and additional runtime hooks are wired up. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
+The runtime server emits **14 event types** as of v0.1.25.13 (all five reservation-lifecycle events, the three budget-state-transition events, `event.applied`, and the budget-exhaust / over-limit / debt events). The admin server (v0.1.25.38+) additionally emits the budget-funding kinds (`budget.reset_spent` since v0.1.25.18, plus `budget.funded` / `.debited` / `.reset` / `.debt_repaid`), the tenant lifecycle kinds (`tenant.suspended` / `.reactivated` / `.closed`), the four `_via_tenant_cascade` kinds, and the six webhook lifecycle kinds (v0.1.25.39); the events service emits `webhook.disabled` on auto-disable (v0.1.25.11). See the [Event Emission Summary](#event-emission-summary) at the bottom for the full per-category breakdown. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
 
 The v0.1.25 protocol registers **51 event types** total across seven categories (budget: 17, reservation: 6, tenant: 6, api_key: 7, policy: 3, webhook: 7, system: 5). The webhook category and four `_via_tenant_cascade` variants were added in v0.1.25.35 for the tenant-close cascade contract — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics). Six additional webhook lifecycle types (`webhook.created` / `.updated` / `.paused` / `.resumed` / `.disabled` / `.deleted`) were added in spec v0.1.25.33 and are emitted by admin v0.1.25.39 (operator-initiated transitions) and events v0.1.25.11 (dispatcher auto-disable) — see the [Webhook Lifecycle Events](#webhook-lifecycle-events) section below.
 :::
@@ -584,31 +584,32 @@ For the managing-webhooks operator flow (subscription creation, signing-secret r
 
 ---
 
-## Tenant, API Key, Policy, and System Events — Planned
+## Tenant, API Key, Policy, and System Events
 
-The following event categories are fully defined in the protocol but are not yet emitted by any service. They will be implemented as the admin service gains event emission support.
+The tenant category is partially emitted as of admin v0.1.25.38; the cascade event in the api_key category is emitted as of admin v0.1.25.35. Policy, System, and the remaining tenant / api_key kinds are fully defined in the protocol but are not yet emitted by any service — they will be implemented as the admin service gains event-emission support.
 
-### Tenant Events (6 types — all planned)
+### Tenant Events (6 types — 3 currently emitted)
 
-| Event Type | Trigger |
-|---|---|
-| `tenant.created` | New tenant provisioned |
-| `tenant.updated` | Tenant configuration changed |
-| `tenant.suspended` | Tenant set to SUSPENDED status |
-| `tenant.reactivated` | Tenant restored from SUSPENDED |
-| `tenant.closed` | Tenant permanently closed |
-| `tenant.settings_changed` | Tenant default settings modified |
+| Event Type | Status | Trigger |
+|---|---|---|
+| `tenant.created` | Planned | New tenant provisioned |
+| `tenant.updated` | Planned | Tenant configuration changed |
+| `tenant.suspended` | **Emitted** (admin v0.1.25.38+) | `PATCH /v1/admin/tenants/{id}` or `bulk-action` sets status to `SUSPENDED` |
+| `tenant.reactivated` | **Emitted** (admin v0.1.25.38+) | `PATCH /v1/admin/tenants/{id}` or `bulk-action` restores status to `ACTIVE` |
+| `tenant.closed` | **Emitted** (admin v0.1.25.38+) | `PATCH /v1/admin/tenants/{id}` or `bulk-action` sets status to `CLOSED` — also triggers the four `_via_tenant_cascade` events documented above |
+| `tenant.settings_changed` | Planned | Tenant default settings modified |
 
-### API Key Events (6 types — all planned)
+### API Key Events (7 types — 1 currently emitted)
 
-| Event Type | Trigger |
-|---|---|
-| `api_key.created` | New API key generated |
-| `api_key.revoked` | API key permanently revoked |
-| `api_key.expired` | API key reached expiration date |
-| `api_key.permissions_changed` | API key permissions modified |
-| `api_key.auth_failed` | Authentication attempt failed |
-| `api_key.auth_failure_rate_spike` | Auth failure rate exceeded threshold |
+| Event Type | Status | Trigger |
+|---|---|---|
+| `api_key.created` | Planned | New API key generated |
+| `api_key.revoked` | Planned | API key permanently revoked |
+| `api_key.revoked_via_tenant_cascade` | **Emitted** (admin v0.1.25.35+) | Owning tenant closed; see [Tenant-Close Cascade Events](#api-key-revoked-via-tenant-cascade) above |
+| `api_key.expired` | Planned | API key reached expiration date |
+| `api_key.permissions_changed` | Planned | API key permissions modified |
+| `api_key.auth_failed` | Planned | Authentication attempt failed |
+| `api_key.auth_failure_rate_spike` | Planned | Auth failure rate exceeded threshold |
 
 ### Policy Events (3 types — all planned)
 
