@@ -61,7 +61,7 @@ Beneath the counter strip sits a 4-up donut grid. Every slice is clickable and d
 | Events by category | `budget` / `reservation` / `tenant` / `api_key` / `policy` / `webhook` / `system` / `runtime` | `/events?category=<name>&from=<window-start>&to=<now>` — time window mirrors the counter-strip "Events (Xm)" window (v0.1.25.53) |
 | Webhook fleet health | Active / Paused / Disabled | `/webhooks?status=ACTIVE\|PAUSED\|DISABLED` |
 
-Each card title carries a muted "· click a slice" hint to telegraph interactivity. Dark-mode palette re-derives on toggle (the charts aren't just re-skinned images — they're vue-echarts instances driven by a reactive `useChartTheme` composable). Closed-tenant children are filtered out of the utilization / status buckets so the donuts don't inflate with un-actionable rows (v0.1.25.59). Screen readers get an auto-rendered `sr-only` data table per pie chart (v0.1.25.56).
+Each card title carries a muted "· click a slice" hint to telegraph interactivity. Dark-mode palette re-derives on toggle (the charts aren't just re-skinned images — they're vue-echarts instances driven by a reactive `useChartTheme` composable). Spec-terminal CLOSED budgets are filtered out of the utilization bucketing and total (v0.1.25.59) so a CLOSED budget at 120% doesn't inflate "Over cap" and CLOSED budgets don't inflate "Healthy" — FROZEN stays included because it's non-terminal. Independently, the five attention cards exclude rows owned by CLOSED tenants (v0.1.25.45) so the transient Mode-B cascade window doesn't surface un-actionable work. Screen readers get an auto-rendered `sr-only` data table per pie chart (v0.1.25.56).
 
 Under the donuts, five attention cards surface actionable work: Budgets at or near cap, Frozen budgets, Budgets with debt, Expiring API keys, Failing webhooks. Each card's "View all" link carries the same filter the card applied, so drill-down and card count agree by construction.
 
@@ -126,7 +126,7 @@ The stats aggregate whatever deliveries the history table has loaded — there's
 
 ### Freshness pill on page headers (v0.1.25.54)
 
-Every polling page (Overview, Tenants, Budgets, Webhooks, Events, Reservations) shows a small muted "Updated Xm ago" pill on its `PageHeader`, beside the refresh button. It reads `usePolling.lastSuccessAt` — successful polls update it; failed polls leave it alone, so operators can tell at a glance whether they're looking at fresh data or a silent poll outage. Absent on pages that don't poll (Audit — manual-query only).
+Polling list views show a small muted "Updated Xm ago" pill on the `PageHeader`, beside the refresh button. It reads `usePolling.lastSuccessAt` — successful polls update it; failed polls leave it alone, so operators can tell at a glance whether they're looking at fresh data or a silent poll outage. Absent on manual-query pages (Audit) and on views that don't poll.
 
 ### Tenant hierarchy breadcrumbs
 

@@ -34,7 +34,7 @@ Since the initial v0.1.25 Events & Webhooks release, each component has shipped 
 | `cycles-openai-agents` | 0.2.0 | — | OpenAI Agents SDK (Python) | [CHANGELOG](https://github.com/runcycles/cycles-openai-agents/blob/main/CHANGELOG.md) |
 | `cycles-openclaw-budget-guard` | 0.8.2 | — | OpenClaw plugin (Node) | [CHANGELOG](https://github.com/runcycles/cycles-openclaw-budget-guard/blob/main/CHANGELOG.md) |
 
-Clients at `0.2.x` and above target the stable `v0.1.25` wire contract and tolerate additive server upgrades within `0.1.x`. See each CHANGELOG for the specific protocol revision a given release was validated against.
+Each client repo's AUDIT.md records the specific protocol revision that release was validated against (currently v0.1.23 or v0.1.24 for most of the 0.2.x line). Because the wire contract is additive-only within `0.1.x`, clients validated against an earlier revision work unchanged against a newer server — pre-v0.1.25 clients tolerate the v0.1.25 event / webhook / audit additions. See each CHANGELOG for the exact revision.
 
 ### Protocol spec suite (v0.1.26)
 
