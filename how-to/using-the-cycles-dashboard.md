@@ -29,18 +29,41 @@ There is no user login, no SSO out of the box. Rotate the key regularly, keep it
 
 | View | Purpose |
 |------|---------|
-| Overview | Single-request aggregated health — entity counts, top offenders, failing webhooks, over-limit scopes |
+| Overview | Single-request aggregated health — counter strip, four donut charts (budget status / utilization / events by category / webhook fleet), and five attention cards. See [Overview screen](#overview-screen). |
 | Tenants | Tenant list and detail, with nested Budgets / API Keys / Policies tabs |
 | Tenant detail (`/tenants/:id`) | Per-tenant drill-down with hierarchy breadcrumbs (`tenant → workspace → app`) |
 | Budgets | Tenant-scoped budget list with utilization and debt bars; inline `RESET` and `RESET_SPENT` |
 | Events | Correlation-first investigation tool with expandable detail rows |
 | API Keys (`/api-keys`) | Cross-tenant key list with masked IDs, permissions, status filters |
 | Webhooks | Subscription health (green / yellow / red) plus delivery history, replay, and test |
-| Webhook detail (`/webhooks/:id`) | Delivery timeline, last error, signature rotation, pause/resume |
+| Webhook detail (`/webhooks/:id`) | Four-stat row (last-success chip, delivery-outcome donut, attempts histogram, response-time p50/p95/max — see [WebhookDetailView stats row](#webhookdetailview-stats-row-v0-1-25-51)), delivery timeline, last error, signature rotation, pause/resume |
 | Reservations (`/reservations`) | Hung-reservation force-release during incident response (runtime-plane admin-on-behalf-of) |
 | Audit | Compliance query tool with CSV / JSON export |
 
 Most pages poll their backends on a page-specific interval — see the [deployment guide](/quickstart/deploying-the-cycles-dashboard#polling-cadence) for the cadence table. Audit is manual-only: you press **Run Query** explicitly to avoid drive-by queries against retention-expensive endpoints.
+
+## Overview screen
+
+The Overview is the landing page. It opens on a single `/v1/admin/overview` fetch that hydrates the counter strip, four attention cards, and the four donut charts.
+
+### Counter strip
+
+Top of page. Six tiles — Tenants, Budgets, API Keys, Webhooks, Reservations, Events (60m window) — each with a click target that drills to the corresponding list view with any relevant filter pre-applied. Counter totals are server-aggregated via `AdminOverviewService`, so they reconcile by construction with the list pages' own counts (no client-side reduce drift).
+
+### The four donuts (v0.1.25.47–.52)
+
+Beneath the counter strip sits a 4-up donut grid. Every slice is clickable and drills to the corresponding filtered list view — chart and list read from the same server aggregate so the numbers match.
+
+| Donut | Slices | Slice-click target |
+|---|---|---|
+| Budget status | Active / Frozen / Over-limit / Closed | `/budgets?status=ACTIVE\|FROZEN\|CLOSED` or `/budgets?filter=over_limit` |
+| Budget utilization | Healthy (<90%) / Near cap (90–99%) / Over cap (≥100%) | `/budgets?utilization_min=…&utilization_max=…` (integer percent, v0.1.25.50) |
+| Events by category | `budget` / `reservation` / `tenant` / `api_key` / `policy` / `webhook` / `system` / `runtime` | `/events?category=<name>&from=<window-start>&to=<now>` — time window mirrors the counter-strip "Events (Xm)" window (v0.1.25.53) |
+| Webhook fleet health | Active / Paused / Disabled | `/webhooks?status=ACTIVE\|PAUSED\|DISABLED` |
+
+Each card title carries a muted "· click a slice" hint to telegraph interactivity. Dark-mode palette re-derives on toggle (the charts aren't just re-skinned images — they're vue-echarts instances driven by a reactive `useChartTheme` composable). Closed-tenant children are filtered out of the utilization / status buckets so the donuts don't inflate with un-actionable rows (v0.1.25.59). Screen readers get an auto-rendered `sr-only` data table per pie chart (v0.1.25.56).
+
+Under the donuts, five attention cards surface actionable work: Budgets at or near cap, Frozen budgets, Budgets with debt, Expiring API keys, Failing webhooks. Each card's "View all" link carries the same filter the card applied, so drill-down and card count agree by construction.
 
 ## Power-user features
 
@@ -72,6 +95,38 @@ Every row on Events, Audit, and WebhookDeliveries views carries a **correlation 
 - Copy-to-clipboard icon on the chip for sharing into tickets or chat.
 
 This is how operator triage starts in v0.1.25: pull a `trace_id` out of a failing response header (`X-Cycles-Trace-Id`) or error body, paste into the dashboard command palette, and follow the chip through the four views. Requires `cycles-server-admin` v0.1.25.31+ for server-side support. See [Correlation and Tracing](/protocol/correlation-and-tracing-in-cycles).
+
+### Terminal-state row toggle (v0.1.25.46)
+
+Default sort on every list view is `created_at desc`, which pins recently-transitioned terminal rows to the top — closed tenants, disabled webhooks, revoked / expired API keys, closed budgets. Before v0.1.25.46 these dominated the first screen and operators had to add an explicit status filter to get them out of the way.
+
+Tenants, Budgets, Webhooks, and API Keys now hide terminal rows by default and surface a "Show closed (N)" / "Show disabled (N)" / "Show revoked (N)" toggle with the hidden count. Flipping the toggle partitions the list so active rows stay on top and terminal rows drop to the bottom — column-sort order is preserved within each group. Matches the GitHub / Linear / Gmail convention for done / archived items.
+
+| View | Terminal definition |
+|---|---|
+| Tenants | `status=CLOSED` |
+| Budgets | `status=CLOSED` (FROZEN stays visible — it's non-terminal) |
+| Webhooks | `status=DISABLED` |
+| API Keys | `status IN (REVOKED, EXPIRED)` |
+
+Toggle state mirrors to URL as `?include_terminal=1` on top-level views so deep-links survive across reloads. Picking a terminal status explicitly from the dropdown (e.g. `status=CLOSED`) auto-engages the toggle so the list isn't silently empty. Tenant-detail sub-tabs (Budgets / API Keys / Policies) default off and don't mirror to URL (they share a URL with the parent).
+
+### WebhookDetailView stats row (v0.1.25.51)
+
+Clicking a webhook subscription opens `/webhooks/:id`. Between the subscription card and the Delivery History table sits a four-up stat row that aggregates over recently-loaded deliveries:
+
+| Stat | Meaning |
+|---|---|
+| Last success | Chip with traffic-light semantics — green if < 1h, amber 1h–24h, red ≥ 24h or no successful delivery on file. The fastest visual check that a subscription is still delivering. |
+| Delivery outcome | Donut partitioning loaded deliveries by status (success / retrying / failed / stale). Clicking a slice sets the delivery-table status filter in place — no route change, because the filter is local. |
+| Attempts per delivery | Histogram bucketed 0 / 1 / 2 / 3 / 4 / 5+ with a severity color ramp. Makes retry storms visible before you scan rows. |
+| Response time | p50 / p95 / max computed via NIST nearest-rank over deliveries that carry `response_time_ms`. |
+
+The stats aggregate whatever deliveries the history table has loaded — there's no second fetch. Scroll / Load More on the table re-computes the stats in place.
+
+### Freshness pill on page headers (v0.1.25.54)
+
+Every polling page (Overview, Tenants, Budgets, Webhooks, Events, Reservations) shows a small muted "Updated Xm ago" pill on its `PageHeader`, beside the refresh button. It reads `usePolling.lastSuccessAt` — successful polls update it; failed polls leave it alone, so operators can tell at a glance whether they're looking at fresh data or a silent poll outage. Absent on pages that don't poll (Audit — manual-query only).
 
 ### Tenant hierarchy breadcrumbs
 
@@ -148,6 +203,17 @@ The dashboard is a static SPA and has no backend of its own, so its "health" is 
 - `GET /actuator/health` on the admin server — standard Spring Boot liveness.
 
 Alert on the overview payload's `failing_webhooks` and `over_limit_scopes` arrays.
+
+## Mobile layout (v0.1.25.58)
+
+The dashboard is admin-console density, not phone-native, but v0.1.25.58 landed a mobile-responsive sweep covering the paths operators actually take from a phone during incident response:
+
+- Shell: Escape closes the drawer with focus-return to the hamburger; hamburger is sized 44×44 with `aria-expanded` / `aria-controls`; root uses `h-dvh` so mobile Safari's collapsing URL bar doesn't cut off content.
+- Layout: `PageHeader` reflows to a column on narrow viewports; `LoginView` and `NotFoundView` fit 320-wide screens.
+- Menus and dialogs: `RowActionsMenu` clamps horizontally to the viewport; `FormDialog` and `ConfirmAction` footers flex-wrap so buttons don't clip.
+- Tables: minimum widths tightened (AuditView 1000 → 900 px), with horizontal scroll as the fallback when rows don't fit.
+
+**Known deferrals.** Virtualized list tables still use horizontal scroll on phones rather than a card layout; the command palette's soft-keyboard viewport handling is not wired to `visualViewport`; the bulk-action preview / result dialog tables overflow on narrow viewports; the `TimeRangePicker` popover can overflow horizontally. None block incident triage — they're follow-ups for a dedicated mobile pass.
 
 ## Next steps
 
