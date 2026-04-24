@@ -150,7 +150,7 @@ The current v0.1.25 Admin API `EventType` enum registers 47 event types across s
 
 ### Tenant-accessible events
 
-Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events: 27 of the 47 registered event types. API key, policy, webhook lifecycle, and system events are admin-only.
+Tenants creating self-service webhooks via `/v1/webhooks` can subscribe to budget, reservation, and tenant events: 27 of the 47 registered event types. They will also receive the additive `_via_tenant_cascade` fan-out events that the reference admin server emits in those same categories on tenant close — see the next section. API key, policy, webhook lifecycle, and system events are admin-only.
 
 ### Tenant-close cascade fan-out
 

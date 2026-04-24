@@ -255,7 +255,7 @@ Returns server-level auth introspection. Useful for debugging auth configuration
 
 ### API key validation
 
-`POST /v1/auth/validate` is the internal validation surface used by the runtime enforcement layer when it needs to validate a tenant API key through the governance plane. It checks key hash, status, expiry, tenant status, permissions, and scope filters.
+`POST /v1/auth/validate` is the internal validation surface used by the runtime enforcement layer when it needs to validate a tenant API key through the governance plane. It checks, in order: key existence in the store, key hash match, key status (`ACTIVE`), expiry, tenant status (`ACTIVE`), permissions, and scope filters.
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/auth/validate \
@@ -319,7 +319,7 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 - **Delivery tracking**: list delivery attempts per subscription with status/date filters
 - **Event replay**: re-deliver historical events to a subscription
 - **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
-- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` for budget, reservation, and tenant events (27 of 47 registered event types)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` for budget, reservation, and tenant events (27 of 47 registered event types, plus the additive `_via_tenant_cascade` fan-out events the reference admin server emits in those categories on tenant close — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics))
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 

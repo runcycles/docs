@@ -8,9 +8,23 @@ description: "Complete payload reference for all Cycles webhook events — curre
 This page documents the payload structure for every webhook event Cycles can emit. Each event wraps a standard envelope with an event-specific `data` object.
 
 ::: info Currently Emitted Events
-The runtime server emits **14 event types** as of v0.1.25.13 (all five reservation-lifecycle events, the three budget-state-transition events, `event.applied`, and the budget-exhaust / over-limit / debt events). The admin server (v0.1.25.38+) additionally emits the budget-funding kinds (`budget.reset_spent` since v0.1.25.18, plus `budget.funded` / `.debited` / `.reset` / `.debt_repaid`), the tenant lifecycle kinds (`tenant.suspended` / `.reactivated` / `.closed`), the four `_via_tenant_cascade` kinds, and the six webhook lifecycle kinds (v0.1.25.39); the events service emits `webhook.disabled` on auto-disable (v0.1.25.11). See the [Event Emission Summary](#event-emission-summary) at the bottom for the full per-category breakdown. Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
+The v0.1.25 Admin API `EventType` enum registers **47 event types** total across seven categories (budget: 16, reservation: 5, tenant: 6, api_key: 6, policy: 3, webhook: 6, system: 5). Events marked as **Planned** below have their type registered in the protocol but are not yet emitted by any service.
 
-The v0.1.25 Admin API `EventType` enum registers **47 event types** total across seven categories (budget: 16, reservation: 5, tenant: 6, api_key: 6, policy: 3, webhook: 6, system: 5). Six webhook lifecycle types (`webhook.created` / `.updated` / `.paused` / `.resumed` / `.disabled` / `.deleted`) were added in spec v0.1.25.33 and are emitted by admin v0.1.25.39 (operator-initiated transitions) and events v0.1.25.11 (dispatcher auto-disable) — see the [Webhook Lifecycle Events](#webhook-lifecycle-events) section below. Reference-server runtime and cascade examples below may include additive event names; consumers should ignore unrecognized event types gracefully.
+**Registered enum values currently emitted** (count toward the 47 total):
+
+- **Reservation:** `reservation.denied`, `reservation.expired`, `reservation.commit_overage` (runtime).
+- **Budget:** `budget.exhausted`, `budget.over_limit_entered`, `budget.debt_incurred`, `budget.reset_spent` (runtime + admin v0.1.25.18+); `budget.funded`, `budget.debited`, `budget.reset`, `budget.debt_repaid` (admin v0.1.25.38+).
+- **Tenant:** `tenant.suspended`, `tenant.reactivated`, `tenant.closed` (admin v0.1.25.38+, single-op + bulk-action paths).
+- **Webhook:** `webhook.created`, `webhook.updated`, `webhook.paused`, `webhook.resumed`, `webhook.deleted` (admin v0.1.25.39+); `webhook.disabled` (admin operator-initiated v0.1.25.39+, events service auto-disable v0.1.25.11+). All six webhook lifecycle types were added in spec v0.1.25.33 — see the [Webhook Lifecycle Events](#webhook-lifecycle-events) section below.
+- **API key, policy, system:** 0 registered enum values currently emitted; all planned.
+
+**Additive reference-server payloads** (observable in the reference implementation but not part of the registered enum — consumers must ignore unrecognized event types gracefully):
+
+- Reservation lifecycle samples: `reservation.reserved`, `reservation.committed`, `reservation.released`, `reservation.extended`.
+- Runtime ledger application: `event.applied`.
+- Tenant-close cascade fan-out: `budget.closed_via_tenant_cascade`, `reservation.released_via_tenant_cascade`, `api_key.revoked_via_tenant_cascade`, `webhook.disabled_via_tenant_cascade` (admin v0.1.25.35+) — see the [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) contract.
+
+See the [Event Emission Summary](#event-emission-summary) at the bottom for the full per-category breakdown.
 :::
 
 ## Standard Envelope
@@ -59,7 +73,7 @@ Every event shares this envelope structure. The `data` field varies by event typ
 
 ## Reservation Events
 
-### `reservation.reserved` — Currently Emitted (v0.1.25.3)
+### `reservation.reserved` — Additive Reference-Server Payload (v0.1.25.3)
 
 **Trigger:** A reservation is created successfully.
 
@@ -69,7 +83,7 @@ The envelope's `scope`, `tenant_id`, and `actor` fields identify the reservation
 
 ---
 
-### `reservation.committed` — Currently Emitted (v0.1.25.3)
+### `reservation.committed` — Additive Reference-Server Payload (v0.1.25.3)
 
 **Trigger:** A reservation is committed with actual spend recorded.
 
@@ -79,7 +93,7 @@ If `actual > estimated`, a companion `reservation.commit_overage` event is also 
 
 ---
 
-### `reservation.released` — Currently Emitted (v0.1.25.3)
+### `reservation.released` — Additive Reference-Server Payload (v0.1.25.3)
 
 **Trigger:** A reservation is cancelled.
 
@@ -87,7 +101,7 @@ If `actual > estimated`, a companion `reservation.commit_overage` event is also 
 
 ---
 
-### `reservation.extended` — Currently Emitted (v0.1.25.3)
+### `reservation.extended` — Additive Reference-Server Payload (v0.1.25.3)
 
 **Trigger:** A reservation TTL is extended via heartbeat.
 
@@ -220,7 +234,7 @@ This event type is defined in the protocol but not yet emitted by the Cycles ser
 
 ## Budget Events
 
-### `budget.approaching_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+### `budget.approaching_limit` — Additive Reference-Server Payload (v0.1.25.3, dedup fixed v0.1.25.5)
 
 **Trigger:** A scope's utilization crosses the configured "approaching" threshold (default **80%**).
 
@@ -230,7 +244,7 @@ The envelope identifies the scope; the `data` payload reports `utilization`, `re
 
 ---
 
-### `budget.at_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+### `budget.at_limit` — Additive Reference-Server Payload (v0.1.25.3, dedup fixed v0.1.25.5)
 
 **Trigger:** Utilization crosses the "at-limit" threshold (default **95%**).
 
@@ -238,7 +252,7 @@ The envelope identifies the scope; the `data` payload reports `utilization`, `re
 
 ---
 
-### `budget.over_limit` — Currently Emitted (v0.1.25.3, dedup fixed v0.1.25.5)
+### `budget.over_limit` — Additive Reference-Server Payload (v0.1.25.3, dedup fixed v0.1.25.5)
 
 **Trigger:** Utilization reaches or exceeds **100%**.
 
@@ -258,7 +272,7 @@ See [Rolling over billing periods with RESET_SPENT](/how-to/rolling-over-billing
 
 ---
 
-### `event.applied` — Currently Emitted (v0.1.25.3)
+### `event.applied` — Additive Reference-Server Payload (v0.1.25.3)
 
 **Trigger:** A direct debit via `POST /v1/events` is applied successfully (no pre-reservation path).
 
@@ -371,9 +385,11 @@ The following budget events are defined in the protocol but not yet emitted. The
 
 ---
 
-## Tenant-Close Cascade Events — Currently Emitted (v0.1.25.35+)
+## Tenant-Close Cascade Events — Additive Reference-Server Payloads (v0.1.25.35+)
 
-Four event kinds are emitted as side effects of a `* → CLOSED` tenant transition (Rule 1 — Close Cascade; see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full contract). All four share the `_via_tenant_cascade` suffix and carry the `correlation_id` of the originating `tenant.closed` audit entry so subscribers can correlate cascade side effects to the operator action that triggered them.
+Four event kinds are emitted by the reference admin server as side effects of a `* → CLOSED` tenant transition (Rule 1 — Close Cascade; see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics) for the full contract). All four share the `_via_tenant_cascade` suffix and carry the `correlation_id` of the originating `tenant.closed` audit entry so subscribers can correlate cascade side effects to the operator action that triggered them.
+
+These four event names are **not part of the registered 47-event `EventType` enum** — they are additive reference-server payloads. Consumers must ignore unrecognized event types gracefully and should not assume non-reference servers emit them. Tenant self-service subscriptions filter by category, so a tenant subscribed to `budget` or `reservation` events will receive the corresponding cascade events from the reference server in practice.
 
 Shipped in `cycles-server-admin` v0.1.25.35 (initial Mode B cascade) / v0.1.25.36 (full Rule 2 guard coverage).
 
