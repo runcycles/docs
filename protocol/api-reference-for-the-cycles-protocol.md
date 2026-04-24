@@ -424,8 +424,30 @@ List reservations with optional filters and pagination.
 | `toolset` | string | Filter by toolset |
 | `status` | string | Filter by status: `ACTIVE`, `COMMITTED`, `RELEASED`, `EXPIRED` |
 | `idempotency_key` | string | Filter by idempotency key |
+| `sort_by` | string | Column to sort by (v0.1.25.12+). See [Sorting](#sorting) below. |
+| `sort_dir` | string | `asc` or `desc`. Default `desc`. |
 | `limit` | integer | Max results (1–200, default: 50) |
 | `cursor` | string | Opaque cursor from previous response |
+
+### Sorting
+
+`sort_by` (v0.1.25.12+) accepts one of seven column names:
+
+| Value | Sorts by |
+|---|---|
+| `reservation_id` | Reservation identifier (lexicographic) |
+| `tenant` | Tenant slug |
+| `scope_path` | Full scope path |
+| `status` | Reservation status enum |
+| `reserved` | Held amount (numeric, unit-native) |
+| `created_at_ms` | Creation timestamp |
+| `expires_at_ms` | Expiry timestamp |
+
+Unknown values return `400 INVALID_REQUEST`. `sort_dir` defaults to `desc`; pass `asc` to reverse.
+
+**Cursor-tuple binding.** The opaque cursor binds to the `(sort_by, sort_dir, filters)` tuple it was issued under. Reusing a cursor with a different sort key, direction, or filter set returns `400 INVALID_REQUEST` — a new first-page request must issue a new cursor. Callers that switch sort mid-walk should discard the cursor and restart.
+
+**Sorted hydrate cap.** The sorted path guards against unbounded hydration with `SORTED_HYDRATE_CAP = 2000` (admin v0.1.25.13). When the filter resolves to more than 2,000 matching rows the server caps the materialized slice at 2,000, logs a WARN, and fills cursor pages from the capped slice. To see past the cap, narrow the filter (add `tenant`, `status`, `app`, etc.) and retry.
 
 ### Response (200 OK)
 
