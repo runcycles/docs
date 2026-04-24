@@ -912,7 +912,7 @@ def handle():
 
 ## Tenant Self-Service Webhooks
 
-Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 29 of 45 types). Admin-only events (`api_key.*`, `policy.*`, `webhook.*`, `system.*`) are not available to tenants.
+Tenants can manage their own webhooks (restricted to `budget.*`, `reservation.*`, `tenant.*` events — 27 of 47 registered types). Admin-only events (`api_key.*`, `policy.*`, `webhook.*`, `system.*`) are not available to tenants.
 
 **Required API key permissions:**
 - `webhooks:write` — create, update, delete subscriptions
@@ -993,6 +993,6 @@ curl -X PUT http://localhost:7979/v1/admin/config/webhook-security \
 ## Next steps
 
 - [Managing Webhooks](/how-to/managing-webhooks) — create, test, replay, and monitor webhook subscriptions
-- [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) — full 40-event-type catalog, delivery headers, retry policy, and status lifecycle
+- [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) — full 47-event-type catalog, delivery headers, retry policy, and status lifecycle
 - [Deploying the Events Service](/quickstart/deploying-the-events-service) — deploy the async webhook delivery service
 - [Security](/security#webhook-security) — SSRF protection, signing secret encryption, and deduplication

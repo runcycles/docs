@@ -13,7 +13,7 @@ Cycles emits **events** for every observable state change — budget exhaustion,
 
 An event is an immutable record of a state change. Every event has:
 - **event_type** — dotted format like `budget.exhausted` or `reservation.denied`
-- **category** — one of: budget, reservation, tenant, api_key, policy, system
+- **category** — one of: budget, reservation, tenant, api_key, policy, webhook, system
 - **tenant_id** — which tenant is affected
 - **source** — which service emitted it (`cycles-server`, `cycles-admin`, `expiry-sweeper`)
 - **data** — event-specific payload (varies by type)
@@ -42,7 +42,7 @@ A subscription defines which events to deliver and where:
 
 The events service is **optional**. If not deployed, events accumulate in Redis with TTL and are delivered when the service starts.
 
-## 41 Event Types
+## 47 Registered Event Types
 
 | Category | Count | Examples |
 |---|---|---|
@@ -51,11 +51,12 @@ The events service is **optional**. If not deployed, events accumulate in Redis 
 | tenant | 6 | `tenant.created`, `tenant.suspended`, `tenant.closed` |
 | api_key | 6 | `api_key.created`, `api_key.revoked`, `api_key.auth_failed` |
 | policy | 3 | `policy.created`, `policy.updated`, `policy.deleted` |
+| webhook | 6 | `webhook.created`, `webhook.paused`, `webhook.disabled` |
 | system | 5 | `system.store_connection_lost`, `system.webhook_delivery_failed` |
 
 ## Tenant Self-Service
 
-Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events (29 of 45 types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`).
+Tenants can create their own webhook subscriptions via `/v1/webhooks` (requires `webhooks:write` permission). Tenant webhooks are restricted to budget, reservation, and tenant events: 27 of the 47 registered event types. API key, policy, webhook lifecycle, and system events are admin-only.
 
 ## Security
 

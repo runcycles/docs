@@ -534,13 +534,13 @@ def handle_webhook(event):
 
 **Symptom:** You expect a `budget.threshold_crossed` or `tenant.suspended` event but it never arrives.
 
-**Cause:** As of v0.1.25, only **6 event types** are actively emitted by the Cycles server. See the [Event Payloads Reference](/protocol/event-payloads-reference) for the current list. The remaining 34 event types are defined in the protocol but not yet emitted.
+**Cause:** Some event types are registered in the protocol before every service emits them. See the [Event Payloads Reference](/protocol/event-payloads-reference) for the current emitted/planned status by category.
 
 **Currently emitted:**
 - `reservation.denied`, `reservation.commit_overage`, `reservation.expired`
 - `budget.exhausted`, `budget.over_limit_entered`, `budget.debt_incurred`
 
-If you're subscribed to an event type that isn't in this list, no events will arrive because the server doesn't emit them yet.
+If you're subscribed to an event type marked as planned, no events will arrive until the emitting service version supports it.
 
 ## Debugging production incidents
 

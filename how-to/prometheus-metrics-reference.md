@@ -45,7 +45,7 @@ Introduced in v0.1.25.10. All counters live under the `cycles.*` namespace.
 |---|---|
 | `decision` | `ALLOW`, `ALLOW_WITH_CAPS`, `DENY`, `EXPIRED`, `RELEASED`, `COMMITTED`, `EXTENDED` — the outcome of the decision machinery. |
 | `reason` | Spec-defined reason codes (`INSUFFICIENT_FUNDS`, `OVER_LIMIT`, `POLICY_DENIED`, etc.). `UNKNOWN` when the code path doesn't produce one. |
-| `overage_policy` | `BLOCK`, `ALLOW_WITH_DEBT`, `ALLOW_WITH_CAP` — which policy was in effect for the scope. |
+| `overage_policy` | `REJECT`, `ALLOW_IF_AVAILABLE`, `ALLOW_WITH_OVERDRAFT` — which commit overage policy was in effect for the scope. |
 | `actor_type` | `api_key` (tenant-driven) or `admin_on_behalf_of` (admin-driven, v0.1.25.8+). |
 
 ### Not instrumented (by design)
@@ -72,7 +72,7 @@ Introduced in v0.1.25.6. Mirrors the runtime's conventions: `cycles.webhook.*` r
 
 | Tag | Values |
 |---|---|
-| `event_type` | Event kind from the [Event Payloads Reference](/protocol/event-payloads-reference) (e.g. `reservation.reserved`, `budget.over_limit`, `webhook.disabled`). Up to ~51 distinct values. |
+| `event_type` | Event kind from the [Event Payloads Reference](/protocol/event-payloads-reference) (e.g. `reservation.denied`, `budget.exhausted`, `webhook.disabled`). Up to 47 registered values, plus additive implementation events over time. |
 | `status_code_family` | `2xx` (success bucket). Non-2xx responses land on `cycles_webhook_delivery_failed_total` with `reason` instead. |
 | `reason` (on `_failed_total`) | `timeout`, `connection_refused`, `connection_reset`, `ssl_error`, `4xx`, `5xx`, `event_not_found`, `signing_key_unavailable`. |
 
@@ -115,7 +115,7 @@ The `tenant` tag is the dominant cardinality driver. A deployment with 10,000 te
 2. **Aggregate at scrape time** with `metric_relabel_configs` to drop the tag selectively on high-cardinality metrics while keeping it on the ones you still want tenant-sliced.
 3. **Keep per-tenant on Timer, drop on Counters** if delivery-latency-per-tenant is the signal you care about most.
 
-`event_type` is bounded by the spec (51 values today, additive over time). `reason` and `decision` are enum-bounded and safe.
+`event_type` is bounded by the spec (47 registered values today, additive over time). `reason` and `decision` are enum-bounded and safe.
 
 ## Quick alert recipes
 

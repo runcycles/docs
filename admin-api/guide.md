@@ -253,6 +253,19 @@ curl -s "http://localhost:7979/v1/auth/introspect" \
 
 Returns server-level auth introspection. Useful for debugging auth configuration. Admin-key only.
 
+### API key validation
+
+`POST /v1/auth/validate` is the internal validation surface used by the runtime enforcement layer when it needs to validate a tenant API key through the governance plane. It checks key hash, status, expiry, tenant status, permissions, and scope filters.
+
+```bash
+curl -s -X POST http://localhost:7979/v1/auth/validate \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -d '{"key_secret": "cyc_live_..."}' | jq .
+```
+
+Use this for auth debugging and service-to-service validation flows. Do not expose it directly to tenants; tenant-facing applications should authenticate with `X-Cycles-API-Key` on the tenant-scoped endpoint they need.
+
 ## Policy management
 
 ::: warning v0 limitation
@@ -306,7 +319,7 @@ The admin server provides 20 webhook/event endpoints for real-time observability
 - **Delivery tracking**: list delivery attempts per subscription with status/date filters
 - **Event replay**: re-deliver historical events to a subscription
 - **Security config**: manage webhook URL SSRF protection (blocked CIDRs, HTTPS enforcement)
-- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` (29 of 45 event types, including the two cascade variants `budget.closed_via_tenant_cascade` and `reservation.released_via_tenant_cascade`)
+- **Tenant self-service**: tenants manage their own webhooks at `/v1/webhooks` for budget, reservation, and tenant events (27 of 47 registered event types)
 
 Events are emitted by admin controllers (tenant, budget, api-key, policy operations) and delivered asynchronously by the events service (`cycles-server-events`). See [Webhooks and Events](/concepts/webhooks-and-events) for architecture details.
 
@@ -390,7 +403,7 @@ curl -X POST http://localhost:7979/v1/webhooks \
   }'
 ```
 
-See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 41-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
+See [Webhook Event Delivery Protocol](/protocol/webhook-event-delivery-protocol) for the full 47-event-type reference and delivery specification. See [Webhook Integrations](/how-to/webhook-integrations) for PagerDuty, Slack, and ServiceNow examples.
 
 ## List-endpoint features (v0.1.25.22+)
 

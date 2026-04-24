@@ -443,7 +443,13 @@ Key fields to monitor:
 
 ## Managing policies
 
-Policies define caps, rate limits, and behavioral overrides matched by scope pattern. Create a policy to enforce rules across matching scopes:
+Policies define stored caps, rate limits, and behavioral overrides matched by scope pattern.
+
+::: warning v0 limitation
+In v0, admin-defined policies are stored for governance workflows but are not evaluated by the runtime server during reservation, commit, or event processing. Runtime enforcement today comes from budget ledgers, request-level overage policy, and tenant defaults. Use policies to model intended governance state and prepare for future enforcement.
+:::
+
+Create a policy record for matching scopes:
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/policies \

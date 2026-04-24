@@ -138,6 +138,7 @@ export default defineConfig({
           {
             text: 'Getting Started',
             items: [
+              { text: 'Docs Home', link: '/docs/' },
               { text: 'Concepts', link: '/concepts/comparisons' },
               { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
               { text: 'Integrations', link: '/how-to/integrations-overview' },
