@@ -25,7 +25,7 @@ Null or blank tag values are normalised to the sentinel `UNKNOWN`. Missing tags 
 
 **Events-service port split.** Starting with `cycles-server-events` v0.1.25.9, the `health`, `info`, and `prometheus` actuator endpoints moved from the public API port `7980` to a dedicated management port (default `9980`, env `MANAGEMENT_PORT`). Scrape configs, kubelet probes, and Docker `HEALTHCHECK` commands must target `:9980` — the published Docker image's `HEALTHCHECK` is already updated. Expose `7980` publicly; keep `9980` internal-only.
 
-## Runtime server — `cycles-server`
+## Runtime server (`cycles-server`)
 
 Introduced in v0.1.25.10. All counters live under the `cycles.*` namespace.
 
@@ -53,7 +53,7 @@ Introduced in v0.1.25.10. All counters live under the `cycles.*` namespace.
 - **HTTP-layer latency histograms** — Spring Boot auto-emits `http.server.requests` with `uri` / `method` / `status` labels already. Use those for per-endpoint latency.
 - **Lua-script execution time** — `EVALSHA` timings would largely duplicate the HTTP timer for request-synchronous scripts. The expiry-sweep counter (`cycles.reservations.expired`) covers the one non-request-driven path.
 
-## Events service — `cycles-server-events`
+## Events service (`cycles-server-events`)
 
 Introduced in v0.1.25.6. Mirrors the runtime's conventions: `cycles.webhook.*` rewrites to `cycles_webhook_*_total` (counters) or `cycles_webhook_*_seconds` (timer). Unlike the runtime, this service emits an explicit latency timer because it's the HTTP *client* — Spring's auto `http.server.requests` doesn't cover its primary I/O surface.
 
@@ -76,7 +76,7 @@ Introduced in v0.1.25.6. Mirrors the runtime's conventions: `cycles.webhook.*` r
 | `status_code_family` | `2xx` (success bucket). Non-2xx responses land on `cycles_webhook_delivery_failed_total` with `reason` instead. |
 | `reason` (on `_failed_total`) | `timeout`, `connection_refused`, `connection_reset`, `ssl_error`, `4xx`, `5xx`, `event_not_found`, `signing_key_unavailable`. |
 
-## Admin server — `cycles-server-admin`
+## Admin server (`cycles-server-admin`)
 
 Exposed since admin observability rollout (v0.1.25.9+). Metric names use the `cycles_admin_*` prefix.
 

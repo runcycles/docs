@@ -483,9 +483,9 @@ The shared `correlation_id` is the primary join key — querying `GET /v1/admin/
 
 ---
 
-## Webhook Lifecycle Events — Currently Emitted (spec v0.1.25.33)
+## Webhook Lifecycle Events
 
-Admin v0.1.25.39 emits six webhook lifecycle event types on the subscription CRUD + bulk-action paths; events v0.1.25.11 emits `webhook.disabled` on the dispatcher auto-disable path. All six share the `EventDataWebhookLifecycle` payload and the `webhook` category.
+**Currently emitted (spec v0.1.25.33).** Admin v0.1.25.39 emits six webhook lifecycle event types on the subscription CRUD + bulk-action paths; events v0.1.25.11 emits `webhook.disabled` on the dispatcher auto-disable path. All six share the `EventDataWebhookLifecycle` payload and the `webhook` category.
 
 ### `EventDataWebhookLifecycle` payload
 

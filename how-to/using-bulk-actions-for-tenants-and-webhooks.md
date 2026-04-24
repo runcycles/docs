@@ -167,7 +167,7 @@ Bulk actions also emit first-class Events on every successful row — one Event 
 | `POST /v1/admin/budgets/bulk-action` | admin v0.1.25.38 | v0.1.25.32 |
 | `POST /v1/admin/webhooks/bulk-action` | admin v0.1.25.39 | v0.1.25.33 |
 
-The event kinds are the same ones the single-op endpoints emit — `tenant.suspended`, `tenant.reactivated`, `tenant.closed` for the tenant path; `budget.funded`, `budget.debited`, `budget.reset`, `budget.reset_spent`, `budget.debt_repaid` for the budget path; `webhook.paused`, `webhook.resumed`, `webhook.deleted` for the webhook path (see [Event Payloads Reference](/protocol/event-payloads-reference#webhook-lifecycle-events-currently-emitted-spec-v0-1-25-33)).
+The event kinds are the same ones the single-op endpoints emit — `tenant.suspended`, `tenant.reactivated`, `tenant.closed` for the tenant path; `budget.funded`, `budget.debited`, `budget.reset`, `budget.reset_spent`, `budget.debt_repaid` for the budget path; `webhook.paused`, `webhook.resumed`, `webhook.deleted` for the webhook path (see [Event Payloads Reference](/protocol/event-payloads-reference#webhook-lifecycle-events)).
 
 ### Correlation IDs
 
