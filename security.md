@@ -117,6 +117,29 @@ Cycles is currently self-hosted only, so compliance posture inherits whatever yo
 
 A formal certification program (starting with SOC 2 Type I) will accompany the planned managed cloud offering. It is not yet in progress.
 
+## Dependencies and supply chain
+
+Cycles is built from a small, mainstream runtime stack:
+
+- **Runtime, admin, and events services**: Java (LTS) on Spring Boot; Redis for state
+- **Client SDKs**: Python, TypeScript, Java, Rust
+- **Operator dashboard**: Vue 3 served via nginx
+
+Dependencies are monitored by GitHub Dependabot across all [runcycles](https://github.com/runcycles) production repositories (server, admin, events, protocol, and the four client SDKs). Security-relevant updates are tracked on the affected repository's Security tab.
+
+CVEs are disclosed as [GitHub Security Advisories](https://github.com/runcycles/.github/security/policy) on the affected repository. An SBOM (CycloneDX) is available on request — open a discussion on the relevant repo or email the address below.
+
+## Reporting a vulnerability
+
+The Runcycles [organization-wide security policy](https://github.com/runcycles/.github/security/policy) is the canonical reference. In short:
+
+- **Do not** open a public GitHub issue for security reports
+- Email **security@runcycles.io** with the affected repository, version, reproduction steps, and impact
+- Expect acknowledgement within 48 hours, an initial assessment within 5 business days, and a fix timeline within 10 business days
+- Coordinated disclosure: we aim to ship fixes within 30 days of a confirmed report, and credit researchers in the published advisory unless they prefer otherwise
+
+The documentation repository itself is out of scope — report documentation issues as normal GitHub issues.
+
 ## Next steps
 
 - [Security Hardening Guide](/how-to/security-hardening) — operational security checklist for production deployments
