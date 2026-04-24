@@ -157,6 +157,45 @@ curl -G "http://localhost:7979/v1/admin/audit/logs" \
 
 The `operation` param was promoted to an array in v0.1.25.27 — you can OR across all three bulk operations in one query.
 
+## Event log emission
+
+Bulk actions also emit first-class Events on every successful row — one Event per mutated object, matching the kinds the single-op paths emit. Shipped in server versions:
+
+| Endpoint | Per-row Event since | Spec |
+|---|---|---|
+| `POST /v1/admin/tenants/bulk-action` | admin v0.1.25.38 | v0.1.25.32 |
+| `POST /v1/admin/budgets/bulk-action` | admin v0.1.25.38 | v0.1.25.32 |
+| `POST /v1/admin/webhooks/bulk-action` | admin v0.1.25.39 | v0.1.25.33 |
+
+The event kinds are the same ones the single-op endpoints emit — `tenant.suspended`, `tenant.reactivated`, `tenant.closed` for the tenant path; `budget.funded`, `budget.debited`, `budget.reset`, `budget.reset_spent`, `budget.debt_repaid` for the budget path; `webhook.paused`, `webhook.resumed`, `webhook.deleted` for the webhook path (see [Event Payloads Reference](/protocol/event-payloads-reference#webhook-lifecycle-events-currently-emitted-spec-v0-1-25-33)).
+
+### Correlation IDs
+
+Every per-row emit from one bulk invocation shares a single `correlation_id`:
+
+| Endpoint | Correlation ID shape |
+|---|---|
+| Tenants | `tenant_bulk_action:<action>:<request_id>` |
+| Budgets | `budget_bulk_action:<action>:<request_id>` |
+| Webhooks | `webhook_bulk_action:<action>:<request_id>` |
+
+`<request_id>` is the `X-Request-Id` header the client supplied, or `req_<uuid>` when the header was absent (admin v0.1.25.40 replaced the earlier `"no-req"` literal so concurrent header-less invocations don't collide on one correlation_id). To pull every Event a single bulk invocation produced, query `GET /v1/admin/events?correlation_id=<value>`.
+
+### CLOSE is the two-axis case
+
+For `action=CLOSE` on tenants, each mutated row yields **two** correlation axes:
+
+- The parent `tenant.closed` Event carries `correlation_id = tenant_bulk_action:close:<request_id>` — one value shared across every closed tenant in the invocation. Query by this ID to reconstruct *the invocation*.
+- Each tenant's cascade fan-out (budgets closed, webhooks disabled, API keys revoked, reservations released — see [Tenant-Close Cascade Semantics](/protocol/tenant-close-cascade-semantics)) carries `correlation_id = tenant_close_cascade:<tenant_id>:<request_id>`. Query by this ID to reconstruct *one tenant's close*.
+
+The two axes are independent and both are present in the event log. Use whichever matches the question you're answering.
+
+### What does not emit
+
+- **Skipped rows** (`ALREADY_IN_TARGET_STATE` — the row was already in the target status) emit no Event. Matches single-op behavior: a no-op doesn't write to the Event log.
+- **Failed rows** (`INVALID_TRANSITION`, etc.) emit no Event. The bulk-action response's `failed[]` bucket and the aggregate `AuditLogEntry` are the operator-facing signals for failures; duplicating to the Event log would produce false failure alerts on any consumer pattern-matching on event kinds.
+- **Event emission failures** are caught and logged at WARN; they never abort the bulk op or revert the row's state transition.
+
 ## Budget bulk-action
 
 Budget bulk-action (v0.1.25.29) follows the same envelope as tenants and webhooks with two differences: `filter.tenant_id` is REQUIRED, and most actions require an `amount`.

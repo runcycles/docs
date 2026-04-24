@@ -423,6 +423,7 @@ export default defineConfig({
             { text: 'Client Performance Tuning', link: '/how-to/client-performance-tuning' },
             { text: 'Observability Setup', link: '/how-to/observability-setup' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
+            { text: 'Prometheus Metrics Reference', link: '/how-to/prometheus-metrics-reference' },
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Managing Webhooks', link: '/how-to/managing-webhooks' },
             { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },

@@ -62,7 +62,7 @@ Runtime audit rows never use the admin-plane `__admin__` / `__unauth__` sentinel
 |---|---|---|---|
 | `cycles.metrics.tenant-tag.enabled` | `true` | `CYCLES_METRICS_TENANT_TAG_ENABLED` | When `true`, Prometheus counters include a `tenant` label. Set to `false` in deployments with many thousands of tenants to bound series cardinality. |
 
-The runtime server publishes these domain counters (introduced in v0.1.25.10): `cycles_reservations_reserve_total`, `cycles_reservations_commit_total`, `cycles_reservations_release_total`, `cycles_reservations_extend_total`, `cycles_reservations_expired_total`, `cycles_events_total`, `cycles_overdraft_incurred_total`. The events service mirrors the same toggle for its `cycles_webhook_*` counters so both services can be flipped together.
+The runtime server publishes seven domain counters under `cycles_*_total` (introduced in v0.1.25.10); the events service publishes `cycles_webhook_*` counters plus a latency timer. The `tenant-tag.enabled` toggle is mirrored on both services so they can be flipped together. For the full metric enumeration, tag definitions, scrape targets, and alert recipes, see [Prometheus Metrics Reference](/how-to/prometheus-metrics-reference).
 
 ## JSON serialization
 
@@ -345,12 +345,12 @@ Expose `7980` via public ingress or external ClusterIP; keep `9980` on an intern
 | `WEBHOOK_SECRET_ENCRYPTION_KEY` | (empty) | AES-256-GCM key for signing secret encryption. Base64, 32 bytes. Must match admin and runtime. Generate: `openssl rand -base64 32` |
 | `dispatch.pending.timeout-seconds` | 5 | BRPOP blocking timeout |
 | `dispatch.retry.poll-interval-ms` | 5000 | Retry queue poll interval (ms) |
-| `dispatch.retry.batch-size` | 100 | Max ready-for-retry deliveries processed per poll tick |
+| `dispatch.retry.batch-size` / `RETRY_BATCH_SIZE` | 100 | Max ready-for-retry deliveries processed per poll tick |
 | `dispatch.http.timeout-seconds` | 30 | HTTP request timeout for webhook delivery |
 | `dispatch.http.connect-timeout-seconds` | 5 | HTTP connect timeout |
-| `dispatch.max-delivery-age-ms` / `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail without further retries (24h) |
-| `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
-| `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
+| `dispatch.max-delivery-age-ms` / `MAX_DELIVERY_AGE_MS` | 86400000 | Deliveries older than this auto-fail without further retries (24h). Also feeds `cycles_webhook_delivery_stale_total`. |
+| `events.retention.event-ttl-days` / `EVENT_TTL_DAYS` | 90 | Redis TTL for event records |
+| `events.retention.delivery-ttl-days` / `DELIVERY_TTL_DAYS` | 14 | Redis TTL for delivery records |
 | `events.retention.cleanup-interval-ms` / `RETENTION_CLEANUP_INTERVAL_MS` | 3600000 | ZSET index cleanup interval (1h) |
 | `cycles.metrics.tenant-tag.enabled` | `true` | Same toggle as the runtime. When `false`, `cycles_webhook_*` counters drop the `tenant` label to bound cardinality. |
 
@@ -369,18 +369,7 @@ A delivery that exceeds `dispatch.max-delivery-age-ms` (default 24h) is failed i
 
 ### Events service metrics
 
-Introduced in `cycles-server-events` v0.1.25.6. Seven counters and one latency timer under the `cycles_webhook_*` namespace, with `tenant` and `event_type` labels (gated by `cycles.metrics.tenant-tag.enabled`):
-
-- `cycles_webhook_delivery_attempts_total` — every attempted delivery.
-- `cycles_webhook_delivery_success_total{status_code_family}` — 2xx responses.
-- `cycles_webhook_delivery_failed_total{reason}` — terminal failures (post-retry).
-- `cycles_webhook_delivery_retried_total` — retries scheduled.
-- `cycles_webhook_delivery_stale_total` — dropped due to `MAX_DELIVERY_AGE_MS`.
-- `cycles_webhook_subscription_auto_disabled_total{reason}` — subscriptions disabled after consecutive failures (`disable_after_failures`, default `10`).
-- `cycles_webhook_events_payload_invalid_total{type, rule}` — non-fatal payload-validator warnings. Never drops events.
-- `cycles_webhook_delivery_latency_seconds{outcome}` — attempt latency histogram.
-
-See the events service `OPERATIONS.md` for full alerting recipes.
+Introduced in `cycles-server-events` v0.1.25.6. Seven counters plus one latency timer under the `cycles_webhook_*` namespace, with `tenant` and `event_type` labels gated by `cycles.metrics.tenant-tag.enabled`. For the full enumeration — metric names, tags, cardinality guidance, scrape config, and alert recipes — see [Prometheus Metrics Reference](/how-to/prometheus-metrics-reference#events-service-cycles-server-events).
 
 ### Encryption key (shared across all services)
 
