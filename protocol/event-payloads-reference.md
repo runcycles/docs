@@ -48,7 +48,7 @@ Every event shares this envelope structure. The `data` field varies by event typ
 | `timestamp` | string | Yes | ISO 8601 UTC timestamp |
 | `tenant_id` | string | Yes | Tenant ID (system events use `__system__`) |
 | `scope` | string | When applicable | Full scope path (e.g., `tenant:acme-corp/workspace:prod`) |
-| `source` | string | Yes | Emitting service. Currently all events use `cycles-server`. Future releases may add `cycles-admin`. |
+| `source` | string | Yes | Emitting service: `cycles-server` (runtime events), `cycles-admin` (admin-plane events including bulk-action emits and webhook lifecycle events since v0.1.25.38/.39), or `cycles-events` (dispatcher-emitted `webhook.disabled` on auto-disable, v0.1.25.11). |
 | `actor` | object | When applicable | Who triggered: `type` (`api_key`, `admin`, `system`), `key_id`, `source_ip` |
 | `data` | object | Varies | Event-specific payload (see below). Some events emit `null`. |
 | `correlation_id` | string | When provided | Links related events across a workflow |
@@ -493,8 +493,8 @@ The shared `correlation_id` is the primary join key — querying `GET /v1/admin/
 |---|---|---|---|
 | `subscription_id` | string | Yes | The affected webhook subscription (`whsub_...`). |
 | `tenant_id` | string | Yes | Owning tenant — mirrors the envelope for convenience. |
-| `previous_status` | string | When applicable | `ACTIVE` / `PAUSED` / `DISABLED`. Absent on `webhook.created` (no prior state) and `webhook.deleted` (subscription already removed). |
-| `new_status` | string | When applicable | Post-mutation status. Absent on `webhook.deleted`. |
+| `previous_status` | string | When applicable | `ACTIVE` / `PAUSED` / `DISABLED`. Absent on `webhook.created` (no prior state). Present on `webhook.deleted` (the status the subscription held before deletion). |
+| `new_status` | string | When applicable | `ACTIVE` / `PAUSED` / `DISABLED`. Post-mutation status. Absent on `webhook.deleted` (subscription no longer exists). |
 | `changed_fields` | array&lt;string&gt; | On `webhook.updated` | The subscription fields the PATCH actually modified (diff vs prior snapshot — identity-PATCHes emit an empty array and full-identity PATCHes suppress emit entirely per spec §6281). |
 | `disable_reason` | string | On `webhook.disabled` | Why the dispatcher auto-disabled this subscription. Canonical value: `consecutive_failures_exceeded_threshold`. |
 
@@ -510,7 +510,7 @@ The shared `correlation_id` is the primary join key — querying `GET /v1/admin/
   "event_type": "webhook.created",
   "category": "webhook",
   "tenant_id": "acme-corp",
-  "source": "cycles-server-admin",
+  "source": "cycles-admin",
   "data": {
     "subscription_id": "whsub_...",
     "tenant_id": "acme-corp",
