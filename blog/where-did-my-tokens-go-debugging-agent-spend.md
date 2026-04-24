@@ -53,7 +53,7 @@ These three fields are what make the event stream navigable — a structural com
 
 ## What the event stream tells you today (v0.1.25)
 
-Cycles' protocol defines [40 event types across six categories](/protocol/event-payloads-reference). **In the current runtime implementation (v0.1.25), six are emitted today**; the rest are defined in the protocol and will be emitted as the admin service and additional runtime hooks ship. This section is about the six that fire today and what each one tells you about spend.
+Cycles' protocol defines [40 event types across six categories](/protocol/event-payloads-reference) as of post date — the current Admin API `EventType` enum registers **47 across seven categories** with the `webhook` category added later (see the live [Event Payloads Reference](/protocol/event-payloads-reference) for the per-category breakdown). **In the current runtime implementation (v0.1.25), six are emitted today**; the rest are defined in the protocol and will be emitted as the admin service and additional runtime hooks ship. This section is about the six that fire today and what each one tells you about spend.
 
 These are signal events — they fire on budget-health *transitions*. They are not a per-debit ledger. For per-debit spend numbers you query the balance API (covered in the next section); the events tell you when something *changed*.
 
