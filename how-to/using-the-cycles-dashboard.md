@@ -29,7 +29,7 @@ There is no user login, no SSO out of the box. Rotate the key regularly, keep it
 
 | View | Purpose |
 |------|---------|
-| Overview | Single-request aggregated health — counter strip, four donut charts (budget status / utilization / events by category / webhook fleet), and five attention cards. See [Overview screen](#overview-screen). |
+| Overview | Single-request aggregated health — counter strip, four donut charts (budget status / utilization / events by category / webhook fleet), and attention cards for actionable work. See [Overview screen](#overview-screen). |
 | Tenants | Tenant list and detail, with nested Budgets / API Keys / Policies tabs |
 | Tenant detail (`/tenants/:id`) | Per-tenant drill-down with hierarchy breadcrumbs (`tenant → workspace → app`) |
 | Budgets | Tenant-scoped budget list with utilization and debt bars; inline `RESET` and `RESET_SPENT` |
