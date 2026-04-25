@@ -1,32 +1,42 @@
 <script setup>
 const steps = [
   {
-    n: 1,
+    icon: '/icons/rocket.svg',
+    iconAlt: 'Rocket',
     heading: 'Run the local demo',
+    time: '~5 min',
     detail: 'docker compose up. No API keys. See $6→$1 budget enforcement in 30 seconds.',
     link: '/demos/',
   },
   {
-    n: 2,
+    icon: '/icons/wrench.svg',
+    iconAlt: 'Wrench',
     heading: 'Wrap one LLM call',
-    detail: 'One @cycles decorator (Python) or withCycles wrapper (TS) on a single function. ~10 minutes.',
+    time: '~10 min',
+    detail: 'One @cycles decorator (Python) or withCycles wrapper (TS) on a single function.',
     link: '/quickstart/end-to-end-tutorial',
   },
   {
-    n: 3,
+    icon: '/icons/shield-check.svg',
+    iconAlt: 'Shield',
     heading: 'Wrap one tool call',
-    detail: 'Add RISK_POINTS to gate side-effecting actions — email, deploy, mutation.',
+    time: '~30 min',
+    detail: 'Cap what agents can do (email, deploy, mutation), not just what they spend.',
     link: '/how-to/assigning-risk-points-to-agent-tools',
   },
   {
-    n: 4,
+    icon: '/icons/gauge.svg',
+    iconAlt: 'Gauge',
     heading: 'Shadow mode',
+    time: '1+ day',
     detail: 'Enforce in dry-run against real traffic. Calibrate budgets without blocking.',
     link: '/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production',
   },
   {
-    n: 5,
+    icon: '/icons/users-lock.svg',
+    iconAlt: 'Lock',
     heading: 'Hard enforcement',
+    time: 'Production',
     detail: 'Flip one workflow to live enforcement. Expand from there.',
     link: '/how-to/adding-cycles-to-an-existing-application',
   },
@@ -44,8 +54,11 @@ const steps = [
           :href="step.link"
           class="card"
         >
-          <div class="card-num">{{ step.n }}</div>
+          <div class="card-icon">
+            <img :src="step.icon" :alt="step.iconAlt" width="22" height="22" />
+          </div>
           <p class="card-heading">{{ step.heading }}</p>
+          <p class="card-time">{{ step.time }}</p>
           <p class="card-detail">{{ step.detail }}</p>
           <span class="card-cta">Start &rarr;</span>
         </a>
@@ -56,15 +69,15 @@ const steps = [
 
 <style scoped>
 .adoption-ladder {
-  padding: 0 24px 48px;
+  padding: 48px 24px;
 }
 
 @media (min-width: 640px) {
-  .adoption-ladder { padding: 0 48px 48px; }
+  .adoption-ladder { padding: 48px; }
 }
 
 @media (min-width: 960px) {
-  .adoption-ladder { padding: 0 64px 48px; }
+  .adoption-ladder { padding: 64px; }
 }
 
 .inner {
@@ -107,11 +120,12 @@ const steps = [
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
+    gap: 24px;
   }
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -127,18 +141,19 @@ const steps = [
   background: var(--vp-c-bg);
 }
 
-.card-num {
+.card-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--vp-c-brand-1);
-  color: var(--vp-c-bg);
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 12px;
+  background: var(--vp-c-bg-mute);
+  margin-bottom: 14px;
+}
+
+.card-icon img {
+  display: block;
 }
 
 .card-heading {
@@ -146,8 +161,17 @@ const steps = [
   font-weight: 700;
   color: var(--vp-c-text-1);
   line-height: 1.35;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   letter-spacing: -0.01em;
+}
+
+.card-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--vp-c-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
 }
 
 .card-detail {
@@ -163,5 +187,23 @@ const steps = [
   font-weight: 600;
   color: var(--vp-c-brand-1);
   margin-top: auto;
+}
+
+/* Connector arrows between cards — only on the wide 5-col desktop layout.
+   The arrow sits in the gap between adjacent cards; hidden on smaller
+   viewports where cards stack vertically or in 2-col grids. */
+@media (min-width: 1024px) {
+  .card:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    transform: translate(50%, -50%);
+    color: var(--vp-c-text-3);
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1;
+    pointer-events: none;
+  }
 }
 </style>
