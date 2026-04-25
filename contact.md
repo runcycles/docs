@@ -22,6 +22,8 @@ Most teams reach out for one of four reasons — they all land in the same inbox
 
 All three land with humans. Expect a reply.
 
+Running a real agent workload and evaluating Cycles for production? See the [Design Partners](/design-partners) page — founder office hours, roadmap influence, free self-hosted, opt-in co-marketing.
+
 ## Found a bug or concrete technical issue?
 
 [Open a GitHub issue](https://github.com/runcycles/docs/issues) instead — it's faster for everyone, and it puts the fix in the public record.

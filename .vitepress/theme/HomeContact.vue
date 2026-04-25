@@ -49,6 +49,11 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
       </div>
 
       <p class="contact-footnote">
+        Running a real agent workload and evaluating Cycles?
+        <a href="/design-partners">Apply to become a design partner &rarr;</a>
+      </p>
+
+      <p class="contact-footnote">
         Found a bug or have a concrete technical issue?
         <a :href="issuesUrl" target="_blank" rel="noopener">Open a GitHub issue</a>
         instead — it&rsquo;s faster for everyone.

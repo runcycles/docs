@@ -165,6 +165,7 @@ export default defineConfig({
         ],
       },
       { text: 'Blog', link: '/blog/' },
+      { text: 'Partners', link: '/design-partners' },
       { text: 'Contact', link: '/contact' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
