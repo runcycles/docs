@@ -69,27 +69,33 @@ const steps = [
 
 <style scoped>
 .adoption-ladder {
-  padding: 48px 24px;
-}
-
-@media (min-width: 640px) {
-  .adoption-ladder { padding: 48px; }
-}
-
-@media (min-width: 960px) {
-  .adoption-ladder { padding: 64px; }
+  /* Container query context: lets the grid below adapt to the section's
+     actual rendered width (homepage = full-width; doc pages with sidebars
+     = much narrower) instead of the viewport width. Padding lives on
+     .inner so it can scale with container width without affecting the
+     query dimension. */
+  container-type: inline-size;
 }
 
 .inner {
   max-width: 1152px;
   margin: 0 auto;
+  padding: 24px 0;
+}
+
+@container (min-width: 640px) {
+  .inner { padding: 32px 0; }
+}
+
+@container (min-width: 1024px) {
+  .inner { padding: 56px 24px; }
 }
 
 .heading {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--vp-c-text-1);
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   letter-spacing: -0.02em;
   line-height: 1.3;
   text-align: center;
@@ -97,7 +103,7 @@ const steps = [
   padding: 0;
 }
 
-@media (min-width: 768px) {
+@container (min-width: 1024px) {
   .heading {
     font-size: 28px;
     margin: 0 0 32px;
@@ -110,14 +116,14 @@ const steps = [
   gap: 12px;
 }
 
-@media (min-width: 640px) {
+@container (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 }
 
-@media (min-width: 1024px) {
+@container (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(5, 1fr);
     gap: 24px;
@@ -128,12 +134,16 @@ const steps = [
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   background: var(--vp-c-bg-soft);
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s;
+}
+
+@container (min-width: 1024px) {
+  .card { padding: 20px; }
 }
 
 .card:hover {
@@ -189,10 +199,10 @@ const steps = [
   margin-top: auto;
 }
 
-/* Connector arrows between cards — only on the wide 5-col desktop layout.
-   The arrow sits in the gap between adjacent cards; hidden on smaller
-   viewports where cards stack vertically or in 2-col grids. */
-@media (min-width: 1024px) {
+/* Connector arrows between cards — only when the container is wide enough
+   for the 5-col layout. The arrow sits in the gap between adjacent cards;
+   hidden when cards stack vertically or fall back to 2-col. */
+@container (min-width: 1024px) {
   .card:not(:last-child)::after {
     content: '→';
     position: absolute;
