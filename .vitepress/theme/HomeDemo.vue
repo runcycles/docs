@@ -3,8 +3,8 @@
 // The action-authority demo lives on the /demos page alongside this one.
 const demo = {
   src: '/demo-runaway.gif',
-  alt: 'Cycles demo: an agent burns $6 in 30 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
-  caption: '$6 runaway → $1 cap. docker compose up, no API keys required.',
+  alt: 'Cycles demo: an agent burns ~$10 in 12 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
+  caption: '~$10 in 12s — the kind of pace that turns into $4,200 incidents. $1 cap with Cycles.',
   ctaText: 'Run it locally',
   ctaLink: '/demos/',
 }

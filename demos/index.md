@@ -9,7 +9,7 @@ Each demo runs locally with Docker. No LLM API keys required — all tools and m
 
 ## Runaway Agent Demo
 
-A support agent with a quality-loop bug burns ~$6 in 30 seconds without Cycles — auto-terminated only because the demo enforces a safety timeout. In production, there would be no timeout. With Cycles, the agent stops cleanly at $1.00.
+A support agent with a quality-loop bug burns ~$10 in 12 seconds without Cycles — auto-terminated only because the demo enforces a safety timeout. In production, there would be no timeout. With Cycles, the agent stops cleanly at $1.00.
 
 **What it shows:** Budget enforcement stops a cost runaway before damage accumulates.
 
@@ -23,7 +23,7 @@ docker compose up --build
 
 The demo provisions its own tenant and budget automatically. Watch the terminal output — you'll see the unguarded agent overspend, then the guarded agent stop at the $1.00 limit.
 
-![Runaway agent demo: $6 burn without Cycles, $1 cap with Cycles](/demo-runaway.gif)
+![Runaway agent demo: ~$10 burn without Cycles, $1 cap with Cycles](/demo-runaway.gif)
 
 [View on GitHub](https://github.com/runcycles/cycles-runaway-demo) · [Blog walkthrough](/blog/runaway-demo-agent-cost-blowup-walkthrough)
 

@@ -31,7 +31,7 @@ Rate limiters control velocity — requests per second. They do not control tota
 
 The [Demos](/demos/) page has self-contained scenarios you can run in 60 seconds — no LLM API key required:
 
-- **Runaway Agent Demo** — same agent, same bug, two outcomes: without Cycles the agent burns ~$6 before being force-killed. With Cycles it stops cleanly at $1.00.
+- **Runaway Agent Demo** — same agent, same bug, two outcomes: without Cycles the agent burns ~$10 before being force-killed. With Cycles it stops cleanly at $1.00.
 - **Action Authority Demo** — a support agent handles a billing dispute in four steps. Cycles allows internal actions but blocks the customer email before it executes.
 
 ## How Cycles solves it
