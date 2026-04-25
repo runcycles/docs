@@ -16,14 +16,13 @@ Most teams reach out for one of four reasons — they all land in the same inbox
 
 ## Get in touch
 
-- **Book a 30-minute call:** <a href="https://calendly.com/amavashev/30min" target="_blank" rel="noopener">calendly.com/amavashev/30min</a> — fastest path to a real conversation; goes straight to a founder's calendar.
 - **Email a founder:** [founder@runcycles.io](mailto:founder@runcycles.io) — direct line for production evaluations, design-partner conversations, and protocol feedback.
 - **General inbox:** [hello@runcycles.io](mailto:hello@runcycles.io) — anything else.
 - **Or use the form:** <a href="https://forms.gle/r6w2wD4Hu9cbRPmd8" target="_blank" rel="noopener">Talk to the team &rarr;</a>
 
-All four land with humans. Expect a reply.
+All three land with humans. Expect a reply.
 
-If you're evaluating Cycles for a real production workload, see also the [Design Partners](/design-partners) page — three slots open, founder office hours, free self-hosted, opt-in co-marketing.
+Running a real agent workload and evaluating Cycles for production? See the [Design Partners](/design-partners) page — founder office hours, roadmap influence, free self-hosted, opt-in co-marketing.
 
 ## Found a bug or concrete technical issue?
 

@@ -47,7 +47,7 @@ We'd rather be honest now than waste both of our time later. Cycles is probably 
 
 The fastest path is to grab 30 minutes:
 
-<a href="https://calendly.com/amavashev/30min" target="_blank" rel="noopener"><strong>Book a 30-minute call →</strong></a>
+<a href="https://calendly.com/amavashev/cycles-partnership" target="_blank" rel="noopener"><strong>Book a 30-minute call →</strong></a>
 
 Or email [founder@runcycles.io](mailto:founder@runcycles.io) with one paragraph on:
 
