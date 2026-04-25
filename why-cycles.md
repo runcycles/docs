@@ -32,6 +32,8 @@ If you're deploying AI agents — to customers or inside the enterprise — Cycl
 
 <StackDiagram />
 
+<AdoptionLadder />
+
 ## Why now
 
 Regulatory frameworks are converging on a single requirement: if your AI system acts autonomously, you must be able to prove what it did, why it was allowed to do it, and how you would have stopped it. The EU AI Act's high-risk obligations are currently scheduled to apply from August 2, 2026. NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) in February 2026. Organizations can already pursue [ISO 42001 certification](https://www.iso.org/standard/81230.html). The window between "we should govern our agents" and "we must prove we govern our agents" is closing. [Full regulatory mapping →](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement)
