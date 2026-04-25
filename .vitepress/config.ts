@@ -138,6 +138,7 @@ export default defineConfig({
           {
             text: 'Getting Started',
             items: [
+              { text: 'What is Cycles?', link: '/quickstart/what-is-cycles' },
               { text: 'Docs Home', link: '/docs/' },
               { text: 'Concepts', link: '/concepts/comparisons' },
               { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
@@ -164,6 +165,7 @@ export default defineConfig({
         ],
       },
       { text: 'Blog', link: '/blog/' },
+      { text: 'Contact', link: '/contact' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
     sidebar: {

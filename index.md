@@ -6,21 +6,21 @@ hero:
   name: "Cycles"
   text: "Runtime authority for autonomous agents"
   tagline: >-
-    Enforce hard limits on agent spend, risk, and actions before execution.<br>Open protocol. Apache 2.0.
+    Enforce hard limits on agent spend, risk, and actions before execution.<br><span style="font-size: 0.85em; opacity: 0.7;">Self-hosted, no prompt storage. Apache 2.0.</span>
   image:
     light: /runcycles-hero.svg?v=3
     dark: /runcycles-hero-dark.svg?v=3
     alt: Cycles hero image
   actions:
     - theme: brand
-      text: "What is Cycles?"
-      link: "/quickstart/what-is-cycles"
+      text: "Run the demo"
+      link: "/demos/"
     - theme: alt
-      text: "End-to-End Tutorial"
+      text: "Read the tutorial"
       link: "/quickstart/end-to-end-tutorial"
     - theme: alt
-      text: "View Demos"
-      link: "/demos/"
+      text: "Compare stacks"
+      link: "/concepts/comparisons"
 features:
   - icon:
       src: /icons/rocket.svg

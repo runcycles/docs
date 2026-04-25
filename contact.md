@@ -16,9 +16,11 @@ Most teams reach out for one of four reasons — they all land in the same inbox
 
 ## Get in touch
 
-<a href="https://forms.gle/r6w2wD4Hu9cbRPmd8" target="_blank" rel="noopener"><strong>Talk to the team &rarr;</strong></a>
+- **Email a founder:** [founder@runcycles.io](mailto:founder@runcycles.io) — direct line for production evaluations, design-partner conversations, and protocol feedback.
+- **General inbox:** [hello@runcycles.io](mailto:hello@runcycles.io) — anything else.
+- **Or use the form:** <a href="https://forms.gle/r6w2wD4Hu9cbRPmd8" target="_blank" rel="noopener">Talk to the team &rarr;</a>
 
-One short form, same inbox for all four reasons above. Expect a reply from a human.
+All three land with humans. Expect a reply.
 
 ## Found a bug or concrete technical issue?
 
