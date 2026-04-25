@@ -80,15 +80,15 @@ const steps = [
 .inner {
   max-width: 1152px;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 24px;
 }
 
 @container (min-width: 640px) {
-  .inner { padding: 32px 0; }
+  .inner { padding: 32px 24px; }
 }
 
 @container (min-width: 1024px) {
-  .inner { padding: 56px 24px; }
+  .inner { padding: 56px 0; }
 }
 
 .heading {
@@ -113,13 +113,13 @@ const steps = [
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 16px;
 }
 
 @container (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
 }
 
@@ -134,16 +134,12 @@ const steps = [
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   background: var(--vp-c-bg-soft);
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s;
-}
-
-@container (min-width: 1024px) {
-  .card { padding: 20px; }
 }
 
 .card:hover {
