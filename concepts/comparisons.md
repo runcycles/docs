@@ -73,6 +73,7 @@ For a deep dive across all five alternative categories with capability matrices,
 
 ## Next steps
 
+- **[Runtime Authority vs Runtime Authorization](/concepts/runtime-authority-vs-runtime-authorization)** — how Cycles fits alongside identity-based agent governance (AWS Bedrock AgentCore Policy, Akeyless, agent IAM). Different layer, complementary not competitive.
 - **[What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion)** — Cycles is not billing, not rate limiting, not orchestration. Clearing up category confusion.
 - **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — how teams evolve from dashboards to runtime authority.
 - **[Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems)** — the deeper argument for why velocity controls fail for autonomous systems.

@@ -230,6 +230,7 @@ export default defineConfig({
             { text: 'Coding Agents Need Runtime Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
             { text: 'Exposure', link: '/concepts/exposure-why-rate-limits-leave-agents-unbounded' },
             { text: 'Action Authority', link: '/concepts/action-authority-controlling-what-agents-do' },
+            { text: 'Authority vs Authorization', link: '/concepts/runtime-authority-vs-runtime-authorization' },
             { text: 'Why Agents Do Not Replace Cycles', link: '/concepts/why-coding-agents-do-not-replace-cycles' },
             {
               text: 'Comparisons',

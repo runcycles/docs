@@ -7,6 +7,7 @@ import HomeSocialProof from './HomeSocialProof.vue'
 import HomeProblems from './HomeProblems.vue'
 import HomeIntegrations from './HomeIntegrations.vue'
 import HomeContact from './HomeContact.vue'
+import AdoptionLadder from './AdoptionLadder.vue'
 import BlogPost from './BlogPost.vue'
 import BlogPostNav from './BlogPostNav.vue'
 import PageFeedback from './PageFeedback.vue'
@@ -27,6 +28,7 @@ const { frontmatter } = useData()
       <HomeCodeSnippet v-if="frontmatter.layout === 'home'" />
     </template>
     <template #home-features-after>
+      <AdoptionLadder v-if="frontmatter.layout === 'home'" />
       <HomeContact v-if="frontmatter.layout === 'home'" />
     </template>
     <template #not-found>
