@@ -5,7 +5,7 @@ description: "Cycles is in design-partner mode. We're working with up to three t
 
 # Design Partners
 
-Cycles is in design-partner mode. We have **three slots open** for teams running real agent workloads — ideally multi-tenant, concurrent, and already near production — who want hard runtime limits on spend, risk, and agent actions, and who are willing to push us hard on what's missing.
+Cycles is in design-partner mode. We partner with a small, focused set of teams running **real agent workloads** — multi-tenant, concurrent, with real cost and real consequences when something goes wrong — who want hard runtime limits on spend, risk, and agent actions, and who are willing to push us hard on what's missing.
 
 This is not a generic beta. The goal is to put Cycles under real workload pressure, find what breaks, and shape the next two protocol releases around production use.
 
@@ -21,15 +21,14 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 
 ## What we're asking for
 
-- **One real production workload running on Cycles within 60 days.** Not a sandbox, not a Hello World. The whole point is finding what breaks under real conditions.
+- **One real workload running on Cycles within 60 days.** Not a sandbox, not a Hello World — something with real cost, real concurrency, and real consequences when it breaks. Internal tools and dev pipelines count; tutorials and synthetic load tests do not.
 - **Monthly 30-minute sync.** Office hours go both ways — we need to hear what you're hitting.
 - **Honest feedback.** We want pushback, not validation. If the protocol is wrong, the comparison page is misleading, or the SDK is awkward — we need to know.
 - **Permission to use anonymized learnings unless otherwise agreed.** Named case studies and public co-marketing are opt-in.
 
 ## Who this is for
 
-- Teams running **multi-tenant** agents in production. Per-customer budget isolation matters; one runaway can't blow up another tenant's allocation.
-- Teams with **production agents already deployed**, or shipping in the next 60 days. Cycles solves real costs, not hypothetical ones.
+- Teams running **multi-tenant or concurrent agents with real workloads** — internal tools, dev/research pipelines, customer-facing systems, coding agents, ops automation. Anything where real cost is being burned and real consequences follow when something breaks. Already running, or shipping within 60 days.
 - Teams running **Python, TypeScript, Spring Boot, or MCP-host stacks** (Cursor, Continue, Windsurf, etc.). Rust support is welcome if you're willing to help shape it.
 - Teams that can **move fast**. No 6-month procurement cycles. We need to ship, learn, ship again.
 - Teams whose engineering leadership is **comfortable with self-hosted Apache 2.0 OSS**. There is no managed cloud yet.
@@ -39,7 +38,7 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 We'd rather be honest now than waste both of our time later. Cycles is probably not the right fit if:
 
 - You're running a single-tenant prototype with no concurrency. You don't need atomic reservations yet — a local counter is fine.
-- You're still in exploration mode and don't expect a real production or production-adjacent agent workload within 60 days.
+- You're still in exploration mode and don't expect to put Cycles in front of a real workload within 60 days.
 - You need a fully managed cloud / SaaS. We're self-hosted-only today; managed cloud is on the roadmap, not live.
 - You can't commit to running one workload on Cycles within 60 days. We're not in a position to help with multi-quarter evaluations.
 - Your blocker is whether agents need governance at all. The design-partner conversation assumes that's already settled for you.
@@ -67,7 +66,7 @@ A founder reads every email; expect a reply within 48 hours.
 
 ## Why we run this program
 
-Runtime authority for AI agents is a category that did not exist 18 months ago. We can write about it, comparison-page it, and demo it — but the product gets built right only if real teams put it under real load and tell us where it breaks. Three design partners is enough to drive every meaningful product decision for the next two quarters. We'd rather get those right than pursue scale prematurely.
+Runtime authority for AI agents is a category that did not exist 18 months ago. We can write about it, comparison-page it, and demo it — but the product gets built right only if real teams put it under real load and tell us where it breaks. A small, focused cohort is enough to drive every meaningful product decision for the next two quarters. We'd rather get those right than pursue scale prematurely.
 
 ## Related
 
