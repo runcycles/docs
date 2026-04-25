@@ -1,6 +1,6 @@
 ---
 title: "Design Partners"
-description: "Cycles is in design-partner mode. We're working with up to three teams running multi-tenant agents in production. Founder office hours, roadmap influence, free self-hosted forever — in exchange for one real production workload, monthly syncs, and honest feedback."
+description: "Cycles is in design-partner mode. We partner with a small, focused set of teams running real agent workloads — multi-tenant or concurrent — with founder access, roadmap influence, and free self-hosted OSS in exchange for one real workload, monthly syncs, and honest feedback."
 ---
 
 # Design Partners
@@ -15,13 +15,13 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 
 - **Direct line to the founder.** Monthly 30-minute office hours. Email or Slack any time in between.
 - **Roadmap influence.** What ships in the next two minor versions is shaped by the workloads design partners run. Your incident becomes our next runbook.
-- **Free self-hosted forever.** Cycles is Apache 2.0; this isn't a "free for now" trick. You run it in your VPC; nothing leaves.
+- **Free self-hosted forever.** Because Cycles is Apache 2.0, your self-hosted deployment remains free to run. You run it in your VPC; nothing leaves.
 - **Priority support during your 60-day integration window.** Private Slack/email channel and fast response for production-blocking issues.
 - **Optional public co-marketing.** Joint blog post, case study, or conference talk — opt-in, not required. You can be a named partner *or* stay anonymous; your choice.
 
 ## What we're asking for
 
-- **One real workload running on Cycles within 60 days.** Not a sandbox, not a Hello World — something with real cost, real concurrency, and real consequences when it breaks. Internal tools and dev pipelines count; tutorials and synthetic load tests do not.
+- **One real workload running on Cycles within 60 days.** Not a sandbox, not a Hello World — something with real traffic, real concurrency, and an operational consequence if it fails. Internal tools and dev pipelines count; tutorials and synthetic load tests do not.
 - **Monthly 30-minute sync.** Office hours go both ways — we need to hear what you're hitting.
 - **Honest feedback.** We want pushback, not validation. If the protocol is wrong, the comparison page is misleading, or the SDK is awkward — we need to know.
 - **Permission to use anonymized learnings unless otherwise agreed.** Named case studies and public co-marketing are opt-in.
