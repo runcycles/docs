@@ -23,19 +23,7 @@ docker compose up --build
 
 The demo provisions its own tenant and budget automatically. Watch the terminal output — you'll see the unguarded agent overspend, then the guarded agent stop at the $1.00 limit.
 
-**What you'll see (illustrative):**
-
-```text
-=== UNGUARDED RUN ===
-[step 01] tool=search          spent=$0.18  (no limit)
-[step 09] tool=summarize       spent=$3.42  (no limit)
-[step 18] tool=summarize       spent=$6.04  ← demo timeout (production = no timeout)
-
-=== GUARDED RUN (Cycles) ===
-[step 01] reserve → ALLOW       spent=$0.12
-[step 02] reserve → ALLOW       spent=$0.47
-[step 03] reserve → DENY        BUDGET_EXCEEDED  ← stopped at $1.00
-```
+![Runaway agent demo: $6 burn without Cycles, $1 cap with Cycles](/demo-runaway.gif)
 
 [View on GitHub](https://github.com/runcycles/cycles-runaway-demo) · [Blog walkthrough](/blog/runaway-demo-agent-cost-blowup-walkthrough)
 
@@ -55,14 +43,7 @@ cd cycles-agent-action-authority-demo
 
 The script starts the full stack (Redis, Cycles Server, Admin Server), provisions a tenant with action-scoped budgets, and runs the agent in both unguarded and guarded modes. No API keys required — all LLM calls are mocked.
 
-**What you'll see (illustrative):**
-
-```text
-[step 1] tool=internal_note      → ALLOW  (low risk, allowed by toolset)
-[step 2] tool=crm_update         → ALLOW  (low risk, allowed by toolset)
-[step 3] tool=internal_note      → ALLOW
-[step 4] tool=send_customer_email → DENY  ACTION_NOT_AUTHORIZED  ← blocked before send
-```
+![Action authority demo: customer email blocked before it executes](/demo-action-authority.gif)
 
 [View on GitHub](https://github.com/runcycles/cycles-agent-action-authority-demo) · [Blog walkthrough](/blog/action-authority-demo-support-agent-walkthrough)
 
