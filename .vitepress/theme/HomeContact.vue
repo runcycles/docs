@@ -18,6 +18,7 @@ const reasons = [
   },
 ]
 
+const calendlyUrl = 'https://calendly.com/amavashev/30min'
 const formUrl = 'https://forms.gle/r6w2wD4Hu9cbRPmd8'
 const issuesUrl = 'https://github.com/runcycles/docs/issues'
 </script>
@@ -40,11 +41,19 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
       <div class="cta-row">
         <a
           class="cta-button"
+          :href="calendlyUrl"
+          target="_blank"
+          rel="noopener"
+        >
+          Book a 30-min call &rarr;
+        </a>
+        <a
+          class="cta-button cta-button-secondary"
           :href="formUrl"
           target="_blank"
           rel="noopener"
         >
-          Talk to the team &rarr;
+          Or use the form
         </a>
       </div>
 
@@ -146,6 +155,9 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
 
 .cta-row {
   margin: 0 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .cta-button {
@@ -158,15 +170,29 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
   font-weight: 600;
   text-decoration: none;
   letter-spacing: -0.01em;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.1s, border-color 0.2s;
+  border: 1px solid var(--vp-c-brand-1);
 }
 
 .cta-button:hover {
   background: var(--vp-c-brand-2);
+  border-color: var(--vp-c-brand-2);
 }
 
 .cta-button:active {
   transform: translateY(1px);
+}
+
+.cta-button-secondary {
+  background: transparent;
+  color: var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-divider);
+}
+
+.cta-button-secondary:hover {
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  border-color: var(--vp-c-text-3);
 }
 
 .contact-footnote {
@@ -188,6 +214,7 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
 
 @media (max-width: 640px) {
   .contact-heading { font-size: 24px; }
+  .cta-row { flex-direction: column; }
   .cta-button { display: block; text-align: center; }
 }
 </style>
