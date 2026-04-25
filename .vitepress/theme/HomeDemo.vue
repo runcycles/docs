@@ -30,15 +30,15 @@ const demo = {
 
 <style scoped>
 .home-demo {
-  padding: 32px 24px;
+  padding: 0 24px 48px;
 }
 
 @media (min-width: 640px) {
-  .home-demo { padding: 40px 48px; }
+  .home-demo { padding: 0 48px 48px; }
 }
 
 @media (min-width: 960px) {
-  .home-demo { padding: 48px 64px; }
+  .home-demo { padding: 0 64px 48px; }
 }
 
 .inner {
