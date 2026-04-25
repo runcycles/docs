@@ -3,7 +3,7 @@ title: "Where Did My Tokens Go? Debugging Agent Spend at Production Scale"
 date: 2026-04-17
 author: Albert Mavashev
 tags: [engineering, debugging, observability, agents, cost-attribution, runtime-authority]
-description: "Debug AI agent spend with scope paths, event streams, and correlation IDs — what Cycles' six live events and balance API actually let you pivot on when the bill triples."
+description: "Debug AI agent spend with scope paths, event streams, and correlation IDs — what Cycles' spend-debugging events and balance API actually let you pivot on when the bill triples."
 blog: true
 sidebar: false
 featured: false
@@ -53,7 +53,7 @@ These three fields are what make the event stream navigable — a structural com
 
 ## What the event stream tells you today (v0.1.25)
 
-Cycles' protocol defines [40 event types across six categories](/protocol/event-payloads-reference) as of post date — the current Admin API `EventType` enum registers **47 across seven categories** with the `webhook` category added later (see the live [Event Payloads Reference](/protocol/event-payloads-reference) for the per-category breakdown). **In the current runtime implementation (v0.1.25), six are emitted today**; the rest are defined in the protocol and will be emitted as the admin service and additional runtime hooks ship. This section is about the six that fire today and what each one tells you about spend.
+Cycles' protocol defined [40 event types across six categories](/protocol/event-payloads-reference) as of post date — the current Admin API `EventType` enum registers **47 across seven categories** with the `webhook` category added later (see the live [Event Payloads Reference](/protocol/event-payloads-reference) for the per-category breakdown). **At publication, the runtime spend-debugging surface this article focuses on emitted six events**; the rest were protocol-defined and scheduled for later admin-service and runtime hooks. This section is about the six that fired then and what each one tells you about spend.
 
 These are signal events — they fire on budget-health *transitions*. They are not a per-debit ledger. For per-debit spend numbers you query the balance API (covered in the next section); the events tell you when something *changed*.
 
@@ -202,7 +202,7 @@ That distinction matters because **you cannot attribute spend you didn't structu
 
 ## Bottom line
 
-When the bill surprises you, the question you're asking is structural: which part of the system produced this spend, who initiated it, and what code ran? The answer needs three fields captured at the moment of authority — scope path, actor, correlation ID — on every event the system emits and every balance it records. Cycles captures those. Today's six live events signal the *transitions*, the balance API answers *how much*, and `correlation_id` closes the loop back to code.
+When the bill surprises you, the question you're asking is structural: which part of the system produced this spend, who initiated it, and what code ran? The answer needs three fields captured at the moment of authority — scope path, actor, correlation ID — on every event the system emits and every balance it records. Cycles captures those. The six spend-debugging events above signal the *transitions*, the balance API answers *how much*, and `correlation_id` closes the loop back to code.
 
 The observability tools that only see totals aren't wrong. They're answering a different question. Attribution is a data-model commitment you make upstream, not a chart you add downstream.
 
