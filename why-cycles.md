@@ -32,6 +32,8 @@ If you're deploying AI agents — to customers or inside the enterprise — Cycl
 
 <StackDiagram />
 
+Cycles fits alongside identity-based agent governance (AWS Bedrock AgentCore Policy, Akeyless) — different layer, complementary not competitive. For the layer-by-layer breakdown, see [Runtime Authority vs Runtime Authorization](/concepts/runtime-authority-vs-runtime-authorization).
+
 <AdoptionLadder />
 
 ## Why now

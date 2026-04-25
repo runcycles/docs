@@ -131,6 +131,7 @@ Because it is protocol-based, Cycles works across frameworks, languages, and pro
 
 ## Next steps
 
+- [Runtime Authority vs Runtime Authorization](/concepts/runtime-authority-vs-runtime-authorization) — how this term differs from identity-based authorization (AWS Bedrock AgentCore Policy, Akeyless, agent IAM)
 - [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — where budget enforcement fits in a production LLM stack
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — the maturity curve from dashboards to pre-execution budget decisions
 - [Coding Agents Need Runtime Authority](/concepts/coding-agents-need-runtime-budget-authority) — the specific case for coding agents

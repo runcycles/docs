@@ -385,4 +385,5 @@ To explore the Cycles stack:
 - Integrate with Spring AI using the [Spring Client](https://github.com/runcycles/cycles-spring-boot-starter)
 - [AI Agent Cost Management: The Complete Guide](/blog/ai-agent-cost-management-guide) — the maturity model from monitoring to hard enforcement, and why Cycles is specifically Tier 4
 - [Cycles vs Rate Limiting](/concepts/cycles-vs-rate-limiting) — the detailed comparison between rate limiting and runtime authority
+- [Runtime Authority vs Runtime Authorization](/concepts/runtime-authority-vs-runtime-authorization) — Cycles is also not runtime authorization. AWS Bedrock AgentCore Policy and Akeyless answer "is this identity allowed"; Cycles answers "does this agent still have bounded permission to take this next step".
 - [Comparisons](/concepts/comparisons) — how Cycles differs from rate limiters, provider caps, observability tools, and more
