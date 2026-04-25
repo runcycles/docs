@@ -5,18 +5,18 @@ description: "Cycles is in design-partner mode. We're working with up to three t
 
 # Design Partners
 
-Cycles is in design-partner mode. We're working with **up to three teams** running multi-tenant agents in production who want runtime budget, risk, and action authority — and who are willing to push us hard on what's missing.
+Cycles is in design-partner mode. We have **three slots open** for teams running real agent workloads — ideally multi-tenant, concurrent, and already near production — who want hard runtime limits on spend, risk, and agent actions, and who are willing to push us hard on what's missing.
 
-This page exists so the conversation can start with you knowing exactly what we're offering, what we're asking for, and who this is and isn't for.
+This is not a generic beta. The goal is to put Cycles under real workload pressure, find what breaks, and shape the next two protocol releases around production use.
 
-Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team with nearly three decades in mission-critical transaction infrastructure. We've shipped runtime authority for banks, airlines, and telecoms; we're shipping it for AI agents now.
+Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team with nearly three decades building mission-critical transaction infrastructure for banks, airlines, and telecoms. Cycles applies that same discipline to AI agent execution.
 
 ## What design partners get
 
 - **Direct line to the founder.** Monthly 30-minute office hours. Email or Slack any time in between.
 - **Roadmap influence.** What ships in the next two minor versions is shaped by the workloads design partners run. Your incident becomes our next runbook.
 - **Free self-hosted forever.** Cycles is Apache 2.0; this isn't a "free for now" trick. You run it in your VPC; nothing leaves.
-- **Priority support during your 60-day integration window.** When something breaks at 2 AM, you have a human to ping.
+- **Priority support during your 60-day integration window.** Private Slack/email channel and fast response for production-blocking issues.
 - **Optional public co-marketing.** Joint blog post, case study, or conference talk — opt-in, not required. You can be a named partner *or* stay anonymous; your choice.
 
 ## What we're asking for
@@ -24,13 +24,13 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 - **One real production workload running on Cycles within 60 days.** Not a sandbox, not a Hello World. The whole point is finding what breaks under real conditions.
 - **Monthly 30-minute sync.** Office hours go both ways — we need to hear what you're hitting.
 - **Honest feedback.** We want pushback, not validation. If the protocol is wrong, the comparison page is misleading, or the SDK is awkward — we need to know.
-- **Consent for either named or anonymous attribution.** Your choice; we just need a position so we can talk about the work later.
+- **Permission to use anonymized learnings unless otherwise agreed.** Named case studies and public co-marketing are opt-in.
 
 ## Who this is for
 
 - Teams running **multi-tenant** agents in production. Per-customer budget isolation matters; one runaway can't blow up another tenant's allocation.
 - Teams with **production agents already deployed**, or shipping in the next 60 days. Cycles solves real costs, not hypothetical ones.
-- Teams running **Python, TypeScript, Rust, Spring Boot, or MCP-host stacks** (Cursor, Continue, Windsurf, etc.). First-class SDKs for all of these.
+- Teams running **Python, TypeScript, Spring Boot, or MCP-host stacks** (Cursor, Continue, Windsurf, etc.). Rust support is welcome if you're willing to help shape it.
 - Teams that can **move fast**. No 6-month procurement cycles. We need to ship, learn, ship again.
 - Teams whose engineering leadership is **comfortable with self-hosted Apache 2.0 OSS**. There is no managed cloud yet.
 
@@ -39,12 +39,12 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 We'd rather be honest now than waste both of our time later. Cycles is probably not the right fit if:
 
 - You're running a single-tenant prototype with no concurrency. You don't need atomic reservations yet — a local counter is fine.
-- You haven't deployed agents to production yet. Come back when you have real cost to bound.
+- You're still in exploration mode and don't expect a real production or production-adjacent agent workload within 60 days.
 - You need a fully managed cloud / SaaS. We're self-hosted-only today; managed cloud is on the roadmap, not live.
 - You can't commit to running one workload on Cycles within 60 days. We're not in a position to help with multi-quarter evaluations.
 - Your blocker is whether agents need governance at all. The design-partner conversation assumes that's already settled for you.
 
-## How to apply
+## Apply to become a design partner
 
 The fastest path is to grab 30 minutes:
 
