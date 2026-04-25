@@ -28,7 +28,7 @@ Built by [Albert Mavashev](/about) (ex-CTO Nastel, ex-meshIQ) and a small team w
 
 ## Who this is for
 
-- Teams running **multi-tenant or concurrent agents with real workloads** — internal tools, dev/research pipelines, customer-facing systems, coding agents, ops automation. Anything where real cost is being burned and real consequences follow when something breaks. Already running, or shipping within 60 days.
+- Teams running **multi-tenant or concurrent agents with real workloads** — internal tools, dev/research pipelines, customer-facing systems, coding agents, ops automation. Anything where real cost is being burned and operational risk is no longer theoretical. Already running, or shipping within 60 days.
 - Teams running **Python, TypeScript, Spring Boot, or MCP-host stacks** (Cursor, Continue, Windsurf, etc.). Rust support is welcome if you're willing to help shape it.
 - Teams that can **move fast**. No 6-month procurement cycles. We need to ship, learn, ship again.
 - Teams whose engineering leadership is **comfortable with self-hosted Apache 2.0 OSS**. There is no managed cloud yet.
@@ -55,7 +55,7 @@ Or email [founder@runcycles.io](mailto:founder@runcycles.io) with one paragraph 
 2. What stack you're on (language, framework, agent host)
 3. What's currently broken or worrying you about agent budgeting / actions
 
-A founder reads every email; expect a reply within 48 hours.
+I read every email; expect a reply within 48 hours.
 
 ## What happens after the first call
 
