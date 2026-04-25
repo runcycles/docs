@@ -12,7 +12,7 @@ Two governance terms have started circulating in the AI agent ecosystem, and the
 
 **Authorization grants access; authority meters and bounds the action.**
 
-A production agent stack needs both. They sit at different layers, fire at different moments, and bound different things. AWS AgentCore Policy, Akeyless Agentic Runtime Authority, and internal agent-IAM patterns focus on identity, intent, access, and real-time policy enforcement — they decide whether an agent identity is *permitted* to use a given tool. Cycles focuses on the bounded-exposure question — whether the tenant has budget left, whether this tool is past its risk allocation, whether the workflow has already taken its allotted dangerous actions.
+A production agent stack needs both. They sit at different layers, fire at different moments, and bound different things. AWS AgentCore Policy, Akeyless Agentic Runtime Authority, and internal agent-IAM patterns focus on identity, intent, access, and real-time policy enforcement — they decide whether an agent identity, intent, and request context are *permitted* to use a given tool or system. Cycles focuses on the bounded-exposure question — whether the tenant has budget left, whether this tool is past its risk allocation, whether the workflow has already taken its allotted dangerous actions.
 
 The term "runtime authority" is used by multiple vendors with overlapping but different scopes. This page spells out the substance distinction: Cycles answers the question identity authorization can't — *should this specific next step still happen, given the budget, risk, and actions already consumed?*
 
@@ -45,18 +45,18 @@ A real agent action goes through both layers in sequence:
 
 Skip layer 2 and any agent that obtained credentials can do anything. Skip layer 3 and an authorized agent can drain a budget, run a tool a thousand times, or take a high-blast-radius action that exceeds its allocated risk.
 
-## Naming the players (no head-to-head pages)
+## Where adjacent tools fit
 
 We don't ship per-vendor comparison pages against the identity-based agent governance tools — they solve a different problem, and head-to-head framing implies substitution where the right framing is composition. But you should know how Cycles overlaps with what's emerging in this space.
 
 | | Identity / intent-scoped tool access | Per-action risk budget | Pre-execution cost authority | Reserve-commit semantics | Self-hosted, no prompt storage |
 |---|:---:|:---:|:---:|:---:|:---:|
-| AWS Bedrock AgentCore Policy | Yes | Not stated focus | Not stated focus | No | AWS-managed |
+| AWS Bedrock AgentCore Policy | Yes | Not publicly documented | Not publicly documented | Not publicly documented | AWS-managed |
 | Akeyless Agentic Runtime Authority | Yes — intent-aware access / real-time policy | Not publicly documented | Not publicly documented | Not publicly documented | Cloud / vendor-managed |
 | Generic agent IAM patterns | Yes | Usually no | Usually no | No | Varies |
 | **Cycles** | API permissions only; downstream tool IAM external | **Yes (RISK_POINTS)** | **Yes** | **Yes** | **Yes** |
 
-The first column is the authorization / intent-policy layer. AgentCore and Akeyless are well-suited for it — they handle identity, intent-aware access, policy attachment, and credential governance. The remaining four columns are the runtime-authority layer. That's where Cycles operates.
+The first column is the authorization / intent-policy layer. AgentCore and Akeyless are well-suited for it — they handle identity, intent-aware access, policy attachment, and credential governance. The middle columns are the bounded-exposure layer — that is where Cycles operates. The final column is a deployment / privacy distinction, not a runtime-authority capability per se.
 
 ## Better together
 
