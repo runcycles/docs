@@ -1052,3 +1052,26 @@ samp {
 .medium-zoom-image--opened {
   z-index: 101;
 }
+
+/* ══ Wide-table scroll affordance (mobile) ══ */
+/* Wide tables (e.g. the comparison matrix) become horizontally scrollable on
+   narrow viewports. Subtle left/right edge fades hint at off-screen content
+   and disappear as the user scrolls to each edge. */
+@media (max-width: 768px) {
+  .vp-doc table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background-color: var(--vp-c-bg);
+    background-image:
+      linear-gradient(to right, var(--vp-c-bg), transparent),
+      linear-gradient(to left, var(--vp-c-bg), transparent),
+      linear-gradient(to right, var(--vp-c-text-3), transparent),
+      linear-gradient(to left, var(--vp-c-text-3), transparent);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 24px 100%, 24px 100%, 12px 100%, 12px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+}
