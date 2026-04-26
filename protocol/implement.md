@@ -27,7 +27,7 @@ The reference Cycles server covers the canonical case: self-hosted, Java/Spring 
 - **Language / platform constraints** — embedded systems, FaaS edge runtimes, mobile / on-device agents where Java + Redis isn't viable.
 - **Principled reasons** — you want a second independent implementation in the wild for protocol robustness (the OpenTelemetry multi-implementation pattern).
 
-Cycles' reference server is fine; *protocol robustness* is what comes from multiple implementations testing each other against the same conformance suite.
+Cycles' reference server is fine; *protocol robustness* comes from multiple implementations testing the same wire format against the same conformance target — and, once published, the same conformance test kit.
 
 ## The minimum implementation surface
 
@@ -71,7 +71,7 @@ You can ship without these and still claim conformance against the current targe
 
 Spec compliance isn't just endpoint coverage — it's behavior under the hood. Per `CONFORMANCE.md`:
 
-1. **Atomic reservation across scopes** — when a reservation locks tenant + workspace + run budgets, it locks all three or none. No partial locks.
+1. **Atomic reservation across scopes** — when a reservation locks multiple affected scopes, it locks all of them or none. No partial locks.
 2. **Concurrency-safe enforcement** — shared budgets MUST NOT be oversubscribed under concurrent reserve calls. The reference server uses Lua-scripted Redis operations; alternative implementations need equivalent atomicity guarantees in their backing store.
 3. **Idempotent commit and release** — every commit / release MUST be safe to retry. The same action MUST NOT settle twice. Idempotency keys carry the contract.
 4. **Unit consistency** — reservations and commits MUST validate and preserve unit denomination (USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS). Cross-unit operations MUST return `UNIT_MISMATCH` (400).
@@ -129,7 +129,7 @@ Protocol > tool.
 
 Every framework, vendor, and platform that implements the Cycles Protocol speaks the same wire format. Client SDKs work against any conformant server. Operators can switch implementations without touching application code. The category — runtime budget authority over AI agents — has a single, open, version-stable contract that transcends any individual product.
 
-OpenTelemetry won observability by being the protocol every vendor implemented. The team that owns the protocol owns the category — and the protocol only earns that ownership when multiple implementations validate the same wire format against the same conformance suite.
+OpenTelemetry won observability by being the protocol every vendor implemented. The protocol that becomes the shared implementation contract shapes the category — and it only earns that role when multiple implementations validate the same wire format against the same conformance target, with a shared conformance kit to follow.
 
 If you build a Cycles-compatible server, you make the protocol stronger. That's the work.
 
