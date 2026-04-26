@@ -1,53 +1,82 @@
 <script setup>
-// Cost-dimension demo (the universally visceral one) goes on the homepage.
-// The action-authority demo lives on the /demos page alongside this one.
+// Both demos appear on the homepage and on /demos/.
+// Runaway-cost goes first — universally visceral "money on fire" hook.
+// Action-authority goes second — the natural "and the same for actions" follow-on.
+// CTAs deep-link to the corresponding H2 anchors on /demos/ for run instructions.
 //
 // Video sources in order: WebM/VP9 (smaller, modern Chrome/Firefox), then
 // MP4/H.264 (broad compatibility). GIF is the last-resort fallback for
 // browsers that can't play either format. Poster image renders before
 // the video loads and during prefers-reduced-motion (most browsers
 // respect that for autoplay video).
-const demo = {
-  poster: '/demo-runaway-poster.png',
-  webm: '/demo-runaway.webm',
-  mp4: '/demo-runaway.mp4',
-  gifFallback: '/demo-runaway.gif',
-  alt: 'Cycles demo: an agent burns ~$10 in 12 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
-  ctaText: 'Run it locally',
-  ctaLink: '/demos/',
-}
+const demos = [
+  {
+    key: 'runaway',
+    label: 'Cost runaway',
+    poster: '/demo-runaway-poster.png',
+    webm: '/demo-runaway.webm',
+    mp4: '/demo-runaway.mp4',
+    gifFallback: '/demo-runaway.gif',
+    alt: 'Cycles demo: an agent burns ~$10 in 12 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
+    captionWithout: '~$10 in 12s — the pace behind $4,200 incidents.',
+    captionWith: '$1 cap, before the next action ran.',
+    ctaText: 'Run the runaway demo',
+    ctaLink: '/demos/#runaway-agent-demo',
+  },
+  {
+    key: 'action-authority',
+    label: 'Blast radius',
+    poster: '/demo-action-authority-poster.png',
+    webm: '/demo-action-authority.webm',
+    mp4: '/demo-action-authority.mp4',
+    gifFallback: '/demo-action-authority.gif',
+    alt: 'Cycles demo: a support agent runs a four-step workflow; without Cycles all four actions execute including the customer email; with Cycles the first three proceed and the email is blocked before it sends.',
+    captionWithout: 'All four actions execute — including the customer email.',
+    captionWith: 'Internal actions proceed; the email is blocked before it sends.',
+    ctaText: 'Run the action-authority demo',
+    ctaLink: '/demos/#action-authority-demo',
+  },
+]
 </script>
 
 <template>
   <section class="home-demo">
     <div class="inner">
-      <h2 class="heading">See it in 30 seconds</h2>
-      <div class="caption">
-        <p class="caption-line">
-          <span class="caption-label">Without Cycles:</span>
-          ~$10 in 12s — the pace behind $4,200 incidents.
-        </p>
-        <p class="caption-line">
-          <span class="caption-label">With Cycles:</span>
-          $1 cap, before the next action ran.
-        </p>
+      <h2 class="heading">See it in 60 seconds</h2>
+      <div
+        v-for="(demo, i) in demos"
+        :key="demo.key"
+        class="demo-block"
+        :class="{ 'with-divider': i > 0 }"
+      >
+        <p class="demo-label">{{ demo.label }}</p>
+        <div class="caption">
+          <p class="caption-line">
+            <span class="caption-label">Without Cycles:</span>
+            {{ demo.captionWithout }}
+          </p>
+          <p class="caption-line">
+            <span class="caption-label">With Cycles:</span>
+            {{ demo.captionWith }}
+          </p>
+        </div>
+        <div class="demo-frame">
+          <video
+            class="demo-video"
+            autoplay
+            muted
+            loop
+            playsinline
+            :poster="demo.poster"
+            preload="metadata"
+          >
+            <source :src="demo.webm" type="video/webm" />
+            <source :src="demo.mp4" type="video/mp4" />
+            <img :src="demo.gifFallback" :alt="demo.alt" />
+          </video>
+        </div>
+        <a :href="demo.ctaLink" class="demo-cta">{{ demo.ctaText }} &rarr;</a>
       </div>
-      <div class="demo-frame">
-        <video
-          class="demo-video"
-          autoplay
-          muted
-          loop
-          playsinline
-          :poster="demo.poster"
-          preload="metadata"
-        >
-          <source :src="demo.webm" type="video/webm" />
-          <source :src="demo.mp4" type="video/mp4" />
-          <img :src="demo.gifFallback" :alt="demo.alt" />
-        </video>
-      </div>
-      <a :href="demo.ctaLink" class="demo-cta">{{ demo.ctaText }} &rarr;</a>
     </div>
   </section>
 </template>
@@ -75,7 +104,7 @@ const demo = {
   font-size: 24px;
   font-weight: 700;
   color: var(--vp-c-text-1);
-  margin: 0 0 12px;
+  margin: 0 0 32px;
   letter-spacing: -0.02em;
   line-height: 1.3;
   border: none;
@@ -84,6 +113,25 @@ const demo = {
 
 @media (min-width: 768px) {
   .heading { font-size: 28px; }
+}
+
+.demo-block {
+  padding-top: 0;
+}
+
+.demo-block.with-divider {
+  margin-top: 48px;
+  padding-top: 48px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.demo-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
+  margin: 0 0 12px;
 }
 
 .caption {

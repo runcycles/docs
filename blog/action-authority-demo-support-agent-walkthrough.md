@@ -16,6 +16,12 @@ The tools in this demo are mocked. No real CRM, email service, or ticketing syst
 
 <!-- more -->
 
+<video controls autoplay muted loop playsinline poster="/demo-action-authority-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
+  <source src="/demo-action-authority.webm" type="video/webm" />
+  <source src="/demo-action-authority.mp4" type="video/mp4" />
+  <img src="/demo-action-authority.gif" alt="Action authority demo: customer email blocked before it executes" />
+</video>
+
 ## The scenario
 
 Customer case #4782: Acme Corp's invoice shows $847, but their contract says $720. A support automation agent (`support-bot`) picks up the case and runs a four-step workflow:

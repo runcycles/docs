@@ -51,7 +51,11 @@ cd cycles-agent-action-authority-demo
 
 The script starts the full stack (Redis, Cycles Server, Admin Server), provisions a tenant with action-scoped budgets, and runs the agent in both unguarded and guarded modes. No API keys required — all LLM calls are mocked.
 
-![Action authority demo: customer email blocked before it executes](/demo-action-authority.gif)
+<video controls autoplay muted loop playsinline poster="/demo-action-authority-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
+  <source src="/demo-action-authority.webm" type="video/webm" />
+  <source src="/demo-action-authority.mp4" type="video/mp4" />
+  <img src="/demo-action-authority.gif" alt="Action authority demo: customer email blocked before it executes" />
+</video>
 
 [View on GitHub](https://github.com/runcycles/cycles-agent-action-authority-demo) · [Blog walkthrough](/blog/action-authority-demo-support-agent-walkthrough)
 

@@ -13,7 +13,7 @@ hero:
     alt: Cycles hero image
   actions:
     - theme: brand
-      text: "Run the demo"
+      text: "Run the demos"
       link: "/demos/"
     - theme: alt
       text: "Read the tutorial"
