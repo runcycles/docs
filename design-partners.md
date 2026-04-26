@@ -43,6 +43,8 @@ We'd rather be honest now than waste both of our time later. Cycles is probably 
 - You can't commit to running one workload on Cycles within 60 days. We're not in a position to help with multi-quarter evaluations.
 - Your blocker is whether agents need governance at all. The design-partner conversation assumes that's already settled for you.
 
+Not sure if your workload qualifies? Send us the failure mode anyway. If Cycles isn't the right fit, we'll tell you.
+
 ## Apply to become a design partner
 
 The fastest path is to grab 30 minutes:
