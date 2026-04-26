@@ -30,7 +30,7 @@ The full specification lives in the [`runcycles/cycles-protocol`](https://github
 | File | Purpose |
 |---|---|
 | [`cycles-protocol-v0.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-protocol-v0.yaml) | Runtime base — reserve / commit / release / decide / balances / events |
-| [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) | Cross-plane events, webhooks, balances, auth introspection (mixed: 8 normative operations) |
+| [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml) | Cross-plane events, webhooks, balances, auth introspection (mixed conformance) |
 | [`cycles-action-kinds-v0.1.26.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-action-kinds-v0.1.26.yaml) | Action-kind registry + quota primitives (upcoming, SHOULD today) |
 | [`cycles-protocol-extensions-v0.1.26.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-protocol-extensions-v0.1.26.yaml) | DenyDetail, ObserveMode, v0.1.26 evaluation order (upcoming) |
 | [`cycles-governance-extensions-v0.1.26.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-extensions-v0.1.26.yaml) | Action-quota / access-control policy fields (upcoming) |
