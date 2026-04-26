@@ -1,10 +1,18 @@
 <script setup>
 // Cost-dimension demo (the universally visceral one) goes on the homepage.
 // The action-authority demo lives on the /demos page alongside this one.
+//
+// Video sources in order: WebM/VP9 (smaller, modern Chrome/Firefox), then
+// MP4/H.264 (broad compatibility). GIF is the last-resort fallback for
+// browsers that can't play either format. Poster image renders before
+// the video loads and during prefers-reduced-motion (most browsers
+// respect that for autoplay video).
 const demo = {
-  src: '/demo-runaway.gif',
+  poster: '/demo-runaway-poster.png',
+  webm: '/demo-runaway.webm',
+  mp4: '/demo-runaway.mp4',
+  gifFallback: '/demo-runaway.gif',
   alt: 'Cycles demo: an agent burns ~$10 in 12 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
-  caption: '~$10 in 12s — the kind of pace that turns into $4,200 incidents. $1 cap with Cycles.',
   ctaText: 'Run it locally',
   ctaLink: '/demos/',
 }
@@ -14,14 +22,30 @@ const demo = {
   <section class="home-demo">
     <div class="inner">
       <h2 class="heading">See it in 30 seconds</h2>
-      <p class="caption">{{ demo.caption }}</p>
+      <div class="caption">
+        <p class="caption-line">
+          <span class="caption-label">Without Cycles:</span>
+          ~$10 in 12s — the pace behind $4,200 incidents.
+        </p>
+        <p class="caption-line">
+          <span class="caption-label">With Cycles:</span>
+          $1 cap, before the next action ran.
+        </p>
+      </div>
       <div class="demo-frame">
-        <img
-          :src="demo.src"
-          :alt="demo.alt"
-          loading="eager"
-          decoding="async"
-        />
+        <video
+          class="demo-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          :poster="demo.poster"
+          preload="metadata"
+        >
+          <source :src="demo.webm" type="video/webm" />
+          <source :src="demo.mp4" type="video/mp4" />
+          <img :src="demo.gifFallback" :alt="demo.alt" />
+        </video>
       </div>
       <a :href="demo.ctaLink" class="demo-cta">{{ demo.ctaText }} &rarr;</a>
     </div>
@@ -51,7 +75,7 @@ const demo = {
   font-size: 24px;
   font-weight: 700;
   color: var(--vp-c-text-1);
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   letter-spacing: -0.02em;
   line-height: 1.3;
   border: none;
@@ -63,10 +87,23 @@ const demo = {
 }
 
 .caption {
+  margin: 0 0 24px;
+}
+
+.caption-line {
   font-size: 15px;
   color: var(--vp-c-text-2);
-  margin: 0 0 24px;
   line-height: 1.55;
+  margin: 0;
+}
+
+.caption-line + .caption-line {
+  margin-top: 4px;
+}
+
+.caption-label {
+  font-weight: 700;
+  color: var(--vp-c-text-1);
 }
 
 .demo-frame {
@@ -79,6 +116,7 @@ const demo = {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
+.demo-frame video,
 .demo-frame img {
   display: block;
   width: 100%;
@@ -104,31 +142,5 @@ const demo = {
 
 .demo-cta:active {
   transform: translateY(1px);
-}
-
-/* Reduced-motion fallback: hide the autoplay GIF and show a static
-   prompt instead. Users with prefers-reduced-motion see a click-to-view
-   path rather than autoplay animation. */
-@media (prefers-reduced-motion: reduce) {
-  .demo-frame {
-    position: relative;
-  }
-  .demo-frame::after {
-    content: 'Animation paused for reduced-motion preference. View the full demo →';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: var(--vp-c-bg);
-    color: var(--vp-c-text-2);
-    font-size: 15px;
-    font-weight: 500;
-    text-align: center;
-  }
-  .demo-frame img {
-    visibility: hidden;
-  }
 }
 </style>

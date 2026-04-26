@@ -23,7 +23,11 @@ docker compose up --build
 
 The demo provisions its own tenant and budget automatically. Watch the terminal output — you'll see the unguarded agent overspend, then the guarded agent stop at the $1.00 limit.
 
-![Runaway agent demo: ~$10 burn without Cycles, $1 cap with Cycles](/demo-runaway.gif)
+<video controls autoplay muted loop playsinline poster="/demo-runaway-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
+  <source src="/demo-runaway.webm" type="video/webm" />
+  <source src="/demo-runaway.mp4" type="video/mp4" />
+  <img src="/demo-runaway.gif" alt="Runaway agent demo: ~$10 burn without Cycles, $1 cap with Cycles" />
+</video>
 
 ::: info About the recording
 The recording above uses an accelerated call rate (~$10 in 12 seconds) for visual punch. Running `./demo.sh` yourself produces ~$5.95 over 30 seconds at realistic LLM call latency — same enforcement behavior, more realistic pace.
