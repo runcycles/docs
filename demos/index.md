@@ -25,6 +25,10 @@ The demo provisions its own tenant and budget automatically. Watch the terminal 
 
 ![Runaway agent demo: ~$10 burn without Cycles, $1 cap with Cycles](/demo-runaway.gif)
 
+::: info About the recording
+The recording above uses an accelerated call rate (~$10 in 12 seconds) for visual punch. Running `./demo.sh` yourself produces ~$5.95 over 30 seconds at realistic LLM call latency — same enforcement behavior, more realistic pace.
+:::
+
 [View on GitHub](https://github.com/runcycles/cycles-runaway-demo) · [Blog walkthrough](/blog/runaway-demo-agent-cost-blowup-walkthrough)
 
 ## Action Authority Demo
