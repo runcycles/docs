@@ -6,7 +6,7 @@ hero:
   name: "Cycles"
   text: "Runtime authority for autonomous agents"
   tagline: >-
-    Enforce hard limits on agent spend, risk, and actions before execution.<br><span style="font-size: 0.85em; opacity: 0.7;">Self-hosted, no prompt storage. Apache 2.0.</span>
+    Stop runaway agent spend and risky actions before they execute.<br><span style="font-size: 0.85em; opacity: 0.7;">Self-hosted, no prompt storage. Apache 2.0.</span>
   image:
     light: /runcycles-hero.svg?v=3
     dark: /runcycles-hero-dark.svg?v=3

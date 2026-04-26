@@ -21,7 +21,7 @@ export default defineConfig({
   async buildEnd(config) {
     await generateFeed(config)
   },
-  description: 'Enforce hard limits on agent spend, risk, and actions before execution. Open protocol, multi-language SDKs, Apache 2.0.',
+  description: 'Stop runaway agent spend and risky actions before they execute. Open protocol, multi-language SDKs, Apache 2.0.',
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Cycles',
@@ -53,7 +53,7 @@ export default defineConfig({
       "@type": "SoftwareApplication",
       "name": "Cycles",
       "applicationCategory": "DeveloperApplication",
-      "description": "Runtime authority for autonomous agents. Enforce hard limits on agent spend, risk, and actions.",
+      "description": "Runtime authority for autonomous agents. Stop runaway agent spend and risky actions before they execute.",
       "url": "https://runcycles.io",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "offers": { "@type": "Offer", "price": "0" }
@@ -480,7 +480,7 @@ export default defineConfig({
       .replace(/index\.md$/, '')
       .replace(/\.md$/, '')
 
-    const defaultDescription = 'Enforce hard limits on agent spend, risk, and actions before execution. Open protocol, multi-language SDKs, Apache 2.0.'
+    const defaultDescription = 'Stop runaway agent spend and risky actions before they execute. Open protocol, multi-language SDKs, Apache 2.0.'
     const pageTitle = pageData.frontmatter.title || pageData.title || 'Cycles'
     const pageDescription = pageData.frontmatter.description || defaultDescription
 
