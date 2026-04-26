@@ -155,7 +155,7 @@ const demos = [
 
 .mechanism-line {
   font-family: var(--vp-font-family-mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--vp-c-brand-1);
   letter-spacing: 0.02em;
