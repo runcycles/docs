@@ -5,7 +5,7 @@ description: "Add budget governance to a Next.js application with per-route budg
 
 # Integrating Cycles with Next.js
 
-This guide shows how to add budget governance to a Next.js application using API routes, middleware-level budget guards, and client-side error handling.
+This guide shows how to add budget governance to a Next.js application using API routes, server actions, and client-side error handling.
 
 For streaming patterns with the Vercel AI SDK, see [Integrating with Vercel AI SDK](/how-to/integrating-cycles-with-vercel-ai-sdk). This guide covers the broader Next.js integration: route-level guards, server actions, per-tenant isolation, and shared client setup.
 
@@ -267,7 +267,7 @@ export function Chat() {
 
 - **Singleton client in `lib/cycles.ts`.** Share one `CyclesClient` across all routes and server actions.
 - **`withCycles` for API routes and server actions.** Wraps LLM calls with automatic reserve → execute → commit.
-- **Next.js Middleware for preflight.** Use `client.decide()` to check budget before requests hit your API routes.
+- **Route-handler preflight.** Do budget checks at the start of API routes or server actions; do not use the Node client from Edge middleware.
 - **Per-tenant with headers.** Extract tenant from `x-tenant-id` header for multi-tenant budget isolation.
 - **402 for budget errors.** Return 402 status from API routes, handle it client-side.
 - **Use `runtime = "nodejs"`.** Required for `AsyncLocalStorage` support used by the Cycles client context.
