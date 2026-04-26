@@ -96,6 +96,7 @@ External vendor capabilities verified against linked sources as of April 2026. T
 
 ## Related
 
+- [Cycles Protocol](/protocol/) — the open specification behind the runtime-authority claim. Explicit conformance criteria and the reference implementation are public.
 - [What Is Runtime Authority for AI Agents](/blog/what-is-runtime-authority-for-ai-agents) — the canonical definition we use throughout Cycles documentation.
 - [Action Authority — Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — RISK_POINTS, action allowlists, and the action-layer enforcement model.
 - [Comparisons — How Cycles Differs from Alternatives](/concepts/comparisons) — proxy/observability/rate-limit comparison hub for the LiteLLM/Helicone/LangSmith axis.
