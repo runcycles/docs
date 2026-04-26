@@ -4,22 +4,25 @@
 // Action-authority goes second — the natural "and the same for actions" follow-on.
 // CTAs deep-link to the corresponding H2 anchors on /demos/ for run instructions.
 //
-// Video sources in order: WebM/VP9 (smaller, modern Chrome/Firefox), then
-// MP4/H.264 (broad compatibility). GIF is the last-resort fallback for
-// browsers that can't play either format. Poster image renders before
-// the video loads and during prefers-reduced-motion (most browsers
-// respect that for autoplay video).
+// Video sources in order: MP4/H.264 first (universally supported, and our
+// specific encodes are smaller than WebM here; also what social link-preview
+// crawlers like Twitter/LinkedIn/Slack reliably handle), then WebM/VP9, then
+// the GIF as a last-resort fallback. Poster image renders before the video
+// loads and during prefers-reduced-motion (most browsers respect that for
+// autoplay video).
 const demos = [
   {
     key: 'runaway',
     label: 'Cost runaway',
     poster: '/demo-runaway-poster.png',
-    webm: '/demo-runaway.webm',
     mp4: '/demo-runaway.mp4',
+    webm: '/demo-runaway.webm',
     gifFallback: '/demo-runaway.gif',
     alt: 'Cycles demo: an agent burns ~$10 in 12 seconds without enforcement; with Cycles, the same agent stops cleanly at $1.',
+    intro: 'Same agent. Same bug.',
     captionWithout: '~$10 in 12s — the pace behind $4,200 incidents.',
     captionWith: '$1 cap, before the next action ran.',
+    mechanism: 'reserve → deny → no downstream call',
     ctaText: 'Run the runaway demo',
     ctaLink: '/demos/#runaway-agent-demo',
   },
@@ -27,12 +30,14 @@ const demos = [
     key: 'action-authority',
     label: 'Blast radius',
     poster: '/demo-action-authority-poster.png',
-    webm: '/demo-action-authority.webm',
     mp4: '/demo-action-authority.mp4',
+    webm: '/demo-action-authority.webm',
     gifFallback: '/demo-action-authority.gif',
     alt: 'Cycles demo: a support agent runs a four-step workflow; without Cycles all four actions execute including the customer email; with Cycles the first three proceed and the email is blocked before it sends.',
+    intro: 'Same workflow. Different boundary.',
     captionWithout: 'All four actions execute — including the customer email.',
     captionWith: 'Internal actions proceed; the email is blocked before it sends.',
+    mechanism: 'decide → DENY → no email send',
     ctaText: 'Run the action-authority demo',
     ctaLink: '/demos/#action-authority-demo',
   },
@@ -50,6 +55,7 @@ const demos = [
         :class="{ 'with-divider': i > 0 }"
       >
         <p class="demo-label">{{ demo.label }}</p>
+        <p class="intro-line">{{ demo.intro }}</p>
         <div class="caption">
           <p class="caption-line">
             <span class="caption-label">Without Cycles:</span>
@@ -60,6 +66,7 @@ const demos = [
             {{ demo.captionWith }}
           </p>
         </div>
+        <p class="mechanism-line">{{ demo.mechanism }}</p>
         <div class="demo-frame">
           <video
             class="demo-video"
@@ -70,8 +77,8 @@ const demos = [
             :poster="demo.poster"
             preload="metadata"
           >
-            <source :src="demo.webm" type="video/webm" />
             <source :src="demo.mp4" type="video/mp4" />
+            <source :src="demo.webm" type="video/webm" />
             <img :src="demo.gifFallback" :alt="demo.alt" />
           </video>
         </div>
@@ -134,8 +141,26 @@ const demos = [
   margin: 0 0 12px;
 }
 
+.intro-line {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--vp-c-text-1);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
 .caption {
-  margin: 0 0 24px;
+  margin: 0 0 16px;
+}
+
+.mechanism-line {
+  font-family: var(--vp-font-family-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+  letter-spacing: 0.02em;
+  margin: 0 0 20px;
+  line-height: 1.5;
 }
 
 .caption-line {
