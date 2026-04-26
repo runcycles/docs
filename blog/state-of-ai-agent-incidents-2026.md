@@ -269,7 +269,7 @@ Failures that emerge from agent interactions, coordination, and systemic propert
 
 ### D1. UC Berkeley MAST — 41–87% failure rates
 
-UC Berkeley's [MAST study](https://arxiv.org/abs/2503.13657) analyzed 1,642 execution traces across 7 multi-agent frameworks and found 14 distinct failure modes with 41–87% failure rates. Failure categories: system design issues (44.2%), inter-agent misalignment (32.3%), task verification failures (23.5%).
+UC Berkeley's [MAST study](https://arxiv.org/abs/2503.13657) analyzed 1,600+ execution traces across 7 multi-agent frameworks and found 14 distinct failure modes with 41–87% failure rates. Failure categories: system design issues (44.2%), inter-agent misalignment (32.3%), task verification failures (23.5%).
 
 | | Detail |
 |---|---|

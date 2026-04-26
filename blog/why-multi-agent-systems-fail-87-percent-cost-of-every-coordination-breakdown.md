@@ -3,7 +3,7 @@ title: "Multi-Agent Systems Fail Up to 87% of the Time — Here's What Each Fail
 date: 2026-03-29
 author: Cycles Team
 tags: [multi-agent, failures, cost, coordination, production, MAST, runtime-authority, engineering]
-description: "UC Berkeley's MAST taxonomy found 14 failure modes across 1,642 multi-agent traces with 41–87% failure rates. Nobody modeled what each failure costs. We built the cost model."
+description: "UC Berkeley's MAST taxonomy found 14 failure modes across 1,600+ multi-agent traces with 41–87% failure rates. Nobody modeled what each failure costs. We built the cost model."
 blog: true
 sidebar: false
 ---
@@ -16,13 +16,13 @@ The published MAST and SEMAP literature explains how multi-agent systems fail, b
 
 <!-- more -->
 
-That's the gap between failure *rate* research and failure *cost* research. UC Berkeley's [MAST taxonomy](https://arxiv.org/abs/2503.13657) — the first systematic study of multi-agent LLM failures — analyzed 1,642 execution traces across seven frameworks and found failure rates ranging from 41% to 86.7%. The taxonomy identifies 14 distinct failure modes in three categories. It tells you *how* multi-agent systems break. It doesn't model what each break costs.
+That's the gap between failure *rate* research and failure *cost* research. UC Berkeley's [MAST taxonomy](https://arxiv.org/abs/2503.13657) — the first systematic study of multi-agent LLM failures — analyzed 1,600+ execution traces across seven frameworks (taxonomy developed from an initial 150-trace subset, then expanded to the full MAST-Data corpus in v3 of the paper) and found failure rates ranging from 41% to 86.7%. The taxonomy identifies 14 distinct failure modes in three categories. It tells you *how* multi-agent systems break. It doesn't model what each break costs.
 
 This post fills that gap. The MAST paper explains how multi-agent systems fail; we model what those failures cost in production. We map each MAST failure category to an illustrative cost signature — the mechanism by which a coordination breakdown becomes a line item on your invoice — and show where [runtime authority](/glossary#runtime-authority) prevents the cost from compounding. The dollar figures in this post are scenario models based on published token pricing, not measured production data.
 
 ## The Numbers: 14 Failure Modes, Three Categories, 41–87% Failure Rates
 
-The [MAST study](https://sky.cs.berkeley.edu/project/mast/) (Cemri et al., NeurIPS 2025 Spotlight) analyzed traces from MetaGPT, ChatDev, HyperAgent, OpenManus, AppWorld, Magentic-One, and AG2. Across 1,642 traces, the failures clustered into three categories:
+The [MAST study](https://sky.cs.berkeley.edu/project/mast/) (Cemri et al., NeurIPS 2025 Spotlight) analyzed traces from MetaGPT, ChatDev, HyperAgent, OpenManus, AppWorld, Magentic-One, and AG2. Across 1,600+ traces, the failures clustered into three categories:
 
 | Category | Share of Failures | Example Modes |
 |---|---|---|
@@ -209,7 +209,7 @@ The MAST research proves that multi-agent failures are systematic, not random. R
 
 Research and data referenced in this post:
 
-- [MAST: Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657) — Cemri et al., UC Berkeley. NeurIPS 2025 Spotlight. 1,642 annotated traces, 14 failure modes, 41–87% failure rates across 7 frameworks. Primary source for failure category percentages (Figure 1: system design 44.2%, inter-agent misalignment 32.3%, task verification 23.5%)
+- [MAST: Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657) — Cemri et al., UC Berkeley. NeurIPS 2025 Datasets & Benchmarks Track Spotlight. 1,600+ annotated traces (MAST-Data, v3), 14 failure modes, 41–87% failure rates across 7 frameworks. Primary source for failure category percentages (Figure 1: system design 44.2%, inter-agent misalignment 32.3%, task verification 23.5%)
 - [MAST Project Page — UC Berkeley Sky Computing Lab](https://sky.cs.berkeley.edu/project/mast/) — Dataset, taxonomy, and annotator tools
 - [SEMAP: Protocol-Driven Multi-Agent Engineering](https://arxiv.org/html/2510.12120) — Up to 69.6% failure reduction on function-level development tasks through structured communication protocols in software-engineering multi-agent settings
 - [LangChain State of AI Agents](https://www.langchain.com/state-of-agent-engineering) — 57.3% have agents in production, quality is #1 barrier (32%)
