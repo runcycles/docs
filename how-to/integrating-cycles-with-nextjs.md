@@ -112,6 +112,10 @@ export async function POST(req: Request) {
 }
 ```
 
+::: info 402 is an application-level choice
+Returning 402 to the browser is this route's UX decision. At the Cycles protocol layer, budget exhaustion surfaces as a `DENY` decision from `decide()` or a `BudgetExceededError` thrown by `withCycles` — translating either signal to an HTTP status is up to your application.
+:::
+
 ## Budget preflight in API routes
 
 Next.js middleware runs in the Edge Runtime, which does not support Node.js APIs required by the `runcycles` client. Instead, add a preflight budget check at the start of your API route handler:
@@ -269,7 +273,7 @@ export function Chat() {
 - **`withCycles` for API routes and server actions.** Wraps LLM calls with automatic reserve → execute → commit.
 - **Route-handler preflight.** Do budget checks at the start of API routes or server actions; do not use the Node client from Edge middleware.
 - **Per-tenant with headers.** Extract tenant from `x-tenant-id` header for multi-tenant budget isolation.
-- **402 for budget errors.** Return 402 status from API routes, handle it client-side.
+- **402 is an app-layer choice, not a Cycles convention.** Cycles signals budget exhaustion at the protocol layer (`DENY` / `BudgetExceededError`); returning 402 to the browser is one valid translation.
 - **Use `runtime = "nodejs"`.** Required for `AsyncLocalStorage` support used by the Cycles client context.
 
 ## Next steps
