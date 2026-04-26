@@ -46,7 +46,7 @@ From [`cycles-protocol-v0.yaml`](https://github.com/runcycles/cycles-protocol/bl
 
 ### Cross-plane (MUST)
 
-From [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml). The admin spec is mostly the reference shape (tenant / budget / policy / key CRUD) and you can diverge there — but the cross-plane operations below carry an explicit `x-conformance: normative` label and MUST follow the spec contract:
+From [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml). Much of the admin CRUD surface (tenant / budget / policy / key) is reference-shape rather than current conformance target, but the cross-plane operations below carry explicit `x-conformance: normative` labels and MUST follow the spec contract:
 
 1. `GET /v1/admin/events` — **listEvents**
 2. `GET /v1/admin/events/{event_id}` — **getEvent**
