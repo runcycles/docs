@@ -17,8 +17,8 @@ The tools in this demo are mocked. No real CRM, email service, or ticketing syst
 <!-- more -->
 
 <video controls autoplay muted loop playsinline poster="/demo-action-authority-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
-  <source src="/demo-action-authority.webm" type="video/webm" />
   <source src="/demo-action-authority.mp4" type="video/mp4" />
+  <source src="/demo-action-authority.webm" type="video/webm" />
   <img src="/demo-action-authority.gif" alt="Action authority demo: customer email blocked before it executes" />
 </video>
 

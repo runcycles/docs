@@ -13,6 +13,8 @@ A support agent with a quality-loop bug burns ~$10 in 12 seconds without Cycles 
 
 **What it shows:** Budget enforcement stops a cost runaway before damage accumulates.
 
+**Mechanism:** `reserve → deny → no downstream call`
+
 ### Run it
 
 ```bash
@@ -24,8 +26,8 @@ docker compose up --build
 The demo provisions its own tenant and budget automatically. Watch the terminal output — you'll see the unguarded agent overspend, then the guarded agent stop at the $1.00 limit.
 
 <video controls autoplay muted loop playsinline poster="/demo-runaway-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
-  <source src="/demo-runaway.webm" type="video/webm" />
   <source src="/demo-runaway.mp4" type="video/mp4" />
+  <source src="/demo-runaway.webm" type="video/webm" />
   <img src="/demo-runaway.gif" alt="Runaway agent demo: ~$10 burn without Cycles, $1 cap with Cycles" />
 </video>
 
@@ -41,6 +43,8 @@ A support agent handles a billing dispute in four steps. Cycles allows internal 
 
 **What it shows:** Toolset-scoped budgets give agents authority over safe actions while blocking risky ones.
 
+**Mechanism:** `decide → DENY → no email send`
+
 ### Run it
 
 ```bash
@@ -52,8 +56,8 @@ cd cycles-agent-action-authority-demo
 The script starts the full stack (Redis, Cycles Server, Admin Server), provisions a tenant with action-scoped budgets, and runs the agent in both unguarded and guarded modes. No API keys required — all LLM calls are mocked.
 
 <video controls autoplay muted loop playsinline poster="/demo-action-authority-poster.png" preload="metadata" style="width: 100%; max-width: 880px; display: block; border-radius: 8px;">
-  <source src="/demo-action-authority.webm" type="video/webm" />
   <source src="/demo-action-authority.mp4" type="video/mp4" />
+  <source src="/demo-action-authority.webm" type="video/webm" />
   <img src="/demo-action-authority.gif" alt="Action authority demo: customer email blocked before it executes" />
 </video>
 
