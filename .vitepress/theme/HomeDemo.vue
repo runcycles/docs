@@ -144,7 +144,7 @@ const demos = [
 .intro-line {
   font-size: 13px;
   font-style: italic;
-  color: var(--vp-c-text-2);
+  color: var(--vp-c-text-1);
   margin: 0 0 12px;
   line-height: 1.5;
 }
@@ -156,7 +156,8 @@ const demos = [
 .mechanism-line {
   font-family: var(--vp-font-family-mono);
   font-size: 12px;
-  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  color: var(--vp-c-text-1);
   letter-spacing: 0.02em;
   margin: 0 0 20px;
   line-height: 1.5;
