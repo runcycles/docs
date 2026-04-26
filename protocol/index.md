@@ -14,7 +14,7 @@ The protocol defines how budgets are reserved before execution, committed after,
 ## At a glance
 
 - **Open specification** — Apache 2.0, multiple OpenAPI YAMLs in [`runcycles/cycles-protocol`](https://github.com/runcycles/cycles-protocol).
-- **Active conformance target: v0.1.25.** Minimum surface is **12 required operations** + 4 recommended; total surface is 16 operations across runtime and cross-plane.
+- **Explicit conformance criteria** — current MUST / SHOULD / MAY breakdown lives in [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md). Start there for the authoritative surface against the current conformance target.
 - **Reserve-commit lifecycle** — atomic budget locking before action, commit on completion, release on cancel, with TTL heartbeat for long-running operations.
 - **Hierarchical scopes** — tenant → workspace → workflow → run, evaluated atomically in one operation.
 - **Three-way decisions** — `ALLOW` / `ALLOW_WITH_CAPS` / `DENY`. Implementations return constraints (`maxTokens`, `toolDenylist`, `maxStepsRemaining`) that let the agent self-regulate, not just stop.
@@ -40,10 +40,11 @@ The full specification lives in the [`runcycles/cycles-protocol`](https://github
 
 ## Conformance
 
-The authoritative statement of what an implementation MUST, SHOULD, and MAY do is [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) in the spec repo. Highlights for v0.1.25:
+The authoritative statement of what an implementation MUST, SHOULD, and MAY do is [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) in the spec repo. Read it first — the current conformance target, exact required-operation list, and any version-bumped requirements all live there. At a glance, the surface includes:
 
-- **12 required operations** — 4 core runtime (reserve / commit / release / extend) + 8 cross-plane (event listing, webhook deliveries, replay, balances, auth introspection)
-- **4 recommended operations** — `decide`, `listReservations`, `getReservation`, `createEvent`
+- **Core runtime operations** — reserve / commit / release / extend (atomic budget locking and lifecycle)
+- **Cross-plane operations** — event listing, webhook delivery / replay, balance queries, auth introspection
+- **Recommended operations** — `decide`, `listReservations`, `getReservation`, `createEvent`
 - **4 core invariants** — atomic reservation across scopes, concurrency-safe enforcement, idempotent commit/release, unit consistency
 - **Exact HTTP status + error code pairs** — implementations MUST return the spec's error codes verbatim so clients can route on them
 - **`X-Cycles-API-Key` header** for authentication; key provisioning and scoping is implementation-specific
@@ -52,7 +53,7 @@ Reading the conformance doc is the prerequisite for any new implementation. RFC 
 
 ## Reference implementation
 
-[`runcycles/cycles-server`](https://github.com/runcycles/cycles-server) is the reference implementation — Java / Spring Boot, Apache 2.0, validated against the v0.1.25 conformance target. The companion [`runcycles/cycles-server-admin`](https://github.com/runcycles/cycles-server-admin) provides the management plane (tenant / budget / policy / key CRUD).
+[`runcycles/cycles-server`](https://github.com/runcycles/cycles-server) is the reference implementation — Java / Spring Boot, Apache 2.0, validated against the current conformance target. The companion [`runcycles/cycles-server-admin`](https://github.com/runcycles/cycles-server-admin) provides the management plane (tenant / budget / policy / key CRUD).
 
 Client SDKs that speak the protocol:
 
@@ -76,7 +77,7 @@ Start with [API Reference](/protocol/api-reference-for-the-cycles-protocol) for 
 
 ## Why a protocol, not just a tool
 
-OpenTelemetry didn't win observability by being a tool — it won by being a protocol that every observability vendor implemented. OpenFeature is following the same pattern for feature flags. For runtime budget authority on AI agents, the same dynamic applies: the team that owns the protocol owns the category. Cycles ships the spec, the conformance criteria, and the reference implementation in the open. Anyone can implement; everyone speaks the same wire format.
+OpenTelemetry didn't win observability by being a tool — it won by being a protocol that every observability vendor implemented. For runtime budget authority on AI agents, the same dynamic applies: the team that owns the protocol owns the category. Cycles ships the spec, the conformance criteria, and the reference implementation in the open. Anyone can implement; everyone speaks the same wire format.
 
 ## Related
 

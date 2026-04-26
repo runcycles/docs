@@ -25,13 +25,13 @@ The reference Cycles server covers the canonical case: self-hosted, Java/Spring 
 - **Bespoke runtime requirements** — your stack already runs on Postgres, FoundationDB, DynamoDB, or an in-process state engine; you want budget authority co-located.
 - **Integration with existing budget systems** — you've shipped a quota service for traditional API limits and want to expose it under the Cycles wire format so AI-agent SDKs work transparently.
 - **Language / platform constraints** — embedded systems, FaaS edge runtimes, mobile / on-device agents where Java + Redis isn't viable.
-- **Principled reasons** — you want a second independent implementation in the wild for protocol robustness (the OpenTelemetry / OpenFeature multi-implementation pattern).
+- **Principled reasons** — you want a second independent implementation in the wild for protocol robustness (the OpenTelemetry multi-implementation pattern).
 
 Cycles' reference server is fine; *protocol robustness* is what comes from multiple implementations testing each other against the same conformance suite.
 
 ## The minimum implementation surface
 
-Per [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md), v0.1.25 conformance requires **12 operations**: 4 core runtime + 8 cross-plane. A 13th-through-16th set is recommended but optional.
+The authoritative statement of what's required lives in [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) — read that first. The current target requires a small core runtime + a cross-plane set, plus a smaller recommended set that well-rounded servers ship. Below is the surface at time of writing; if `CONFORMANCE.md` and this page disagree, **the spec wins**.
 
 ### Core runtime (MUST — 4 operations)
 
@@ -65,7 +65,7 @@ Well-rounded servers also implement these (from `cycles-protocol-v0.yaml`):
 - `listReservations` / `getReservation` — recovery and inspection
 - `createEvent` — direct-debit event submission
 
-You can ship without these and still claim v0.1.25 conformance, but most clients expect them.
+You can ship without these and still claim conformance against the current target, but most clients expect them.
 
 ## The four core invariants
 
@@ -93,7 +93,7 @@ Implementations MUST return the exact HTTP status + `error` code pairs from `cyc
 
 Clients route on these codes — returning a generic 500 or a custom error string breaks the protocol contract even if the underlying behavior is correct.
 
-The v0.1.26 action-governance error codes (`ACTION_QUOTA_EXCEEDED`, `ACTION_KIND_NOT_ALLOWED`, `ACTION_KIND_DENIED`) are upcoming and not required for v0.1.25 conformance.
+Action-governance error codes (`ACTION_QUOTA_EXCEEDED`, `ACTION_KIND_NOT_ALLOWED`, `ACTION_KIND_DENIED`) are documented in upcoming spec extensions; check `CONFORMANCE.md` for whether they're currently MUST or SHOULD against the active target.
 
 ## Authentication and tenancy
 
@@ -129,7 +129,7 @@ Protocol > tool.
 
 Every framework, vendor, and platform that implements the Cycles Protocol speaks the same wire format. Client SDKs work against any conformant server. Operators can switch implementations without touching application code. The category — runtime budget authority over AI agents — has a single, open, version-stable contract that transcends any individual product.
 
-OpenTelemetry won observability by being the protocol every vendor implemented. OpenFeature is doing the same for feature flags. The team that owns the protocol owns the category — and the protocol only earns that ownership when multiple implementations validate the same wire format against the same conformance suite.
+OpenTelemetry won observability by being the protocol every vendor implemented. The team that owns the protocol owns the category — and the protocol only earns that ownership when multiple implementations validate the same wire format against the same conformance suite.
 
 If you build a Cycles-compatible server, you make the protocol stronger. That's the work.
 
