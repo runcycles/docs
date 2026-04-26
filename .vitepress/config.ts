@@ -138,6 +138,8 @@ export default defineConfig({
           {
             text: 'Getting Started',
             items: [
+              { text: 'What is Cycles?', link: '/quickstart/what-is-cycles' },
+              { text: 'Docs Home', link: '/docs/' },
               { text: 'Concepts', link: '/concepts/comparisons' },
               { text: 'How-To Guides', link: '/how-to/adding-cycles-to-an-existing-application' },
               { text: 'Integrations', link: '/how-to/integrations-overview' },
@@ -163,6 +165,8 @@ export default defineConfig({
         ],
       },
       { text: 'Blog', link: '/blog/' },
+      { text: 'Partners', link: '/design-partners' },
+      { text: 'Contact', link: '/contact' },
       { text: 'GitHub', link: 'https://github.com/runcycles' }
     ],
     sidebar: {
@@ -227,6 +231,7 @@ export default defineConfig({
             { text: 'Coding Agents Need Runtime Authority', link: '/concepts/coding-agents-need-runtime-budget-authority' },
             { text: 'Exposure', link: '/concepts/exposure-why-rate-limits-leave-agents-unbounded' },
             { text: 'Action Authority', link: '/concepts/action-authority-controlling-what-agents-do' },
+            { text: 'Authority vs Authorization', link: '/concepts/runtime-authority-vs-runtime-authorization' },
             { text: 'Why Agents Do Not Replace Cycles', link: '/concepts/why-coding-agents-do-not-replace-cycles' },
             {
               text: 'Comparisons',
@@ -296,7 +301,6 @@ export default defineConfig({
               ]
             },
             { text: 'Testing with Cycles', link: '/how-to/testing-with-cycles' },
-            { text: 'Troubleshooting and FAQ', link: '/how-to/troubleshooting-and-faq' },
           ]
         },
         {
@@ -424,6 +428,7 @@ export default defineConfig({
             { text: 'Client Performance Tuning', link: '/how-to/client-performance-tuning' },
             { text: 'Observability Setup', link: '/how-to/observability-setup' },
             { text: 'Monitoring and Alerting', link: '/how-to/monitoring-and-alerting' },
+            { text: 'Prometheus Metrics Reference', link: '/how-to/prometheus-metrics-reference' },
             { text: 'Security Hardening', link: '/how-to/security-hardening' },
             { text: 'Managing Webhooks', link: '/how-to/managing-webhooks' },
             { text: 'Webhook Integrations', link: '/how-to/webhook-integrations' },
@@ -444,10 +449,6 @@ export default defineConfig({
           ]
         }
       ],
-    },
-    footer: {
-      message: 'Released under the Apache 2.0 License.',
-      copyright: 'Copyright 2025-present RunCycles.io'
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/runcycles/docs' }

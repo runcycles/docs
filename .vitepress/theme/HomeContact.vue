@@ -18,7 +18,6 @@ const reasons = [
   },
 ]
 
-const formUrl = 'https://forms.gle/r6w2wD4Hu9cbRPmd8'
 const issuesUrl = 'https://github.com/runcycles/docs/issues'
 </script>
 
@@ -38,15 +37,15 @@ const issuesUrl = 'https://github.com/runcycles/docs/issues'
       </ul>
 
       <div class="cta-row">
-        <a
-          class="cta-button"
-          :href="formUrl"
-          target="_blank"
-          rel="noopener"
-        >
+        <a class="cta-button" href="/contact">
           Talk to the team &rarr;
         </a>
       </div>
+
+      <p class="contact-footnote">
+        Running a real agent workload and evaluating Cycles?
+        <a href="/design-partners">Apply to become a design partner &rarr;</a>
+      </p>
 
       <p class="contact-footnote">
         Found a bug or have a concrete technical issue?

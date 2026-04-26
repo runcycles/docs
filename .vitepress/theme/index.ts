@@ -21,6 +21,7 @@ import NetworkTopology from './NetworkTopology.vue'
 import EventFlowDiagram from './EventFlowDiagram.vue'
 import DeliveryStateMachine from './DeliveryStateMachine.vue'
 import NetworkZones from './NetworkZones.vue'
+import AdoptionLadder from './AdoptionLadder.vue'
 
 export default {
   extends: DefaultTheme,
@@ -41,6 +42,7 @@ export default {
     app.component('EventFlowDiagram', EventFlowDiagram)
     app.component('DeliveryStateMachine', DeliveryStateMachine)
     app.component('NetworkZones', NetworkZones)
+    app.component('AdoptionLadder', AdoptionLadder)
   },
   setup() {
     const route = useRoute()

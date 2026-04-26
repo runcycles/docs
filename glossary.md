@@ -213,7 +213,7 @@ An HTTP POST callback triggered by a state change event. Cycles delivers webhook
 
 ### Event (Webhook)
 
-An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). Cycles defines 45 event types across 7 categories (budget, reservation, tenant, api_key, policy, webhook, system — the webhook category was added in v0.1.25.35 for `webhook.disabled_via_tenant_cascade`). Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
+An immutable record of a state change (e.g., `budget.exhausted`, `reservation.denied`). The v0.1.25 Admin API `EventType` enum registers 47 event types across 7 categories (budget: 16, reservation: 5, tenant: 6, api_key: 6, policy: 3, webhook: 6, system: 5). The `webhook` category covers six lifecycle events (`webhook.created` / `.updated` / `.paused` / `.resumed` / `.disabled` / `.deleted`) added in spec v0.1.25.33; the four `_via_tenant_cascade` event names are additive reference-server payloads emitted by the tenant-close cascade and not part of the registered enum. Events are stored in Redis with configurable TTL (default 90 days) and dispatched to matching webhook subscriptions.
 
 ### Signing Secret
 

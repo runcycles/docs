@@ -54,6 +54,10 @@ Use Cycles when you need to: enforce spend limits on LLM calls, bound tool invoc
 - [OpenAI Agents SDK](https://runcycles.io/how-to/integrating-cycles-with-openai-agents): RunHooks plugin for OpenAI Agents SDK lifecycle
 - [OpenClaw](https://runcycles.io/how-to/integrating-cycles-with-openclaw): Budget enforcement for OpenClaw agents
 
+### Runtime SDKs
+
+- [Rust](https://runcycles.io/how-to/integrating-cycles-with-rust): Programmatic budget enforcement for Rust applications
+
 ### Web Frameworks
 
 - [Next.js](https://runcycles.io/how-to/integrating-cycles-with-nextjs): Route-level guards, server actions, and client-side error handling

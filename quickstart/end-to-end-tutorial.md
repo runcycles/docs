@@ -391,6 +391,15 @@ You'll see `"error": "BUDGET_EXCEEDED"` — the call was blocked *before* any mo
 docker compose down -v
 ```
 
+## Common issues
+
+- **`Cannot connect to the Docker daemon`** — Docker Desktop isn't running. Start it and re-run `docker compose up -d`.
+- **`bind: address already in use` on port 7878 or 7979** — another service is using these ports. Either stop it, or remap the ports in `docker-compose.yml` (e.g. `"17878:7878"`) and update the curl URLs accordingly.
+- **`401 Unauthorized` on Step 2 or 3** — you're using `X-Cycles-API-Key` instead of `X-Admin-API-Key`. Bootstrap calls (creating tenants and API keys) require the admin header. Tenant calls (Steps 4–8) use the Cycles header.
+- **`jq: command not found`** — install jq (`brew install jq` on macOS, `apt install jq` on Debian/Ubuntu, `winget install jqlang.jq` on Windows). Or pipe to `python -m json.tool` instead.
+- **`tenant_id mismatch` or `tenant not found`** — every step uses `my-app` as the tenant ID. If you changed it in Step 2, update it everywhere else too (including the `subject.tenant` field in reservations).
+- **Healthcheck loop never returns** — the `until curl -sf ...` loop is waiting for `/actuator/health` to return 200. Check `docker compose logs cycles-server` for startup errors (most often a Redis connection issue).
+
 ## Next steps
 
 ::: tip Want real-time budget alerts?

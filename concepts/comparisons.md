@@ -7,7 +7,23 @@ description: "See how Cycles compares to LiteLLM, Helicone, OpenRouter, LangSmit
 
 Teams evaluating Cycles usually already have some controls in place. This page helps you find the right comparison for your situation.
 
-## At a glance
+## Quick read
+
+| Tool | Best for | Where Cycles fits |
+|---|---|---|
+| LiteLLM | Unified provider routing, key-level budgets | Adds atomic action-layer authority + hierarchical scopes |
+| Helicone | Observability, caching, window cost limits | Bounds spend pre-execution instead of after the fact |
+| OpenRouter | Single-API model access, per-key caps | Adds per-tenant + per-run hierarchical budgets |
+| LangSmith | Tracing what already happened | Decides whether execution should happen |
+| Guardrails AI | Content validation (PII, toxicity) | Governs budget and actions, not output content |
+| Rate limiter | Velocity control (req/sec) | Bounds total consumption, not just velocity |
+| Provider cap | Org-level spending ceiling | Pre-execution, per-tenant, per-run granularity |
+| DIY wrapper | Quick prototype budget logic | Production concurrency, retries, multi-tenant safety |
+| **Cycles** | **Atomic budget + action authority before execution** | **Covers every gap above** |
+
+Need all of it in one layer? [Talk to a founder](mailto:founder@runcycles.io) about your stack, or [run the local demo](/demos/) to see enforcement in action.
+
+## Full capability matrix
 
 | Approach | Pre-execution? | Per-tenant? | Cost-aware? | Action control? | Degradation? | Reserve-commit? |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -57,6 +73,7 @@ For a deep dive across all five alternative categories with capability matrices,
 
 ## Next steps
 
+- **[Runtime Authority vs Runtime Authorization](/concepts/runtime-authority-vs-runtime-authorization)** — how Cycles fits alongside identity-based agent governance (AWS Bedrock AgentCore Policy, Akeyless, agent IAM). Different layer, complementary not competitive.
 - **[What Cycles Is Not](/concepts/what-cycles-is-not-billing-rate-limiting-orchestration-and-other-category-confusion)** — Cycles is not billing, not rate limiting, not orchestration. Clearing up category confusion.
 - **[From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority)** — how teams evolve from dashboards to runtime authority.
 - **[Why Rate Limits Are Not Enough](/concepts/why-rate-limits-are-not-enough-for-autonomous-systems)** — the deeper argument for why velocity controls fail for autonomous systems.
