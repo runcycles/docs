@@ -33,7 +33,7 @@ Cycles' reference server is fine; *protocol robustness* is what comes from multi
 
 The authoritative statement of what's required lives in [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md) — read that first. The current target requires a small core runtime + a cross-plane set, plus a smaller recommended set that well-rounded servers ship. Below is the surface at time of writing; if `CONFORMANCE.md` and this page disagree, **the spec wins**.
 
-### Core runtime (MUST — 4 operations)
+### Core runtime (MUST)
 
 From [`cycles-protocol-v0.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-protocol-v0.yaml):
 
@@ -44,9 +44,9 @@ From [`cycles-protocol-v0.yaml`](https://github.com/runcycles/cycles-protocol/bl
 | **releaseReservation** | `POST /v1/reservations/{reservation_id}/release` | Release the full reservation without spending (cancel) |
 | **extendReservation** | `POST /v1/reservations/{reservation_id}/extend` | TTL heartbeat for long-running operations |
 
-### Cross-plane (MUST — 8 operations)
+### Cross-plane (MUST)
 
-From [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml). The admin spec is mostly the reference shape (tenant / budget / policy / key CRUD) and you can diverge there — but these 8 operations carry an explicit `x-conformance: normative` label and MUST follow the spec contract:
+From [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml). The admin spec is mostly the reference shape (tenant / budget / policy / key CRUD) and you can diverge there — but the cross-plane operations below carry an explicit `x-conformance: normative` label and MUST follow the spec contract:
 
 1. `GET /v1/admin/events` — **listEvents**
 2. `GET /v1/admin/events/{event_id}` — **getEvent**
@@ -57,7 +57,7 @@ From [`cycles-governance-admin-v0.1.25.yaml`](https://github.com/runcycles/cycle
 7. `GET /v1/balances` — **getBalances** (admin-plane view)
 8. `GET /v1/auth/introspect` — **introspectAuth**
 
-### Recommended (SHOULD — 4 operations)
+### Recommended (SHOULD)
 
 Well-rounded servers also implement these (from `cycles-protocol-v0.yaml`):
 
@@ -71,7 +71,7 @@ You can ship without these and still claim conformance against the current targe
 
 Spec compliance isn't just endpoint coverage — it's behavior under the hood. Per `CONFORMANCE.md`:
 
-1. **Atomic reservation across scopes** — when a reservation locks tenant + workspace + run budgets, it locks all three or none. No partial locks. Concurrency-safe under multi-writer load.
+1. **Atomic reservation across scopes** — when a reservation locks tenant + workspace + run budgets, it locks all three or none. No partial locks.
 2. **Concurrency-safe enforcement** — shared budgets MUST NOT be oversubscribed under concurrent reserve calls. The reference server uses Lua-scripted Redis operations; alternative implementations need equivalent atomicity guarantees in their backing store.
 3. **Idempotent commit and release** — every commit / release MUST be safe to retry. The same action MUST NOT settle twice. Idempotency keys carry the contract.
 4. **Unit consistency** — reservations and commits MUST validate and preserve unit denomination (USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS). Cross-unit operations MUST return `UNIT_MISMATCH` (400).

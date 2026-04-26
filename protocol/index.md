@@ -22,7 +22,6 @@ The protocol defines how budgets are reserved before execution, committed after,
 - **Idempotent commit and release** — retries are safe; the same action MUST NOT settle twice.
 - **Explicit error semantics** — `BUDGET_EXCEEDED` (409), `IDEMPOTENCY_MISMATCH` (409), `RESERVATION_EXPIRED` (410), `UNIT_MISMATCH` (400), and the rest defined in the spec.
 - **Multiple language clients** — Python, TypeScript, Rust, Spring Boot, MCP host.
-- **Conformance test suite** — explicit MUST / SHOULD / MAY criteria documented in the spec repo's [`CONFORMANCE.md`](https://github.com/runcycles/cycles-protocol/blob/main/CONFORMANCE.md).
 
 ## Specification
 
