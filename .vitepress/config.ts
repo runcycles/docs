@@ -132,6 +132,7 @@ export default defineConfig({
     nav: [
       { text: 'Why Cycles', link: '/why-cycles' },
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
+      { text: 'Protocol', link: '/protocol/' },
       {
         text: 'Docs',
         items: [
@@ -373,6 +374,8 @@ export default defineConfig({
           text: 'Protocol Reference',
           collapsed: true,
           items: [
+            { text: 'Overview', link: '/protocol/' },
+            { text: 'Implement the Cycles Protocol', link: '/protocol/implement' },
             { text: 'API Reference (Manual)', link: '/protocol/api-reference-for-the-cycles-protocol' },
             { text: 'API Reference (Interactive)', link: '/api/' },
             { text: 'Reserve / Commit Lifecycle', link: '/protocol/how-reserve-commit-works-in-cycles' },
