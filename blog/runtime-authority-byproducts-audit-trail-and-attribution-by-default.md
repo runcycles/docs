@@ -21,7 +21,7 @@ Three different buyers. Three different vocabularies. One underlying need: a rec
 
 The lead's existing tools couldn't answer any of them cleanly. The provider invoice was one line. The APM trace had spans but no costs. The SIEM logged tool calls but not money. Each question would have meant a separate instrumentation project.
 
-It turns out the data was already there. The team had deployed [Cycles](/quickstart/what-is-cycles) for runtime authority — to stop runaway spend and block risky actions before they execute. The byproduct of that enforcement is a complete, signed, idempotent ledger of every metered agent action. The lead had been sitting on the answer to all three questions for months.
+It turns out the data was already there. The team had deployed [Cycles](/quickstart/what-is-cycles) for runtime authority — to stop runaway spend and block risky actions before they execute. The byproduct of that enforcement is a *ledger-ready* record of every metered agent action: structured, idempotent, attributable, and exportable into audit, finance, and observability systems. The lead had been sitting on the answer to all three questions for months.
 
 This post is about that byproduct. What runtime authority *also* gives you when you turn it on, and why three different teams in your org each get something they've been struggling to build.
 
@@ -29,24 +29,24 @@ This post is about that byproduct. What runtime authority *also* gives you when 
 
 ## What runtime authority actually persists
 
-The Cycles protocol mediates every agent action through a four-step lifecycle: [decide → reserve → commit → release](/protocol/how-reserve-commit-works-in-cycles). The framing in the docs is a control story — *no action proceeds until the budget is locked, and we know exactly how much was used after.* That control story is the headline.
+The core Cycles lifecycle is [reserve → execute → commit or release](/protocol/how-reserve-commit-works-in-cycles), with `decide()` available as an optional preflight check before reservation. The framing in the docs is a control story — *no action proceeds until the budget is locked, and we know exactly how much was used after.* That control story is the headline.
 
-The bookkeeping story is the byproduct. Each lifecycle step persists a structured record:
+The bookkeeping story is the byproduct. Each operation produces a structured record:
 
-| Step | What it records | Why it matters as evidence |
+| Operation | What it records | Why it matters as evidence |
 |---|---|---|
-| `decide()` | subject (six-level hierarchy), action kind/name, estimate, decision (`ALLOW` / `ALLOW_WITH_CAPS` / `DENY`), `reason_code`, `affected_scopes`, `idempotency_key`, timestamp | Pre-action authorization with machine-readable rationale |
+| `decide()` *(optional preflight)* | subject scope, action kind/name, estimate, decision (`ALLOW` / `ALLOW_WITH_CAPS` / `DENY`), `reason_code`, `affected_scopes`, `idempotency_key`, timestamp | Pre-action authorization with machine-readable rationale |
 | `reserve` | actual lock against the budget, hold token, expiry | Authoritative "we said yes and here's what we held" |
 | `commit` | actual cost (separate from estimate), final balance impact, lifecycle close | Authoritative "this is what was used" |
 | `release` / `expired-reservation` | unused portion returned to the budget | Authoritative "this is what was given back" |
 
-The [subject hierarchy](/protocol/how-scope-derivation-works-in-cycles) on every record is `tenant → workspace → app → workflow → agent → toolset`. Every entry in the ledger carries all six levels. That means cost attribution is *structural* — you don't infer "this run belonged to customer X" from a SQL join across log streams. The customer is a field on the record.
+The [subject hierarchy](/protocol/how-scope-derivation-works-in-cycles) supports up to six levels — `tenant`, `workspace`, `app`, `workflow`, `agent`, and `toolset`. The more consistently you populate it, the better the attribution: aggregating by `tenant` gives cost-per-customer, by `workflow` gives cost-per-conversation, by `agent` gives cost-per-component. The point is that attribution is *structural* — a field on the record, not a SQL join across log streams stitched together after the fact.
 
 What you have, after running with Cycles in production for a quarter, is a multi-million-row ledger with fields that look like rows in a financial system: *who*, *what*, *when*, *how much committed against estimate*, *which authority granted it*. That's the data exhaust. We argue it's also the deliverable.
 
 ## Buyer #1: Risk and compliance — audit evidence by default
 
-Regulators have caught up to the AI agent surface. The [EU AI Act's Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires high-risk AI systems to have automatic logging capabilities that enable monitoring of operation and traceability of decisions — every tool call, every reservation, every action decision recorded with full context, not reconstructed from scattered application logs after an incident. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
+Regulators have caught up to the AI agent surface. For high-risk AI systems, [EU AI Act Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires automatic logging capabilities that support traceability and post-market monitoring over the system's lifetime. Cycles maps that obligation into concrete runtime records: reservations, commits, denials, scope, actor, timestamp, and `reason_code` — produced as a structural side effect of enforcing the budget, not reconstructed from scattered application logs after an incident. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
 
 The standard pattern for satisfying these is to bolt on an audit logger after the fact: pick fields, write to a separate store, hope the schema covers what an auditor will ask for. The pattern is fragile because it's *secondary* — the auditor and the engineer disagree on what's worth logging, and engineering wins by default.
 
@@ -57,7 +57,7 @@ Cycles flips that. The decide-commit pair is the enforcement layer *and* the aud
 - The idempotency key (proof of exactly-once handling on retries)
 - The timestamp and the actor
 
-When an auditor asks *"can you show me an action that was attempted but blocked, with reason and authority?"* the answer is a query against the ledger. When they ask *"how do you prove this record wasn't fabricated after the fact?"* the answer is the [HMAC-SHA256-signed webhook delivery](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events) that wrote it to the customer's audit store at event time, with a unique `X-Cycles-Event-Id` for deduplication.
+When an auditor asks *"can you show me an action that was attempted but blocked, with reason and authority?"* the answer is a query against the ledger. When they ask *"how do I know this record was actually produced by Cycles at the time you say?"* — if you stored the raw [HMAC-SHA256-signed webhook body](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events), the signature, and the `X-Cycles-Event-Id` in your audit store, you have event-time evidence the record was delivered by Cycles, with a primitive that lets you safely dedupe and replay. The ledger becomes tamper-evident only to the extent your downstream store preserves the signed payload — that piece is on the operator, not the protocol.
 
 The companion post — [The AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — maps specific regulatory clauses to runtime enforcement controls. This post is the inverse: it explains why the protocol *already* produces the evidence those clauses ask for, before anyone tells you the regulator is asking.
 
@@ -131,7 +131,7 @@ Cycles' record stream satisfies the ledger criteria, by protocol design:
 
 That's the difference between a Datadog APM trace (a log of what happened) and a row in a financial system (a record you can audit, settle, and certify). For deeper coverage of the webhook-delivery side, see [Webhook Idempotency Patterns for AI Agent Budget Events](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events).
 
-Honest scoping: Cycles is not a billing engine, not a SIEM, and not a FinOps platform. It's the *source of truth* that all three plug into. Datadog, Honeycomb, CloudZero, Splunk, and the various LLMOps platforms each cover slices of the larger story. Cycles produces the data they assume someone else generates.
+Honest scoping: Cycles is not a billing engine, not a SIEM, and not a FinOps platform. It's the *source of truth* that all three plug into. Datadog, Honeycomb, CloudZero, Splunk, and the various LLMOps platforms each cover slices of the larger story. Cycles produces the runtime authority data those systems can consume: who acted, under which scope, with what budget and risk decision, and what was actually committed.
 
 ## What this post does not yet claim
 
