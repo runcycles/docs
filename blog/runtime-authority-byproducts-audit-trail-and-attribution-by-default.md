@@ -52,9 +52,9 @@ The standard pattern for satisfying these is to bolt on an audit logger after th
 
 Cycles flips that. The reservation and settlement records are the enforcement layer *and* the audit substrate; `decide()` adds a preflight decision record when you use it. Every record carries:
 
-- The subject (six-level hierarchy, complete attribution)
+- The subject scope, with up to six levels of attribution
 - The decision and the `reason_code` (machine-readable rationale)
-- The idempotency key (proof of exactly-once handling on retries)
+- The idempotency key, when supplied, which supports replay-safe handling on retries
 - The timestamp and the actor
 
 When an auditor asks *"can you show me an action that was attempted but blocked, with reason and authority?"* the answer is a query against the ledger. When they ask *"how do I know this record was actually produced by Cycles at the time you say?"* — if you stored the raw [HMAC-SHA256-signed webhook body](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events), the signature, and the `X-Cycles-Event-Id` in your audit store, you have event-time evidence the record was delivered by Cycles, with a primitive that lets you safely dedupe and replay. The ledger becomes tamper-evident only to the extent your downstream store preserves the signed payload — that piece is on the operator, not the protocol.
@@ -82,11 +82,11 @@ The before-and-after for a finance team:
 | What's the run-rate trajectory? | Provider invoice + spreadsheet | Live aggregation against committed data |
 | Which 5 customers drive 50% of spend? | Quarter-end exercise | Standing query |
 
-None of this requires Cycles to be a billing engine or a financial data warehouse. It just has to be the *source of truth* the warehouse pulls from.
+None of this requires Cycles to be a billing engine or a financial data warehouse. It just has to be the *source record system* the warehouse pulls from.
 
 ## Platform engineering: chargeback and showback
 
-The third buyer is closer to home. Every platform team running AI infrastructure inside a larger company is being asked the same question with increasing pointedness: *which team is burning the AI budget?*
+The third stakeholder is closer to home. Every platform team running AI infrastructure inside a larger company is being asked the same question with increasing pointedness: *which team is burning the AI budget?*
 
 Today the answer is usually some version of *"I don't know — the OpenAI bill is one number."* That answer was acceptable when the AI bill was a footnote on the cloud spend. It stops being acceptable when the AI line passes the database line, which is happening.
 
@@ -131,7 +131,7 @@ Cycles' record stream satisfies the ledger criteria, by protocol design:
 
 That's the difference between a Datadog APM trace (a log of what happened) and a row in a financial system (a record you can audit, settle, and certify). For deeper coverage of the webhook-delivery side, see [Webhook Idempotency Patterns for AI Agent Budget Events](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events).
 
-Honest scoping: Cycles is not a billing engine, not a SIEM, and not a FinOps platform. It's the *source of truth* that all three plug into. Datadog, Honeycomb, CloudZero, Splunk, and the various LLMOps platforms each cover slices of the larger story. Cycles produces the runtime authority data those systems can consume: who acted, under which scope, with what budget and risk decision, and what was actually committed.
+Honest scoping: Cycles is not a billing engine, not a SIEM, and not a FinOps platform. It's the *source record system* that all three plug into. Datadog, Honeycomb, CloudZero, Splunk, and the various LLMOps platforms each cover slices of the larger story. Cycles produces the runtime authority data those systems can consume: who acted, under which scope, with what budget and risk decision, and what was actually committed.
 
 ## What this post does not yet claim
 
@@ -145,7 +145,7 @@ These are roadmap pointers and partner-integration territory, not features being
 
 ## Why this matters in production
 
-Most AI infrastructure layers solve one buyer's problem. Observability platforms serve operations. The OpenAI dashboard serves engineers. A separate audit log serves compliance — usually built reactively after a question is asked.
+Most AI infrastructure layers solve one stakeholder's problem. Observability platforms serve operations. The OpenAI dashboard serves engineers. A separate audit log serves compliance — usually built reactively after a question is asked.
 
 The Cycles ledger is unusual because the same record system answers all three stakeholders. Risk and compliance get the decide-with-rationale + signed delivery. Finance gets per-subject cost attribution. Platform engineering gets workspace-level chargeback. The reason it works is that each of those stakeholders is asking the same underlying question — *"who took which action with what authority and at what cost"* — phrased in three different professional vocabularies.
 
@@ -157,7 +157,7 @@ The circuit-breaker framing is the front door. The ledger is the back office tha
 
 - [AI Agent Unit Economics: Cost and Margin Analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin) — cost per conversation, per user, per cohort; margin analysis using Cycles' subject hierarchy
 - [The AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — mapping NIST, EU AI Act, ISO 42001, and OWASP requirements to runtime enforcement controls
-- [Webhook Idempotency Patterns for AI Agent Budget Events](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events) — exactly-once webhook delivery patterns
+- [Webhook Idempotency Patterns for AI Agent Budget Events](/blog/webhook-idempotency-patterns-for-ai-agent-budget-events) — receiver-side idempotency patterns for at-least-once webhook delivery
 - [Operational Runbook: Using Cycles Runtime Events](/blog/operational-runbook-using-cycles-runtime-events) — turning the same event stream into PagerDuty / Slack / auto-remediation signal
 - [Where Did My Tokens Go? Debugging Agent Spend](/blog/where-did-my-tokens-go-debugging-agent-spend) — observability companion for the cost-attribution flow
 - [How decide() works in Cycles](/protocol/how-decide-works-in-cycles-preflight-budget-checks-without-reservation) — preflight budget checks and the decision API
