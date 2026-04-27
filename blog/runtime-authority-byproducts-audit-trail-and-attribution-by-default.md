@@ -44,7 +44,7 @@ The [subject hierarchy](/protocol/how-scope-derivation-works-in-cycles) on every
 
 What you have, after running with Cycles in production for a quarter, is a multi-million-row ledger with fields that look like rows in a financial system: *who*, *what*, *when*, *how much committed against estimate*, *which authority granted it*. That's the data exhaust. We argue it's also the deliverable.
 
-## Buyer #1: Risk and Compliance
+## Buyer #1: Risk and compliance — audit evidence by default
 
 Regulators have caught up to the AI agent surface. The [EU AI Act's Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires high-risk AI systems to have automatic logging capabilities that enable monitoring of operation and traceability of decisions — every tool call, every reservation, every action decision recorded with full context, not reconstructed from scattered application logs after an incident. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
 
@@ -61,7 +61,7 @@ When an auditor asks *"can you show me an action that was attempted but blocked,
 
 The companion post — [The AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — maps specific regulatory clauses to runtime enforcement controls. This post is the inverse: it explains why the protocol *already* produces the evidence those clauses ask for, before anyone tells you the regulator is asking.
 
-## Buyer #2: Finance and FP&A
+## Buyer #2: Finance and FP&A — cost attribution and forecasting
 
 The CFO's question — *what does it cost to serve customer X?* — is a unit-economics question. It's the question that any company building AI features into a product with a revenue model has to answer eventually, and most can't.
 
@@ -143,7 +143,7 @@ Some byproducts are real but require additional integration work, and we don't w
 
 These are roadmap pointers and partner-integration territory, not features being claimed today.
 
-## Why this matters more than it sounds
+## Why this matters in production
 
 Most AI infrastructure layers solve one buyer's problem. Observability platforms serve operations. The OpenAI dashboard serves engineers. A separate audit log serves compliance — usually built reactively after a question is asked.
 
