@@ -29,14 +29,14 @@ curl -s "http://localhost:7878/v1/reservations?tenant=acme-corp&status=COMMITTED
   -H "X-Cycles-API-Key: $CYCLES_API_KEY"
 ```
 
-The event log is queryable via REST API. Keep hot retention for operational queries and export events to cold storage for long-term compliance — depending on your deployment configuration. Self-hosted deployments keep all data within your infrastructure — nothing leaves your network.
+The event log is queryable two ways: through the [Cycles Admin Dashboard](/how-to/using-the-cycles-dashboard) — a dedicated **Audit** view with `resource_type`, `resource_id`, and time-window filters, CSV / JSON export, and `trace_id` correlation pivots into the Events view — and through the REST API for programmatic pipelines. Keep hot retention for operational queries and export events to cold storage for long-term compliance, depending on your deployment configuration. Self-hosted deployments keep all data within your infrastructure — nothing leaves your network.
 
 ## What happens now
 
 - **Every action is recorded before execution.** The reservation creates a pre-execution control record, and the full audit trail is completed by commit, release, and event records. The evidence exists before and after the action runs — not reconstructed from logs after an incident.
 - **Scope hierarchy maps to organizational accountability.** Tenant, workspace, workflow, agent — each level maps to a responsible party. Auditors can trace any action to the budget scope that authorized it.
 - **Pre-execution denial is provable.** When a budget is exhausted, the reservation is denied and the action never executes. The denial itself is a record — proof the control worked.
-- **Retention and export are configurable.** Hot storage for operational queries, API-queryable, exportable to cold storage for long-term compliance — sized to your deployment. No log pipeline to build.
+- **Retention and export are configurable.** Hot storage for operational queries, queryable via dashboard or API, exportable to cold storage for long-term compliance — sized to your deployment. No log pipeline to build.
 
 ## The difference
 
@@ -46,8 +46,8 @@ The event log is queryable via REST API. Keep hot retention for operational quer
 | Cost visibility | Fragmented across provider dashboards | Unified budget per tenant/workflow/run, all providers |
 | Stop mechanism | Dashboard alert → human checks Slack | Budget exhaustion → DENY before execution |
 | Scope attribution | "Something spent $4,200" | "tenant:acme/workflow:run-123 spent $4,200" |
-| Auditor evidence | Screenshots of dashboards | API export of enforcement log |
-| Time to produce audit report | Days of log reconstruction | Single API query |
+| Auditor evidence | Screenshots of monitoring dashboards (post-hoc observation) | Audit view with structured filters + CSV/JSON export, or REST API |
+| Time to produce audit report | Days of log reconstruction | Filter the Audit view, export — or a single API query |
 
 ## Regulatory context
 
