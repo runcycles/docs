@@ -23,9 +23,9 @@ const problems = [
   },
   {
     icon: '/icons/book-text.svg',
-    hook: '30 days to produce AI audit evidence. Logs scattered across three systems.',
-    detail: "Every reservation, every commit, every denial happened. But reconstructing one agent's authority trail means joining LLM provider logs, APM traces, and application database records — and hoping nothing was sampled out.",
-    solution: 'Make the ledger the audit trail.',
+    hook: 'Auditor asks: prove the agent was under control.',
+    detail: "Dashboards show what happened after the fact. They don't show the pre-execution decision, scope, denial, commit, and authority trail.",
+    solution: 'Show enforcement evidence.',
     link: '/why-cycles/governance',
   },
 ]
