@@ -21,6 +21,13 @@ const problems = [
     solution: 'Isolate every customer.',
     link: '/why-cycles/multi-tenant',
   },
+  {
+    icon: '/icons/book-text.svg',
+    hook: 'Auditor asks: prove the agent was under control.',
+    detail: "Dashboards show what happened after the fact. They don't show the pre-execution decision, scope, denial, commit, and authority trail.",
+    solution: 'Show enforcement evidence.',
+    link: '/why-cycles/governance',
+  },
 ]
 </script>
 
@@ -72,7 +79,7 @@ const problems = [
 
 @media (min-width: 768px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 }
