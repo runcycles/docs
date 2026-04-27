@@ -23,7 +23,7 @@ const problems = [
   },
   {
     icon: '/icons/book-text.svg',
-    hook: '30 days to produce AI audit evidence. Logs scattered across five tools.',
+    hook: '30 days to produce AI audit evidence. Logs scattered across three systems.',
     detail: "Every reservation, every commit, every denial happened. But reconstructing one agent's authority trail means joining LLM provider logs, APM traces, and application database records — and hoping nothing was sampled out.",
     solution: 'Make the ledger the audit trail.',
     link: '/why-cycles/governance',
