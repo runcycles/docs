@@ -21,6 +21,13 @@ const problems = [
     solution: 'Isolate every customer.',
     link: '/why-cycles/multi-tenant',
   },
+  {
+    icon: '/icons/book-text.svg',
+    hook: '30 days to produce AI audit evidence. Logs scattered across five tools.',
+    detail: "Every reservation, every commit, every denial happened. But reconstructing one agent's authority trail means joining LLM provider logs, APM traces, and application database records — and hoping nothing was sampled out.",
+    solution: 'Make the ledger the audit trail.',
+    link: '/why-cycles/governance',
+  },
 ]
 </script>
 
@@ -72,7 +79,7 @@ const problems = [
 
 @media (min-width: 768px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 }
