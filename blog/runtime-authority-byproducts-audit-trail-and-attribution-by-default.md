@@ -17,7 +17,7 @@ A platform-engineering lead got three questions in one week:
 - The auditor: *"Show me evidence that the agent's spending was authorized, with rationale and timestamp."*
 - The data team: *"Why is our AI bill 6× engineering's? Can you break it down by team?"*
 
-Three different buyers. Three different vocabularies. One underlying need: a record of every agent action — *who*, *what*, *when*, *how much*, and *with what authority*.
+Three different stakeholders. Three different vocabularies. One underlying need: a record of every agent action — *who*, *what*, *when*, *how much*, and *with what authority*.
 
 The lead's existing tools couldn't answer any of them cleanly. The provider invoice was one line. The APM trace had spans but no costs. The SIEM logged tool calls but not money. Each question would have meant a separate instrumentation project.
 
@@ -44,13 +44,13 @@ The [subject hierarchy](/protocol/how-scope-derivation-works-in-cycles) supports
 
 What you have, after running with Cycles in production for a quarter, is a multi-million-row ledger with fields that look like rows in a financial system: *who*, *what*, *when*, *how much committed against estimate*, *which authority granted it*. That's the data exhaust. We argue it's also the deliverable.
 
-## Buyer #1: Risk and compliance — audit evidence by default
+## Risk and compliance: audit evidence by default
 
 Regulators have caught up to the AI agent surface. For high-risk AI systems, [EU AI Act Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires automatic logging capabilities that support traceability and post-market monitoring over the system's lifetime. Cycles maps that obligation into concrete runtime records: reservations, commits, denials, scope, actor, timestamp, and `reason_code` — produced as a structural side effect of enforcing the budget, not reconstructed from scattered application logs after an incident. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
 
 The standard pattern for satisfying these is to bolt on an audit logger after the fact: pick fields, write to a separate store, hope the schema covers what an auditor will ask for. The pattern is fragile because it's *secondary* — the auditor and the engineer disagree on what's worth logging, and engineering wins by default.
 
-Cycles flips that. The decide-commit pair is the enforcement layer *and* the audit log. Every record carries:
+Cycles flips that. The reservation and settlement records are the enforcement layer *and* the audit substrate; `decide()` adds a preflight decision record when you use it. Every record carries:
 
 - The subject (six-level hierarchy, complete attribution)
 - The decision and the `reason_code` (machine-readable rationale)
@@ -61,7 +61,7 @@ When an auditor asks *"can you show me an action that was attempted but blocked,
 
 The companion post — [The AI Agent Governance Framework](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) — maps specific regulatory clauses to runtime enforcement controls. This post is the inverse: it explains why the protocol *already* produces the evidence those clauses ask for, before anyone tells you the regulator is asking.
 
-## Buyer #2: Finance and FP&A — cost attribution and forecasting
+## Finance and FP&A: cost attribution and forecasting
 
 The CFO's question — *what does it cost to serve customer X?* — is a unit-economics question. It's the question that any company building AI features into a product with a revenue model has to answer eventually, and most can't.
 
@@ -84,7 +84,7 @@ The before-and-after for a finance team:
 
 None of this requires Cycles to be a billing engine or a financial data warehouse. It just has to be the *source of truth* the warehouse pulls from.
 
-## Buyer #3: Platform Engineering — chargeback and showback
+## Platform engineering: chargeback and showback
 
 The third buyer is closer to home. Every platform team running AI infrastructure inside a larger company is being asked the same question with increasing pointedness: *which team is burning the AI budget?*
 
@@ -125,7 +125,7 @@ The distinction matters. A *log* is an append-only stream optimized for debuggin
 
 Cycles' record stream satisfies the ledger criteria, by protocol design:
 
-- **Idempotency keys are required**, not optional, on `decide`, `reserve`, `commit`, and `events` operations. The [glossary entry](/glossary#idempotency-key) makes this explicit: *"an idempotency_key ensures a protocol operation is processed exactly once, even if the request is retried due to network failures or timeouts."* Retries don't double-charge.
+- **Idempotency is protocol-defined**, especially around commit/release and retry safety. When an idempotency key is supplied, the server enforces replay semantics per tenant, endpoint, and key: successful replays return the original response, while mismatched payloads return `IDEMPOTENCY_MISMATCH`. That is what prevents retries from double-charging. The [glossary](/glossary#idempotency-key) covers the broader semantics.
 - **Webhook deliveries are HMAC-SHA256 signed** with a unique `X-Cycles-Event-Id` per event, delivered with at-least-once semantics. Subscribers dedupe by event ID and verify the signature; the protocol guarantees they can detect tampering and replay.
 - **Events carry W3C trace context** (`traceparent` / `X-Cycles-Trace-Id`), which means cross-system correlation — the ledger entry, the application trace, and the LLM provider span can be tied together by ID, not by timestamp guesswork.
 
@@ -147,7 +147,7 @@ These are roadmap pointers and partner-integration territory, not features being
 
 Most AI infrastructure layers solve one buyer's problem. Observability platforms serve operations. The OpenAI dashboard serves engineers. A separate audit log serves compliance — usually built reactively after a question is asked.
 
-The Cycles ledger is unusual because the same record system answers all three buyers. Risk and compliance get the decide-with-rationale + signed delivery. Finance gets per-subject cost attribution. Platform engineering gets workspace-level chargeback. The reason it works is that each of those buyers is asking the same underlying question — *"who took which action with what authority and at what cost"* — phrased in three different professional vocabularies.
+The Cycles ledger is unusual because the same record system answers all three stakeholders. Risk and compliance get the decide-with-rationale + signed delivery. Finance gets per-subject cost attribution. Platform engineering gets workspace-level chargeback. The reason it works is that each of those stakeholders is asking the same underlying question — *"who took which action with what authority and at what cost"* — phrased in three different professional vocabularies.
 
 You build the enforcement layer because runaway spend and risky actions are real and acute. You get the ledger because the act of enforcing produces records that, by protocol design, are structured the way an auditor, a CFO, and a platform engineer all need them.
 
