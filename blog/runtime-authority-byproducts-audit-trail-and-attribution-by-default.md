@@ -1,5 +1,5 @@
 ---
-title: "The Audit Trail You Didn't Know You Were Building: Cycles as Evidence by Default"
+title: "The AI Agent Audit Trail You're Already Building"
 date: 2026-04-27
 author: Cycles Team
 tags: [runtime-authority, governance, audit, finops, compliance, costs, agents, engineering]
@@ -9,7 +9,7 @@ sidebar: false
 featured: false
 ---
 
-# The Audit Trail You Didn't Know You Were Building: Cycles as Evidence by Default
+# The AI Agent Audit Trail You're Already Building
 
 A platform-engineering lead got three questions in one week:
 
@@ -46,7 +46,7 @@ What you have, after running with Cycles in production for a quarter, is a multi
 
 ## Buyer #1: Risk and Compliance
 
-Regulators have caught up to the AI agent surface. The [EU AI Act's Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires high-risk AI systems to maintain logs of decisions and rationale, with a defined retention period and the ability to produce them on request. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
+Regulators have caught up to the AI agent surface. The [EU AI Act's Article 12](/blog/ai-agent-governance-framework-nist-eu-ai-act-iso-42001-owasp-runtime-enforcement) requires high-risk AI systems to have automatic logging capabilities that enable monitoring of operation and traceability of decisions — every tool call, every reservation, every action decision recorded with full context, not reconstructed from scattered application logs after an incident. SOC 2 Type II auditors increasingly add agentic systems to scope and ask for evidence of *control* — not just observation. ISO 42001 builds the same logging obligations into AI management system certification.
 
 The standard pattern for satisfying these is to bolt on an audit logger after the fact: pick fields, write to a separate store, hope the schema covers what an auditor will ask for. The pattern is fragile because it's *secondary* — the auditor and the engineer disagree on what's worth logging, and engineering wins by default.
 
@@ -92,20 +92,28 @@ Today the answer is usually some version of *"I don't know — the OpenAI bill i
 
 Cycles' subject hierarchy gives platform teams a clean answer: workspace and app levels are the natural mapping for organizational structure. A `workspace` corresponds to a team, an `app` corresponds to a service or product surface, and the `tenant` corresponds to the company or environment. Issuing API keys per workspace gives the platform team a metered surface that maps cleanly to cost centers.
 
-Querying [GET /v1/balances](/protocol/how-scope-derivation-works-in-cycles) on a tenant returns balances at every scope underneath:
+Querying `GET /v1/balances?tenant=acme&include_children=true` returns balances at every scope underneath, in the shape documented in the [API reference](/protocol/api-reference-for-the-cycles-protocol):
 
 ```json
 {
-  "tenant": "acme",
-  "workspace_balances": {
-    "data-team":         { "spent": 184_320, "remaining":  15_680 },
-    "engineering":       { "spent":  41_200, "remaining": 158_800 },
-    "product-research":  { "spent":  72_500, "remaining":  27_500 }
-  }
+  "balances": [
+    {
+      "scope": "workspace:data-team",
+      "scope_path": "tenant:acme/workspace:data-team",
+      "spent":     { "amount": 184320, "unit": "USD_MICROCENTS" },
+      "remaining": { "amount":  15680, "unit": "USD_MICROCENTS" }
+    },
+    {
+      "scope": "workspace:engineering",
+      "scope_path": "tenant:acme/workspace:engineering",
+      "spent":     { "amount":  41200, "unit": "USD_MICROCENTS" },
+      "remaining": { "amount": 158800, "unit": "USD_MICROCENTS" }
+    }
+  ]
 }
 ```
 
-The data team's question — *why is our AI bill 6× engineering's?* — answers itself. The chargeback report becomes a standing query, not a quarter-end fire drill.
+(Excerpted — the full response also returns `allocated`, `reserved`, `debt`, and `is_over_limit` per scope.) The data team's question — *why is our AI bill 6× engineering's?* — answers itself. The chargeback report becomes a standing query, not a quarter-end fire drill.
 
 A side benefit worth flagging: this kills shadow AI spend. Engineers can't quietly move workloads off the metered surface unless they leave Cycles entirely, and leaving Cycles costs them the runtime authority that's stopping the runaway loops they've already been bitten by. The metering is sticky because the enforcement is valuable — different from observability tools, which tend to atrophy because nobody's blocked when they're missing.
 
