@@ -3,7 +3,7 @@ title: "The AI Agent Audit Trail You're Already Building"
 date: 2026-04-27
 author: Cycles Team
 tags: [runtime-authority, governance, audit, finops, compliance, costs, agents, engineering]
-description: "Runtime authority's hidden byproduct: a protocol-native audit trail and per-subject cost ledger for AI agents — EU AI Act and FinOps evidence by default."
+description: "Runtime authority's hidden byproduct: ledger-ready audit, cost, and attribution records for AI agents — useful for compliance, FinOps, and platform chargeback."
 blog: true
 sidebar: false
 featured: false
@@ -67,7 +67,7 @@ The CFO's question — *what does it cost to serve customer X?* — is a unit-ec
 
 The reason most can't is that the cost data lives in three places: the LLM provider invoice (one line), the application logs (per-request token counts that nobody aggregates by customer), and the cloud bill (compute and storage, customer-agnostic). To get cost-per-customer you have to stitch.
 
-Cycles' subject hierarchy collapses the stitch. Every commit is already tagged with the customer (`tenant`), the feature (`app`), the workflow, and the agent. Aggregating by `tenant` gives cost-per-customer. Aggregating by `app` gives cost-per-feature. Aggregating by `workflow` gives cost-per-conversation. The math is `SELECT SUM(committed) GROUP BY ...`.
+Cycles' subject hierarchy collapses the stitch. When your integration populates the subject hierarchy consistently, each commit is tagged with the customer (`tenant`), the feature (`app`), the workflow, and the agent. Aggregating by `tenant` gives cost-per-customer. Aggregating by `app` gives cost-per-feature. Aggregating by `workflow` gives cost-per-conversation. The math is `SELECT SUM(committed) GROUP BY ...`.
 
 The deep dive on cost-per-conversation, cost-per-user, cohort margin, and the full unit-economics picture is in [AI Agent Unit Economics: Cost and Margin Analysis](/blog/ai-agent-unit-economics-cost-per-conversation-per-user-margin). Read that for the math.
 
