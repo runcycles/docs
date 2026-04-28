@@ -49,6 +49,10 @@ The intuitive reactions all sit at the wrong layer:
 
 The structural gap is that the agent's intent and the agent's destructive capabilities sit on the same side of the boundary. Whatever forbids the action lives inside the same probabilistic process that decides to take it. The Cycles governance page makes this argument abstractly: ["For high-risk or tightly governed AI uses, observation alone is not governance."](/why-cycles/governance) The Railway incident is the concrete version. The agent observed itself violating the rules. It did not stop itself.
 
+![Wrong path: agent calls the prod API directly, damage happens, dashboard reports it after the fact. Right path: the agent's call passes through a runtime gate that decides ALLOW or DENY before the prod API is touched.](/blog/runtime-gate-vs-dashboard.png)
+
+*Dashboards tell you what happened. Runtime gates decide whether the action is allowed before it runs.*
+
 ## Where the pre-execution layer would sit in a Cursor/Railway flow
 
 A control point that would have prevented this lives between the model's tool-call output and the API client that turns that output into an HTTPS request. It is small, it is mechanical, and it does not require the model to cooperate.
