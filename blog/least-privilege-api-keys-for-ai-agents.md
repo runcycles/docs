@@ -41,9 +41,9 @@ The tempting setup is one key per service:
 
 That shape is manageable when the caller is a conventional backend route with bounded behavior. It is much harder to defend when the caller is an agent that may retry, call tools, or fan out into sub-agents.
 
-The [runtime authority](/glossary#runtime-authority) pattern depends on every consequential action passing through a pre-execution decision: reserve, decide, commit, release, or deny. If every agent shares one broad credential, the enforcement point still works, but the blast radius of a leaked key is much larger than it needs to be.
+The [runtime authority](/glossary#runtime-authority) pattern depends on every consequential action passing through the authority lifecycle: optionally `decide`, then reserve before execution, then commit or release afterward. If every agent shares one broad credential, the enforcement point still works, but the blast radius of a leaked key is much larger than it needs to be.
 
-## The safer shape: one key per tenant and environment
+## The safer shape: one key per tenant, environment, and role
 
 Cycles API keys are associated with exactly one tenant. On every runtime request, the server validates the key, derives the effective tenant, and rejects attempts to act for a different tenant. If `subject.tenant` is omitted, the server uses the tenant attached to the key.
 
