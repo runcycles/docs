@@ -62,7 +62,7 @@ The operational loop is:
 2. **Propose.** Build the bulk request with the same filter, an `expected_count`, and an incident-linked `idempotency_key`.
 3. **Execute.** POST the bulk action once.
 4. **Reconcile.** Inspect `succeeded`, `failed`, and `skipped`.
-5. **Audit.** Query the audit log by operation or idempotency key.
+5. **Audit.** Query the audit log by operation, request/trace context, or search for the incident-linked idempotency key if your deployment records it in audit metadata.
 
 That flow turns a dangerous "loop over everything that matches this text file" into a bounded operation the server can reject before touching anything.
 
@@ -126,14 +126,14 @@ The response is the operator's reconciliation checklist:
   "failed": [
     {
       "id": "tenant-ghi",
-      "code": "INVALID_TRANSITION",
+      "error_code": "INVALID_TRANSITION",
       "message": "cannot SUSPEND from CLOSED"
     }
   ],
   "skipped": [
     {
       "id": "tenant-jkl",
-      "code": "ALREADY_IN_TARGET_STATE"
+      "reason": "ALREADY_IN_TARGET_STATE"
     }
   ]
 }
