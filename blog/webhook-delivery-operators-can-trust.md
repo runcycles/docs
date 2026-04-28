@@ -52,10 +52,10 @@ Every outbound [webhook delivery](/glossary#webhook-delivery) includes JSON plus
 |---|---|
 | `X-Cycles-Event-Id` | Unique event ID used for deduplication |
 | `X-Cycles-Event-Type` | Dot-notation event type such as `budget.exhausted` |
-| `X-Cycles-Signature` | [HMAC-SHA256](/glossary#hmac-sha256) over the raw request body, when a [signing secret](/glossary#signing-secret) is configured |
+| `X-Cycles-Signature` | [HMAC-SHA256](/glossary#hmac-sha256) over the raw request body using the subscription's [signing secret](/glossary#signing-secret) |
 | `X-Cycles-Trace-Id` | 32-hex trace ID shared across runtime, events, audit, and delivery |
 | `traceparent` | W3C Trace Context header for downstream tracing |
-| `X-Request-Id` | Original request ID when the event came from an HTTP request |
+| `X-Request-Id` | Optional implementation mirror of the event `request_id`; treat the JSON body's `request_id` as the portable contract |
 
 The body is the event object: event type, category, timestamp, [tenant](/glossary#tenant), scope, actor, data, correlation ID, request ID, trace ID, and metadata where present.
 
@@ -70,6 +70,8 @@ For the full delivery reference, see [Webhook Event Delivery Protocol](/protocol
 ## At-least-once means receivers dedupe
 
 Cycles webhooks are delivered at least once. Duplicates can happen when a network timeout hides a successful receiver response, when the [events service](/glossary#events-service) restarts during delivery, or when an operator replays a delivery.
+
+Events for the same tenant are dispatched in order. Cross-tenant ordering is not guaranteed, so a receiver that aggregates across tenants must not assume a global timeline from arrival order.
 
 That is the right reliability tradeoff for budget and governance events. Losing a `reservation.denied` event is worse than delivering it twice, as long as the receiver deduplicates correctly.
 
@@ -120,7 +122,7 @@ That transition should be treated like an incident signal:
 |---|---|
 | One delivery failed | Inspect receiver logs and wait for retry |
 | Repeated retries | Check endpoint health, signature secret, and reverse proxy behavior |
-| Subscription disabled | Fix receiver, replay missed deliveries, then resume |
+| Subscription disabled | Fix receiver, replay failed deliveries that exist in delivery history, then re-enable |
 | Frequent disable/re-enable loop | Move the receiver behind a more reliable queue or simplify the handler |
 
 Auto-disable is not punishment. It prevents a broken integration from becoming an infinite noise generator.
@@ -142,7 +144,7 @@ Before treating a [webhook subscription](/glossary#webhook-subscription) as prod
 
 | Check | Expected behavior |
 |---|---|
-| Missing signature on signed subscription | Receiver rejects the request |
+| Missing signature | Receiver rejects the request |
 | Bad signature | Receiver rejects the request with no side effect |
 | Duplicate event ID | Receiver returns 2xx and performs no second side effect |
 | Valid event | Receiver performs exactly one side effect |
