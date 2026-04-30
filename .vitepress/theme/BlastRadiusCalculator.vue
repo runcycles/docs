@@ -234,9 +234,9 @@ async function downloadPng() {
               <th class="col-cls">Rev.</th>
               <th class="col-cls">Vis.</th>
               <th class="col-num">$/action</th>
-              <th class="col-num">Users</th>
+              <th class="col-num col-users">Users</th>
               <th class="col-num">$/user</th>
-              <th class="col-num">Calls/day</th>
+              <th class="col-num col-calls">Calls/day</th>
               <th class="col-num">Err %</th>
               <th class="col-sev">Sev.</th>
               <th class="col-money">Blast / mo</th>
@@ -256,7 +256,7 @@ async function downloadPng() {
             >
               <td class="col-name">
                 <span v-if="row.isCatastrophic" class="warn-badge" title="Irreversible + Public — highest blast-radius class">!</span>
-                <input v-model="state.rows[i].name" type="text" class="name-input" />
+                <input v-model="state.rows[i].name" type="text" class="name-input" :title="state.rows[i].name" />
               </td>
               <td class="col-cls">
                 <select v-model="state.rows[i].reversibility" class="cls-select">
@@ -269,9 +269,9 @@ async function downloadPng() {
                 </select>
               </td>
               <td class="col-num"><input v-model.number="state.rows[i].costPerAction" type="number" min="0" step="1"   class="num-input" /></td>
-              <td class="col-num"><input v-model.number="state.rows[i].affectedUsers" type="number" min="0" step="1"   class="num-input" /></td>
+              <td class="col-num col-users"><input v-model.number="state.rows[i].affectedUsers" type="number" min="0" step="1"   class="num-input" /></td>
               <td class="col-num"><input v-model.number="state.rows[i].costPerUser"   type="number" min="0" step="1"   class="num-input" /></td>
-              <td class="col-num"><input v-model.number="state.rows[i].callsPerDay"   type="number" min="0" step="100" class="num-input" /></td>
+              <td class="col-num col-calls"><input v-model.number="state.rows[i].callsPerDay"   type="number" min="0" step="100" class="num-input" /></td>
               <td class="col-num"><input v-model.number="state.rows[i].errorRate"     type="number" min="0" step="0.1" class="num-input" /></td>
               <td class="col-sev"><span class="sev-chip">{{ fmtFactor(row.severity) }}</span></td>
               <td class="col-money radius">{{ fmtMoney(row.monthlyRadius) }}</td>
@@ -393,29 +393,43 @@ async function downloadPng() {
   border-bottom: 2px solid var(--vp-c-divider);
   padding-top: 8px; padding-bottom: 8px;
 }
-.col-name { text-align: left; padding-left: 4px; }
-.col-cls  { text-align: left; }
-.col-num  { width: 70px; }
-.col-sev  { width: 50px; }
-.col-money { width: 88px; }
-.col-rm   { width: 26px; padding-left: 0; padding-right: 4px; }
+.col-name { text-align: left; padding-left: 4px; min-width: 220px; }
+.col-cls  { text-align: left; min-width: 130px; }
+/* Wider num cells so 5-6 digit values (10000, 100000) stay legible. */
+.col-num  { width: 92px; }
+.col-num.col-calls { width: 96px; } /* "Calls/day" carries the largest values */
+.col-num.col-users { width: 96px; }
+.col-sev  { width: 54px; }
+.col-money { width: 92px; }
+.col-rm   { width: 28px; padding-left: 0; padding-right: 4px; }
 
 .col-name input { font-weight: 600; }
 
 .name-input {
-  width: 150px;
-  padding: 4px 6px;
+  width: 100%;
+  padding: 5px 8px;
   border: 1px solid transparent; border-radius: 4px;
   background: transparent; color: var(--vp-c-text-1); font: inherit;
   box-sizing: border-box;
+  /* Inline ellipsis for overflow; the full value stays in the input
+     and is also exposed via title="" for a hover tooltip. */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .name-input:hover { border-color: var(--vp-c-divider); }
-.name-input:focus { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; border-color: var(--vp-c-brand-1); background: var(--vp-c-bg); }
+.name-input:focus {
+  outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px;
+  border-color: var(--vp-c-brand-1); background: var(--vp-c-bg);
+  /* When focused, drop the ellipsis so the user can edit the full value
+     comfortably. The browser will still horizontal-scroll inside the
+     input as they type. */
+  text-overflow: clip;
+}
 
 .cls-select {
   width: 100%;
-  max-width: 130px;
-  padding: 3px 4px;
+  padding: 4px 6px;
   border: 1px solid var(--vp-c-divider); border-radius: 4px;
   background: var(--vp-c-bg); color: var(--vp-c-text-1);
   font: inherit; font-size: 12.5px;
@@ -424,7 +438,7 @@ async function downloadPng() {
 
 .num-input {
   width: 100%;
-  padding: 4px 5px;
+  padding: 5px 7px;
   text-align: right;
   border: 1px solid transparent; border-radius: 4px;
   background: transparent; color: var(--vp-c-text-1);
