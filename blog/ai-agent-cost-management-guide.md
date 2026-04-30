@@ -238,3 +238,9 @@ The progression from no controls to hard enforcement is predictable. The questio
 - **[AI Agent Budget Patterns: A Practical Guide](/blog/agent-budget-patterns-visual-guide)** — six common patterns with code examples and trade-offs
 
 Start by figuring out which tier you're at today. Then decide whether your current tier's failure modes are ones you can live with.
+
+## Related how-to guides
+
+- [Multi-agent shared budgets](/how-to/multi-agent-shared-workspace-budget-patterns)
+- [Monitoring and alerting](/how-to/monitoring-and-alerting)
+- [Webhook integrations](/how-to/webhook-integrations)

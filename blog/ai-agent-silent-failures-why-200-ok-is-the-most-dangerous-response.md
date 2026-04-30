@@ -196,3 +196,9 @@ The cheapest silent failure is the one caught at the checkpoint. Here's how to s
 - [The AI Agent Production Gap: What Developers Are Actually Saying](/blog/ai-agent-production-gap-what-developers-are-saying) — Community-sourced evidence from Reddit, HN, and industry reports
 - [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability) — Why logging after the fact isn't enough
 - [Zero Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — Why every tool call needs a policy decision
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)
+- [Using the Cycles dashboard](/how-to/using-the-cycles-dashboard)

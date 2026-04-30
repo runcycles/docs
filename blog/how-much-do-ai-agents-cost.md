@@ -214,3 +214,9 @@ If you're estimating costs for a new agent deployment or trying to understand an
 - The [End-to-End Tutorial](/quickstart/end-to-end-tutorial) walks through setting up Cycles with a working agent in under 30 minutes
 
 The cheapest agent incident is the one that never happens. Start by knowing your numbers. Then put a system in place to enforce them.
+
+## Related how-to guides
+
+- [Integrating with AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock)
+- [Using the Cycles dashboard](/how-to/using-the-cycles-dashboard)
+- [Integrating with OpenAI](/how-to/integrating-cycles-with-openai)

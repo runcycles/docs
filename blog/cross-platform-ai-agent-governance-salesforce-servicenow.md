@@ -285,3 +285,9 @@ A common trigger is simple: an enterprise deploys Agentforce to production and d
 - [AI Agent Action Authority: Blocking a Customer Email Before Execution](/blog/action-authority-demo-support-agent-walkthrough) — step-by-step demo walkthrough
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational concept
 - [Multi-Agent Budget Control](/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk) — shared budgets across multiple agent frameworks
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Multi-agent shared budgets](/how-to/multi-agent-shared-workspace-budget-patterns)
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)

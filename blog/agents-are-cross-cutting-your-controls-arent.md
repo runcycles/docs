@@ -126,3 +126,9 @@ If your agent spans N providers, M tools, K tenants, and W workers, your governa
 - [We Built a Custom Agent Rate Limiter. Here's Why We Stopped.](/blog/we-built-a-custom-agent-rate-limiter-heres-why-we-stopped) — the production post-mortem of the in-process counter failure mode.
 - [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-[tenant isolation](/glossary#tenant-isolation) and the noisy-neighbor problem.
 - [Idempotency, Retries, and Concurrency](/concepts/idempotency-retries-and-concurrency-why-cycles-is-built-for-real-failure-modes) — the failure modes the reserve-commit primitive is designed to survive.
+
+## Related how-to guides
+
+- [Multi-agent shared budgets](/how-to/multi-agent-shared-workspace-budget-patterns)
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)
+- [Multi-tenant SaaS guide](/how-to/multi-tenant-saas-with-cycles)

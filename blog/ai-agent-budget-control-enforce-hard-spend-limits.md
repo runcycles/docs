@@ -136,3 +136,9 @@ Cost overruns are a symptom. The root cause is the absence of a pre-execution en
 - **[Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation)** — per-tenant budgets, quotas, and isolation for SaaS platforms
 - **[Vibe Coding a Budget Wrapper vs. Owning a Runtime Authority](/blog/vibe-coding-budget-wrapper-vs-budget-authority)** — why the gap between a prototype and production enforcement is larger than it looks
 - **[Getting Started](/quickstart/getting-started-with-the-python-client)** — integrate with the [Python](/quickstart/getting-started-with-the-python-client), [TypeScript](/quickstart/getting-started-with-the-typescript-client), or [MCP Server](/quickstart/getting-started-with-the-mcp-server) client
+
+## Related how-to guides
+
+- [Degradation paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer)
+- [Multi-agent shared budgets](/how-to/multi-agent-shared-workspace-budget-patterns)
+- [Integrating with MCP](/how-to/integrating-cycles-with-mcp)

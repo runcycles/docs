@@ -194,3 +194,9 @@ These tools evolve quickly. If a claim looks outdated, check the linked docs for
 - [What Is Runtime Authority for AI Agents](/blog/what-is-runtime-authority-for-ai-agents) — the enforcement model
 - [How Teams Control AI Agents Today — And Where It Breaks](/blog/how-teams-control-ai-agents-today-and-where-it-breaks) — the 5 approaches
 - [GitHub: runcycles](https://github.com/runcycles)
+
+## Related how-to guides
+
+- [Multi-tenant SaaS guide](/how-to/multi-tenant-saas-with-cycles)
+- [Webhook integrations](/how-to/webhook-integrations)
+- [API key management](/how-to/api-key-management-in-cycles)

@@ -179,3 +179,9 @@ Least-privilege API keys make runtime authority sharper. The server can already 
 - [Security Hardening](/how-to/security-hardening) — production hardening checklist
 - [AI Agent Governance Dashboard](/blog/ai-agent-governance-admin-dashboard-monitor-control-budgets-risk) — operating keys, budgets, and risk limits from a governance UI
 - [Zero Trust for AI Agents](/blog/zero-trust-for-ai-agents-why-every-tool-call-needs-a-policy-decision) — why every tool call needs a policy decision
+
+## Related how-to guides
+
+- [Multi-tenant SaaS guide](/how-to/multi-tenant-saas-with-cycles)
+- [Webhook integrations](/how-to/webhook-integrations)
+- [Using the Cycles dashboard](/how-to/using-the-cycles-dashboard)

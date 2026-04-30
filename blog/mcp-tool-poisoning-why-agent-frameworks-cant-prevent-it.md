@@ -219,3 +219,9 @@ Research and data referenced in this post:
 - [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — Including recursive loops and cost blowups
 - [Runtime Authority vs. Guardrails vs. Observability](/blog/runtime-authority-vs-guardrails-vs-observability) — Why scanning and monitoring aren't enforcement
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — The foundational concept
+
+## Related how-to guides
+
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)
+- [Integrating with MCP](/how-to/integrating-cycles-with-mcp)
+- [API key management](/how-to/api-key-management-in-cycles)

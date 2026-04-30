@@ -203,3 +203,9 @@ That is the difference between an operator containing an incident and an operato
 - [Operational Runbook: Using Cycles Runtime Events](/blog/operational-runbook-using-cycles-runtime-events) — event-driven incident response patterns
 - [Tenant Lifecycle at Scale: Cascade Semantics](/blog/tenant-lifecycle-cascade-semantics-at-scale) — why tenant close is a subtree operation
 - [Searching and Sorting Admin List Endpoints](/how-to/searching-and-sorting-admin-list-endpoints) — building safe filters before bulk actions
+
+## Related how-to guides
+
+- [Rolling over billing periods](/how-to/rolling-over-billing-periods-with-reset-spent)
+- [Webhook integrations](/how-to/webhook-integrations)
+- [API key management](/how-to/api-key-management-in-cycles)

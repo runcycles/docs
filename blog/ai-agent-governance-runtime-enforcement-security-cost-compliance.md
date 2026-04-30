@@ -257,3 +257,9 @@ Three paths, depending on your current state:
 - [Multi-Agent Budget Control](/blog/multi-agent-budget-control-crewai-autogen-openai-agents-sdk) — CrewAI, AutoGen, OpenAI Agents SDK
 - [The AI Agent Production Gap](/blog/ai-agent-production-gap-what-developers-are-saying) — what the community is saying
 - [AI Agent Runtime Permissions](/blog/ai-agent-runtime-permissions-control-actions-before-execution) — controlling actions before execution
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Integrating with MCP](/how-to/integrating-cycles-with-mcp)
+- [Using the Cycles dashboard](/how-to/using-the-cycles-dashboard)

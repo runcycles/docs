@@ -161,3 +161,9 @@ And when drift appears, recalibrate *estimates*, not *budgets*. Estimates track 
 - [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits)
 - [AI Agent Cost Management Guide](/blog/ai-agent-cost-management-guide)
 - [GitHub: runcycles](https://github.com/runcycles)
+
+## Related how-to guides
+
+- [Shadow Mode rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)
+- [Cost estimation cheat sheet](/how-to/cost-estimation-cheat-sheet)
+- [Using the Cycles dashboard](/how-to/using-the-cycles-dashboard)

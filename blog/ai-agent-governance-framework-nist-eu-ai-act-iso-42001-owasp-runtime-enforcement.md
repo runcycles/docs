@@ -286,3 +286,9 @@ Governance is not a feature you add after shipping. It is the infrastructure tha
 - [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-tenant enforcement and isolation
 - [The AI Agent Production Gap](/blog/ai-agent-production-gap-what-developers-are-saying) — what the community is saying
 - [Security Overview](/security) — architecture, access control, and data handling
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)
+- [Multi-tenant SaaS guide](/how-to/multi-tenant-saas-with-cycles)

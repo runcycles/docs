@@ -115,3 +115,9 @@ Login with your admin API key. Everything else is in the [README](https://github
 The dashboard is open source, ships as a Docker image, and covers the core admin workflows in the [Cycles governance spec](https://github.com/runcycles/cycles-protocol/blob/main/cycles-governance-admin-v0.1.25.yaml).
 
 If you're building a governance layer for your agents — whether you use Cycles or not — the pattern holds: your operators need write access with safety rails, not just read-only charts. Design for the 2am case, not the demo.
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Webhook integrations](/how-to/webhook-integrations)
+- [API key management](/how-to/api-key-management-in-cycles)

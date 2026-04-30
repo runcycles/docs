@@ -157,3 +157,9 @@ This is the same hierarchical isolation that prevents one [tenant](/glossary#ten
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, [TOKENS](/glossary#tokens), CREDITS, RISK_POINTS
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what to do when action authority is denied
 - [Multi-Agent Shared Budgets](/how-to/multi-agent-shared-workspace-budget-patterns) — shared and independent budgets across agents
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Integrating with LangGraph](/how-to/integrating-cycles-with-langgraph)
+- [Webhook integrations](/how-to/webhook-integrations)

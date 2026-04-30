@@ -269,3 +269,9 @@ For agent frameworks (LangGraph, CrewAI, custom loops) and coding agents (Claude
 - **[What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents)** — foundational explainer on pre-execution enforcement
 - **[Understanding Units in Cycles](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points)** — RISK_POINTS, USD_MICROCENTS, TOKENS, and [CREDITS](/glossary#credits) reference
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — zero to a working budget-guarded app in 10 minutes
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Integrating with LangGraph](/how-to/integrating-cycles-with-langgraph)
+- [API key management](/how-to/api-key-management-in-cycles)
