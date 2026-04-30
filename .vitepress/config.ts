@@ -488,6 +488,16 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Troubleshooting & FAQ', link: '/how-to/troubleshooting-and-faq' },
+            {
+              text: 'LLM Troubleshooting',
+              collapsed: true,
+              items: [
+                { text: 'Overview', link: '/troubleshoot/' },
+                { text: 'OpenAI 429 Too Many Requests', link: '/troubleshoot/openai-rate-limit-429' },
+                { text: 'Anthropic Rate Limit Errors', link: '/troubleshoot/anthropic-rate-limit-error' },
+                { text: 'Debugging LLM Cost Spikes', link: '/troubleshoot/llm-cost-spike-debugging' },
+              ]
+            },
             { text: 'Changelog', link: '/changelog' },
             { text: 'Built with Cycles Badges', link: '/community/badges' },
           ]
@@ -571,9 +581,12 @@ export default defineConfig({
       pageData.frontmatter.lastUpdated = false
     }
 
-    // HowTo schema for how-to/* pages
+    // HowTo schema for how-to/* and troubleshoot/* pages
     const normalizedRelPath = pageData.relativePath.replace(/\\/g, '/')
-    if (normalizedRelPath.startsWith('how-to/') && !normalizedRelPath.endsWith('/index.md')) {
+    const isHowToPath =
+      normalizedRelPath.startsWith('how-to/') ||
+      normalizedRelPath.startsWith('troubleshoot/')
+    if (isHowToPath && !normalizedRelPath.endsWith('/index.md')) {
       const h2s = extractH2Headings(pageData.relativePath)
       if (h2s.length >= 2) {
         pageData.frontmatter.head.push(
