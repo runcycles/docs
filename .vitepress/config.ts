@@ -296,6 +296,7 @@ export default defineConfig({
           items: [
             { text: 'LLM Cost Control', link: '/guides/llm-cost-runtime-control' },
             { text: 'Risk & Blast Radius', link: '/guides/risk-and-blast-radius' },
+            { text: 'Multi-Tenant Operations', link: '/guides/multi-tenant-operations' },
           ]
         },
         {

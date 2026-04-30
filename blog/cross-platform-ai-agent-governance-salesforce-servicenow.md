@@ -10,6 +10,8 @@ sidebar: false
 
 # Salesforce and ServiceNow Govern Their Own Agents. Who Governs the Whole System?
 
+> **Part of: [Multi-Tenant AI Operations Reference](/guides/multi-tenant-operations)** — the full pillar covering scope hierarchy, per-tenant enforcement, multi-agent coordination, tenant lifecycle, and identity.
+
 > **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 A batch of 200 overdue invoices hits the system on a Tuesday afternoon. Salesforce Agentforce picks up the cases and starts auto-generating follow-up emails. Simultaneously, the invoicing system raises incidents in ServiceNow, and Now Assist begins auto-reassigning them, posting updates to customer Slack channels, and triggering escalation workflows. By the time anyone notices, 200 customer emails have gone out from Salesforce, 200 Slack notifications have gone out from ServiceNow, and 15 incidents have been auto-escalated to the wrong team.

@@ -113,6 +113,6 @@ Most agent damage clusters into a small number of patterns. Recognizing the patt
 - [Concurrent agent overspend](/incidents/concurrent-agent-overspend)
 - [The State of AI Agent Incidents (2026)](/blog/state-of-ai-agent-incidents-2026)
 
-## The complement guide
+## The complement guides
 
-This guide focuses on what an agent is allowed to *do*. For what an agent is allowed to *spend*, see [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control). Cost and action are the two dimensions of runtime authority — most production incidents touch both.
+This guide focuses on what an agent is allowed to *do*. For what an agent is allowed to *spend*, see [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control). For *who* owns which budget under shared infrastructure, see [Multi-Tenant AI Operations Reference](/guides/multi-tenant-operations). Most production incidents touch at least two of the three.
