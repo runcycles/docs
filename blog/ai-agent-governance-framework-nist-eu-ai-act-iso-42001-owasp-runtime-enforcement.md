@@ -11,6 +11,8 @@ featured: true
 
 # The AI Agent Governance Framework: Mapping NIST, EU AI Act, ISO 42001, and OWASP Requirements to Runtime Enforcement Controls
 
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 Regulations are converging on a single demand: if your AI system acts autonomously, you must be able to prove what it did, why it was allowed to do it, and how you would have stopped it.
 
 The EU AI Act's high-risk obligations are [currently scheduled to apply from August 2, 2026](https://eur-lex.europa.eu/eli/reg/2024/1689/oj). Organizations can already pursue certification of an AI management system against ISO/IEC 42001, with [ISO/IEC 42006:2025](https://www.iso.org/standard/44546.html) defining requirements for certification bodies. NIST's AI Risk Management Framework was published in January 2023. OWASP published its [Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) in late 2025. And in February 2026, NIST launched its [AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) — a direct signal that autonomous systems need governance infrastructure beyond what model-level controls provide.
@@ -286,3 +288,9 @@ Governance is not a feature you add after shipping. It is the infrastructure tha
 - [Multi-Tenant AI Cost Control](/blog/multi-tenant-ai-cost-control-per-tenant-budgets-quotas-isolation) — per-tenant enforcement and isolation
 - [The AI Agent Production Gap](/blog/ai-agent-production-gap-what-developers-are-saying) — what the community is saying
 - [Security Overview](/security) — architecture, access control, and data handling
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Budget control for LangChain](/how-to/how-to-add-budget-control-to-a-langchain-agent)
+- [Multi-tenant SaaS guide](/how-to/multi-tenant-saas-with-cycles)

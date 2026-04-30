@@ -53,6 +53,7 @@ The same agent with a $15 per-run budget stops after 8 iterations and surfaces t
 
 ## Go deeper
 
+- **[LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full topic guide: incident taxonomy, runtime authority patterns, multi-tenant isolation, unit economics, and rollout
 - [End-to-End Tutorial](/quickstart/end-to-end-tutorial) — zero to budget-guarded LLM call in 10 minutes
 - [Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet) — how much to reserve per model
 - [Degradation Paths](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer) — what to do when budget runs out

@@ -1,8 +1,14 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 import { useSidebar } from 'vitepress-openapi'
 import spec from '../public/openapi.json' with { type: 'json' }
 import adminSpec from '../public/admin-openapi.json' with { type: 'json' }
 import { generateFeed } from './rss'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const srcRoot = path.resolve(__dirname, '..')
 
 const openApiSidebar = useSidebar({
   spec,
@@ -13,6 +19,57 @@ const adminApiSidebar = useSidebar({
   spec: adminSpec,
   linkPrefix: '/admin-api/operations/',
 })
+
+// Extract H2 headings from a markdown file on disk. We read directly because
+// pageData.headers is not reliably populated when transformPageData runs.
+// Returns [{ title, slug }, ...] using GitHub-style slugs to match
+// markdown-it-anchor's default output. Non-step section headings (TL;DR,
+// Related, Next steps, etc.) are filtered out so HowTo schema only describes
+// genuinely sequential / actionable sections.
+const NON_STEP_HEADINGS = new Set([
+  'tldr', 'tl;dr',
+  'related', 'related how-to guides', 'related guides', 'related resources',
+  'next steps', 'further reading',
+  'key points', 'summary', 'conclusion',
+  'see also', 'references',
+  'glossary',
+])
+
+function isStepHeading(title) {
+  return !NON_STEP_HEADINGS.has(title.toLowerCase().trim())
+}
+
+function extractH2Headings(relativePath) {
+  try {
+    const filePath = path.join(srcRoot, relativePath)
+    const raw = fs.readFileSync(filePath, 'utf-8')
+    const body = raw.replace(/^---[\s\S]*?\n---\n/, '')
+    const lines = body.split('\n')
+    const out = []
+    let inFence = false
+    for (const line of lines) {
+      if (/^\s*```/.test(line)) inFence = !inFence
+      if (inFence) continue
+      const m = /^##\s+(.+?)\s*$/.exec(line)
+      if (m) {
+        const title = m[1].replace(/`/g, '').trim()
+        if (!isStepHeading(title)) continue
+        out.push({ title, slug: slugifyHeading(title) })
+      }
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
+function slugifyHeading(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+}
 
 export default defineConfig({
   base: '/',
@@ -66,6 +123,9 @@ export default defineConfig({
       return items
         .filter((item) => item.url !== '404')
         .filter((item) => !item.url.includes('/operations/'))
+        // Calculator embed pages are noindex iframe targets — exclude from
+        // sitemap so search engines do not pick them up as standalone results.
+        .filter((item) => !/calculators\/[^/]*-embed$/.test(item.url))
         .map((item) => item.lastmod ? item : { ...item, lastmod: fallback })
     },
   },
@@ -220,6 +280,14 @@ export default defineConfig({
             { text: 'Deploy the Events Service', link: '/quickstart/deploying-the-events-service' },
             { text: 'Deploy the Admin Dashboard', link: '/quickstart/deploying-the-cycles-dashboard' },
             { text: 'Migrate from Custom Rate Limiter', link: '/how-to/migrating-from-custom-rate-limiter-to-cycles' },
+          ]
+        },
+        {
+          text: 'Topic Guides',
+          collapsed: false,
+          items: [
+            { text: 'LLM Cost Control', link: '/guides/llm-cost-runtime-control' },
+            { text: 'Risk & Blast Radius', link: '/guides/risk-and-blast-radius' },
           ]
         },
         {
@@ -443,10 +511,29 @@ export default defineConfig({
           ]
         },
         {
+          text: 'Calculators',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/calculators/' },
+            { text: 'Claude vs GPT Cost', link: '/calculators/claude-vs-gpt-cost-comparison' },
+            { text: 'Blast Radius Risk', link: '/calculators/ai-agent-blast-radius-risk' },
+          ]
+        },
+        {
           text: 'Help',
           collapsed: false,
           items: [
-            { text: 'Troubleshooting & FAQ', link: '/how-to/troubleshooting-and-faq' },
+            { text: 'Cycles Troubleshooting', link: '/how-to/troubleshooting-and-faq' },
+            {
+              text: 'LLM Provider Troubleshooting',
+              collapsed: true,
+              items: [
+                { text: 'Overview', link: '/troubleshoot/' },
+                { text: 'OpenAI 429 Too Many Requests', link: '/troubleshoot/openai-rate-limit-429' },
+                { text: 'Anthropic Rate Limit Errors', link: '/troubleshoot/anthropic-rate-limit-error' },
+                { text: 'Debugging LLM Cost Spikes', link: '/troubleshoot/llm-cost-spike-debugging' },
+              ]
+            },
             { text: 'Changelog', link: '/changelog' },
             { text: 'Built with Cycles Badges', link: '/community/badges' },
           ]
@@ -476,9 +563,17 @@ export default defineConfig({
       )
     }
 
-    const canonicalUrl = `https://runcycles.io/${pageData.relativePath}`
-      .replace(/index\.md$/, '')
+    let canonicalUrl = `https://runcycles.io/${pageData.relativePath.replace(/\\/g, '/')}`
+      .replace(/\/index\.md$/, '/')
       .replace(/\.md$/, '')
+
+    // Calculator embed pages canonicalize to their standalone counterpart so
+    // that any accidental indexing consolidates link equity at the shareable
+    // URL rather than the iframe target.
+    const embedMatch = canonicalUrl.match(/^(.*\/calculators\/[^/]+)-embed$/)
+    if (embedMatch) {
+      canonicalUrl = embedMatch[1] + '-standalone'
+    }
 
     const defaultDescription = 'Stop runaway agent spend and risky actions before they execute. Open protocol, multi-language SDKs, Apache 2.0.'
     const pageTitle = pageData.frontmatter.title || pageData.title || 'Cycles'
@@ -528,6 +623,59 @@ export default defineConfig({
       // Hide editLink and lastUpdated on blog posts
       pageData.frontmatter.editLink = false
       pageData.frontmatter.lastUpdated = false
+    }
+
+    // HowTo schema for how-to/* and troubleshoot/* pages
+    const normalizedRelPath = pageData.relativePath.replace(/\\/g, '/')
+    const isHowToPath =
+      normalizedRelPath.startsWith('how-to/') ||
+      normalizedRelPath.startsWith('troubleshoot/')
+    if (isHowToPath && !normalizedRelPath.endsWith('/index.md')) {
+      const h2s = extractH2Headings(pageData.relativePath)
+      if (h2s.length >= 2) {
+        pageData.frontmatter.head.push(
+          ['script', { type: 'application/ld+json' }, JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": pageTitle,
+            "description": pageDescription,
+            "url": canonicalUrl,
+            "step": h2s.map((h, i) => ({
+              "@type": "HowToStep",
+              "position": i + 1,
+              "name": h.title,
+              "url": `${canonicalUrl}#${h.slug}`
+            }))
+          })],
+        )
+      }
+    }
+
+    // Article schema for /concepts/cycles-vs-* comparison pages
+    if (normalizedRelPath.startsWith('concepts/cycles-vs-')) {
+      pageData.frontmatter.head.push(
+        ['script', { type: 'application/ld+json' }, JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": pageTitle,
+          "description": pageDescription,
+          "url": canonicalUrl,
+          "articleSection": "Comparison",
+          "author": {
+            "@type": "Organization",
+            "name": "Cycles"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Cycles",
+            "url": "https://runcycles.io",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://runcycles.io/runcycles-og.png"
+            }
+          }
+        })],
+      )
     }
   },
 })

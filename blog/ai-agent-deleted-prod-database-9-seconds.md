@@ -11,6 +11,8 @@ featured: true
 
 # Cursor AI Agent Reportedly Deleted a Production Database in 9 Seconds
 
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 JER ([@lifeof_jer](https://x.com/lifeof_jer/status/2048103471019434248)), a developer at PocketOS, posted on X this week:
 
 > "Yesterday afternoon, an AI coding agent — Cursor running Anthropic's flagship Claude Opus 4.6 — deleted our production database and all volume-level backups in a single API call to Railway, our infrastructure provider. It took 9 seconds."
@@ -114,3 +116,9 @@ If you are putting a coding agent in front of production infrastructure, the que
 - [How decide() works](/protocol/how-decide-works-in-cycles-preflight-budget-checks-without-reservation) — the preflight decision API
 - [How reserve / commit works](/protocol/how-reserve-commit-works-in-cycles) — the lifecycle that produces the audit ledger
 - [Using the Cycles Dashboard](/how-to/using-the-cycles-dashboard) — the operator-facing audit and event views
+
+## Related how-to guides
+
+- [Assigning RISK_POINTS to agent tools](/how-to/assigning-risk-points-to-agent-tools)
+- [Webhook integrations](/how-to/webhook-integrations)
+- [Integrating with OpenAI](/how-to/integrating-cycles-with-openai)
