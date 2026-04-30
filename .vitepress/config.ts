@@ -1,8 +1,14 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 import { useSidebar } from 'vitepress-openapi'
 import spec from '../public/openapi.json' with { type: 'json' }
 import adminSpec from '../public/admin-openapi.json' with { type: 'json' }
 import { generateFeed } from './rss'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const srcRoot = path.resolve(__dirname, '..')
 
 const openApiSidebar = useSidebar({
   spec,
@@ -13,6 +19,41 @@ const adminApiSidebar = useSidebar({
   spec: adminSpec,
   linkPrefix: '/admin-api/operations/',
 })
+
+// Extract H2 headings from a markdown file on disk. We read directly because
+// pageData.headers is not reliably populated when transformPageData runs.
+// Returns [{ title, slug }, ...] using GitHub-style slugs to match
+// markdown-it-anchor's default output.
+function extractH2Headings(relativePath) {
+  try {
+    const filePath = path.join(srcRoot, relativePath)
+    const raw = fs.readFileSync(filePath, 'utf-8')
+    const body = raw.replace(/^---[\s\S]*?\n---\n/, '')
+    const lines = body.split('\n')
+    const out = []
+    let inFence = false
+    for (const line of lines) {
+      if (/^\s*```/.test(line)) inFence = !inFence
+      if (inFence) continue
+      const m = /^##\s+(.+?)\s*$/.exec(line)
+      if (m) {
+        const title = m[1].replace(/`/g, '').trim()
+        out.push({ title, slug: slugifyHeading(title) })
+      }
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
+function slugifyHeading(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+}
 
 export default defineConfig({
   base: '/',
@@ -476,8 +517,8 @@ export default defineConfig({
       )
     }
 
-    const canonicalUrl = `https://runcycles.io/${pageData.relativePath}`
-      .replace(/index\.md$/, '')
+    const canonicalUrl = `https://runcycles.io/${pageData.relativePath.replace(/\\/g, '/')}`
+      .replace(/\/index\.md$/, '/')
       .replace(/\.md$/, '')
 
     const defaultDescription = 'Stop runaway agent spend and risky actions before they execute. Open protocol, multi-language SDKs, Apache 2.0.'
@@ -528,6 +569,56 @@ export default defineConfig({
       // Hide editLink and lastUpdated on blog posts
       pageData.frontmatter.editLink = false
       pageData.frontmatter.lastUpdated = false
+    }
+
+    // HowTo schema for how-to/* pages
+    const normalizedRelPath = pageData.relativePath.replace(/\\/g, '/')
+    if (normalizedRelPath.startsWith('how-to/') && !normalizedRelPath.endsWith('/index.md')) {
+      const h2s = extractH2Headings(pageData.relativePath)
+      if (h2s.length >= 2) {
+        pageData.frontmatter.head.push(
+          ['script', { type: 'application/ld+json' }, JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": pageTitle,
+            "description": pageDescription,
+            "url": canonicalUrl,
+            "step": h2s.map((h, i) => ({
+              "@type": "HowToStep",
+              "position": i + 1,
+              "name": h.title,
+              "url": `${canonicalUrl}#${h.slug}`
+            }))
+          })],
+        )
+      }
+    }
+
+    // Article schema for /concepts/cycles-vs-* comparison pages
+    if (normalizedRelPath.startsWith('concepts/cycles-vs-')) {
+      pageData.frontmatter.head.push(
+        ['script', { type: 'application/ld+json' }, JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": pageTitle,
+          "description": pageDescription,
+          "url": canonicalUrl,
+          "articleSection": "Comparison",
+          "author": {
+            "@type": "Organization",
+            "name": "Cycles"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Cycles",
+            "url": "https://runcycles.io",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://runcycles.io/runcycles-og.png"
+            }
+          }
+        })],
+      )
     }
   },
 })
