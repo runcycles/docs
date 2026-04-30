@@ -7,7 +7,7 @@ description: "A reference map of bounding LLM and AI agent spend in production v
 
 Every angle on bounding LLM and AI agent spend in production. This is the map: each section is a short orientation that links to the deep coverage in our blog, how-to guides, and protocol reference. Read top to bottom for a structured view, or jump to whichever section matches what you are working on.
 
-> **Cost is one dimension of runtime authority.** Cycles also governs *what* agents are allowed to do (action authority, blast-radius limits) and *who* gets which budget (multi-tenant isolation). For the full picture, see [Why Cycles](/why-cycles). This guide focuses specifically on the cost dimension.
+> **Cost is one dimension of runtime authority.** Cycles also governs *what* agents are allowed to do — see [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius) — and *who* owns which budget under shared infrastructure — see [Multi-Tenant AI Operations Reference](/guides/multi-tenant-operations). This guide focuses specifically on the cost dimension.
 
 > **Make this concrete for your workload.** [Open the cost calculator →](/calculators/claude-vs-gpt-cost-standalone) — compare Claude and GPT spend across token volumes, share the configured URL with a teammate, or embed a pre-configured view in your own writeup.
 
