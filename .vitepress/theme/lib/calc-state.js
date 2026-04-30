@@ -12,7 +12,7 @@
 // Encoder uses base64url (RFC 4648) instead of plain base64 so the hash does
 // not contain `+`, `/`, or `=`, which can be problematic in URLs.
 
-import { watch, nextTick } from 'vue'
+import { watch, nextTick, onBeforeUnmount } from 'vue'
 
 const HASH_KEY = 's'
 
@@ -114,14 +114,11 @@ export function useCalcState(state, { hydrate, debounceMs = 300, initialStateB64
   hydrateNow()
 
   let timer = null
-  let suppressNextWrite = true // skip the very first reactive trigger after mount
+  let hydrating = false
   watch(
     () => JSON.stringify(state),
     () => {
-      if (suppressNextWrite) {
-        suppressNextWrite = false
-        return
-      }
+      if (hydrating) return
       clearTimeout(timer)
       timer = setTimeout(() => writeHashState(state), debounceMs)
     },
@@ -129,11 +126,15 @@ export function useCalcState(state, { hydrate, debounceMs = 300, initialStateB64
 
   // Listen for hashchange (e.g. user navigates back / pastes new URL into bar)
   function onHashChange() {
-    suppressNextWrite = true
+    hydrating = true
     hydrateNow()
-    nextTick(() => { suppressNextWrite = false })
+    nextTick(() => { hydrating = false })
   }
   window.addEventListener('hashchange', onHashChange)
+  onBeforeUnmount(() => {
+    window.removeEventListener('hashchange', onHashChange)
+    clearTimeout(timer)
+  })
 
   return {
     reload: hydrateNow,

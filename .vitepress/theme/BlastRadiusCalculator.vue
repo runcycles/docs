@@ -47,13 +47,28 @@ const state = reactive({
   ],
 })
 
+function clampNumber(value, min = 0, max = Number.POSITIVE_INFINITY) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return min
+  return Math.max(min, Math.min(max, n))
+}
+
+function normalizeContainment() {
+  state.containmentPct = clampNumber(state.containmentPct, 0, 100)
+}
+
+function normalizeRowNumber(i, key, min = 0, max = Number.POSITIVE_INFINITY) {
+  if (!state.rows[i]) return
+  state.rows[i][key] = clampNumber(state.rows[i][key], min, max)
+}
+
 const calcState = useCalcState(state, {
   initialStateB64: props.initialState,
   hydrate(incoming) {
     if (typeof incoming.agentName === 'string')        state.agentName = incoming.agentName
     if (typeof incoming.agentDescription === 'string') state.agentDescription = incoming.agentDescription
     if (typeof incoming.containmentPct === 'number') {
-      state.containmentPct = Math.max(0, Math.min(100, incoming.containmentPct))
+      state.containmentPct = clampNumber(incoming.containmentPct, 0, 100)
     }
     if (Array.isArray(incoming.rows)) {
       state.rows = incoming.rows
@@ -62,11 +77,11 @@ const calcState = useCalcState(state, {
           name: String(r.name),
           reversibility: REVERSIBILITY[r.reversibility] ? r.reversibility : 'reversible',
           visibility:    VISIBILITY[r.visibility]      ? r.visibility    : 'internal',
-          costPerAction: Number(r.costPerAction) || 0,
-          affectedUsers: Number(r.affectedUsers) || 0,
-          costPerUser:   Number(r.costPerUser)   || 0,
-          callsPerDay:   Number(r.callsPerDay)   || 0,
-          errorRate:     Number(r.errorRate)     || 0,
+          costPerAction: clampNumber(r.costPerAction),
+          affectedUsers: clampNumber(r.affectedUsers),
+          costPerUser:   clampNumber(r.costPerUser),
+          callsPerDay:   clampNumber(r.callsPerDay),
+          errorRate:     clampNumber(r.errorRate, 0, 100),
         }))
     }
   },
@@ -86,15 +101,21 @@ function removeRow(i) { state.rows.splice(i, 1) }
 const computedRows = computed(() => state.rows.map(r => {
   const rev = REVERSIBILITY[r.reversibility] || REVERSIBILITY.reversible
   const vis = VISIBILITY[r.visibility]      || VISIBILITY.internal
+  const containmentPct = clampNumber(state.containmentPct, 0, 100)
+  const costPerAction  = clampNumber(r.costPerAction)
+  const affectedUsers  = clampNumber(r.affectedUsers)
+  const costPerUser    = clampNumber(r.costPerUser)
+  const callsPerDay    = clampNumber(r.callsPerDay)
+  const errorRate      = clampNumber(r.errorRate, 0, 100)
   const severity      = rev.factor + vis.surcharge
-  const directRadius  = Number(r.costPerAction) + Number(r.affectedUsers) * Number(r.costPerUser)
+  const directRadius  = costPerAction + affectedUsers * costPerUser
   const perIncident   = directRadius * severity
-  const incidentsDay  = Number(r.callsPerDay) * (Number(r.errorRate) / 100)
+  const incidentsDay  = callsPerDay * (errorRate / 100)
   const monthlyRadius = perIncident * incidentsDay * 30
-  const contained     = monthlyRadius * (1 - Number(state.containmentPct) / 100)
+  const contained     = monthlyRadius * (1 - containmentPct / 100)
   const delta         = monthlyRadius - contained
   const isCatastrophic = r.reversibility === 'irreversible' && r.visibility === 'public'
-  return { ...r, severity, perIncident, monthlyRadius, contained, delta, isCatastrophic }
+  return { ...r, costPerAction, affectedUsers, costPerUser, callsPerDay, errorRate, severity, perIncident, monthlyRadius, contained, delta, isCatastrophic }
 }))
 
 const totals = computed(() => ({
@@ -140,7 +161,7 @@ function exportRowsCells() {
 }
 
 function exportSummary() {
-  return `Total monthly blast radius: ${fmtMoney(totals.value.monthly)} · With Cycles (${state.containmentPct}% containment): ${fmtMoney(totals.value.contained)} · Δ/mo: ${fmtMoney(totals.value.delta)}`
+  return `Total monthly blast radius: ${fmtMoney(totals.value.monthly)} · With Cycles (${clampNumber(state.containmentPct, 0, 100)}% containment): ${fmtMoney(totals.value.contained)} · Δ/mo: ${fmtMoney(totals.value.delta)}`
 }
 
 function brandMeta() {
@@ -218,8 +239,8 @@ async function downloadPng() {
         <label class="containment">
           <span class="containment-label">Cycles containment (% of incidents prevented)</span>
           <div class="containment-row">
-            <input type="range" min="0" max="100" step="5" v-model.number="state.containmentPct" class="containment-slider" />
-            <input type="number" min="0" max="100" step="1" v-model.number="state.containmentPct" class="containment-num" />
+            <input type="range" min="0" max="100" step="5" v-model.number="state.containmentPct" class="containment-slider" @change="normalizeContainment" />
+            <input type="number" min="0" max="100" step="1" v-model.number="state.containmentPct" class="containment-num" @change="normalizeContainment" @blur="normalizeContainment" />
             <span class="containment-pct">%</span>
           </div>
           <span class="containment-hint">Default 0% shows the unbounded blast radius. Dial up to see the value of runtime action authority.</span>
@@ -268,11 +289,11 @@ async function downloadPng() {
                   <option v-for="(v, k) in VISIBILITY" :key="k" :value="k">{{ v.label }}</option>
                 </select>
               </td>
-              <td class="col-num"><input v-model.number="state.rows[i].costPerAction" type="number" min="0" step="1"   class="num-input" /></td>
-              <td class="col-num col-users"><input v-model.number="state.rows[i].affectedUsers" type="number" min="0" step="1"   class="num-input" /></td>
-              <td class="col-num"><input v-model.number="state.rows[i].costPerUser"   type="number" min="0" step="1"   class="num-input" /></td>
-              <td class="col-num col-calls"><input v-model.number="state.rows[i].callsPerDay"   type="number" min="0" step="100" class="num-input" /></td>
-              <td class="col-num"><input v-model.number="state.rows[i].errorRate"     type="number" min="0" step="0.1" class="num-input" /></td>
+              <td class="col-num"><input v-model.number="state.rows[i].costPerAction" type="number" min="0" step="1"   class="num-input" @change="normalizeRowNumber(i, 'costPerAction')" @blur="normalizeRowNumber(i, 'costPerAction')" /></td>
+              <td class="col-num col-users"><input v-model.number="state.rows[i].affectedUsers" type="number" min="0" step="1"   class="num-input" @change="normalizeRowNumber(i, 'affectedUsers')" @blur="normalizeRowNumber(i, 'affectedUsers')" /></td>
+              <td class="col-num"><input v-model.number="state.rows[i].costPerUser"   type="number" min="0" step="1"   class="num-input" @change="normalizeRowNumber(i, 'costPerUser')" @blur="normalizeRowNumber(i, 'costPerUser')" /></td>
+              <td class="col-num col-calls"><input v-model.number="state.rows[i].callsPerDay"   type="number" min="0" step="100" class="num-input" @change="normalizeRowNumber(i, 'callsPerDay')" @blur="normalizeRowNumber(i, 'callsPerDay')" /></td>
+              <td class="col-num"><input v-model.number="state.rows[i].errorRate"     type="number" min="0" max="100" step="0.1" class="num-input" @change="normalizeRowNumber(i, 'errorRate', 0, 100)" @blur="normalizeRowNumber(i, 'errorRate', 0, 100)" /></td>
               <td class="col-sev"><span class="sev-chip">{{ fmtFactor(row.severity) }}</span></td>
               <td class="col-money radius">{{ fmtMoney(row.monthlyRadius) }}</td>
               <td class="col-money">{{ fmtMoney(row.contained) }}</td>

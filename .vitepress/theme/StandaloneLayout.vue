@@ -1,6 +1,6 @@
 <script setup>
-import { Content, useData } from 'vitepress'
-import { onMounted, onBeforeUnmount } from 'vue'
+import { useData } from 'vitepress'
+import { Content } from 'vitepress/dist/client/app/components/Content.js'
 import CalculatorStandaloneHeader from './CalculatorStandaloneHeader.vue'
 import CalculatorNextSteps from './CalculatorNextSteps.vue'
 import SiteFooter from './SiteFooter.vue'

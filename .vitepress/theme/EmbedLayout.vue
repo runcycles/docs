@@ -1,5 +1,5 @@
 <script setup>
-import { Content } from 'vitepress'
+import { Content } from 'vitepress/dist/client/app/components/Content.js'
 import { onMounted, onBeforeUnmount } from 'vue'
 import CalculatorEmbedFooter from './CalculatorEmbedFooter.vue'
 
