@@ -1,6 +1,6 @@
 ---
 title: "AI Agent Blast Radius Risk Calculator"
-description: "Free interactive calculator quantifying expected damage from AI agent actions by reversibility and visibility, with an editable runtime-authority containment factor."
+description: "Free interactive calculator quantifying AI agent action risk exposure by reversibility and visibility, with an editable runtime-authority containment factor."
 layout: standalone
 calcTitle: "AI Agent Blast Radius Risk Calculator"
 calcSubtitle: "Name the agent, model the actions, see the monthly blast radius. State is encoded in the URL — every share preserves agent identity and numbers."

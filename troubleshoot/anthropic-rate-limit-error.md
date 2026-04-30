@@ -28,7 +28,7 @@ Anthropic's per-minute limits are split into three independent quotas, each enfo
 - **Output tokens per minute (OTPM)** — billable output tokens generated
 - **Requests per minute (RPM)** — count of API calls
 
-Long context calls (Claude's 200K context window makes this common) hit ITPM far before they hit RPM. Streaming completions hold OTPM headroom for the duration of the stream.
+Long-context calls can hit ITPM far before they hit RPM, especially on current Claude models with large context windows. Streaming completions hold OTPM headroom for the duration of the stream.
 
 Response headers expose the current state:
 

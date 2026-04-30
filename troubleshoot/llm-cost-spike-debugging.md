@@ -28,7 +28,7 @@ The financial damage compounds while you investigate, so the diagnostic loop has
 
 - **Runaway agent loop.** An agent calls a tool, gets a response, decides it needs to call again, and never converges. Common with tool-use agents, ReAct loops, and code-writing agents that hit a transient compile error and retry forever.
 - **Prompt regression.** Someone edited a system prompt or template, and now every request includes a 5K-token preamble it did not include before. Token volume per call doubles silently.
-- **Unintended model upgrade.** A code change moved from `gpt-4o-mini` to `gpt-4o`, or from `claude-3-5-sonnet` to `claude-3-7-opus`. Per-token cost jumps 20×; bill follows.
+- **Unintended model upgrade.** A code change moved from a small/mini model to a flagship model, or from Claude Sonnet to Claude Opus. Per-token cost jumps materially; bill follows.
 - **Retry storm.** A transient provider error caused application-level retries that did not back off, or that retried inside an outer retry loop. Each failed call still bills for the input tokens that were sent.
 - **Noisy tenant on shared budget.** Multi-tenant SaaS without per-tenant caps: one customer kicks off a workload that consumes the entire shared quota, and your bill scales with their usage.
 - **Leaked API key.** A key committed to a public repo, found by a credential scanner, and used by an attacker to burn quota, proxy traffic, or run unauthorized workloads on your account. Rare but devastating; usually presents as 24/7 sustained max-throughput usage.

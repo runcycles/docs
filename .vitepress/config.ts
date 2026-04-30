@@ -82,7 +82,7 @@ export default defineConfig({
   cleanUrls: true,
   lang: 'en',
   titleTemplate: ':title — Cycles',
-  srcExclude: ['**/README.md', '**/CLAUDE.md', 'cycles-protocol/**', '.outreach/**'],
+  srcExclude: ['**/README.md', '**/CLAUDE.md', 'AGENTS.md', '**/AGENTS.md', 'cycles-protocol/**', '.outreach/**', '.agents/**'],
   head: [
     ['link', { rel: 'preload', href: '/fonts/inter-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
     ['link', { rel: 'preload', href: '/fonts/jetbrains-mono-latin-wght-normal.woff2', as: 'font', type: 'font/woff2', crossorigin: '' }],
