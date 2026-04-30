@@ -194,6 +194,14 @@ export default defineConfig({
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       { text: 'Protocol', link: '/protocol/' },
       {
+        text: 'Tools',
+        items: [
+          { text: 'All tools', link: '/calculators/' },
+          { text: 'Blast Radius Risk Calculator', link: '/calculators/ai-agent-blast-radius-standalone' },
+          { text: 'Cost Calculator (Claude vs GPT)', link: '/calculators/claude-vs-gpt-cost-standalone' },
+        ],
+      },
+      {
         text: 'Docs',
         items: [
           {
@@ -511,12 +519,12 @@ export default defineConfig({
           ]
         },
         {
-          text: 'Calculators',
+          text: 'Tools',
           collapsed: true,
           items: [
-            { text: 'Overview', link: '/calculators/' },
-            { text: 'Claude vs GPT Cost', link: '/calculators/claude-vs-gpt-cost-comparison' },
-            { text: 'Blast Radius Risk', link: '/calculators/ai-agent-blast-radius-risk' },
+            { text: 'All tools', link: '/calculators/' },
+            { text: 'Cost Calculator', link: '/calculators/claude-vs-gpt-cost-comparison' },
+            { text: 'Blast Radius Risk Calculator', link: '/calculators/ai-agent-blast-radius-risk' },
           ]
         },
         {

@@ -20,6 +20,9 @@ const props = defineProps({
   standalonePath: { type: String, default: '/calculators/claude-vs-gpt-cost-standalone' },
   /** Embed URL used by the Embed snippet. Hash is appended automatically. */
   embedPath:      { type: String, default: '/calculators/claude-vs-gpt-cost-embed' },
+  /** Optional base64url-encoded state to seed initial values. Overridden by
+   *  any state encoded in the page's URL hash, so shared links still win. */
+  initialState:   { type: String, default: null },
 })
 
 const state = reactive({
@@ -41,6 +44,7 @@ const state = reactive({
 })
 
 const calcState = useCalcState(state, {
+  initialStateB64: props.initialState,
   hydrate(incoming) {
     if (typeof incoming.workloadName === 'string')        state.workloadName = incoming.workloadName
     if (typeof incoming.workloadDescription === 'string') state.workloadDescription = incoming.workloadDescription

@@ -18,6 +18,8 @@ The other 49 customers start seeing failures. Model calls return rate-limit erro
 
 The incident is not a billing surprise for one account. It is a service outage for every account. In multi-tenant AI systems, cost control is not a finance problem. It is an **isolation problem**.
 
+> **Open the noisy-tenant scenario in the calculator:** [Open with these numbers pre-loaded →](/calculators/claude-vs-gpt-cost-standalone#s=eyJ3b3JrbG9hZE5hbWUiOiJNdWx0aS10ZW5hbnQgU2FhUyDigJQgbm9pc3kgdGVuYW50Iiwid29ya2xvYWREZXNjcmlwdGlvbiI6Ik9uZSB0ZW5hbnQgcnVucyBhdCA1MHggdGhlIGF2ZXJhZ2UgbG9hZC4gU2hhcmVkIGJ1ZGdldDsgdGhlaXIgYnVybiBkcmFpbnMgZXZlcnlvbmUncyBoZWFkcm9vbS4iLCJpbnB1dFRva2VucyI6NDAwMCwib3V0cHV0VG9rZW5zIjoxMDAwLCJjYWxsc1BlckRheSI6NTAwMDB9)
+
 <!-- more -->
 
 ## The Multi-Tenant Cost Problem

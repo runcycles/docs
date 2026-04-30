@@ -14,6 +14,8 @@ sidebar: false
 
 A team we talked to recently launched their first production agent — a customer support bot running on GPT-4o. They estimated $800/month based on their prototype traffic. The first invoice came in at $4,200. The model pricing was exactly what they expected. The number of calls was not. Their agent averaged 11 LLM calls per conversation, not the 3 they'd assumed. Context windows grew with each turn. Retries on tool failures doubled the call count on bad days. The per-token price was never the problem. The per-agent price was.
 
+> **Recreate the "estimated $800, actual $4,200" scenario in the calculator:** [Open with these numbers pre-loaded →](/calculators/claude-vs-gpt-cost-standalone#s=eyJ3b3JrbG9hZE5hbWUiOiJDdXN0b21lciBzdXBwb3J0IGJvdCIsIndvcmtsb2FkRGVzY3JpcHRpb24iOiIxMSBMTE0gY2FsbHMgcGVyIGNvbnZlcnNhdGlvbi4gQ29udGV4dCB3aW5kb3dzIGdyb3cgd2l0aCBlYWNoIHR1cm4uIEVzdGltYXRlZCAkODAwL21vLCBhY3R1YWwgJDQsMjAwLiIsImlucHV0VG9rZW5zIjo1MDAwLCJvdXRwdXRUb2tlbnMiOjEyMDAsImNhbGxzUGVyRGF5IjozMzAwfQ)
+
 <!-- more -->
 
 This post is a reference guide. We break down current per-token pricing across the major providers, then show what those prices actually mean when you multiply by the call patterns of real agent workloads. If you're planning a budget for an agent deployment — or trying to understand why your current one costs more than expected — this is the data you need.

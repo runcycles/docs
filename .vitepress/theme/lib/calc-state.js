@@ -77,22 +77,33 @@ function writeHashState(state) {
 
 /**
  * Wire reactive state to the URL hash.
- *   - On mount: hydrate state from #s= if present
+ *   - On mount: optionally seed from `initialStateB64` prop, then
+ *     overwrite from #s= if present (URL takes precedence so shared
+ *     links always win)
  *   - On any change: debounced replaceState writes new encoded state
  *
  * Returns a function to manually trigger a hydrate (useful after dynamic
  * default replacement) and a current shareable URL accessor.
  */
-export function useCalcState(state, { hydrate, debounceMs = 300 } = {}) {
+export function useCalcState(state, { hydrate, debounceMs = 300, initialStateB64 = null } = {}) {
   if (typeof window === 'undefined') return { reload() {}, currentUrl() { return '' } }
 
   function hydrateNow() {
+    // 1. Seed from prop (page-author-controlled defaults) — applied first
+    //    so a URL-hash override can still take precedence.
+    if (initialStateB64) {
+      const seed = decodeState(initialStateB64)
+      if (seed) {
+        if (typeof hydrate === 'function') hydrate(seed)
+        else for (const k of Object.keys(seed)) if (k in state) state[k] = seed[k]
+      }
+    }
+    // 2. URL-hash override — winning source for shared links
     const incoming = readHashState()
     if (!incoming) return
     if (typeof hydrate === 'function') {
       hydrate(incoming)
     } else {
-      // Naive merge: copy top-level fields
       for (const k of Object.keys(incoming)) {
         if (k in state) state[k] = incoming[k]
       }

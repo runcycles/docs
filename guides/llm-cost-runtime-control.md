@@ -9,6 +9,8 @@ Every angle on bounding LLM and AI agent spend in production. This is the map: e
 
 > **Cost is one dimension of runtime authority.** Cycles also governs *what* agents are allowed to do (action authority, blast-radius limits) and *who* gets which budget (multi-tenant isolation). For the full picture, see [Why Cycles](/why-cycles). This guide focuses specifically on the cost dimension.
 
+> **Make this concrete for your workload.** [Open the cost calculator →](/calculators/claude-vs-gpt-cost-standalone) — compare Claude and GPT spend across token volumes, share the configured URL with a teammate, or embed a pre-configured view in your own writeup.
+
 If you are debugging a live cost incident, jump straight to [Debugging sudden LLM cost spikes](/troubleshoot/llm-cost-spike-debugging).
 
 ## Why LLM cost control is structurally different

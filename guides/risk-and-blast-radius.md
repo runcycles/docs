@@ -9,6 +9,8 @@ Cost is one dimension of runtime authority. The other — and the one that tends
 
 > **This is the action / damage dimension of runtime authority.** For the cost / spend dimension, see [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control). For the full product framing across all dimensions, see [Why Cycles](/why-cycles).
 
+> **Quantify it for your agent.** [Open the blast-radius risk calculator →](/calculators/ai-agent-blast-radius-standalone) — name your agent, define its action classes by reversibility and visibility, and see the monthly blast radius. Share the configured view with a teammate.
+
 If you are debugging a live action incident, jump straight to the [Incident Patterns](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) catalog.
 
 ## Why action authority is structurally different from cost control
