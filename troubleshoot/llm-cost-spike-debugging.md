@@ -7,6 +7,8 @@ description: "How to find the root cause of an unexpected LLM bill — agent loo
 
 A diagnostic playbook for the moment a finance email arrives or a billing dashboard alarm fires saying your LLM spend has 5×'d overnight.
 
+> **Quantify your potential spike before it happens:** [Cost Calculator →](/calculators/claude-vs-gpt-cost-standalone) — model your worst-case input/output × call rate against current Claude and GPT pricing. The number it surfaces is what an unbounded retry-loop or tenant-leak workload would actually cost you per month.
+
 ## TL;DR
 
 Most sudden LLM cost spikes fall into six buckets: a runaway agent loop, a prompt regression that ballooned token counts, an unintended model upgrade, a retry storm amplifying transient errors, a single noisy tenant on a shared budget, or a leaked API key. Other causes show up too — pricing changes, duplicated logging or evaluation runs, failed caching, vector-ingestion jobs, or new traffic sources — but the diagnostic flow is the same. Bucket spend by tenant, by model, by endpoint, by hour. Fix the immediate cause, then put a hard pre-execution budget cap in place so the next spike cannot happen at all.
