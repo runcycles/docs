@@ -5,8 +5,6 @@ description: "How teams progress from dashboards and alerts to runtime budget en
 
 # From Observability to Enforcement: How Teams Evolve from Dashboards to Runtime Authority
 
-> **Quantify the gap dashboards leave open:** [Cost Calculator →](/calculators/claude-vs-gpt-cost-standalone) · [Blast Radius Risk Calculator →](/calculators/ai-agent-blast-radius-standalone) — observability records what happened; the calculators show the budget envelope and the risk envelope that no alert closes.
-
 Most teams do not begin with enforcement.
 
 They begin with visibility.
@@ -21,6 +19,8 @@ They review incidents after they happen.
 That is the right starting point.
 
 But as autonomous systems become more capable, visibility alone stops being enough.
+
+> **Quantify the gap dashboards leave open:** [Cost Calculator →](/calculators/claude-vs-gpt-cost-standalone) · [Blast Radius Risk Calculator →](/calculators/ai-agent-blast-radius-standalone) — observability records what happened; the calculators show the budget envelope and the risk envelope that no alert closes.
 
 At some point, the question changes from:
 
