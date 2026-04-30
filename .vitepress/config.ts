@@ -197,8 +197,8 @@ export default defineConfig({
         text: 'Tools',
         items: [
           { text: 'All tools', link: '/calculators/' },
-          { text: 'Cost Calculator (Claude vs GPT)', link: '/calculators/claude-vs-gpt-cost-standalone' },
           { text: 'Blast Radius Risk Calculator', link: '/calculators/ai-agent-blast-radius-standalone' },
+          { text: 'Cost Calculator (Claude vs GPT)', link: '/calculators/claude-vs-gpt-cost-standalone' },
         ],
       },
       {
