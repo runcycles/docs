@@ -134,7 +134,35 @@ export async function captureElementToPng(el, opts = {}) {
   // --- 1. Clone the source element and inline form values --------------------
   const innerClone = el.cloneNode(true)
 
+  // Properties that affect text layout / rendering. The `font` shorthand
+  // does NOT include letter-spacing, word-spacing, font-variant-numeric,
+  // text-rendering, or white-space, and html2canvas-pro will collapse
+  // word spacing if those are missing — the visible artifact is words
+  // running together ("codingagent", "DELETEtable", etc.). Set them
+  // explicitly.
+  const TEXT_LAYOUT_PROPS = [
+    'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontVariant',
+    'fontVariantNumeric', 'fontStretch', 'fontKerning',
+    'lineHeight', 'letterSpacing', 'wordSpacing', 'whiteSpace',
+    'textAlign', 'textTransform', 'textRendering', 'textIndent',
+    'color',
+  ]
+  const BOX_PROPS = [
+    'width', 'height', 'minWidth', 'maxWidth',
+    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
+    'borderRadius', 'boxSizing',
+    'backgroundColor',
+  ]
+
   const replaceFormControl = (sourceEl, cloneEl) => {
+    // Range inputs (sliders) do not render meaningfully in a static export
+    // — drop them entirely. Adjacent number inputs already display the
+    // same value via shared v-model.
+    if (sourceEl.tagName === 'INPUT' && sourceEl.type === 'range') {
+      cloneEl.remove()
+      return
+    }
     const span = document.createElement('span')
     span.className = cloneEl.className || ''
     if (sourceEl.tagName === 'SELECT') {
@@ -144,17 +172,10 @@ export async function captureElementToPng(el, opts = {}) {
       span.textContent = sourceEl.value ?? ''
     }
     const cs = getComputedStyle(sourceEl)
-    span.style.display      = 'inline-block'
-    span.style.width        = cs.width
-    span.style.padding      = cs.padding
-    span.style.border       = cs.border
-    span.style.borderRadius = cs.borderRadius
-    span.style.background   = cs.backgroundColor
-    span.style.color        = cs.color
-    span.style.font         = cs.font
-    span.style.textAlign    = cs.textAlign
-    span.style.lineHeight   = cs.lineHeight
-    span.style.boxSizing    = cs.boxSizing
+    span.style.display = 'inline-block'
+    span.style.verticalAlign = 'middle'
+    for (const p of TEXT_LAYOUT_PROPS) span.style[p] = cs[p]
+    for (const p of BOX_PROPS)         span.style[p] = cs[p]
     cloneEl.replaceWith(span)
   }
   const sourceInputs = el.querySelectorAll('input, select, textarea')
@@ -172,6 +193,7 @@ export async function captureElementToPng(el, opts = {}) {
   const borderColor = (getComputedStyle(el).borderColor) || 'rgba(0,0,0,0.1)'
 
   const wrapper = document.createElement('div')
+  wrapper.className = 'cycles-export-wrapper'
   wrapper.style.cssText = `
     position: absolute; top: 0; left: -99999px;
     width: ${el.getBoundingClientRect().width}px;
@@ -180,9 +202,27 @@ export async function captureElementToPng(el, opts = {}) {
     color: ${textColor};
     padding: 24px 28px;
     font-family: ${cs.fontFamily};
+    font-size: ${cs.fontSize};
+    line-height: ${cs.lineHeight};
     border: 1px solid ${borderColor};
     border-radius: 12px;
   `
+
+  // Scoped style reset applied to every descendant of the wrapper. These
+  // properties do not inherit reliably and html2canvas-pro renders with
+  // collapsed word-spacing if they are missing on the leaf elements.
+  const exportStyle = document.createElement('style')
+  exportStyle.textContent = `
+    .cycles-export-wrapper, .cycles-export-wrapper * {
+      letter-spacing: normal !important;
+      word-spacing: normal !important;
+      text-rendering: geometricPrecision !important;
+      font-kerning: normal !important;
+      -webkit-font-smoothing: antialiased !important;
+      font-feature-settings: normal !important;
+    }
+  `
+  document.head.appendChild(exportStyle)
 
   if (brand) {
     const header = document.createElement('div')
@@ -252,6 +292,14 @@ export async function captureElementToPng(el, opts = {}) {
   document.body.appendChild(wrapper)
 
   // --- 3. Capture ------------------------------------------------------------
+  // Wait for web fonts to fully load. Without this, html2canvas-pro
+  // measures text width using fallback-font metrics but the renderer
+  // uses the actual web font, leading to visible word-spacing collapse
+  // ("codingagent", "DROP / DELETEtable", etc.) in the captured output.
+  if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready } catch { /* ignore */ }
+  }
+
   try {
     const { default: html2canvas } = await import('html2canvas-pro')
     const canvas = await html2canvas(wrapper, {
@@ -278,6 +326,7 @@ export async function captureElementToPng(el, opts = {}) {
     })
   } finally {
     wrapper.remove()
+    if (exportStyle.parentNode) exportStyle.parentNode.removeChild(exportStyle)
   }
 }
 
