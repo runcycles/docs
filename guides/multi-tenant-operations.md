@@ -7,7 +7,7 @@ description: "A reference map of running multi-tenant AI agent infrastructure â€
 
 A reference map of running multi-tenant AI agent infrastructure in production. Cost calculators answer *how much* an agent will spend; blast-radius calculators answer *what damage* it can cause; this guide answers the third question: **who owns which budget, who gets which actions, and how do those boundaries hold up when tenants share infrastructure?**
 
-> **Multi-tenant operations is one of the four production pillars of runtime authority.** Cost controls what agents *spend*. Action authority controls what agents *do*. Tenant isolation controls *who owns the boundary*. Audit evidence proves *what happened*. For the full product framing, see [Why Cycles](/why-cycles).
+> **Tenant isolation is one of the four production pillars of runtime authority.** Cost controls what agents *spend*. Action authority controls what agents *do*. Tenant isolation controls *who owns the boundary*. Audit evidence proves *what happened*. For the full product framing, see [Why Cycles](/why-cycles).
 
 | Guide | The question it answers |
 |---|---|
