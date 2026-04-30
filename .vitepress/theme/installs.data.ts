@@ -17,7 +17,10 @@ import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 
 export interface InstallsData {
+  /** Defensible installs: npm + pypi + crates + releases + ghPackages + maven. */
   total: number
+  /** Accumulated clone count across tracked repos (cumulative via day-cursor). */
+  clones: number
   fetchedAt: string
 }
 
@@ -396,9 +399,12 @@ export default {
 
     // Write public/installs.json for runtime refresh in HomeSocialProof.vue
     try {
-      writeFileSync(PUBLIC_PATH, JSON.stringify({ total, fetchedAt: now }) + '\n')
+      writeFileSync(
+        PUBLIC_PATH,
+        JSON.stringify({ total, clones, fetchedAt: now }) + '\n',
+      )
     } catch { /* non-critical */ }
 
-    return { total, fetchedAt: now }
+    return { total, clones, fetchedAt: now }
   },
 }
