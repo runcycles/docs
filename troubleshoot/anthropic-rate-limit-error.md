@@ -7,6 +7,8 @@ description: "Why the Anthropic Claude API returns 429 and 529 errors, the input
 
 A practical guide to the rate limits enforced by the Anthropic Claude API and how to keep production AI agents available when load grows.
 
+> **What does the workload behind your 429s actually cost?** [Cost Calculator →](/calculators/claude-vs-gpt-cost-standalone) — model the input/output volume that drives you into Anthropic's TPM/ITPM limits. The monthly total tells you what a runtime budget gate would need to bound.
+
 ## TL;DR
 
 The Anthropic API enforces independent limits on **input tokens per minute**, **output tokens per minute**, and **requests per minute**, separately for each model. A `429` means you hit one of those rate limits; a `529 overloaded_error` means Anthropic itself is under pressure and is shedding load. The two require different fixes: backoff with jitter for 429s, retry with longer windows (or fall back to a different model) for 529s. Permanent prevention is gating calls before they leave your system based on *your* per-tenant budget — not Anthropic's.

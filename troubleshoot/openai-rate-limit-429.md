@@ -7,6 +7,8 @@ description: "Why OpenAI returns HTTP 429 errors, how to read the rate limit hea
 
 A practical guide to diagnosing and resolving HTTP 429 errors from the OpenAI API in production AI agents and applications.
 
+> **What does saturating your TPM actually cost?** [Cost Calculator →](/calculators/claude-vs-gpt-cost-standalone) — model the call volume that drives you into the rate limit; the per-month total is the budget your runtime gate should bound.
+
 ## TL;DR
 
 OpenAI returns `429 Too Many Requests` when you exceed one of your organization, project, or model limits — commonly requests per minute (RPM), tokens per minute (TPM), requests or tokens per day (RPD / TPD), images per minute (IPM), or related usage limits. The fix in the moment is backoff that respects `Retry-After` when present, otherwise the `x-ratelimit-reset-*` headers. The fix permanently is **never sending the call in the first place when your own per-tenant or per-agent budget says you should not** — provider rate limits protect OpenAI, not your spend.

@@ -9,6 +9,8 @@ Coding agents are impressive.
 
 They can search a codebase, scaffold features, write tests, fix bugs, and compress work that used to take hours into minutes. But as autonomous execution gets faster and cheaper, the need for runtime control does not go away.
 
+> **Quantify a coding agent's blast radius:** [Blast Radius Risk Calculator →](/calculators/ai-agent-blast-radius-standalone) — DROP TABLE, schema migration, deploy, and read-only rows are pre-loaded with realistic severity factors. The "with Cycles containment" slider shows what runtime action authority is worth for an agent with database credentials.
+
 It becomes more important.
 
 Coding agents and runtime authority solve different problems at different layers. A coding agent is designed to complete work. Runtime authority is designed to decide whether autonomous work is still allowed to continue, under what limits, and with what reconciliation afterward.
