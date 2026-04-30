@@ -11,6 +11,8 @@ featured: true
 
 # Cursor AI Agent Reportedly Deleted a Production Database in 9 Seconds
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 JER ([@lifeof_jer](https://x.com/lifeof_jer/status/2048103471019434248)), a developer at PocketOS, posted on X this week:
 
 > "Yesterday afternoon, an AI coding agent — Cursor running Anthropic's flagship Claude Opus 4.6 — deleted our production database and all volume-level backups in a single API call to Railway, our infrastructure provider. It took 9 seconds."

@@ -10,6 +10,8 @@ sidebar: false
 
 # MCP Tool Poisoning Has an 84% Success Rate — Why Agent Frameworks Still Can't Prevent It
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 A poisoned MCP tool doesn't need to be called to compromise your agent. It just needs to be loaded into context.
 
 That's the finding that reframed MCP security in 2026. [Invariant Labs demonstrated](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) that malicious instructions hidden in an MCP tool's description field are enough to hijack agent behavior — exfiltrating SSH keys, config files, and credentials — without the tool ever being invoked. Their [open-source proof-of-concept](https://github.com/invariantlabs-ai/mcp-injection-experiments) successfully extracted SSH private keys from Claude Desktop and Cursor in test environments. The model reads the metadata, follows the hidden instructions, and your logs show nothing unusual.

@@ -10,6 +10,8 @@ sidebar: false
 
 # AI Agent Budget Control: Enforce Hard Spend Limits
 
+> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+
 A development team sets a $50 budget for a coding agent running overnight. The agent hits an ambiguous error, retries with increasingly verbose prompts, fans out across three sub-agents to "research the problem," and loops for four hours. By morning the bill is $2,300.
 
 The dashboard showed the spike — at 7 AM, when someone checked. The alert fired at $500, forty minutes after the budget was gone. The provider spending cap was set at $5,000 per month for the whole organization. None of these controls stopped the next model call.

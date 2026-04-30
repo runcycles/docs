@@ -243,6 +243,8 @@ export default defineConfig({
             { text: 'Governance & Compliance', link: '/why-cycles/governance' },
           ],
         },
+        { text: 'Cost Control Guide', link: '/guides/llm-cost-control' },
+        { text: 'Risk & Blast Radius Guide', link: '/guides/risk-and-blast-radius' },
         {
           text: 'Quickstart',
           items: [

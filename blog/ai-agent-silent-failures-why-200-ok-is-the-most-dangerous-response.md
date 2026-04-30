@@ -10,6 +10,8 @@ sidebar: false
 
 # AI Agent Silent Failures: Why 200 OK Is the Most Dangerous Response in Production
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 Your agent completes the task. The API returns 200. The logs show a clean run. No errors, no alerts, no exceptions. And the output is completely wrong.
 
 This is a silent failure — the most expensive and least understood failure mode in production AI agent systems. Unlike crashes, timeouts, or budget overruns, silent failures don't announce themselves. They sit in your pipeline, producing confident-sounding garbage, until someone downstream — a customer, an auditor, a quarterly review — notices the damage.

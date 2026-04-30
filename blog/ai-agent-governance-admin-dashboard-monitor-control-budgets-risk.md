@@ -14,6 +14,8 @@ head:
 
 # Your AI Agents Are Running in Production. Who's Watching the Limits?
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 Every team building AI agents eventually adds budget limits. Some add risk scoring. You set up a governance layer — cost caps per tenant, risk point budgets per agent, overdraft policies for when things get tight.
 
 Then it's 2am. An agent burns through its risk allowance. A tenant hits their spend ceiling mid-transaction. Your compliance webhook stopped receiving events three hours ago and nobody noticed.

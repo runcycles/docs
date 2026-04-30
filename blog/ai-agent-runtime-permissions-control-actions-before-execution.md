@@ -10,6 +10,8 @@ sidebar: false
 
 # AI Agent Runtime Permissions: Control Actions Before Execution
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 A team ships an autonomous support agent. It reads tickets, queries a knowledge base, drafts replies, and sends emails. In staging it handles 50 tickets without incident. On day three in production, a customer submits a ticket in a language the model handles poorly. The agent misinterprets the request, drafts a refund confirmation for a billing dispute, and sends it — along with 47 follow-up emails to related accounts offering refunds nobody requested.
 
 Total API cost of the emails: $1.40. Business damage: $34,000 in honored refunds, an incident review, and a week of manual cleanup.

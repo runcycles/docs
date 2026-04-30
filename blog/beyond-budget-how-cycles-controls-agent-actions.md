@@ -10,6 +10,8 @@ sidebar: false
 
 # Beyond Budget: How Cycles Controls Agent Actions, Not Just Spend
 
+> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+
 Most people discover Cycles because they need to stop an agent from burning through their OpenAI bill. Fair enough — that's the most visible problem.
 
 But spend is just one dimension of what an [autonomous agent](/glossary#autonomous-agent) can do wrong. An agent that stays within its token budget can still:
