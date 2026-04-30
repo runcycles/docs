@@ -350,16 +350,23 @@ export default {
     const ghPackagesFetched = fetchManualPackageCounts()
     const ghPackages = Math.max(ghPackagesFetched, cached.ghPackages)
 
-    const sum = npm + pypi + crates + clones + releases + ghPackages + maven
-
-    // Guard against legacy cache where total might exceed the sum of
-    // per-source zeros (one-time migration from old {total}-only format).
-    const total = Math.max(sum, cached.total)
+    // Displayed total — excludes `clones`. Clones are still tracked in
+    // the cache for analytics, but the home-page counter is limited to
+    // "deliberately pulled the package" sources because total clones
+    // include heavy CI/bot traffic that inflates beyond what is
+    // defensible to a skeptical visitor. Per-repo clone data remains in
+    // clonesByRepo for future use.
+    //
+    // Per-source HWMs are already monotonic, so the sum is monotonic by
+    // construction; no need for a separate cached.total floor (which
+    // would also incorrectly hold the displayed total at a previously-
+    // inflated value across this schema change).
+    const total = npm + pypi + crates + releases + ghPackages + maven
 
     console.log(
       `[installs] npm=${npmFetched}(hwm:${npm}) pypi=${pypiFetched}(hwm:${pypi})` +
       ` crates=${cratesFetched}(hwm:${crates})` +
-      ` clones+${clonesResult.totalAdded}(total:${clones})` +
+      ` clones+${clonesResult.totalAdded}(cache:${clones}, NOT in displayed total)` +
       ` releases=${releases}` +
       ` ghPackages=${ghPackages}` +
       ` maven=${mavenFetched} total=${total} cached=${cached.total}`
