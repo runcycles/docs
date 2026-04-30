@@ -10,7 +10,7 @@ sidebar: false
 
 # The True Cost of Uncontrolled AI Agents
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 A development team ships a coding agent on Friday afternoon. It works beautifully in staging — summarizing PRs, generating tests, refactoring modules. By Monday morning, the agent has made 14,000 API calls, consumed 380 million [tokens](/glossary#tokens), and run up a $12,400 bill against a model provider. No one noticed because the dashboard updates hourly and the alerts were configured for _daily_ spend thresholds. The agent wasn't malicious. It wasn't buggy in the traditional sense. It simply did what agents do: it kept working.
 

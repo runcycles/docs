@@ -11,7 +11,7 @@ featured: true
 
 # Runtime Authority vs Guardrails vs Observability
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 A team ships an [autonomous agent](/glossary#autonomous-agent) with reasonable controls. They have observability — Langfuse traces every call, attributes cost by model, and surfaces slow runs. They have guardrails — a loop counter caps iterations at 100, a timeout kills runs after five minutes, and a hardcoded check rejects tool calls that look dangerous.
 

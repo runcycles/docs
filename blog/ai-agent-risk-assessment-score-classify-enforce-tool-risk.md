@@ -11,7 +11,7 @@ featured: true
 
 # AI Agent Risk Assessment: How to Score, Classify, and Enforce Tool Risk Before Production
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 A customer-onboarding agent sends 200 collections emails instead of welcome emails. Total model cost: $1.40. Business impact: [$50K+ in lost pipeline](/blog/ai-agent-action-control-hard-limits-side-effects). A coding agent retries an ambiguous error 240 times. Total model cost: [$4,200](/blog/ai-agent-failures-budget-controls-prevent). Both agents passed every test. Both were under their dollar budgets. In both cases, the agent had no tool-level risk assessment.
 

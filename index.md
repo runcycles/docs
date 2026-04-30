@@ -37,6 +37,20 @@ features:
     link: /concepts/why-rate-limits-are-not-enough-for-autonomous-systems
     linkText: Learn more
   - icon:
+      src: /icons/book-text.svg
+      alt: Topic guides icon
+    title: "Topic Guides"
+    details: "Two reference maps covering the enforcement dimensions of runtime authority: LLM cost control (what agents spend) and risk & blast radius (what agents do)."
+    link: /guides/
+    linkText: Read the guides
+  - icon:
+      src: /icons/gauge.svg
+      alt: Calculators icon
+    title: "Calculators"
+    details: "Two symmetric tools: a cost calculator comparing Claude and GPT API rates, and a blast-radius risk calculator quantifying expected damage per agent action class."
+    link: /calculators/
+    linkText: Open calculators
+  - icon:
       src: /icons/wrench.svg
       alt: How-To icon
     title: "How-To Guides"

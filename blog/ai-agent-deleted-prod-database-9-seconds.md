@@ -11,7 +11,7 @@ featured: true
 
 # Cursor AI Agent Reportedly Deleted a Production Database in 9 Seconds
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 JER ([@lifeof_jer](https://x.com/lifeof_jer/status/2048103471019434248)), a developer at PocketOS, posted on X this week:
 

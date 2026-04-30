@@ -15,7 +15,7 @@ head:
 
 # Where Did My Tokens Go? Debugging Agent Spend at Production Scale
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 The bill just tripled. Your agents aren't doing anything new. You open the LLM proxy dashboard and see the total — yes, token usage is up — but the dashboard only shows you *how much*, not *who, where, or why*. An engineer sitting in front of that dashboard at 9am on a Tuesday has maybe thirty minutes to figure out which tool call cost the most before finance escalates.
 

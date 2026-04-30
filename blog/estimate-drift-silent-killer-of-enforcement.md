@@ -15,7 +15,7 @@ featured: false
 
 # Estimate Drift: The Silent Killer of Budget Enforcement
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 You calibrated your budgets correctly. You ran shadow mode for two weeks. You chose enforcement thresholds based on real data. Enforcement went live and worked.
 

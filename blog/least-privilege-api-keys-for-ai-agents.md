@@ -20,7 +20,7 @@ head:
 
 # Least-Privilege API Keys for AI Agents
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 An agent worker gets deployed with one shared API key. It runs support workflows for every customer, reads budgets, creates [reservations](/glossary#reservation), commits spend, and has enough admin access to patch policy during an incident. Six weeks later, the key appears in a build log.
 

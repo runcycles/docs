@@ -23,6 +23,7 @@ import DeliveryStateMachine from './DeliveryStateMachine.vue'
 import NetworkZones from './NetworkZones.vue'
 import AdoptionLadder from './AdoptionLadder.vue'
 import CostCalculator from './CostCalculator.vue'
+import BlastRadiusCalculator from './BlastRadiusCalculator.vue'
 
 export default {
   extends: DefaultTheme,
@@ -45,6 +46,7 @@ export default {
     app.component('NetworkZones', NetworkZones)
     app.component('AdoptionLadder', AdoptionLadder)
     app.component('CostCalculator', CostCalculator)
+    app.component('BlastRadiusCalculator', BlastRadiusCalculator)
   },
   setup() {
     const route = useRoute()

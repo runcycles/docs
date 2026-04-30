@@ -14,7 +14,7 @@ head:
 
 # Real-Time Budget Alerts for AI Agents: Designing Cycles' Webhook Event System
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 Consider a common scenario: an infrastructure team has budget dashboards. Prometheus scrapes every 15 seconds. Grafana panels show utilization curves. Alert rules fire when thresholds cross 90%.
 

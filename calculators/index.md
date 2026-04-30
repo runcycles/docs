@@ -1,15 +1,49 @@
 ---
-title: "LLM Cost Calculators"
-description: "Free interactive calculators for LLM cost planning — compare per-call, per-day, per-month, and per-year cost across major models."
+title: "Cycles Calculators — Free Tools for AI Agent Cost & Risk"
+description: "Free interactive calculators for AI agent cost and blast-radius risk planning. Shareable URLs, CSV/PNG/Markdown export, and embed snippets for blogs and articles."
 ---
 
-# LLM Cost Calculators
+# Cycles Calculators
 
-Interactive calculators for planning LLM and AI agent spend across providers and models.
+Two symmetric tools, one runtime-authority thesis. Cost calculators answer "how much will this workload spend?" Blast-radius calculators answer "how much damage can it cause if it goes wrong?" Both questions matter in production. Both are bounded by Cycles at the same runtime gate.
+
+Every configuration produces a unique URL. Share it, embed it, export it.
 
 ## Available calculators
 
-- [Claude vs GPT cost comparison](/calculators/claude-vs-gpt-cost-comparison) — per-call, per-day, per-month, and per-year cost across the major Claude and OpenAI models, with editable input/output rates
+### Claude vs GPT Cost Calculator
+Per-call, per-day, per-month, and per-year cost across current Claude and OpenAI models. Editable rates so you can plug in contracted pricing, add or remove rows for the models you actually use.
+
+- **[Open fullscreen calculator ↗](/calculators/claude-vs-gpt-cost-standalone)** — recommended view; wider table, full toolbar
+- [Embedded version on this docs page](/calculators/claude-vs-gpt-cost-comparison) — same calculator inside the docs flow
+
+### AI Agent Blast Radius Risk Calculator
+Expected damage per year across agent action classes, modeled by reversibility (×1 / ×3 / ×10) and visibility (+0 / +1 / +4), with an editable runtime-authority containment factor. Highlights the catastrophic *irreversible + public* class with a red row outline.
+
+- **[Open fullscreen calculator ↗](/calculators/ai-agent-blast-radius-standalone)** — recommended view; wider table, full toolbar
+- [Embedded version on this docs page](/calculators/ai-agent-blast-radius-risk) — same calculator inside the docs flow
+
+## Share and embed
+
+Each calculator's state is encoded in the URL. Configure the calculator, click **Share** to copy a link with your numbers preserved, and the recipient sees exactly the same view.
+
+Beyond the share link, the toolbar offers:
+
+- **Copy** — generates a Markdown table for Slack, GitHub PRs, email, or anywhere that renders Markdown
+- **CSV** — downloads a comma-separated file for spreadsheets
+- **PNG** — captures a screenshot of the table for decks and reports
+- **Embed** — generates an `<iframe>` snippet to drop the calculator into a blog post, article, or vendor-comparison page. The embedded version preserves the URL state, so you can publish a pre-configured calculator showing the numbers your post argues for.
+
+Embed snippets look like this:
+
+```html
+<iframe
+  src="https://runcycles.io/calculators/claude-vs-gpt-cost-embed#s=..."
+  width="100%" height="820" frameborder="0" loading="lazy"
+  title="Cycles cost calculator"></iframe>
+```
+
+The embed view strips the docs chrome, shows only the calculator, and includes a small "Built with Cycles runtime authority" credit linking back to runcycles.io.
 
 ## Why estimates do not equal runtime authority
 

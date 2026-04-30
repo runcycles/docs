@@ -15,7 +15,7 @@ head:
 
 # Tracking Tokens and Cost in a Streaming LLM Response
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 Non-streaming LLM calls are the easy case for LLM cost tracking and budget enforcement. You know the max output length, you reserve that many tokens up front, the response comes back, you commit the actual usage from the `usage` field, done. One reserve, one commit, one HTTP request-response on each side.
 

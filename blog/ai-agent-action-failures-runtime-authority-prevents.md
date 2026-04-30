@@ -10,7 +10,7 @@ sidebar: false
 
 # 5 AI Agent Failures Only Action Controls Would Prevent
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 The companion post — [5 AI Agent Failures Budget Controls Would Prevent](/blog/ai-agent-failures-budget-controls-prevent) — covers the cost dimension: runaway loops, [retry storms](/glossary#retry-storm), scope leaks. Every scenario is measured in dollars of model spend. But agents have a second failure dimension that dollar budgets cannot touch: **actions with consequences**.
 

@@ -10,7 +10,7 @@ sidebar: false
 
 # MCP Tool Poisoning Has an 84% Success Rate — Why Agent Frameworks Still Can't Prevent It
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 A poisoned MCP tool doesn't need to be called to compromise your agent. It just needs to be loaded into context.
 

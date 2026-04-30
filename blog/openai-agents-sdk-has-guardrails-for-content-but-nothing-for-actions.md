@@ -10,7 +10,7 @@ sidebar: false
 
 # The OpenAI Agents SDK Has Guardrails for Content — But Nothing for Actions
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 Two scenarios. Same agent. Very different outcomes.
 

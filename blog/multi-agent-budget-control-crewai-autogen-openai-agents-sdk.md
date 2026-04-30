@@ -10,7 +10,7 @@ sidebar: false
 
 # Multi-Agent Budget Control: CrewAI, AutoGen, OpenAI
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 A team builds a research pipeline using CrewAI with three agents: a Planner that breaks topics into sub-questions, a Researcher that investigates each one, and a Writer that synthesizes the results. The Planner delegates 5 sub-questions per topic to the Researcher. For complex sub-questions, the Researcher delegates down to a Deep Analyst agent that makes 15 LLM calls per investigation. In development, one topic costs ~$3.50.
 

@@ -10,7 +10,7 @@ sidebar: false
 
 # How Much Do AI Agents Actually Cost?
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 A team we talked to recently launched their first production agent — a customer support bot running on GPT-4o. They estimated $800/month based on their prototype traffic. The first invoice came in at $4,200. The model pricing was exactly what they expected. The number of calls was not. Their agent averaged 11 LLM calls per conversation, not the 3 they'd assumed. Context windows grew with each turn. Retries on tool failures doubled the call count on bad days. The per-token price was never the problem. The per-agent price was.
 

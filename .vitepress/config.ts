@@ -23,7 +23,22 @@ const adminApiSidebar = useSidebar({
 // Extract H2 headings from a markdown file on disk. We read directly because
 // pageData.headers is not reliably populated when transformPageData runs.
 // Returns [{ title, slug }, ...] using GitHub-style slugs to match
-// markdown-it-anchor's default output.
+// markdown-it-anchor's default output. Non-step section headings (TL;DR,
+// Related, Next steps, etc.) are filtered out so HowTo schema only describes
+// genuinely sequential / actionable sections.
+const NON_STEP_HEADINGS = new Set([
+  'tldr', 'tl;dr',
+  'related', 'related how-to guides', 'related guides', 'related resources',
+  'next steps', 'further reading',
+  'key points', 'summary', 'conclusion',
+  'see also', 'references',
+  'glossary',
+])
+
+function isStepHeading(title) {
+  return !NON_STEP_HEADINGS.has(title.toLowerCase().trim())
+}
+
 function extractH2Headings(relativePath) {
   try {
     const filePath = path.join(srcRoot, relativePath)
@@ -38,6 +53,7 @@ function extractH2Headings(relativePath) {
       const m = /^##\s+(.+?)\s*$/.exec(line)
       if (m) {
         const title = m[1].replace(/`/g, '').trim()
+        if (!isStepHeading(title)) continue
         out.push({ title, slug: slugifyHeading(title) })
       }
     }
@@ -107,6 +123,9 @@ export default defineConfig({
       return items
         .filter((item) => item.url !== '404')
         .filter((item) => !item.url.includes('/operations/'))
+        // Calculator embed pages are noindex iframe targets — exclude from
+        // sitemap so search engines do not pick them up as standalone results.
+        .filter((item) => !/calculators\/[^/]*-embed$/.test(item.url))
         .map((item) => item.lastmod ? item : { ...item, lastmod: fallback })
     },
   },
@@ -243,8 +262,6 @@ export default defineConfig({
             { text: 'Governance & Compliance', link: '/why-cycles/governance' },
           ],
         },
-        { text: 'Cost Control Guide', link: '/guides/llm-cost-control' },
-        { text: 'Risk & Blast Radius Guide', link: '/guides/risk-and-blast-radius' },
         {
           text: 'Quickstart',
           items: [
@@ -263,6 +280,14 @@ export default defineConfig({
             { text: 'Deploy the Events Service', link: '/quickstart/deploying-the-events-service' },
             { text: 'Deploy the Admin Dashboard', link: '/quickstart/deploying-the-cycles-dashboard' },
             { text: 'Migrate from Custom Rate Limiter', link: '/how-to/migrating-from-custom-rate-limiter-to-cycles' },
+          ]
+        },
+        {
+          text: 'Topic Guides',
+          collapsed: false,
+          items: [
+            { text: 'LLM Cost Control', link: '/guides/llm-cost-runtime-control' },
+            { text: 'Risk & Blast Radius', link: '/guides/risk-and-blast-radius' },
           ]
         },
         {
@@ -491,15 +516,16 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/calculators/' },
             { text: 'Claude vs GPT Cost', link: '/calculators/claude-vs-gpt-cost-comparison' },
+            { text: 'Blast Radius Risk', link: '/calculators/ai-agent-blast-radius-risk' },
           ]
         },
         {
           text: 'Help',
           collapsed: false,
           items: [
-            { text: 'Troubleshooting & FAQ', link: '/how-to/troubleshooting-and-faq' },
+            { text: 'Cycles Troubleshooting', link: '/how-to/troubleshooting-and-faq' },
             {
-              text: 'LLM Troubleshooting',
+              text: 'LLM Provider Troubleshooting',
               collapsed: true,
               items: [
                 { text: 'Overview', link: '/troubleshoot/' },
@@ -537,9 +563,17 @@ export default defineConfig({
       )
     }
 
-    const canonicalUrl = `https://runcycles.io/${pageData.relativePath.replace(/\\/g, '/')}`
+    let canonicalUrl = `https://runcycles.io/${pageData.relativePath.replace(/\\/g, '/')}`
       .replace(/\/index\.md$/, '/')
       .replace(/\.md$/, '')
+
+    // Calculator embed pages canonicalize to their standalone counterpart so
+    // that any accidental indexing consolidates link equity at the shareable
+    // URL rather than the iframe target.
+    const embedMatch = canonicalUrl.match(/^(.*\/calculators\/[^/]+)-embed$/)
+    if (embedMatch) {
+      canonicalUrl = embedMatch[1] + '-standalone'
+    }
 
     const defaultDescription = 'Stop runaway agent spend and risky actions before they execute. Open protocol, multi-language SDKs, Apache 2.0.'
     const pageTitle = pageData.frontmatter.title || pageData.title || 'Cycles'

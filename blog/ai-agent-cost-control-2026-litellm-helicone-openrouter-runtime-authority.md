@@ -15,7 +15,7 @@ head:
 
 # AI Agent Cost Control in 2026: A Landscape Guide
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 If you're running AI agents in production, you've probably evaluated — or already deployed — at least one cost control tool. LiteLLM for routing and team budgets. Helicone for observability and rate limiting. OpenRouter for unified model access with spending caps.
 

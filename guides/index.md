@@ -13,7 +13,7 @@ Cost and action are different enforcement problems. Cost controls *how much* an 
 
 Tenant isolation and audit evidence build on these two enforcement dimensions: who owns the budget, and what record each decision leaves behind.
 
-- **[The LLM Cost Control Guide](/guides/llm-cost-control)** — bounding what AI agents *spend*. Causes of cost blowups, why dashboards are not enough, the runtime patterns that work, multi-tenant cost isolation, unit economics, and provider-specific patterns.
-- **[The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — bounding what AI agents *do*. Risk scoring, action authority, blast-radius containment, degradation paths, delegation chains, governance frameworks, and incident patterns.
+- **[LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — bounding what AI agents *spend*. Causes of cost blowups, why dashboards are not enough, the runtime patterns that work, multi-tenant cost isolation, unit economics, and provider-specific patterns.
+- **[AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — bounding what AI agents *do*. Risk scoring, action authority, blast-radius containment, degradation paths, delegation chains, governance frameworks, and incident patterns.
 
 More guides on multi-tenant operations and audit / evidence are in development.

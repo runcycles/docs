@@ -15,7 +15,7 @@ head:
 
 # Agents Are Cross-Cutting. Your Controls Aren't.
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 A SaaS platform runs an AI feature for fifty customers. Each customer's agent calls three LLM providers — OpenAI for reasoning, Anthropic for long context, a local model for cheap embedding — and eight tools — search, a payments API, a CRM client, an outbound mailer, a vector store, a document parser, a code interpreter, and a web fetcher. The agents run on a pool of stateless workers, each handling concurrent runs across multiple customers.
 

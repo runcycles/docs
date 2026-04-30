@@ -10,7 +10,7 @@ sidebar: false
 
 # AI Agent Silent Failures: Why 200 OK Is the Most Dangerous Response in Production
 
-> **Part of: [The AI Agent Risk & Blast Radius Guide](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
+> **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
 Your agent completes the task. The API returns 200. The logs show a clean run. No errors, no alerts, no exceptions. And the output is completely wrong.
 

@@ -1,9 +1,9 @@
 ---
-title: "The LLM Cost Control Guide"
-description: "A complete map of LLM and AI agent cost control in production — what blows up, why dashboards do not stop it, the runtime patterns that do, and links to deep coverage of every subtopic."
+title: "LLM Cost Runtime Control: A Production Reference"
+description: "A reference map of bounding LLM and AI agent spend in production via runtime authority — what blows up, why dashboards do not stop it, the patterns that do, with links to deep coverage of every subtopic."
 ---
 
-# The LLM Cost Control Guide
+# LLM Cost Runtime Control: A Production Reference
 
 Every angle on bounding LLM and AI agent spend in production. This is the map: each section is a short orientation that links to the deep coverage in our blog, how-to guides, and protocol reference. Read top to bottom for a structured view, or jump to whichever section matches what you are working on.
 
@@ -25,8 +25,6 @@ Cost incidents in LLM systems are not random. They cluster into a small number o
 
 - [Runaway agents and tool loops](/incidents/runaway-agents-tool-loops-and-budget-overruns-the-incidents-cycles-is-designed-to-prevent) — the canonical incident pattern
 - [Your AI Agent Just Burned $6 in 30 Seconds](/blog/runaway-demo-agent-cost-blowup-walkthrough) — a walkthrough of the cost blowup pattern
-- [Retry storms and idempotency failures](/incidents/retry-storms-and-idempotency-failures) — when retries amplify the bill
-- [Concurrent agent overspend](/incidents/concurrent-agent-overspend) — the TOCTOU problem in budget checks
 
 ## Why dashboards and alerts are not enough
 
@@ -34,18 +32,14 @@ Observability tools (Helicone, Langfuse, LangSmith) record what happened. They d
 
 - [Runtime Authority vs Guardrails vs Observability](/blog/runtime-authority-vs-guardrails-vs-observability) — the three layers, what each does, what each cannot do
 - [From Observability to Enforcement](/concepts/from-observability-to-enforcement-how-teams-evolve-from-dashboards-to-budget-authority) — how teams typically evolve their stack
-- [Cycles vs LLM Proxies and Observability Tools](/blog/cycles-vs-llm-proxies-and-observability-tools) — where each tool fits
-- [Real-Time Budget Alerts for AI Agents](/blog/real-time-budget-alerts-for-ai-agents) — alerting as a complement to enforcement, not a substitute
 
 ## The structural fix: runtime budget authority
 
 The class of incident "agent spent more than was authorized" has one structural fix: do not let calls happen unless they are pre-authorized against a budget that the application controls. Every other layer is downstream of money already committed.
 
 - [What Is Runtime Authority for AI Agents?](/blog/what-is-runtime-authority-for-ai-agents) — the foundational concept
-- [AI Agent Budget Control: Enforce Hard Spend Limits](/blog/ai-agent-budget-control-enforce-hard-spend-limits) — what hard limits look like in practice
 - [Why Cycles for Cost Control](/why-cycles/cost-control) — the product framing
 - [How decide works in Cycles](/protocol/how-decide-works-in-cycles-preflight-budget-checks-without-reservation) — the pre-execution gate, in protocol detail
-- [How reserve / commit works](/protocol/how-reserve-commit-works-in-cycles) — the atomic-budget primitive
 
 ## Multi-tenant cost control
 
@@ -77,8 +71,6 @@ A budget that is 50% off is a budget you cannot trust. Estimation drift between 
 
 - [Estimate Drift: The Silent Killer of Budget Enforcement](/blog/estimate-drift-silent-killer-of-enforcement)
 - [Cost estimation cheat sheet](/how-to/cost-estimation-cheat-sheet) — sizing budgets accurately
-- [Tracking Tokens and Cost in a Streaming LLM Response](/blog/tracking-tokens-in-a-streaming-llm-response)
-- [Budgeting Reasoning Tokens](/blog/budgeting-reasoning-tokens-governing-extended-thinking-before-it-bills) — extended-thinking and o1-style models
 
 ## Unit economics: when cost becomes margin
 
@@ -94,19 +86,14 @@ Each major LLM provider has its own rate-limit topology and cost levers. Pattern
 
 - [OpenAI 429 troubleshooting](/troubleshoot/openai-rate-limit-429)
 - [Anthropic rate limit errors](/troubleshoot/anthropic-rate-limit-error)
-- [Integrating with OpenAI](/how-to/integrating-cycles-with-openai)
-- [Integrating with Anthropic](/how-to/integrating-cycles-with-anthropic)
-- [Integrating with AWS Bedrock](/how-to/integrating-cycles-with-aws-bedrock)
-- [Integrating with Google Gemini](/how-to/integrating-cycles-with-google-gemini)
+- [Integrations overview](/how-to/integrations-overview) — provider-specific integration guides
 
 ## Rolling out enforcement without breaking production
 
 Going from no enforcement to hard limits is the riskiest step. Shadow mode lets you observe what enforcement *would* do without blocking anything, calibrate budgets against real traffic, and cut over with confidence.
 
-- [How to Add Runtime Enforcement Without Breaking Your Agents](/blog/how-to-add-runtime-enforcement-without-breaking-your-agents)
 - [Shadow Mode rollout](/how-to/shadow-mode-in-cycles-how-to-roll-out-budget-enforcement-without-breaking-production)
 - [Shadow Mode to Hard Enforcement: The Cutover Decision Tree](/blog/shadow-to-enforcement-cutover-decision-tree)
-- [Choosing the right overage policy](/how-to/choosing-the-right-overage-policy)
 - [Degradation paths: deny, downgrade, disable, defer](/how-to/how-to-think-about-degradation-paths-in-cycles-deny-downgrade-disable-or-defer)
 
 ## Tools

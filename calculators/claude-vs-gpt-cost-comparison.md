@@ -7,7 +7,13 @@ description: "Free interactive calculator comparing Claude and OpenAI API costs 
 
 A free interactive calculator that compares per-call, per-day, per-month, and per-year cost across the major Claude and OpenAI models for any token volume and call rate.
 
-<CostCalculator />
+> **Tip:** [Open fullscreen ↗](/calculators/claude-vs-gpt-cost-standalone) for a wider table, share/export buttons, and a shareable URL that preserves your configuration. The same toolbar is also available below.
+
+<CostCalculator
+  variant="docs"
+  standalone-path="/calculators/claude-vs-gpt-cost-standalone"
+  embed-path="/calculators/claude-vs-gpt-cost-embed"
+/>
 
 ## How the calculation works
 

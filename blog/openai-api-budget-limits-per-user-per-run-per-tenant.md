@@ -10,7 +10,7 @@ sidebar: false
 
 # OpenAI API Budget Limits: Per-User and Per-Tenant
 
-> **Part of: [The LLM Cost Control Guide](/guides/llm-cost-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
+> **Part of: [LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full pillar covering causes, enforcement patterns, multi-tenant boundaries, and unit economics.
 
 A team runs 30 OpenAI-powered agents across their platform. They set a $5,000/month spending cap in the OpenAI dashboard. On Thursday, one customer's research agent enters a retry loop — expanding its context window on each attempt, calling GPT-4o 200+ times in under an hour. The bill: $1,400 for a single agent run.
 

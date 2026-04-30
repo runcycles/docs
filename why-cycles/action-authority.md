@@ -77,6 +77,7 @@ Each action checks its own unit's budget. The LLM call draws from the dollar bud
 
 ## Go deeper
 
+- **[AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full topic guide: risk scoring, blast-radius containment, degradation paths, delegation/attenuation, identity, audit, and compliance
 - [Action Authority: Controlling What Agents Do](/concepts/action-authority-controlling-what-agents-do) — the conceptual foundation
 - [Understanding Units](/protocol/understanding-units-in-cycles-usd-microcents-tokens-credits-and-risk-points) — USD_MICROCENTS, TOKENS, CREDITS, RISK_POINTS
 - [OpenAI Agents SDK Integration](/how-to/integrating-cycles-with-openai-agents) — ToolEstimateMap and per-tool governance
