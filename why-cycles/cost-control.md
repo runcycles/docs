@@ -53,9 +53,9 @@ The same agent with a $15 per-run budget stops after 8 iterations and surfaces t
 
 ## Now run the numbers for your workload
 
-The calculator below is pre-seeded with this scenario. Edit the input/output tokens, calls/day, and rates to match your own. Click **Share** to send the configured view to a teammate, or **PNG** for an artifact you can paste into a deck.
+The calculator below is pre-seeded with a *similar* retry-loop profile — 200K input tokens per call by the time someone notices, 240 calls. The exact $4,200 in the story above depends on context-window growth across retries that no static calculator captures perfectly; the **shape** of the cost curve is what the budget gate actually bounds. Adjust the input/output tokens, calls/day, and model rates to match your own incident. Click **Share** to send the configured view to a teammate, or **PNG** for an artifact you can paste into a deck.
 
-<CostCalculator initial-state="eyJ3b3JrbG9hZE5hbWUiOiJDb2RpbmcgYWdlbnQgKHJ1bmF3YXkgbG9vcCkiLCJ3b3JrbG9hZERlc2NyaXB0aW9uIjoiSGl0IGFuIGFtYmlndW91cyBlcnJvciBhbmQgcmV0cmllZCAyNDAgdGltZXMgd2l0aCBleHBhbmRpbmcgY29udGV4dCB3aW5kb3dzIGJlZm9yZSBhIHNhZmV0eSB0aW1lb3V0IGZpcmVkLiIsImlucHV0VG9rZW5zIjoxMjAwMCwib3V0cHV0VG9rZW5zIjoyMDAwLCJjYWxsc1BlckRheSI6MjQwfQ" />
+<CostCalculator initial-state="eyJ3b3JrbG9hZE5hbWUiOiJDb2RpbmcgYWdlbnQgKHJldHJ5LWxvb3AgcnVuYXdheSkiLCJ3b3JrbG9hZERlc2NyaXB0aW9uIjoiSGl0IGFuIGFtYmlndW91cyBlcnJvciBhbmQgcmV0cmllZCB3aXRoIGV4cGFuZGluZyBjb250ZXh0LiBCeSB0aGUgdGltZSBzb21lb25lIGNhdWdodCBpdCwgZWFjaCBjYWxsIGNhcnJpZWQgfjIwMEsgaW5wdXQgdG9rZW5zLiIsImlucHV0VG9rZW5zIjoyMDAwMDAsIm91dHB1dFRva2VucyI6MTAwMDAsImNhbGxzUGVyRGF5IjoyNDB9" />
 
 ## Go deeper
 
