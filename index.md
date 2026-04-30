@@ -45,11 +45,11 @@ features:
     linkText: Read the guides
   - icon:
       src: /icons/gauge.svg
-      alt: Calculators icon
-    title: "Calculators"
-    details: "Two symmetric tools: a cost calculator comparing Claude and GPT API rates, and a blast-radius risk calculator quantifying expected damage per agent action class."
+      alt: Tools icon
+    title: "Tools"
+    details: "Interactive tools that quantify the case for runtime authority — a Claude-vs-GPT cost calculator and an AI-agent blast-radius risk calculator. Shareable URLs, embeddable, branded export."
     link: /calculators/
-    linkText: Open calculators
+    linkText: Open tools
   - icon:
       src: /icons/wrench.svg
       alt: How-To icon
