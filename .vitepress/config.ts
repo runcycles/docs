@@ -484,6 +484,14 @@ export default defineConfig({
           ]
         },
         {
+          text: 'Calculators',
+          collapsed: true,
+          items: [
+            { text: 'Overview', link: '/calculators/' },
+            { text: 'Claude vs GPT Cost', link: '/calculators/claude-vs-gpt-cost-comparison' },
+          ]
+        },
+        {
           text: 'Help',
           collapsed: false,
           items: [

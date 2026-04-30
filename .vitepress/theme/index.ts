@@ -22,6 +22,7 @@ import EventFlowDiagram from './EventFlowDiagram.vue'
 import DeliveryStateMachine from './DeliveryStateMachine.vue'
 import NetworkZones from './NetworkZones.vue'
 import AdoptionLadder from './AdoptionLadder.vue'
+import CostCalculator from './CostCalculator.vue'
 
 export default {
   extends: DefaultTheme,
@@ -43,6 +44,7 @@ export default {
     app.component('DeliveryStateMachine', DeliveryStateMachine)
     app.component('NetworkZones', NetworkZones)
     app.component('AdoptionLadder', AdoptionLadder)
+    app.component('CostCalculator', CostCalculator)
   },
   setup() {
     const route = useRoute()
