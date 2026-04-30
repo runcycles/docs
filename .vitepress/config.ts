@@ -194,6 +194,14 @@ export default defineConfig({
       { text: 'Quickstart', link: '/quickstart/what-is-cycles' },
       { text: 'Protocol', link: '/protocol/' },
       {
+        text: 'Calculators',
+        items: [
+          { text: 'Overview', link: '/calculators/' },
+          { text: 'Claude vs GPT Cost', link: '/calculators/claude-vs-gpt-cost-standalone' },
+          { text: 'AI Agent Blast Radius', link: '/calculators/ai-agent-blast-radius-standalone' },
+        ],
+      },
+      {
         text: 'Docs',
         items: [
           {

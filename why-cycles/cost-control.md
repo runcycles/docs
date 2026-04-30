@@ -51,6 +51,12 @@ The same agent with a $15 per-run budget stops after 8 iterations and surfaces t
 | Impact on other agents | All blocked by provider cap | None — per-run isolation |
 | Recovery action | Post-mortem and budget reset | Fix the prompt |
 
+## Now run the numbers for your workload
+
+The calculator below is pre-seeded with this scenario. Edit the input/output tokens, calls/day, and rates to match your own. Click **Share** to send the configured view to a teammate, or **PNG** for an artifact you can paste into a deck.
+
+<CostCalculator initial-state="eyJ3b3JrbG9hZE5hbWUiOiJDb2RpbmcgYWdlbnQgKHJ1bmF3YXkgbG9vcCkiLCJ3b3JrbG9hZERlc2NyaXB0aW9uIjoiSGl0IGFuIGFtYmlndW91cyBlcnJvciBhbmQgcmV0cmllZCAyNDAgdGltZXMgd2l0aCBleHBhbmRpbmcgY29udGV4dCB3aW5kb3dzIGJlZm9yZSBhIHNhZmV0eSB0aW1lb3V0IGZpcmVkLiIsImlucHV0VG9rZW5zIjoxMjAwMCwib3V0cHV0VG9rZW5zIjoyMDAwLCJjYWxsc1BlckRheSI6MjQwfQ" />
+
 ## Go deeper
 
 - **[LLM Cost Runtime Control Reference](/guides/llm-cost-runtime-control)** — the full topic guide: incident taxonomy, runtime authority patterns, multi-tenant isolation, unit economics, and rollout

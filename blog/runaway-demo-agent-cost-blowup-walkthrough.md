@@ -16,6 +16,8 @@ A customer support bot drafts a response, evaluates its quality, and refines it 
 
 The LLM calls in this demo are simulated. No API key is required. The budget enforcement is real. This post walks through the [runaway demo](https://github.com/runcycles/cycles-runaway-demo) step by step: what the agent does, how the unguarded and guarded runs differ, and what the code change looks like.
 
+> **Open the quality-loop scenario in the calculator:** [Open with these numbers pre-loaded →](/calculators/claude-vs-gpt-cost-standalone#s=eyJ3b3JrbG9hZE5hbWUiOiJTdXBwb3J0IGFnZW50IHdpdGggcXVhbGl0eS1sb29wIGJ1ZyIsIndvcmtsb2FkRGVzY3JpcHRpb24iOiJEcmFmdHMgYSByZXNwb25zZSwgZXZhbHVhdGVzIHF1YWxpdHksIHJlZmluZXMgdW50aWwgc2NvcmUgPjguIEJ1ZzogZXZhbHVhdG9yIG5ldmVyIHJldHVybnMgYWJvdmUgNi45LiB-MTAwIGNhbGxzIHBlciByZWZpbmVtZW50IGxvb3AuIiwiaW5wdXRUb2tlbnMiOjMwMDAsIm91dHB1dFRva2VucyI6ODAwLCJjYWxsc1BlckRheSI6NTAwfQ)
+
 <!-- more -->
 
 ## The scenario

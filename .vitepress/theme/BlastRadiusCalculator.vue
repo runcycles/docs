@@ -21,6 +21,7 @@ const props = defineProps({
   variant:        { type: String, default: 'docs' },
   standalonePath: { type: String, default: '/calculators/ai-agent-blast-radius-standalone' },
   embedPath:      { type: String, default: '/calculators/ai-agent-blast-radius-embed' },
+  initialState:   { type: String, default: null },
 })
 
 const REVERSIBILITY = {
@@ -47,6 +48,7 @@ const state = reactive({
 })
 
 const calcState = useCalcState(state, {
+  initialStateB64: props.initialState,
   hydrate(incoming) {
     if (typeof incoming.agentName === 'string')        state.agentName = incoming.agentName
     if (typeof incoming.agentDescription === 'string') state.agentDescription = incoming.agentDescription
