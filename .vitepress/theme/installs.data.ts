@@ -53,24 +53,11 @@ const GITHUB_ORG = 'runcycles'
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
 
 function readCache(): InstallsCache {
+  let raw: any
   try {
-    const raw = JSON.parse(readFileSync(CACHE_PATH, 'utf-8'))
-    return {
-      npm:           raw.npm ?? 0,
-      pypi:          raw.pypi ?? 0,
-      crates:        raw.crates ?? 0,
-      // Migrate legacy `ghcr` field (always 0 anyway — it was a no-op stub)
-      // into the new `clones` slot. Read both, prefer `clones`.
-      clones:        raw.clones ?? 0,
-      clonesByRepo:  raw.clonesByRepo ?? {},
-      releases:      raw.releases ?? 0,
-      releasesByRepo: raw.releasesByRepo ?? {},
-      ghPackages:    raw.ghPackages ?? 0,
-      maven:         raw.maven ?? 0,
-      total:         raw.total ?? 0,
-      fetchedAt:     raw.fetchedAt ?? '',
-    }
+    raw = JSON.parse(readFileSync(CACHE_PATH, 'utf-8'))
   } catch {
+    // File missing or unparseable — cold start, allowed.
     return {
       npm: 0, pypi: 0, crates: 0,
       clones: 0, clonesByRepo: {},
@@ -78,6 +65,38 @@ function readCache(): InstallsCache {
       ghPackages: 0,
       maven: 0, total: 0, fetchedAt: '',
     }
+  }
+
+  // Schema-regression detector: a cache file with the pre-PR-#515 shape
+  // (presence of `ghcr` field, no `clones`/`clonesByRepo`) means the
+  // accumulator state has been wiped — likely from a stale-checkout
+  // commit or a hand-edit. Refusing to use such a file as the baseline
+  // protects against silently propagating the regression on the next
+  // write. Build fails loudly so the operator sees the runbook pointer
+  // instead of the homepage clones counter quietly resetting.
+  const hasOldSchema = 'ghcr' in raw
+  const hasNewSchema = 'clones' in raw && 'clonesByRepo' in raw
+  if (hasOldSchema && !hasNewSchema) {
+    throw new Error(
+      `[installs] cache schema regression detected at ${CACHE_PATH}: ` +
+      `file has pre-PR-#515 shape ('ghcr' field, no 'clones'/'clonesByRepo'). ` +
+      `Refusing to start build. ` +
+      `Re-seed per .outreach/installs-cache-runbook.md.`
+    )
+  }
+
+  return {
+    npm:           raw.npm ?? 0,
+    pypi:          raw.pypi ?? 0,
+    crates:        raw.crates ?? 0,
+    clones:        raw.clones ?? 0,
+    clonesByRepo:  raw.clonesByRepo ?? {},
+    releases:      raw.releases ?? 0,
+    releasesByRepo: raw.releasesByRepo ?? {},
+    ghPackages:    raw.ghPackages ?? 0,
+    maven:         raw.maven ?? 0,
+    total:         raw.total ?? 0,
+    fetchedAt:     raw.fetchedAt ?? '',
   }
 }
 
@@ -96,7 +115,42 @@ function fetchManualPackageCounts(): number {
   }
 }
 
+/**
+ * Per-source HWM-monotonic field set checked at write time. If the on-disk
+ * cache has a higher value for any of these than what we are about to
+ * write, the write would regress the accumulator and is refused. This
+ * protects against the failure mode where the loader read an empty/
+ * malformed cache (defaults zero) and a build without GITHUB_TOKEN
+ * computed degraded values that would otherwise overwrite a good file.
+ */
+const MONOTONIC_FIELDS = [
+  'npm', 'pypi', 'crates', 'clones', 'releases', 'ghPackages', 'maven', 'total',
+] as const
+
 function writeCache(data: InstallsCache): void {
+  // Re-read the file at write time to compare against. If it disappeared
+  // between read and write (rare), allow the write to proceed.
+  let existing: any = null
+  try {
+    existing = JSON.parse(readFileSync(CACHE_PATH, 'utf-8'))
+  } catch { /* fresh checkout / missing file — write is fine */ }
+
+  if (existing) {
+    for (const field of MONOTONIC_FIELDS) {
+      const onDisk = typeof existing[field] === 'number' ? existing[field] : 0
+      const inMem  = typeof (data as any)[field] === 'number' ? (data as any)[field] : 0
+      if (onDisk > inMem) {
+        console.warn(
+          `[installs] refusing cache write: would regress ${field} ` +
+          `${onDisk} -> ${inMem}. Likely cause: build ran without ` +
+          `GITHUB_TOKEN or hit an upstream API failure. ` +
+          `See .outreach/installs-cache-runbook.md.`
+        )
+        return
+      }
+    }
+  }
+
   try {
     writeFileSync(CACHE_PATH, JSON.stringify(data) + '\n')
   } catch { /* non-critical — CI environments may have read-only source dirs */ }
