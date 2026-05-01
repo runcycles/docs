@@ -66,7 +66,7 @@ Cursor should invoke `cycles_check_balance` (you'll see the tool-call expand in 
 ## Common gotchas
 
 - **Tool calls only fire in agent / composer mode.** MCP tools are not available in plain chat mode — switch to Composer (the default in recent Cursor versions).
-- **Project vs user scope.** If both `.cursor/mcp.json` and `~/.cursor/mcp.json` define `cycles`, project wins. `claude mcp list` from Claude Code does NOT show Cursor's config — they're separate systems.
+- **Project vs user scope.** If both `.cursor/mcp.json` and `~/.cursor/mcp.json` define `cycles`, project wins inside that project's workspace.
 - **Env not interpolated.** Cursor's MCP config does not currently expand `${VAR}` references in the env block. Hardcode the API key or use mock mode.
 - **`.cursor/` should be `.gitignore`d if it contains secrets.** If you commit `.cursor/mcp.json` with the API key in plain text, it ends up in git history. Either: (a) commit only with `CYCLES_MOCK: true` and have each developer override locally, or (b) use a secrets manager and a wrapper script as the `command` instead of `npx` directly.
 

@@ -28,7 +28,7 @@ export CYCLES_API_KEY=cyc_live_...
 export CYCLES_BASE_URL=http://localhost:7878
 ```
 
-`claude mcp add` writes to `~/.claude/mcp.json` (user-scoped) by default. To scope it to one project instead, run the command from that project's root with `--scope project` — it writes to `.mcp.json` in the project, which you can then commit.
+`claude mcp add` defaults to `local` scope, which records the server in your user-level Claude Code config scoped to the current project's directory. To share with teammates, run the command from the project root with `--scope project` (or `-s project`) — it writes a committable `.mcp.json` file at the project root. For a global server available in every project, use `--scope user`.
 
 ## Project-scoped config (alternative)
 
@@ -74,7 +74,7 @@ claude mcp list
 ## Common gotchas
 
 - **Env vars not picked up.** `claude mcp add` records the command but does NOT capture your current shell env. The `CYCLES_API_KEY` and `CYCLES_BASE_URL` need to be in the env Claude Code itself runs in. Either export them in your shell rc file or use `--env KEY=VALUE` flags on `claude mcp add`.
-- **Project vs user scope confusion.** `~/.claude/mcp.json` (user) and `<project>/.mcp.json` (project) both exist; project-scoped wins inside that project. `claude mcp list` shows both.
+- **Three scopes, not two.** `local` (the default — applies only to the current project, stored in your Claude Code user config), `user` (applies in every project), and `project` (committed to `.mcp.json` in the project root). `claude mcp list` shows all of them. Project scope wins where it overlaps.
 - **First-time approval prompt.** Claude Code will prompt before running a new MCP server. If you don't see the Cycles tools, check that you didn't miss the prompt.
 - **`claude mcp add` updates Claude Code's view, not Claude Desktop's.** Each client has its own config — see [Claude Desktop setup](/quickstart/mcp-claude-desktop) if you want both.
 

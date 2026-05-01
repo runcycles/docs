@@ -1,6 +1,6 @@
 ---
 title: "Add Cycles to Claude Desktop (MCP)"
-description: "60-second setup for adding Cycles budget enforcement to Claude Desktop via the MCP server. Exact config paths for macOS and Windows, mock-mode option, common gotchas."
+description: "60-second setup for adding Cycles budget enforcement to Claude Desktop via the MCP server. Config paths for macOS and Windows, mock mode, and common gotchas."
 ---
 
 # Add Cycles to Claude Desktop

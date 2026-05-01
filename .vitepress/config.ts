@@ -280,7 +280,7 @@ export default defineConfig({
             { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
             { text: 'Add to a Rust App', link: '/quickstart/getting-started-with-the-rust-client' },
             {
-              text: 'MCP server (Claude / Cursor / Windsurf)',
+              text: 'MCP server',
               collapsed: true,
               items: [
                 { text: 'Overview', link: '/quickstart/getting-started-with-the-mcp-server' },

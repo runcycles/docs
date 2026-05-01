@@ -72,7 +72,7 @@ Cascade should invoke `cycles_check_balance` and return the balances. The tool c
 
 ## Common gotchas
 
-- **Config is user-scoped only.** Unlike Cursor, Windsurf does not currently support a project-scoped MCP config — every project sees the same servers. If you need per-project keys, use a wrapper script as the `command` that reads the right secret based on the working directory.
+- **Config is typically user-scoped.** Per-project / per-workspace MCP overrides are rolling out across Windsurf release channels; check Windsurf's settings panel for "MCP servers" before assuming. If your build only supports user-scoped, use a wrapper script as the `command` that reads the right secret based on the working directory to vary keys per project.
 - **Cascade mode required.** MCP tools are only available in Cascade (Windsurf's agent mode), not in inline completions or plain chat.
 - **Env not interpolated.** Like Cursor, Windsurf's MCP config does not expand `${VAR}` references. Hardcode the API key or use mock mode.
 - **Tools list refreshes on Windsurf restart.** If you edit the config and the tools don't show, fully quit and reopen Windsurf (closing the window is not enough on macOS).

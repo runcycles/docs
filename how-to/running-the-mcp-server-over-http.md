@@ -48,61 +48,47 @@ The server starts on port `3000` and exposes:
 | `CYCLES_BASE_URL` | *(required)* | URL of `cycles-server` (e.g. `http://cycles-server:7878` if co-deployed) |
 | `CYCLES_MOCK` | — | `"true"` to skip the backend and return mock responses (useful for client-integration tests) |
 
-## Worked example: docker-compose with `cycles-server`
+## Worked example: docker-compose
 
-This deploys the Cycles server, the MCP server in HTTP mode, and an internal-only network. Drop into a directory and run `docker compose up`.
+The Cycles MCP server has no first-party container image yet, so the cleanest path today is a tiny Dockerfile that pins a server version, then run that image alongside your existing Cycles server. The example below assumes you already have a `cycles-server` running and reachable at some URL — see [Self-Hosting the Server](/quickstart/self-hosting-the-cycles-server) if you don't.
+
+```dockerfile
+# Dockerfile
+FROM node:22-alpine
+WORKDIR /app
+RUN npm install --omit=dev @runcycles/mcp-server@latest
+EXPOSE 3000
+CMD ["npx", "@runcycles/mcp-server", "--transport", "http"]
+```
 
 ```yaml
 # docker-compose.yml
 services:
-  cycles-server:
-    image: ghcr.io/runcycles/cycles-server:latest
-    ports:
-      - "7878:7878"
-    environment:
-      DATABASE_URL: postgres://cycles:cycles@db:5432/cycles
-    depends_on:
-      - db
-
-  mcp-server:
-    image: node:22-alpine
-    command: ["npx", "-y", "@runcycles/mcp-server", "--transport", "http"]
+  cycles-mcp:
+    build: .
     ports:
       - "3000:3000"
     environment:
       CYCLES_API_KEY: ${CYCLES_API_KEY}
-      CYCLES_BASE_URL: http://cycles-server:7878
+      CYCLES_BASE_URL: ${CYCLES_BASE_URL}
       PORT: "3000"
-    depends_on:
-      - cycles-server
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: cycles
-      POSTGRES_PASSWORD: cycles
-      POSTGRES_DB: cycles
-    volumes:
-      - cycles-db:/var/lib/postgresql/data
-
-volumes:
-  cycles-db:
 ```
 
-Set the API key as an env var:
+Run it:
 
 ```bash
 export CYCLES_API_KEY=cyc_live_...
-docker compose up -d
+export CYCLES_BASE_URL=http://host.docker.internal:7878   # or wherever your Cycles server is
+docker compose up -d --build
 curl http://localhost:3000/health
-# => {"status":"ok","version":"0.2.x"}
+# => {"status":"ok","version":"..."}
 ```
 
-You can now point any MCP-aware client at `http://localhost:3000/mcp`. For production, replace the `node:22-alpine + npx` step with a pinned image once you've validated demand for it.
+You can now point any HTTP-capable MCP client at `http://localhost:3000/mcp`. For production, pin a specific version of `@runcycles/mcp-server` in the Dockerfile (replace `@latest`) and put a reverse proxy in front of `:3000`.
 
 ## Connecting an MCP client to a remote server
 
-The client config replaces the `command`/`args` STDIO launch with a remote URL. The exact shape varies by client and may require a recent release with remote-MCP support:
+The client config replaces the STDIO `command`/`args` launch with a remote URL. The exact key naming differs across clients and is still evolving — some use `"url"`, others require an explicit `"type": "http"` discriminator. Two examples of shapes seen in the wild:
 
 ```json
 {
@@ -114,7 +100,18 @@ The client config replaces the `command`/`args` STDIO launch with a remote URL. 
 }
 ```
 
-Check the client's docs — at the time of writing, Claude Desktop and Cursor are still rolling out remote-MCP support across release channels, while STDIO is universally supported.
+```json
+{
+  "mcpServers": {
+    "cycles": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp"
+    }
+  }
+}
+```
+
+Check your client's current docs — remote-MCP support is rolling out unevenly across Claude Desktop, Claude Code, Cursor, and Windsurf release channels. STDIO is universally supported and is the right fallback while remote support stabilizes.
 
 ## Auth, scope derivation, and security
 
@@ -126,7 +123,7 @@ Check the client's docs — at the time of writing, Claude Desktop and Cursor ar
 ## Known limitations
 
 - **No built-in per-user auth.** As above — auth is layered in front. If the goal is per-developer attribution, STDIO is currently the simpler answer (each developer has their own API key).
-- **No first-party container image.** A pinned GHCR image will land once HTTP demand is validated. The docker-compose above uses `node:22-alpine + npx` as a working stop-gap.
+- **No first-party container image.** A pinned GHCR image will land once HTTP demand is validated. Until then, the Dockerfile above is the recommended pattern — pin the package version in production rather than `@latest`.
 - **Session lifetime is in-memory.** Restarting the server drops sessions. If you need durable sessions, run a single replica or front the server with a sticky-session load balancer.
 
 ## Next steps
