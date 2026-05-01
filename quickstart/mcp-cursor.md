@@ -57,7 +57,7 @@ Returns realistic deterministic responses with no Cycles backend running.
 
 ## Verify
 
-In Cursor's chat (Cmd+L / Ctrl+L), with **Composer mode** enabled, ask:
+In Cursor's tool-enabled Agent / Composer flow, ask:
 
 > Check the budget balance for tenant acme-corp
 
@@ -65,10 +65,15 @@ Cursor should invoke `cycles_check_balance` (you'll see the tool-call expand in 
 
 ## Common gotchas
 
-- **Tool calls only fire in agent / composer mode.** MCP tools are not available in plain chat mode — switch to Composer (the default in recent Cursor versions).
+- **MCP tools only fire in Cursor's agentic / tool-enabled mode**, not plain autocomplete or basic chat. The exact label varies across Cursor releases — check the mode toggle in the chat panel.
 - **Project vs user scope.** If both `.cursor/mcp.json` and `~/.cursor/mcp.json` define `cycles`, project wins inside that project's workspace.
 - **Env not interpolated.** Cursor's MCP config does not currently expand `${VAR}` references in the env block. Hardcode the API key or use mock mode.
 - **`.cursor/` should be `.gitignore`d if it contains secrets.** If you commit `.cursor/mcp.json` with the API key in plain text, it ends up in git history. Either: (a) commit only with `CYCLES_MOCK: true` and have each developer override locally, or (b) use a secrets manager and a wrapper script as the `command` instead of `npx` directly.
+- **If Cursor changes config locations**, use **Settings → MCP** to open or verify the active config file — the in-app path is the source of truth.
+
+## What Cycles adds
+
+MCP gives Cursor a standard way to call tools. Cycles adds runtime authority before those tools run: budget checks, risk limits, tenant scope, and reserve → commit / release accounting.
 
 ## Next steps
 

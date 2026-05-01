@@ -17,15 +17,20 @@ This page is the exact setup for [Windsurf](https://codeium.com/windsurf). For t
 
 Edit Windsurf's MCP config file:
 
+The fastest way to open the active config is from inside the app: **Windsurf Settings → Cascade → MCP Servers → View Raw Config**. Or open it directly:
+
 **macOS / Linux:**
 ```
 ~/.codeium/windsurf/mcp_config.json
 ```
 
-**Windows:**
+**Windows** (location varies by install — common paths):
 ```
 %USERPROFILE%\.codeium\windsurf\mcp_config.json
+%APPDATA%\Codeium\Windsurf\mcp_config.json
 ```
+
+If neither path exists, use the in-app **View Raw Config** option above to find the active file.
 
 Create the file if it doesn't exist:
 
@@ -76,6 +81,11 @@ Cascade should invoke `cycles_check_balance` and return the balances. The tool c
 - **Cascade mode required.** MCP tools are only available in Cascade (Windsurf's agent mode), not in inline completions or plain chat.
 - **Env not interpolated.** Like Cursor, Windsurf's MCP config does not expand `${VAR}` references. Hardcode the API key or use mock mode.
 - **Tools list refreshes on Windsurf restart.** If you edit the config and the tools don't show, fully quit and reopen Windsurf (closing the window is not enough on macOS).
+- **Cascade has a total MCP tool limit** (currently 100 tools across all enabled servers). Cycles exposes only ~9 tools, but if you have many MCP servers enabled at once you may hit the cap — disable unused tools in the MCP settings panel.
+
+## What Cycles adds
+
+MCP gives Windsurf a standard way to call tools. Cycles adds runtime authority before those tools run: budget checks, risk limits, tenant scope, and reserve → commit / release accounting.
 
 ## Next steps
 

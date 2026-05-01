@@ -15,24 +15,20 @@ This page is the exact setup for [Claude Code](https://www.claude.com/claude-cod
 
 ## Setup
 
-The fastest path is the CLI:
+The fastest path is the CLI, passing env vars at registration so they ride with the server config:
 
 ```bash
-claude mcp add cycles -- npx -y @runcycles/mcp-server
+claude mcp add cycles \
+  --env CYCLES_API_KEY=cyc_live_... \
+  --env CYCLES_BASE_URL=http://localhost:7878 \
+  -- npx -y @runcycles/mcp-server
 ```
 
-Then export the API key and base URL in your shell:
-
-```bash
-export CYCLES_API_KEY=cyc_live_...
-export CYCLES_BASE_URL=http://localhost:7878
-```
-
-`claude mcp add` defaults to `local` scope, which records the server in your user-level Claude Code config scoped to the current project's directory. To share with teammates, run the command from the project root with `--scope project` (or `-s project`) — it writes a committable `.mcp.json` file at the project root. For a global server available in every project, use `--scope user`.
+`claude mcp add` defaults to `local` scope, which records the server in your user-level Claude Code config scoped to the current project's directory. To share with teammates, add `--scope project` (or `-s project`) — it writes a committable `.mcp.json` file at the project root. For a global server available in every project, use `--scope user`.
 
 ## Project-scoped config (alternative)
 
-If you'd rather hand-edit a `.mcp.json` in your project root:
+If you'd rather hand-edit a committable `.mcp.json` in your project root, use `${VAR}` expansion so secrets stay out of git:
 
 ```json
 {
@@ -41,15 +37,15 @@ If you'd rather hand-edit a `.mcp.json` in your project root:
       "command": "npx",
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
-        "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_BASE_URL": "http://localhost:7878"
+        "CYCLES_API_KEY": "${CYCLES_API_KEY}",
+        "CYCLES_BASE_URL": "${CYCLES_BASE_URL:-http://localhost:7878}"
       }
     }
   }
 }
 ```
 
-Commit `.mcp.json` to share with teammates. The first time someone opens the project Claude Code prompts to approve the new MCP server.
+Commit `.mcp.json`, but **do not commit real secrets**. Each developer sets `CYCLES_API_KEY` in their own shell or secret manager. The first time someone opens the project, Claude Code prompts to approve the new MCP server.
 
 ## Try mock mode (no API key required)
 
@@ -73,10 +69,14 @@ claude mcp list
 
 ## Common gotchas
 
-- **Env vars not picked up.** `claude mcp add` records the command but does NOT capture your current shell env. The `CYCLES_API_KEY` and `CYCLES_BASE_URL` need to be in the env Claude Code itself runs in. Either export them in your shell rc file or use `--env KEY=VALUE` flags on `claude mcp add`.
-- **Three scopes, not two.** `local` (the default — applies only to the current project, stored in your Claude Code user config), `user` (applies in every project), and `project` (committed to `.mcp.json` in the project root). `claude mcp list` shows all of them. Project scope wins where it overlaps.
-- **First-time approval prompt.** Claude Code will prompt before running a new MCP server. If you don't see the Cycles tools, check that you didn't miss the prompt.
+- **Env vars not captured automatically.** `claude mcp add` records the command but does NOT capture your current shell env. Either pass `--env KEY=VALUE` flags at registration (recommended) or use a project `.mcp.json` with `${VAR}` expansion.
+- **Three scopes, not two.** `local` is the default and applies only to the current project, stored in your user config. `project` writes a shared `.mcp.json` in the project root. `user` applies in every project. If the same server name appears in multiple scopes, Claude Code uses the highest-precedence definition: **local → project → user**.
+- **First-time approval prompt.** Claude Code prompts before running a new MCP server. If you don't see the Cycles tools, check that you didn't miss the prompt.
 - **`claude mcp add` updates Claude Code's view, not Claude Desktop's.** Each client has its own config — see [Claude Desktop setup](/quickstart/mcp-claude-desktop) if you want both.
+
+## What Cycles adds
+
+MCP gives Claude Code a standard way to call tools. Cycles adds runtime authority before those tools run: budget checks, risk limits, tenant scope, and reserve → commit / release accounting.
 
 ## Next steps
 
