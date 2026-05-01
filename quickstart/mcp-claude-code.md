@@ -18,9 +18,11 @@ This page is the exact setup for [Claude Code](https://www.claude.com/claude-cod
 The fastest path is the CLI, passing env vars at registration so they ride with the server config:
 
 ```bash
-claude mcp add cycles \
+claude mcp add \
+  --transport stdio \
   --env CYCLES_API_KEY=cyc_live_... \
   --env CYCLES_BASE_URL=http://localhost:7878 \
+  cycles \
   -- npx -y @runcycles/mcp-server
 ```
 
@@ -50,7 +52,7 @@ Commit `.mcp.json`, but **do not commit real secrets**. Each developer sets `CYC
 ## Try mock mode (no API key required)
 
 ```bash
-claude mcp add cycles --env CYCLES_MOCK=true -- npx -y @runcycles/mcp-server
+claude mcp add --transport stdio --env CYCLES_MOCK=true cycles -- npx -y @runcycles/mcp-server
 ```
 
 Returns realistic deterministic responses with no Cycles backend running.
@@ -70,6 +72,8 @@ claude mcp list
 ## Common gotchas
 
 - **Env vars not captured automatically.** `claude mcp add` records the command but does NOT capture your current shell env. Either pass `--env KEY=VALUE` flags at registration (recommended) or use a project `.mcp.json` with `${VAR}` expansion.
+- **CLI option order matters.** `--transport`, `--env`, and `--scope` must come before the server name (`cycles`). Arguments after `--` are passed to `@runcycles/mcp-server`.
+- **Native Windows needs a wrapper.** If Claude Code runs on native Windows rather than WSL, use `-- cmd /c npx -y @runcycles/mcp-server` after the server name so Windows can launch `npx`.
 - **Three scopes, not two.** `local` is the default and applies only to the current project, stored in your user config. `project` writes a shared `.mcp.json` in the project root. `user` applies in every project. If the same server name appears in multiple scopes, Claude Code uses the highest-precedence definition: **local → project → user**.
 - **First-time approval prompt.** Claude Code prompts before running a new MCP server. If you don't see the Cycles tools, check that you didn't miss the prompt.
 - **`claude mcp add` updates Claude Code's view, not Claude Desktop's.** Each client has its own config — see [Claude Desktop setup](/quickstart/mcp-claude-desktop) if you want both.

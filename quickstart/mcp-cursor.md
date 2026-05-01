@@ -29,15 +29,15 @@ Pick one. Most teams want project-scoped so the config travels with the repo. Cr
       "command": "npx",
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
-        "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_BASE_URL": "http://localhost:7878"
+        "CYCLES_API_KEY": "${env:CYCLES_API_KEY}",
+        "CYCLES_BASE_URL": "${env:CYCLES_BASE_URL}"
       }
     }
   }
 }
 ```
 
-Replace `cyc_live_...` with your real key. Open Cursor's settings panel → MCP, and you should see `cycles` listed. Toggle it on if it isn't already. Cursor may prompt to approve the new server the first time.
+Set `CYCLES_API_KEY` and `CYCLES_BASE_URL` in the environment where Cursor can read them. Open Cursor's settings panel → MCP, and you should see `cycles` listed. Toggle it on if it isn't already. Cursor may prompt to approve the new server the first time.
 
 ## Try mock mode (no API key required)
 
@@ -67,8 +67,8 @@ Cursor should invoke `cycles_check_balance` (you'll see the tool-call expand in 
 
 - **MCP tools only fire in Cursor's agentic / tool-enabled mode**, not plain autocomplete or basic chat. The exact label varies across Cursor releases — check the mode toggle in the chat panel.
 - **Project vs user scope.** If both `.cursor/mcp.json` and `~/.cursor/mcp.json` define `cycles`, project wins inside that project's workspace.
-- **Env not interpolated.** Cursor's MCP config does not currently expand `${VAR}` references in the env block. Hardcode the API key or use mock mode.
-- **`.cursor/` should be `.gitignore`d if it contains secrets.** If you commit `.cursor/mcp.json` with the API key in plain text, it ends up in git history. Either: (a) commit only with `CYCLES_MOCK: true` and have each developer override locally, or (b) use a secrets manager and a wrapper script as the `command` instead of `npx` directly.
+- **Use env interpolation for secrets.** Cursor expands `${env:NAME}` in MCP config fields including `env`, so project config can be shared without committing the API key. If Cursor was launched from a GUI and cannot see your shell variables, use a local `.env` via `envFile` or set the variables in your OS environment.
+- **`.cursor/` should be `.gitignore`d if it contains secrets.** If you commit `.cursor/mcp.json` with the API key in plain text, it ends up in git history. Commit only env references or mock-mode config; keep any local `.env` file out of git.
 - **If Cursor changes config locations**, use **Settings → MCP** to open or verify the active config file — the in-app path is the source of truth.
 
 ## What Cycles adds

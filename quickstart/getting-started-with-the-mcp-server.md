@@ -25,7 +25,7 @@ For deterministic production enforcement, make the Cycles check part of the tool
 ## Prerequisites
 
 - **A running Cycles stack** with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first.
-- **Node.js 18+ with `npx` available** — every per-client config below launches `@runcycles/mcp-server` through `npx`.
+- **Node.js 20+ with `npx` available** — every per-client config below launches `@runcycles/mcp-server` through `npx`.
 
 ::: tip Where do I get my API key?
 API keys are created through the **Cycles Admin Server** (port 7979). Use a runtime API key such as `cyc_live_...`. If your stack is already running with a tenant, create one directly:
@@ -105,7 +105,7 @@ Once connected, ask your agent to check a budget balance:
 
 > "Check the budget balance for tenant acme-corp"
 
-The agent will call `cycles_check_balance` with `tenant: "acme-corp"` and return balances for all scopes under that tenant — remaining budget, reserved amounts, and total spent.
+The agent will call `cycles_check_balance` with `tenant: "acme-corp"` and return matching balance records — remaining budget, reserved amounts, and total spent. If you need descendant scopes, ask for child scopes explicitly; the tool maps that to `includeChildren: true` where the server supports it.
 
 ## The reserve/commit lifecycle
 

@@ -10,7 +10,7 @@ This page is the exact setup for [Claude Desktop](https://claude.ai/download). F
 ## Prerequisites
 
 - **Claude Desktop installed** ([download](https://claude.ai/download))
-- **Node.js 18+** on PATH — Claude Desktop launches the MCP server via `npx`.
+- **Node.js 20+** on PATH — Claude Desktop launches the MCP server via `npx`.
 - **A Cycles API key** (`cyc_live_...`) — see [API key setup](/quickstart/getting-started-with-the-mcp-server#prerequisites). Skip this if you only want to try mock mode below.
 - **Cycles server running** locally or remote. Skip this for mock mode.
 
@@ -80,7 +80,7 @@ Claude should call `cycles_check_balance` and return the balances. If you don't 
 ## Common gotchas
 
 - **Indicator missing after edit.** Claude Desktop only re-reads the config on a full quit/restart. Closing the window is not enough on macOS.
-- **`npx` not found on Windows.** Make sure Node 18+ is on PATH. `where npx` should resolve. Reinstall Node if not.
+- **`npx` not found on Windows.** Make sure Node 20+ is on PATH. `where npx` should resolve. Reinstall Node if not.
 - **`CYCLES_BASE_URL` reachability.** If your Cycles server is in Docker, `localhost:7878` from Claude Desktop on macOS reaches the host's localhost — that works. From inside another container, use `host.docker.internal`.
 - **API key starts with `cyc_test_` not `cyc_live_`.** Test keys work but only against test budgets; if you're getting `BUDGET_NOT_FOUND` errors, double-check the tenant has a budget allocated.
 - **Where are the logs?** When the indicator stays empty or tools fail silently, Claude writes MCP logs to `~/Library/Logs/Claude/` on macOS and `%APPDATA%\Claude\logs\` on Windows. Tail the `mcp*.log` files while restarting the app.

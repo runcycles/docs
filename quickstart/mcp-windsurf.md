@@ -41,15 +41,15 @@ Create the file if it doesn't exist:
       "command": "npx",
       "args": ["-y", "@runcycles/mcp-server"],
       "env": {
-        "CYCLES_API_KEY": "cyc_live_...",
-        "CYCLES_BASE_URL": "http://localhost:7878"
+        "CYCLES_API_KEY": "${env:CYCLES_API_KEY}",
+        "CYCLES_BASE_URL": "${env:CYCLES_BASE_URL}"
       }
     }
   }
 }
 ```
 
-Replace `cyc_live_...` with your real key. Open Windsurf's settings → Cascade → MCP servers, and `cycles` should appear in the list. Toggle on / refresh if needed.
+Set `CYCLES_API_KEY` and `CYCLES_BASE_URL` in the environment where Windsurf can read them. Open Windsurf's settings → Cascade → MCP servers, and `cycles` should appear in the list. Toggle on / refresh if needed.
 
 ## Try mock mode (no API key required)
 
@@ -79,7 +79,7 @@ Cascade should invoke `cycles_check_balance` and return the balances. The tool c
 
 - **Config is typically user-scoped.** Per-project / per-workspace MCP overrides are rolling out across Windsurf release channels; check Windsurf's settings panel for "MCP servers" before assuming. If your build only supports user-scoped, use a wrapper script as the `command` that reads the right secret based on the working directory to vary keys per project.
 - **Cascade mode required.** MCP tools are only available in Cascade (Windsurf's agent mode), not in inline completions or plain chat.
-- **Env not interpolated.** Like Cursor, Windsurf's MCP config does not expand `${VAR}` references. Hardcode the API key or use mock mode.
+- **Use env interpolation for secrets.** Windsurf expands `${env:NAME}` in MCP config fields including `env`, `url`, `serverUrl`, and `headers`. If Windsurf was launched from a GUI and cannot see your shell variables, set them in your OS environment or use a wrapper script.
 - **Tools list refreshes on Windsurf restart.** If you edit the config and the tools don't show, fully quit and reopen Windsurf (closing the window is not enough on macOS).
 - **Cascade has a total MCP tool limit** (currently 100 tools across all enabled servers). Cycles exposes only ~9 tools, but if you have many MCP servers enabled at once you may hit the cap — disable unused tools in the MCP settings panel.
 
