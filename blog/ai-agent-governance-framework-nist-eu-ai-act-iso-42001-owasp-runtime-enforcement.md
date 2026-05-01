@@ -1,5 +1,5 @@
 ---
-title: "The AI Agent Governance Framework: Mapping NIST, EU AI Act, ISO 42001, and OWASP Requirements to Runtime Enforcement Controls"
+title: "AI Agent Governance: NIST, EU AI Act, ISO 42001, OWASP"
 date: 2026-04-02
 author: Cycles Team
 tags: [governance, compliance, EU AI Act, NIST, ISO 42001, OWASP, runtime authority, agents]
@@ -9,7 +9,7 @@ sidebar: false
 featured: true
 ---
 
-# The AI Agent Governance Framework: Mapping NIST, EU AI Act, ISO 42001, and OWASP Requirements to Runtime Enforcement Controls
+# AI Agent Governance: Mapping NIST, EU AI Act, ISO 42001, and OWASP to Runtime Enforcement
 
 > **Part of: [AI Agent Risk & Blast Radius Reference](/guides/risk-and-blast-radius)** — the full pillar covering action authority, risk scoring, blast-radius containment, and degradation paths.
 
