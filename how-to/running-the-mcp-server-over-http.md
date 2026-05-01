@@ -1,16 +1,16 @@
 ---
-title: "Running the Cycles MCP Server over HTTP / SSE"
-description: "When to use HTTP transport instead of STDIO for the Cycles MCP server, and how to deploy it as a shared remote MCP gateway. Includes docker-compose example and auth notes."
+title: "Running the Cycles MCP Server over Streamable HTTP / SSE"
+description: "When to use Streamable HTTP / SSE instead of STDIO for the Cycles MCP server, and how to deploy it as a shared remote MCP gateway. Includes Dockerfile, docker-compose, MCP Inspector verification, and auth notes."
 ---
 
-# Running the Cycles MCP Server over HTTP / SSE
+# Running the Cycles MCP Server over Streamable HTTP / SSE
 
 The Cycles MCP server supports two transports:
 
 - **STDIO** (default) — the AI client launches the server as a subprocess via `npx`. One server per developer, per machine.
-- **HTTP / SSE** — the server runs as a long-lived process and clients connect remotely. One server, many clients.
+- **Streamable HTTP / SSE** — the server runs as a long-lived process and clients connect remotely. One server, many clients. Streamable HTTP is the current MCP transport; SSE is the older shape, still supported for legacy clients.
 
-This page covers HTTP. For STDIO setup with each AI client, see the per-client quickstarts: [Claude Desktop](/quickstart/mcp-claude-desktop), [Claude Code](/quickstart/mcp-claude-code), [Cursor](/quickstart/mcp-cursor), [Windsurf](/quickstart/mcp-windsurf).
+This page covers the HTTP-based transports. For STDIO setup with each AI client, see the per-client quickstarts: [Claude Desktop](/quickstart/mcp-claude-desktop), [Claude Code](/quickstart/mcp-claude-code), [Cursor](/quickstart/mcp-cursor), [Windsurf](/quickstart/mcp-windsurf).
 
 ## When to use HTTP instead of STDIO
 
@@ -66,6 +66,9 @@ CMD ["npx", "@runcycles/mcp-server", "--transport", "http"]
 services:
   cycles-mcp:
     build: .
+    # Local/dev only. In production, drop `ports:` and use `expose: ["3000"]`
+    # so :3000 is reachable only inside the compose network — terminate auth
+    # at a reverse proxy (nginx/caddy/Traefik) in front of it.
     ports:
       - "3000:3000"
     environment:
@@ -86,9 +89,41 @@ curl http://localhost:3000/health
 
 You can now point any HTTP-capable MCP client at `http://localhost:3000/mcp`. For production, pin a specific version of `@runcycles/mcp-server` in the Dockerfile (replace `@latest`) and put a reverse proxy in front of `:3000`.
 
+## Verify with MCP Inspector
+
+Before debugging client-side wiring, prove the server itself works using the MCP reference client:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+In the Inspector UI, select **Streamable HTTP** as the transport and enter:
+
+```
+http://localhost:3000/mcp
+```
+
+List tools (you should see `cycles_reserve`, `cycles_commit`, `cycles_check_balance`, etc.) and call `cycles_check_balance` with a tenant you know exists. If that works, any subsequent connection failures are client-config issues, not server issues.
+
 ## Connecting an MCP client to a remote server
 
-The client config replaces the STDIO `command`/`args` launch with a remote URL. The exact key naming differs across clients and is still evolving — some use `"url"`, others require an explicit `"type": "http"` discriminator. Two examples of shapes seen in the wild:
+### Claude Code
+
+Claude Code has first-party CLI support for remote HTTP MCP servers:
+
+```bash
+claude mcp add --transport http cycles https://mcp.example.com/mcp
+```
+
+For local testing against the docker-compose above:
+
+```bash
+claude mcp add --transport http cycles http://localhost:3000/mcp
+```
+
+### Other clients (config shape varies)
+
+For clients that take JSON config rather than a CLI, the shape replaces the STDIO `command`/`args` launch with a remote URL. The exact keys differ across clients and are still evolving — some use just `"url"`, others require an explicit `"type": "http"` discriminator. Two examples seen in the wild:
 
 ```json
 {
@@ -111,11 +146,11 @@ The client config replaces the STDIO `command`/`args` launch with a remote URL. 
 }
 ```
 
-Check your client's current docs — remote-MCP support is rolling out unevenly across Claude Desktop, Claude Code, Cursor, and Windsurf release channels. STDIO is universally supported and is the right fallback while remote support stabilizes.
+Windsurf documents stdio, HTTP, and SSE transports. Claude Code supports remote HTTP via the CLI above. Other clients may vary by release channel — check the client docs before assuming a JSON shape. STDIO is universally supported and is the right fallback while remote support stabilizes.
 
 ## Auth, scope derivation, and security
 
-- **The MCP server's `CYCLES_API_KEY` is the gateway's identity, not the user's.** Every reservation it creates appears under that one key in audit logs. If you need per-user attribution, terminate auth at a reverse proxy in front of the gateway and forward the user identity into reservation `tags` or `metrics.custom`. See [Custom Field Resolvers](/how-to/custom-field-resolvers-in-cycles).
+- **The MCP server's `CYCLES_API_KEY` is the gateway's identity, not the end user's.** Every reservation created by the gateway authenticates as that one key. If you need **per-user attribution** (audit / observability), terminate auth at a reverse proxy and forward the user identity into reservation `actor` / `tags` / `metrics.custom`. That's audit context, not enforcement. If you need **per-user or per-tenant enforcement**, map the authenticated user to an explicit tenant/scope policy *before* calling Cycles, or run separate gateway identities per boundary. Tagging alone does not change which budget the call lands against. See [Custom Field Resolvers](/how-to/custom-field-resolvers-in-cycles).
 - **Scope derivation behaves identically over HTTP.** The reserve / commit / decide tools accept the same scope hierarchy ([tenant → workspace → app → workflow → agent → toolset](/concepts/exposure-why-rate-limits-leave-agents-unbounded)) regardless of transport.
 - **Don't expose `/mcp` to the public internet without a reverse proxy.** Anyone who can reach the endpoint can use whatever budget the gateway's API key has. Put it behind nginx/caddy/Traefik with mTLS, an API gateway, or a VPC/private network.
 - **Health check is unauthenticated.** `/health` returns version info; that's intentional for load balancers. The other `/mcp` endpoints inherit whatever auth your reverse proxy enforces.
