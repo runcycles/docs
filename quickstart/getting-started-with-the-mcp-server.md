@@ -1,22 +1,34 @@
 ---
 title: "Getting Started with the Cycles MCP Server"
-description: "Add budget enforcement to Claude Desktop, Claude Code, Cursor, Windsurf, and any MCP-compatible AI agent — no SDK code changes required."
+description: "Expose Cycles budget tools — reserve, commit, release, decide, check balance — to Claude Desktop, Claude Code, Cursor, Windsurf, and any MCP-compatible AI agent. No SDK code changes."
 ---
 
 # Getting Started with the Cycles MCP Server
 
 [![npm downloads](https://img.shields.io/npm/dt/@runcycles/mcp-server?label=MCP%20Server%20downloads&color=555&style=flat-square)](https://www.npmjs.com/package/@runcycles/mcp-server)
 
-The Cycles MCP Server gives any MCP-compatible AI agent runtime authority. Instead of integrating an SDK into your application code, you add the MCP server to your agent's tool configuration and the agent gets direct access to budget tools — reserve, commit, release, check balance, and more.
+The Cycles MCP Server gives MCP-compatible agents access to Cycles runtime authority tools: reserve, commit, release, decide, check balance, and record events. Instead of integrating an SDK into your application code, you add the MCP server to your agent's tool configuration and the agent gets direct access to those tools.
 
-This is the fastest way to add budget awareness to an AI agent. One config change, zero code changes.
+This is the fastest way to expose Cycles budget tools to an MCP-compatible AI agent. For hard production enforcement, route costly or risky actions through the reserve → execute → commit/release lifecycle, or enforce Cycles in the application/gateway layer.
+
+::: warning What this does and does not enforce
+The MCP server **exposes Cycles tools** to the agent. It does not automatically proxy or block every other MCP tool, API call, or model request — the agent can still take actions that bypass Cycles unless those actions go through `cycles_reserve` / `cycles_decide` / `cycles_commit`.
+
+Use this for:
+- budget-aware agents and operator workflows
+- explicit reserve / commit / release flows
+- demos and local integration
+
+For deterministic production enforcement, make the Cycles check part of the tool execution path itself — at the SDK, gateway, or framework adapter layer.
+:::
 
 ## Prerequisites
 
-You need a running Cycles stack with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first.
+- **A running Cycles stack** with a tenant, API key, and budget. If you don't have one yet, follow [Deploy the Full Stack](/quickstart/deploying-the-full-cycles-stack) first.
+- **Node.js 18+ with `npx` available** — every per-client config below launches `@runcycles/mcp-server` through `npx`.
 
 ::: tip Where do I get my API key?
-API keys are created through the **Cycles Admin Server** (port 7979) and always start with `cyc_live_`. If your stack is already running with a tenant, create one directly:
+API keys are created through the **Cycles Admin Server** (port 7979). Use a runtime API key such as `cyc_live_...`. If your stack is already running with a tenant, create one directly:
 
 ```bash
 curl -s -X POST http://localhost:7979/v1/admin/api-keys \
@@ -30,6 +42,8 @@ curl -s -X POST http://localhost:7979/v1/admin/api-keys \
 ```
 
 The response returns the full key (e.g. `cyc_live_abc123...`). **Save it — the secret is only shown once.**
+
+The permissions above are enough for the **core reserve / commit / release lifecycle**. If you want the agent to use `cycles_decide` (preflight checks) or `cycles_create_event` (telemetry / governance events), add the corresponding decision and event permissions as configured in your Cycles deployment — otherwise those tools will fail with auth errors.
 
 Need the full setup? See [Deploy the Full Stack — Create an API key](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key). For rotation and lifecycle details, see [API Key Management](/how-to/api-key-management-in-cycles).
 :::
@@ -95,7 +109,7 @@ The agent will call `cycles_check_balance` with `tenant: "acme-corp"` and return
 
 ## The reserve/commit lifecycle
 
-The core pattern is **reserve → execute → commit**. Here's how it works through MCP tools:
+The core pattern is **reserve → execute → commit**, or **release** if the operation fails or is cancelled. Here's how it works through MCP tools:
 
 **Step 1 — Reserve** before doing something expensive:
 
@@ -137,7 +151,7 @@ The MCP server exposes 9 tools:
 | `cycles_check_balance` | Check current budget balance for a scope |
 | `cycles_list_reservations` | List reservations, filtered by status or subject |
 | `cycles_get_reservation` | Get details of a specific reservation by ID |
-| `cycles_create_event` | Record usage directly without reserve/commit (fire-and-forget) |
+| `cycles_create_event` | Record usage or governance events without a reservation lifecycle. Useful for telemetry; not a substitute for pre-execution enforcement |
 
 ## Built-in prompts
 
