@@ -1,5 +1,5 @@
 ---
-title: "AI Agent Governance Dashboard: Operating Budgets, Risk Limits, and Keys in Production"
+title: "AI Agent Governance Dashboard: Budgets, Risk, Keys"
 date: 2026-04-09
 author: Albert Mavashev
 tags: [product, operations, dashboard, runtime-authority]
