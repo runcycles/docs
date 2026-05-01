@@ -279,7 +279,17 @@ export default defineConfig({
             { text: 'Add to a TypeScript App', link: '/quickstart/getting-started-with-the-typescript-client' },
             { text: 'Add to a Spring Boot App', link: '/quickstart/getting-started-with-the-cycles-spring-boot-starter' },
             { text: 'Add to a Rust App', link: '/quickstart/getting-started-with-the-rust-client' },
-            { text: 'Add to Claude / Cursor / Windsurf', link: '/quickstart/getting-started-with-the-mcp-server' },
+            {
+              text: 'MCP server (Claude / Cursor / Windsurf)',
+              collapsed: true,
+              items: [
+                { text: 'Overview', link: '/quickstart/getting-started-with-the-mcp-server' },
+                { text: 'Add to Claude Desktop', link: '/quickstart/mcp-claude-desktop' },
+                { text: 'Add to Claude Code', link: '/quickstart/mcp-claude-code' },
+                { text: 'Add to Cursor', link: '/quickstart/mcp-cursor' },
+                { text: 'Add to Windsurf', link: '/quickstart/mcp-windsurf' },
+              ]
+            },
             { text: 'Budget Limits with Spring AI', link: '/quickstart/how-to-add-hard-budget-limits-to-spring-ai-with-cycles' },
             { text: 'Choose a First Rollout', link: '/quickstart/how-to-choose-a-first-cycles-rollout-tenant-budgets-run-budgets-or-model-call-guardrails' },
             { text: 'Architecture Overview', link: '/quickstart/architecture-overview-how-cycles-fits-together' },
@@ -422,6 +432,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { text: 'MCP (Claude, Cursor, Windsurf)', link: '/how-to/integrating-cycles-with-mcp' },
+                { text: 'MCP server over HTTP / SSE', link: '/how-to/running-the-mcp-server-over-http' },
                 { text: 'OpenAI Agents', link: '/how-to/integrating-cycles-with-openai-agents' },
                 { text: 'OpenClaw', link: '/how-to/integrating-cycles-with-openclaw' },
               ]

@@ -34,13 +34,21 @@ The response returns the full key (e.g. `cyc_live_abc123...`). **Save it — the
 Need the full setup? See [Deploy the Full Stack — Create an API key](/quickstart/deploying-the-full-cycles-stack#step-3-create-an-api-key). For rotation and lifecycle details, see [API Key Management](/how-to/api-key-management-in-cycles).
 :::
 
-## Setup
+## Pick your client
 
-### Claude Desktop
+Each client has its own config file path and quirks. Start with the one you use:
 
-Add to your `claude_desktop_config.json`:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+| Client | Quickstart |
+|---|---|
+| **Claude Desktop** | [Add Cycles to Claude Desktop](/quickstart/mcp-claude-desktop) |
+| **Claude Code** | [Add Cycles to Claude Code](/quickstart/mcp-claude-code) |
+| **Cursor** | [Add Cycles to Cursor](/quickstart/mcp-cursor) |
+| **Windsurf** | [Add Cycles to Windsurf](/quickstart/mcp-windsurf) |
+| Other MCP-compatible client | Use the STDIO config below as a template |
+
+All of them use the same package — `@runcycles/mcp-server` from npm — launched via `npx`. The differences are config-file paths and a few client-specific gotchas.
+
+### Generic STDIO config (template)
 
 ```json
 {
@@ -57,32 +65,9 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-### Claude Code
+### Mock mode (no backend required)
 
-```bash
-claude mcp add cycles -- npx -y @runcycles/mcp-server
-```
-
-Set your API key and base URL in the environment:
-
-```bash
-export CYCLES_API_KEY=cyc_live_...
-export CYCLES_BASE_URL=http://localhost:7878
-```
-
-### Cursor / Windsurf
-
-Use the stdio transport with:
-
-```yaml
-command: npx
-args: ["-y", "@runcycles/mcp-server"]
-env: { CYCLES_API_KEY: "cyc_live_...", CYCLES_BASE_URL: "http://localhost:7878" }
-```
-
-### Mock mode (local development)
-
-To try the server without a Cycles backend, enable mock mode. Mock mode returns realistic responses with deterministic data — no API key or running server needed.
+To try the server without a running Cycles stack, set `CYCLES_MOCK: "true"` instead of the API key / base URL. Mock mode returns realistic deterministic responses.
 
 ```json
 {
@@ -90,13 +75,15 @@ To try the server without a Cycles backend, enable mock mode. Mock mode returns 
     "cycles": {
       "command": "npx",
       "args": ["-y", "@runcycles/mcp-server"],
-      "env": {
-        "CYCLES_MOCK": "true"
-      }
+      "env": { "CYCLES_MOCK": "true" }
     }
   }
 }
 ```
+
+### Running the server over HTTP / SSE
+
+For a shared remote MCP gateway (multi-developer team, cloud deploy, sidecar in CI), see [Running the MCP server over HTTP](/how-to/running-the-mcp-server-over-http). STDIO is the right default for a single developer on a local machine.
 
 ## Your first budget check
 
@@ -174,6 +161,7 @@ The server includes 3 prompts that agents can invoke for guided workflows:
 ## Next steps
 
 - **[Integrating Cycles with MCP](/how-to/integrating-cycles-with-mcp)** — advanced patterns: preflight decisions, graceful degradation, long-running operations, fire-and-forget events
+- **[Running the MCP server over HTTP](/how-to/running-the-mcp-server-over-http)** — when to use HTTP transport, and how to deploy a shared remote MCP gateway
 - **[Architecture Overview](/quickstart/architecture-overview-how-cycles-fits-together)** — how the MCP server fits into the full Cycles stack
 - **[End-to-End Tutorial](/quickstart/end-to-end-tutorial)** — walk through the complete reserve → commit lifecycle hands-on
 - **[Cost Estimation Cheat Sheet](/how-to/cost-estimation-cheat-sheet)** — estimate token costs for popular LLM models

@@ -254,20 +254,27 @@ Recommends scope hierarchy, budget limits, units, TTL settings, and degradation 
 
 > "Use the design_budget_strategy prompt for my multi-agent customer support system with per-customer tenants"
 
-## HTTP transport
+## Transport modes
 
-For web integrations or remote deployments, run the server with HTTP transport:
+The Cycles MCP server supports two transports:
+
+- **STDIO** *(default)* — the AI client launches the server as a subprocess via `npx`. One server per developer, per machine. This is what every per-client quickstart uses ([Claude Desktop](/quickstart/mcp-claude-desktop), [Claude Code](/quickstart/mcp-claude-code), [Cursor](/quickstart/mcp-cursor), [Windsurf](/quickstart/mcp-windsurf)).
+- **HTTP / SSE** — the server runs as a long-lived process and clients connect remotely. Use this for shared team gateways, cloud co-deploys with `cycles-server`, CI sidecars, or any case where you want auth and audit in front of MCP.
+
+Quick HTTP start:
 
 ```bash
 npx @runcycles/mcp-server --transport http
 ```
 
-The server starts on port 3000 (configurable via `PORT` env var) with:
+The server starts on port 3000 (configurable via `PORT`) with:
 
-- `GET /health` — health check (`{"status": "ok", "version": "0.2.0"}`)
+- `GET /health` — health check (`{"status": "ok", "version": "..."}`)
 - `POST /mcp` — MCP Streamable HTTP endpoint
 - `GET /mcp` — MCP SSE endpoint
 - `DELETE /mcp` — MCP session cleanup
+
+For the full decision tree, docker-compose example, and auth/scope behavior over HTTP, see **[Running the MCP server over HTTP](/how-to/running-the-mcp-server-over-http)**.
 
 ## Error handling
 
