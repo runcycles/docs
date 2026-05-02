@@ -58,6 +58,23 @@ describe('classify', () => {
     expect(classify('demos/index.md')).toEqual({ kind: 'docs', section: 'Demo' })
   })
 
+  it('classifies the remaining docs sections', () => {
+    expect(classify('quickstart/foo.md')).toEqual({ kind: 'docs', section: 'Quickstart' })
+    expect(classify('protocol/foo.md')).toEqual({ kind: 'docs', section: 'Protocol' })
+    expect(classify('configuration/foo.md')).toEqual({
+      kind: 'docs',
+      section: 'Configuration',
+    })
+    expect(classify('guides/foo.md')).toEqual({ kind: 'docs', section: 'Guide' })
+    expect(classify('incidents/foo.md')).toEqual({
+      kind: 'docs',
+      section: 'Incident Pattern',
+    })
+    expect(classify('why-cycles/foo.md')).toEqual({ kind: 'docs', section: 'Why Cycles' })
+    expect(classify('community/foo.md')).toEqual({ kind: 'docs', section: 'Community' })
+    expect(classify('docs/foo.md')).toEqual({ kind: 'docs', section: null })
+  })
+
   it('classifies admin-api index/guide explicitly', () => {
     expect(classify('admin-api/index.md')).toEqual({ kind: 'docs', section: 'Admin API' })
     expect(classify('admin-api/guide.md')).toEqual({ kind: 'docs', section: 'Admin API' })

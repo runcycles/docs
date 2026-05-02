@@ -4,8 +4,8 @@ description: "Free interactive calculator comparing Claude and OpenAI API costs 
 og:
   preview:
     value: "$10K"
-    label: "monthly — frontier vs cheapest model, same workload"
-    pill: "5.7×"
+    label: "monthly — highest vs lowest model, same workload"
+    pill: "24×"
   hook: "Plug in your token volume. Compare every Claude and GPT model. Share the URL."
 layout: standalone
 calcTitle: "Claude vs GPT Cost Calculator"
