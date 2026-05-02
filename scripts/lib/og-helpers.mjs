@@ -57,29 +57,57 @@ export function parseFrontmatter(raw) {
   return yaml.parse(m[1])
 }
 
-// Extract `og.preview` if it's a usable shape:
-// { value, label, pill?, pillCaption?, hook? }.
-// Returns null if missing or malformed — the generator falls back to the
-// docs template in that case. pillCaption pairs with pill: a number alone
-// (e.g. "×14") is opaque at thumbnail size, so a small caption like
-// "catastrophic" or "model spread" tells someone who hasn't read the page
-// what the multiplier represents.
+// Validate `og.preview` and return either a usable preview object or a
+// structured error. Two shapes:
+//   { ok: true, preview: { value, label, pill?, pillCaption?, hook? } }
+//   { ok: false, reason: '...' }
+// Returns null only when there's no `og` block at all (the page hasn't opted
+// in). A present-but-malformed `og.preview` returns ok:false so the generator
+// can warn — silent fallback to docs template hides typos like `og.preveiw`.
+//
+// Caps: pillCaption truncates to 18 chars at extraction (longer captions wrap
+// the small-caps stack and break right-alignment). Long values warn separately
+// in validatePreview because the size picker bottoms out at 56px / 360px.
 export function extractToolPreview(fm) {
   if (!fm || typeof fm !== 'object') return null
   const og = fm.og
-  if (!og || typeof og !== 'object') return null
+  if (og === undefined) return null
+  if (!og || typeof og !== 'object') return { ok: false, reason: 'og is not an object' }
+  if (og.preview === undefined && og.hook === undefined) return null
   const preview = og.preview
-  if (!preview || typeof preview !== 'object') return null
-  if (typeof preview.value !== 'string' || typeof preview.label !== 'string') {
-    return null
+  if (!preview || typeof preview !== 'object') {
+    return { ok: false, reason: 'og.preview is missing or not an object' }
+  }
+  if (typeof preview.value !== 'string') {
+    return { ok: false, reason: 'og.preview.value is missing or not a string' }
+  }
+  if (typeof preview.label !== 'string') {
+    return { ok: false, reason: 'og.preview.label is missing or not a string' }
   }
   return {
-    value: preview.value,
-    label: preview.label,
-    pill: typeof preview.pill === 'string' ? preview.pill : null,
-    pillCaption: typeof preview.pillCaption === 'string' ? preview.pillCaption : null,
-    hook: typeof og.hook === 'string' ? og.hook : null,
+    ok: true,
+    preview: {
+      value: preview.value,
+      label: preview.label,
+      pill: typeof preview.pill === 'string' ? preview.pill : null,
+      pillCaption:
+        typeof preview.pillCaption === 'string' ? truncate(preview.pillCaption, 18) : null,
+      hook: typeof og.hook === 'string' ? og.hook : null,
+    },
   }
+}
+
+// Soft-validation: returns warnings (string[]) for fields that will render but
+// look bad. Currently only `value` length, since the picker bottoms out at
+// 56px / 360px card width — strings past ~13 chars start to clip.
+export function validatePreview(preview) {
+  const warnings = []
+  if (preview.value.length > 13) {
+    warnings.push(
+      `og.preview.value is ${preview.value.length} chars (>13); may clip the 360px card`,
+    )
+  }
+  return warnings
 }
 
 export function pickTitleSize(title, hasDescription) {
