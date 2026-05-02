@@ -5,6 +5,7 @@ import {
   classify,
   parseFrontmatter,
   extractToolPreview,
+  validatePreview,
   pickTitleSize,
   pickToolTitleSize,
   pickPreviewValueSize,
@@ -111,32 +112,81 @@ describe('parseFrontmatter', () => {
 })
 
 describe('extractToolPreview', () => {
-  it('returns null when frontmatter is missing or invalid', () => {
+  it('returns null when there is no opt-in og block at all', () => {
+    // null/missing/non-object means "page never opted in" — falls back silently.
     expect(extractToolPreview(null)).toBeNull()
     expect(extractToolPreview(undefined)).toBeNull()
     expect(extractToolPreview('not an object')).toBeNull()
-  })
-
-  it('returns null when og or og.preview is missing', () => {
     expect(extractToolPreview({})).toBeNull()
-    expect(extractToolPreview({ og: null })).toBeNull()
-    expect(extractToolPreview({ og: {} })).toBeNull()
+    expect(extractToolPreview({ og: undefined })).toBeNull()
+    // og present but only with unrelated fields (e.g. fields used by other tools)
+    // is still treated as no-opt-in — only og.preview / og.hook flag intent.
+    expect(extractToolPreview({ og: { type: 'article' } })).toBeNull()
   })
 
-  it('returns null when value or label is missing/non-string', () => {
-    expect(extractToolPreview({ og: { preview: { value: '$1' } } })).toBeNull()
-    expect(extractToolPreview({ og: { preview: { label: 'x' } } })).toBeNull()
-    expect(extractToolPreview({ og: { preview: { value: 42, label: 'x' } } })).toBeNull()
+  it('returns ok:false when og is non-object (truthy but malformed)', () => {
+    expect(extractToolPreview({ og: 'string' })).toEqual({
+      ok: false,
+      reason: 'og is not an object',
+    })
+    expect(extractToolPreview({ og: 42 })).toEqual({
+      ok: false,
+      reason: 'og is not an object',
+    })
+  })
+
+  it('returns ok:false for `og: null` (the bare-key YAML typo case)', () => {
+    // `og:` with no children parses to null in YAML — the user clearly meant
+    // to add a block but forgot to indent. Failing here surfaces the typo
+    // instead of silently rendering the docs template.
+    expect(extractToolPreview({ og: null })).toEqual({
+      ok: false,
+      reason: 'og is not an object',
+    })
+  })
+
+  it('returns ok:false when og.preview is malformed (intent visible, shape wrong)', () => {
+    // og.hook set but preview missing → user clearly meant to opt in.
+    expect(extractToolPreview({ og: { hook: 'h' } })).toEqual({
+      ok: false,
+      reason: 'og.preview is missing or not an object',
+    })
+    expect(extractToolPreview({ og: { preview: null, hook: 'h' } })).toEqual({
+      ok: false,
+      reason: 'og.preview is missing or not an object',
+    })
+    expect(extractToolPreview({ og: { preview: 'string' } })).toEqual({
+      ok: false,
+      reason: 'og.preview is missing or not an object',
+    })
+  })
+
+  it('returns ok:false when value or label is missing/non-string', () => {
+    expect(extractToolPreview({ og: { preview: { label: 'x' } } })).toEqual({
+      ok: false,
+      reason: 'og.preview.value is missing or not a string',
+    })
+    expect(extractToolPreview({ og: { preview: { value: 42, label: 'x' } } })).toEqual({
+      ok: false,
+      reason: 'og.preview.value is missing or not a string',
+    })
+    expect(extractToolPreview({ og: { preview: { value: '$1' } } })).toEqual({
+      ok: false,
+      reason: 'og.preview.label is missing or not a string',
+    })
   })
 
   it('extracts a minimal preview', () => {
     const fm = { og: { preview: { value: '$342K', label: 'monthly blast radius' } } }
     expect(extractToolPreview(fm)).toEqual({
-      value: '$342K',
-      label: 'monthly blast radius',
-      pill: null,
-      pillCaption: null,
-      hook: null,
+      ok: true,
+      preview: {
+        value: '$342K',
+        label: 'monthly blast radius',
+        pill: null,
+        pillCaption: null,
+        hook: null,
+      },
     })
   })
 
@@ -153,11 +203,14 @@ describe('extractToolPreview', () => {
       },
     }
     expect(extractToolPreview(fm)).toEqual({
-      value: '$342K',
-      label: 'monthly blast radius',
-      pill: '×14',
-      pillCaption: 'catastrophic',
-      hook: 'Model your agent.',
+      ok: true,
+      preview: {
+        value: '$342K',
+        label: 'monthly blast radius',
+        pill: '×14',
+        pillCaption: 'catastrophic',
+        hook: 'Model your agent.',
+      },
     })
   })
 
@@ -169,12 +222,50 @@ describe('extractToolPreview', () => {
       },
     }
     expect(extractToolPreview(fm)).toEqual({
-      value: '$1',
-      label: 'x',
-      pill: null,
-      pillCaption: null,
-      hook: null,
+      ok: true,
+      preview: {
+        value: '$1',
+        label: 'x',
+        pill: null,
+        pillCaption: null,
+        hook: null,
+      },
     })
+  })
+
+  it('truncates pillCaption past 18 chars (long captions wrap and break the stack)', () => {
+    const fm = {
+      og: {
+        preview: {
+          value: '$1',
+          label: 'x',
+          pill: '×14',
+          pillCaption: 'this is a very long caption that should be truncated',
+        },
+      },
+    }
+    const result = extractToolPreview(fm)
+    expect(result.ok).toBe(true)
+    expect(result.preview.pillCaption.length).toBeLessThanOrEqual(18)
+    expect(result.preview.pillCaption.endsWith('…')).toBe(true)
+  })
+})
+
+describe('validatePreview', () => {
+  it('returns no warnings for short value', () => {
+    expect(validatePreview({ value: '$342K', label: 'x' })).toEqual([])
+  })
+
+  it('treats 13 chars as the boundary (no warning at exactly 13)', () => {
+    // "$1,234,567/mo" is 13 chars — right at the picker's bottom step.
+    expect(validatePreview({ value: '$1,234,567/mo', label: 'x' })).toEqual([])
+    expect(validatePreview({ value: '1234567890123', label: 'x' })).toEqual([])
+  })
+
+  it('warns when value exceeds 13 chars (clips the 360px card)', () => {
+    const warnings = validatePreview({ value: '$12,345,678,901/mo', label: 'x' })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toMatch(/og.preview.value is 18 chars/)
   })
 })
 
