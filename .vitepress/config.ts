@@ -79,6 +79,9 @@ function slugifyHeading(text) {
 function resolveOgImage(pageData) {
   const fmImage = pageData.frontmatter.image
   if (typeof fmImage === 'string' && fmImage.length > 0) {
+    // Absolute URLs (CDN, third-party host) pass through; root-relative paths
+    // get the site origin prepended.
+    if (/^https?:\/\//i.test(fmImage)) return fmImage
     return `https://runcycles.io${fmImage}`
   }
   const rel = pageData.relativePath.replace(/\\/g, '/')
