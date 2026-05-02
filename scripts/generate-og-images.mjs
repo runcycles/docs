@@ -37,14 +37,19 @@ const fonts = [
 // Amber matches the calculator's in-app "biggest monthly radius" highlight
 // (#d97706); used here for the tool-template pill so it reads against the
 // teal value instead of blending in.
+//
+// cardBorder is intentionally a solid hex rather than rgba — JPEG-ish
+// transcoding by LinkedIn/Slack/Discord washes out subtle alpha borders;
+// a solid grey one step brighter than bg survives the recompression.
 const BRAND = {
   bg: '#1B1B1F',
   divider: '#3C3C43',
+  cardBorder: '#2C2C33',
   teal: '#00C9A7',
   amber: '#F59E0B',
   textPrimary: '#FFFFFF',
   textSecondary: '#AEAEB2',
-  textMuted: '#636366',
+  textMuted: '#8E8E93',
 }
 
 const logoSvg = fs.readFileSync(logoPath, 'utf-8')
@@ -371,7 +376,9 @@ function toolTree({ title, section, hook, preview }) {
       el(
         'div',
         {
-          marginTop: '24px',
+          // Title-to-hook gap was visibly tighter than eyebrow-to-title; this
+          // brings the rhythm closer to a consistent baseline.
+          marginTop: '36px',
           fontFamily: 'Inter',
           fontWeight: 400,
           fontSize: '22px',
@@ -385,12 +392,14 @@ function toolTree({ title, section, hook, preview }) {
 
   const cardChildren = []
   if (preview.pill) {
-    cardChildren.push(
+    // Pill + optional caption stack right-aligned in the upper card. The
+    // number alone (×14, 24×) is opaque at thumbnail size; the caption tells
+    // someone who hasn't read the page what the multiplier represents.
+    const pillStack = [
       el(
         'div',
         {
           display: 'flex',
-          alignSelf: 'flex-end',
           alignItems: 'center',
           height: '40px',
           padding: '0 18px',
@@ -402,9 +411,38 @@ function toolTree({ title, section, hook, preview }) {
           fontWeight: 700,
           fontSize: '20px',
           letterSpacing: '0.01em',
-          marginBottom: '12px',
         },
         preview.pill,
+      ),
+    ]
+    if (preview.pillCaption) {
+      pillStack.push(
+        el(
+          'div',
+          {
+            marginTop: '6px',
+            fontFamily: 'Inter',
+            fontWeight: 700,
+            fontSize: '13px',
+            letterSpacing: '0.18em',
+            color: BRAND.amber,
+            textTransform: 'uppercase',
+          },
+          preview.pillCaption,
+        ),
+      )
+    }
+    cardChildren.push(
+      el(
+        'div',
+        {
+          display: 'flex',
+          flexDirection: 'column',
+          alignSelf: 'flex-end',
+          alignItems: 'flex-end',
+          marginBottom: '14px',
+        },
+        pillStack,
       ),
     )
   }
@@ -447,7 +485,7 @@ function toolTree({ title, section, hook, preview }) {
       padding: '36px 40px',
       borderRadius: '16px',
       background: 'rgba(0, 201, 167, 0.06)',
-      border: '1px solid rgba(0, 201, 167, 0.25)',
+      border: `1px solid ${BRAND.cardBorder}`,
     },
     cardChildren,
   )
