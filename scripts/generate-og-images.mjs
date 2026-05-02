@@ -34,10 +34,14 @@ const fonts = [
 ]
 
 // Brand palette — pulled from public/runcycles-og.svg and public/runcycles-logo.svg.
+// Amber matches the calculator's in-app "biggest monthly radius" highlight
+// (#d97706); used here for the tool-template pill so it reads against the
+// teal value instead of blending in.
 const BRAND = {
   bg: '#1B1B1F',
   divider: '#3C3C43',
   teal: '#00C9A7',
+  amber: '#F59E0B',
   textPrimary: '#FFFFFF',
   textSecondary: '#AEAEB2',
   textMuted: '#636366',
@@ -391,9 +395,9 @@ function toolTree({ title, section, hook, preview }) {
           height: '40px',
           padding: '0 18px',
           borderRadius: '20px',
-          background: 'rgba(0, 201, 167, 0.16)',
-          border: '1px solid rgba(0, 201, 167, 0.5)',
-          color: BRAND.teal,
+          background: 'rgba(245, 158, 11, 0.18)',
+          border: '1px solid rgba(245, 158, 11, 0.55)',
+          color: BRAND.amber,
           fontFamily: 'Inter',
           fontWeight: 700,
           fontSize: '20px',
