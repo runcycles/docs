@@ -121,19 +121,25 @@ jobs:
 
       - name: Create PR with updated count
         if: env.UPDATED == 'true'
+        # Uses ORG_TRAFFIC_TOKEN (PAT) instead of the default GITHUB_TOKEN.
+        # The default token cannot create PRs unless "Allow GitHub Actions
+        # to create and approve pull requests" is enabled in repo settings.
+        # That setting is off for this repo, which silently broke this step
+        # for weeks (PRs were opened manually from orphan branches).
+        env:
+          GH_TOKEN: ${{ secrets.ORG_TRAFFIC_TOKEN }}
         run: |
+          set -euo pipefail
           BRANCH="chore/update-install-count-$(date +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add .vitepress/theme/installs-cache.json
           git commit -m "chore: update install count (registry sources)"
-          git push -u origin "$BRANCH"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 
           gh pr create \
             --title "chore: update install count (registry sources)" \
             --body "Automated daily update of npm / PyPI / crates download counters. GitHub-side fields (clones, releases, ghPackages) are preserved unchanged — those are updated by the docs deploy build via installs.data.ts." \
             --head "$BRANCH" \
-            --base main || echo "PR already exists, skipping"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            --base main
