@@ -57,9 +57,13 @@ export function parseFrontmatter(raw) {
   return yaml.parse(m[1])
 }
 
-// Extract `og.preview` if it's a usable shape: { value, label, pill?, hook? }.
+// Extract `og.preview` if it's a usable shape:
+// { value, label, pill?, pillCaption?, hook? }.
 // Returns null if missing or malformed — the generator falls back to the
-// docs template in that case.
+// docs template in that case. pillCaption pairs with pill: a number alone
+// (e.g. "×14") is opaque at thumbnail size, so a small caption like
+// "catastrophic" or "model spread" tells someone who hasn't read the page
+// what the multiplier represents.
 export function extractToolPreview(fm) {
   if (!fm || typeof fm !== 'object') return null
   const og = fm.og
@@ -73,6 +77,7 @@ export function extractToolPreview(fm) {
     value: preview.value,
     label: preview.label,
     pill: typeof preview.pill === 'string' ? preview.pill : null,
+    pillCaption: typeof preview.pillCaption === 'string' ? preview.pillCaption : null,
     hook: typeof og.hook === 'string' ? og.hook : null,
   }
 }

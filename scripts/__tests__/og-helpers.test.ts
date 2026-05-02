@@ -135,14 +135,20 @@ describe('extractToolPreview', () => {
       value: '$342K',
       label: 'monthly blast radius',
       pill: null,
+      pillCaption: null,
       hook: null,
     })
   })
 
-  it('extracts pill and hook when present', () => {
+  it('extracts pill, pillCaption, and hook when present', () => {
     const fm = {
       og: {
-        preview: { value: '$342K', label: 'monthly blast radius', pill: '×14' },
+        preview: {
+          value: '$342K',
+          label: 'monthly blast radius',
+          pill: '×14',
+          pillCaption: 'catastrophic',
+        },
         hook: 'Model your agent.',
       },
     }
@@ -150,14 +156,15 @@ describe('extractToolPreview', () => {
       value: '$342K',
       label: 'monthly blast radius',
       pill: '×14',
+      pillCaption: 'catastrophic',
       hook: 'Model your agent.',
     })
   })
 
-  it('drops non-string pill and hook fields', () => {
+  it('drops non-string pill, pillCaption, and hook fields', () => {
     const fm = {
       og: {
-        preview: { value: '$1', label: 'x', pill: 42 },
+        preview: { value: '$1', label: 'x', pill: 42, pillCaption: false },
         hook: { not: 'a string' },
       },
     }
@@ -165,6 +172,7 @@ describe('extractToolPreview', () => {
       value: '$1',
       label: 'x',
       pill: null,
+      pillCaption: null,
       hook: null,
     })
   })

@@ -6,6 +6,7 @@ og:
     value: "$342K"
     label: "monthly blast radius — default workload"
     pill: "×14"
+    pillCaption: "catastrophic"
   hook: "Model your agent. See the monthly blast radius. Share the URL."
 layout: standalone
 calcTitle: "AI Agent Blast Radius Risk Calculator"
