@@ -12,19 +12,15 @@ const ogRoot = path.join(repoRoot, 'public', 'og')
 const force = process.argv.includes('--force')
 
 const fontsBase = path.join(repoRoot, 'node_modules', '@fontsource')
+const fontPaths = {
+  inter400: path.join(fontsBase, 'inter/files/inter-latin-400-normal.woff'),
+  inter700: path.join(fontsBase, 'inter/files/inter-latin-700-normal.woff'),
+}
+const logoPath = path.join(repoRoot, 'public', 'runcycles-logo.svg')
+
 const fonts = [
-  {
-    name: 'Inter',
-    weight: 400,
-    style: 'normal',
-    data: fs.readFileSync(path.join(fontsBase, 'inter/files/inter-latin-400-normal.woff')),
-  },
-  {
-    name: 'Inter',
-    weight: 700,
-    style: 'normal',
-    data: fs.readFileSync(path.join(fontsBase, 'inter/files/inter-latin-700-normal.woff')),
-  },
+  { name: 'Inter', weight: 400, style: 'normal', data: fs.readFileSync(fontPaths.inter400) },
+  { name: 'Inter', weight: 700, style: 'normal', data: fs.readFileSync(fontPaths.inter700) },
 ]
 
 // Brand palette — pulled from public/runcycles-og.svg and public/runcycles-logo.svg.
@@ -37,7 +33,7 @@ const BRAND = {
   textMuted: '#636366',
 }
 
-const logoSvg = fs.readFileSync(path.join(repoRoot, 'public', 'runcycles-logo.svg'), 'utf-8')
+const logoSvg = fs.readFileSync(logoPath, 'utf-8')
 const logoDataUri =
   'data:image/svg+xml;base64,' + Buffer.from(logoSvg).toString('base64')
 
@@ -61,13 +57,32 @@ const TOP_LEVEL_DOCS = new Set([
 
 function classify(rel) {
   if (rel.endsWith('-embed.md')) return null // iframe targets — canonicalized away
+  // Auto-generated OpenAPI operation pages are noindex'd in transformPageData
+  // and have thin/templated content; OG images would just be wallpaper.
+  if (rel.startsWith('api/operations/')) return null
+  if (rel.startsWith('admin-api/operations/')) return null
+
   if (rel.startsWith('blog/')) return { kind: 'blog' }
+
   if (rel.startsWith('how-to/')) return { kind: 'docs', section: 'How-to Guide' }
   if (rel.startsWith('troubleshoot/')) return { kind: 'docs', section: 'Troubleshooting' }
   if (rel.startsWith('concepts/cycles-vs-')) return { kind: 'docs', section: 'Comparison' }
   if (rel.startsWith('concepts/')) return { kind: 'docs', section: 'Concepts' }
   if (rel.startsWith('quickstart/')) return { kind: 'docs', section: 'Quickstart' }
   if (rel.startsWith('calculators/')) return { kind: 'docs', section: 'Calculator' }
+  if (rel.startsWith('protocol/')) return { kind: 'docs', section: 'Protocol' }
+  if (rel.startsWith('configuration/')) return { kind: 'docs', section: 'Configuration' }
+  if (rel.startsWith('guides/')) return { kind: 'docs', section: 'Guide' }
+  if (rel.startsWith('incidents/')) return { kind: 'docs', section: 'Incident Pattern' }
+  if (rel.startsWith('why-cycles/')) return { kind: 'docs', section: 'Why Cycles' }
+  if (rel.startsWith('community/')) return { kind: 'docs', section: 'Community' }
+  if (rel.startsWith('demos/')) return { kind: 'docs', section: 'Demo' }
+  if (rel.startsWith('docs/')) return { kind: 'docs', section: null }
+  if (rel === 'admin-api/index.md' || rel === 'admin-api/guide.md') {
+    return { kind: 'docs', section: 'Admin API' }
+  }
+  if (rel === 'api/index.md') return { kind: 'docs', section: 'API' }
+
   if (TOP_LEVEL_DOCS.has(rel)) return { kind: 'docs', section: null }
   return null
 }
@@ -390,14 +405,41 @@ function walkMd(rel, out = []) {
 
 async function main() {
   // Sources: top-level allowlisted files + recursive walks of section directories.
+  // Sections excluded by classify() (api/operations, admin-api/operations) are still
+  // walked but ignored at classification time — keeping the walk list flat avoids
+  // the case where a new section directory ships and silently gets no OG images.
   const sources = []
   for (const f of TOP_LEVEL_DOCS) sources.push(f)
-  for (const dir of ['blog', 'how-to', 'troubleshoot', 'concepts', 'quickstart', 'calculators']) {
+  for (const dir of [
+    'blog',
+    'how-to',
+    'troubleshoot',
+    'concepts',
+    'quickstart',
+    'calculators',
+    'protocol',
+    'configuration',
+    'guides',
+    'incidents',
+    'why-cycles',
+    'community',
+    'demos',
+    'docs',
+    'admin-api',
+    'api',
+  ]) {
     walkMd(dir, sources)
   }
 
-  // Cache-bust: regenerate when the generator script itself changes.
-  const scriptMtime = fs.statSync(fileURLToPath(import.meta.url)).mtimeMs
+  // Cache-bust: regenerate when the generator script OR any rendering input
+  // (logo SVG, font files) changes. Without this, swapping fonts or tweaking
+  // the logo would leave existing PNGs stale until someone ran --force.
+  const cacheBustMtime = Math.max(
+    fs.statSync(fileURLToPath(import.meta.url)).mtimeMs,
+    fs.statSync(logoPath).mtimeMs,
+    fs.statSync(fontPaths.inter400).mtimeMs,
+    fs.statSync(fontPaths.inter700).mtimeMs,
+  )
 
   let generated = 0
   let skipped = 0
@@ -418,7 +460,7 @@ async function main() {
     const srcStat = fs.statSync(srcPath)
     if (!force && fs.existsSync(outPath)) {
       const outStat = fs.statSync(outPath)
-      const newest = Math.max(srcStat.mtimeMs, scriptMtime)
+      const newest = Math.max(srcStat.mtimeMs, cacheBustMtime)
       if (outStat.mtimeMs >= newest) {
         skipped++
         continue
