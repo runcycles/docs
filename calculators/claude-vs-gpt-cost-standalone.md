@@ -4,7 +4,7 @@ description: "Free interactive calculator comparing Claude and OpenAI API costs 
 og:
   preview:
     value: "$10K"
-    label: "monthly GPT-5.5 vs $1.8K Haiku 4.5 — same workload"
+    label: "monthly — frontier vs cheapest model, same workload"
     pill: "5.7×"
   hook: "Plug in your token volume. Compare every Claude and GPT model. Share the URL."
 layout: standalone
