@@ -95,9 +95,14 @@ jobs:
           echo "snapshot: clones14d=$TC uniqs=$TCU views14d=$TV stars=$TS forks=$TF npm=$NPM pypi=$PYPI crates=$CRATES cumClones=$CUM"
 
       - name: Open PR with snapshot row
+        # Uses ORG_TRAFFIC_TOKEN (PAT) to push and open the PR. The default
+        # GITHUB_TOKEN cannot create PRs unless "Allow GitHub Actions to
+        # create and approve pull requests" is enabled in repo settings —
+        # using the PAT sidesteps that and works regardless.
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ORG_TRAFFIC_TOKEN }}
         run: |
+          set -euo pipefail
           if git diff --quiet .outreach/; then
             echo "No changes to snapshot CSVs — skipping PR."
             exit 0
@@ -108,9 +113,11 @@ jobs:
           git checkout -b "$BRANCH"
           git add .outreach/adoption-snapshots.csv .outreach/adoption-snapshots-by-repo.csv
           git commit -m "chore: weekly adoption snapshot $(date -u +%Y-%m-%d)"
-          git push -u origin "$BRANCH"
+          # Push using the PAT so the PR's commits are attributed to the
+          # token owner and the API call below has create-PR permission.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
           gh pr create \
             --title "chore: weekly adoption snapshot $(date -u +%Y-%m-%d)" \
             --body "Automated weekly append to adoption-snapshots CSVs. Append-only — preserves time series for trend analysis." \
             --head "$BRANCH" \
-            --base main || echo "PR already exists, skipping"
+            --base main
