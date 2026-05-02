@@ -1,9 +1,19 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import yaml from 'yaml'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
+import {
+  TOP_LEVEL_DOCS,
+  classify,
+  parseFrontmatter,
+  extractToolPreview,
+  pickTitleSize,
+  pickToolTitleSize,
+  pickPreviewValueSize,
+  truncate,
+  formatDate,
+} from './lib/og-helpers.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '..')
@@ -36,82 +46,6 @@ const BRAND = {
 const logoSvg = fs.readFileSync(logoPath, 'utf-8')
 const logoDataUri =
   'data:image/svg+xml;base64,' + Buffer.from(logoSvg).toString('base64')
-
-// ── Page classification ───────────────────────────────────────────────────────
-//
-// Returns null for pages that should NOT get a generated OG image.
-// Otherwise: { kind: 'blog' | 'docs', section?: string }
-//
-// The section label is rendered in the docs template (e.g. "How-to Guide").
-// The blog template ignores section and uses date · author instead.
-
-const TOP_LEVEL_DOCS = new Set([
-  'why-cycles.md',
-  'about.md',
-  'glossary.md',
-  'design-partners.md',
-  'security.md',
-  'contact.md',
-  'changelog.md',
-])
-
-function classify(rel) {
-  if (rel.endsWith('-embed.md')) return null // iframe targets — canonicalized away
-  // Auto-generated OpenAPI operation pages are noindex'd in transformPageData
-  // and have thin/templated content; OG images would just be wallpaper.
-  if (rel.startsWith('api/operations/')) return null
-  if (rel.startsWith('admin-api/operations/')) return null
-
-  if (rel.startsWith('blog/')) return { kind: 'blog' }
-
-  if (rel.startsWith('how-to/')) return { kind: 'docs', section: 'How-to Guide' }
-  if (rel.startsWith('troubleshoot/')) return { kind: 'docs', section: 'Troubleshooting' }
-  if (rel.startsWith('concepts/cycles-vs-')) return { kind: 'docs', section: 'Comparison' }
-  if (rel.startsWith('concepts/')) return { kind: 'docs', section: 'Concepts' }
-  if (rel.startsWith('quickstart/')) return { kind: 'docs', section: 'Quickstart' }
-  if (rel.startsWith('calculators/')) return { kind: 'docs', section: 'Calculator' }
-  if (rel.startsWith('protocol/')) return { kind: 'docs', section: 'Protocol' }
-  if (rel.startsWith('configuration/')) return { kind: 'docs', section: 'Configuration' }
-  if (rel.startsWith('guides/')) return { kind: 'docs', section: 'Guide' }
-  if (rel.startsWith('incidents/')) return { kind: 'docs', section: 'Incident Pattern' }
-  if (rel.startsWith('why-cycles/')) return { kind: 'docs', section: 'Why Cycles' }
-  if (rel.startsWith('community/')) return { kind: 'docs', section: 'Community' }
-  if (rel.startsWith('demos/')) return { kind: 'docs', section: 'Demo' }
-  if (rel.startsWith('docs/')) return { kind: 'docs', section: null }
-  if (rel === 'admin-api/index.md' || rel === 'admin-api/guide.md') {
-    return { kind: 'docs', section: 'Admin API' }
-  }
-  if (rel === 'api/index.md') return { kind: 'docs', section: 'API' }
-
-  if (TOP_LEVEL_DOCS.has(rel)) return { kind: 'docs', section: null }
-  return null
-}
-
-function parseFrontmatter(raw) {
-  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  if (!m) return null
-  return yaml.parse(m[1])
-}
-
-function pickTitleSize(title, hasDescription) {
-  const len = title.length
-  if (hasDescription) {
-    if (len <= 40) return 60
-    if (len <= 80) return 48
-    if (len <= 120) return 40
-    return 34
-  }
-  if (len <= 40) return 72
-  if (len <= 80) return 56
-  if (len <= 120) return 44
-  return 36
-}
-
-function truncate(s, max) {
-  if (!s) return ''
-  if (s.length <= max) return s
-  return s.slice(0, max - 1).trimEnd() + '…'
-}
 
 function el(type, style, children) {
   return { type, props: { style, children } }
@@ -380,11 +314,184 @@ function docsTree({ title, description, section }) {
   ])
 }
 
-function formatDate(input) {
-  if (!input) return 'Draft'
-  const d = input instanceof Date ? input : new Date(input)
-  if (isNaN(d.getTime())) return 'Draft'
-  return d.toISOString().slice(0, 10)
+// Tool template — for calculator/demo pages where the OG image should preview
+// the actual output, not just restate the title and meta-description.
+//
+// Layout: left column = eyebrow + title + one-line hook. Right column =
+// preview card with optional pill (e.g. "×14"), big value (e.g. "$342K"),
+// and a label (e.g. "monthly blast radius").
+//
+// Description is dropped on purpose — it's already rendered as og:description
+// below the card by the social embed, so repeating it on the image is dead
+// weight. The hook replaces it as something that converts on a glance.
+function toolTree({ title, section, hook, preview }) {
+  const titleSize = pickToolTitleSize(title)
+  const valueSize = pickPreviewValueSize(preview.value)
+
+  const leftChildren = []
+  if (section) {
+    leftChildren.push(
+      el(
+        'div',
+        {
+          display: 'flex',
+          fontFamily: 'Inter',
+          fontWeight: 700,
+          fontSize: '16px',
+          letterSpacing: '0.18em',
+          color: BRAND.teal,
+          textTransform: 'uppercase',
+          marginBottom: '20px',
+        },
+        section.toUpperCase(),
+      ),
+    )
+  }
+  leftChildren.push(tealAccentBar())
+  leftChildren.push(
+    el(
+      'div',
+      {
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: `${titleSize}px`,
+        lineHeight: 1.1,
+        letterSpacing: '-0.02em',
+        color: BRAND.textPrimary,
+      },
+      title,
+    ),
+  )
+  if (hook) {
+    leftChildren.push(
+      el(
+        'div',
+        {
+          marginTop: '24px',
+          fontFamily: 'Inter',
+          fontWeight: 400,
+          fontSize: '22px',
+          lineHeight: 1.4,
+          color: BRAND.textSecondary,
+        },
+        truncate(hook, 110),
+      ),
+    )
+  }
+
+  const cardChildren = []
+  if (preview.pill) {
+    cardChildren.push(
+      el(
+        'div',
+        {
+          display: 'flex',
+          alignSelf: 'flex-end',
+          alignItems: 'center',
+          height: '40px',
+          padding: '0 18px',
+          borderRadius: '20px',
+          background: 'rgba(0, 201, 167, 0.16)',
+          border: '1px solid rgba(0, 201, 167, 0.5)',
+          color: BRAND.teal,
+          fontFamily: 'Inter',
+          fontWeight: 700,
+          fontSize: '20px',
+          letterSpacing: '0.01em',
+          marginBottom: '12px',
+        },
+        preview.pill,
+      ),
+    )
+  }
+  cardChildren.push(
+    el(
+      'div',
+      {
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: `${valueSize}px`,
+        lineHeight: 1,
+        letterSpacing: '-0.03em',
+        color: BRAND.teal,
+      },
+      preview.value,
+    ),
+  )
+  cardChildren.push(
+    el(
+      'div',
+      {
+        marginTop: '16px',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        fontSize: '20px',
+        lineHeight: 1.3,
+        color: BRAND.textSecondary,
+        maxWidth: '380px',
+      },
+      preview.label,
+    ),
+  )
+
+  const previewCard = el(
+    'div',
+    {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '440px',
+      padding: '36px 40px',
+      borderRadius: '16px',
+      background: 'rgba(0, 201, 167, 0.06)',
+      border: '1px solid rgba(0, 201, 167, 0.25)',
+    },
+    cardChildren,
+  )
+
+  return frame([
+    topAccentBar(),
+    header(),
+    divider(),
+    el(
+      'div',
+      {
+        display: 'flex',
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+        gap: '40px',
+      },
+      [
+        el(
+          'div',
+          {
+            display: 'flex',
+            flexDirection: 'column',
+            width: '600px',
+          },
+          leftChildren,
+        ),
+        previewCard,
+      ],
+    ),
+    el(
+      'div',
+      { display: 'flex', justifyContent: 'flex-end', alignItems: 'center' },
+      [
+        el(
+          'div',
+          {
+            display: 'flex',
+            fontFamily: 'Inter',
+            fontWeight: 400,
+            fontSize: '22px',
+            color: BRAND.textMuted,
+          },
+          'runcycles.io',
+        ),
+      ],
+    ),
+  ])
 }
 
 // Walk a directory recursively, returning .md file paths relative to repoRoot.
@@ -496,11 +603,24 @@ async function main() {
         tags: Array.isArray(fm.tags) ? fm.tags.map(String) : [],
       })
     } else {
-      tree = docsTree({
-        title,
-        description: typeof fm.description === 'string' ? fm.description : '',
-        section: cls.section,
-      })
+      // Tool template is opt-in via frontmatter `og.preview`. Pages that omit
+      // it fall back to docs — including index pages under calculators/ and
+      // demos/, where there's no single output number to highlight.
+      const preview = extractToolPreview(fm)
+      if (preview) {
+        tree = toolTree({
+          title,
+          section: cls.section,
+          hook: preview.hook,
+          preview,
+        })
+      } else {
+        tree = docsTree({
+          title,
+          description: typeof fm.description === 'string' ? fm.description : '',
+          section: cls.section,
+        })
+      }
     }
 
     try {
