@@ -1,6 +1,12 @@
 ---
 title: "AI Agent Blast Radius Risk Calculator"
 description: "Free interactive calculator quantifying the monthly blast radius of AI agent actions — by reversibility, visibility, and audience size — with an editable runtime-authority containment factor."
+og:
+  preview:
+    value: "$342K"
+    label: "monthly blast radius — default workload"
+    pill: "×14"
+  hook: "Model your agent. See the monthly blast radius. Share the URL."
 ---
 
 # AI Agent Blast Radius Risk Calculator
