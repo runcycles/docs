@@ -44,13 +44,18 @@ jobs:
           NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           TOTALS_CSV=".outreach/adoption-snapshots.csv"
           BYREPO_CSV=".outreach/adoption-snapshots-by-repo.csv"
+          REFS_CSV=".outreach/adoption-snapshots-referrers.csv"
           mkdir -p .outreach
 
           # Headers (idempotent — only written if missing)
           [ -f "$TOTALS_CSV" ] || echo "date,clones_14d,unique_cloners_14d,views_14d,unique_viewers_14d,stars,forks,npm_total,pypi_last_month,crates_total,cumulative_clones,fetched_at" > "$TOTALS_CSV"
           [ -f "$BYREPO_CSV" ] || echo "date,repo,clones_14d,unique_cloners_14d,views_14d,unique_viewers_14d,stars,forks" > "$BYREPO_CSV"
+          [ -f "$REFS_CSV" ]   || echo "date,repo,rank,referrer,views,uniques" > "$REFS_CSV"
 
-          # ── Per-repo + traffic totals ──
+          # ── Per-repo + traffic totals + top referrers ──
+          # Referrers come from /traffic/popular/referrers (top 10, ranked by
+          # views, 14d window). Captured per repo into a long-format CSV so
+          # week-over-week we can answer "did the HN post drive traffic".
           REPOS=$(gh repo list "$ORG" --limit 50 --json name,isPrivate,isArchived --jq '.[] | select(.isPrivate==false and .isArchived==false) | .name')
           TC=0; TCU=0; TV=0; TVU=0; TS=0; TF=0
           BYREPO_ROWS=""
@@ -64,6 +69,11 @@ jobs:
             BYREPO_ROWS="${BYREPO_ROWS}${TODAY},${r},${cc},${cu},${vc},${vu},${ss},${ff}\n"
             TC=$((TC + cc)); TCU=$((TCU + cu)); TV=$((TV + vc)); TVU=$((TVU + vu))
             TS=$((TS + ss)); TF=$((TF + ff))
+
+            # Append top-N referrers for this repo. `to_entries` gives index for rank.
+            gh api "repos/$ORG/$r/traffic/popular/referrers" \
+              --jq "to_entries[] | \"${TODAY},${r},\(.key+1),\(.value.referrer),\(.value.count),\(.value.uniques)\"" \
+              >> "$REFS_CSV" 2>/dev/null || true
           done
 
           # ── Registry totals (same packages as installs.data.ts) ──
@@ -111,7 +121,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add .outreach/adoption-snapshots.csv .outreach/adoption-snapshots-by-repo.csv
+          git add .outreach/adoption-snapshots.csv .outreach/adoption-snapshots-by-repo.csv .outreach/adoption-snapshots-referrers.csv
           git commit -m "chore: weekly adoption snapshot $(date -u +%Y-%m-%d)"
           # Push using the PAT so the PR's commits are attributed to the
           # token owner and the API call below has create-PR permission.
